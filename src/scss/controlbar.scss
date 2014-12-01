@@ -1,0 +1,35 @@
+$controlbarPadding: 5px;
+.controlbar {
+	.endpointText {
+		width: 300px;
+	}
+	form > * {
+		margin-right: $controlbarPadding;
+	}
+	padding: $controlbarPadding $controlbarPadding $controlbarPadding 0;
+	
+	.menuButton {
+		display: inline-block;
+	  	vertical-align:middle;
+	  	&:focus {
+	  		outline: none;
+	  		background-color: transparent;
+	  		border-color:$btn-default-border;
+	  	}
+		.icon-bar {
+		  margin-bottom:3px;
+		  display: block;
+		  width: 22px;
+		  height: 3px;
+		  background-color: $gray-light;
+		  border-radius: 1px;
+		}
+	}
+}
+
+.menu-open {
+	.controlbar {
+		left: $menuWidth;
+		padding-left: $controlbarPadding;
+	}
+}

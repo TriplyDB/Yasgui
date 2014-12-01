@@ -1,0 +1,127 @@
+$menuSpeed: 0.5s;
+$menuWidth: 600px;
+
+.menu-slide {
+	position: absolute;
+	border: 1px solid #ddd;
+	top: 0;
+	left: 0;
+	z-index: 100;
+	visibility: hidden;
+	width: $menuWidth;
+	height: auto;
+	background: $well-bg;
+	-webkit-transition: all $menuSpeed;
+	transition: all $menuSpeed;
+	
+	-webkit-perspective: 1500px;
+	perspective: 1500px;
+	-webkit-perspective-origin: 0% 50%;
+	perspective-origin: 0% 50%;
+	
+	-webkit-transform: translate3d(-100%, 0, 0) rotateY(90deg);
+	transform: translate3d(-100%, 0, 0) rotateY(90deg);
+	-webkit-transform-origin: 100% 50%;
+	transform-origin: 100% 50%;
+	-webkit-transform-style: preserve-3d;
+	transform-style: preserve-3d;
+
+	.yasguiLogo {
+		cursor: pointer;
+		float:right;
+		margin:5px;
+	}
+
+	&::after {
+		display: none;
+	}
+	.tabPaneMenuTabs {
+		margin: 10px;
+	}
+	.tabPane {
+		margin: 10px;
+	}
+	.logo {
+
+		margin-left:auto; margin-right:0;
+	}
+	.requestConfig {
+		input {
+		}
+		.textInputsRow:hover:not(:last-child) .closeBtn {
+			display:inline-block;
+		}
+		.closeBtn {
+         	fill: $gray;
+         	display:none;
+         	cursor:pointer;
+		}
+		.textInputsRow * {
+			margin-right: 3px;
+		}
+		.row {
+			display: table;
+			margin: 5px 0px;
+		}
+		label {
+			font-size: 80%;
+		}
+		.rowLabel {
+			font-weight: bold;
+		}
+		
+		[class*="col-"] {
+		    float: none;
+		    display: table-cell;
+		    vertical-align: middle;
+		    padding: 5px;
+		}
+	}
+}
+
+
+.tabPane {
+	-webkit-perspective: 1500px;
+	perspective: 1500px;
+	-webkit-perspective-origin: 0% 50%;
+	perspective-origin: 0% 50%;
+}
+
+
+.wrapper {
+	position: relative;
+	left: 0;
+	z-index: 99;
+	height: 100%;
+	-webkit-transition: -webkit-transform $menuSpeed;
+	transition: transform $menuSpeed;
+}
+
+.menu-open {
+	.menu-slide {
+		left: $menuWidth;
+		visibility: visible;
+		-webkit-transition: all $menuSpeed;
+	    -moz-transition: all $menuSpeed;
+	    -ms-transition: all $menuSpeed;
+	    -o-transition: all $menuSpeed;
+	    transition: all $menuSpeed;
+	    
+	    
+		-webkit-transform: translate3d(-100%, 0, 0) rotateY(0deg);
+		transform: translate3d(-100%, 0, 0) rotateY(0deg);
+	}
+}
+
+
+.controlbar {
+	overflow-x: hidden;
+	position:relative;
+	left: 0;
+    -webkit-transition: all $menuSpeed;
+    -moz-transition: all $menuSpeed;
+    -ms-transition: all $menuSpeed;
+    -o-transition: all $menuSpeed;
+    transition: all $menuSpeed;
+}
+
