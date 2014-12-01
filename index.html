@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>YASGUI</title>
+  <link rel="icon"  type="image/png" href="doc/imgs/favicon.png">
+  <link href="dist/yasgui.css" rel="stylesheet" type="text/css" />
+  <link href="doc/doc.min.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+  
+  <a href="https://github.com/YASGUI/YASGUI" target="_blank"><img style="z-index: 11111; position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+   <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">YASGUI</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">About</a></li>
+            <li><a href="doc/">Documentation</a></li>
+            <li><a target="_blank" href="http://laurensrietveld.nl">About me</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+     <div class="container" role="main">
+	<div class="jumbotron ">
+		<div class="row">
+	        <div class="col-md-3">
+	        <img class="img-responsive" src="doc/imgs/yasgui.png">
+	        </div>
+	        <div class="col-md-9">
+	        	<h1>Yet Another Sparql GUI</h1>
+	        	<div style="text-align:right">Funded by <a href="http://data2semantics.org" target="_blank"><img width="30%" src="doc/imgs/data2semantics.png"></a></div>
+	        </div>
+      </div>
+      </div>
+   
+	
+      	<div class="row" id="aboutYQuery">
+      	<div class="col-md-12">
+      	<h1>About YASGUI</h1>
+      	YASGUI is a continuation of the older <a target="_blank" href='http://laurensrietveld.nl/yasgui'>YASGUI</a> web application. It is based on <a href="http://yasqe.yasgui.org" target="_blank">YASQE</a> (a JS SPARQL query editor) and <a href="http://yasr.yasgui.org" target="_blank">YASR</a> (a JS SPARQL results visualization library)
+      	<div id="showcase"></div>
+      	<code>var yasgui = YASGUI(document.getElementById("showcase"));</code> <br>
+      	</div>
+      	</div>
+      	
+      	
+      	
+<!--       	<div class="row" id="releases"> -->
+<!--       	<div class="col-md-12"> -->
+<!--       	<h1>Download the latest release</h1> -->
+<!--       	<p>We provide a <i>bundled</i> release containing all external dependencies, and we provide a release containing just the YASQE core. If you choose to use the regular release, make sure to include <a href="http://jquery.com" target="_blank">jQuery</a> and <a href="http://codemirror.net" target="_blank">CodeMirror</a> in your page as well.</p> -->
+<!--       	</div> -->
+<!--       	</div> -->
+<!--       	<div id="downloads"> -->
+<!-- 	      	<div class="row"> -->
+<!-- 	      		<div id="cdnDownload" class="row"> -->
+<!-- 	      			<div class="well col-md-12" style="margin-bottom: 0px"> -->
+<!-- 			      		<h3>CDN</h3> -->
+<!-- 			      		<p>The YASQE files are hosted via <a href="http://www.jsdelivr.com/#!yasqe" target="_blank">JsDelivr</a>. This CDN is the easiest way to include YASQE in your website.</p> -->
+<!-- 			      		<strong>CSS</strong> -->
+<!-- 			      		<div><code id="yasqeCss"></code></div> -->
+<!-- 			      		<strong>JS</strong> <small>Choose either the bundled or the core version</small> -->
+<!-- 			      		<div><code id="yasqeJsBundled"></code></div> -->
+<!-- 			      		<div><code id="yasqeJs"></code></div> -->
+<!-- 		      		</div> -->
+<!-- 	      		</div> -->
+<!-- 	      		<div class="row"> -->
+<!-- 		      		<div class="well col-md-6"> -->
+<!-- 			      		<h3>GitHub</h3> -->
+<!-- 			      		<p>Visit the GitHub repository to download the YASQE .css and .js files (find them in the <code>dist</code> directory).</p>  -->
+<!-- 			      		<a class="btn btn-large btn-info" href="https://github.com/YASGUI/YASQE" target="_blank">Download latest release from GitHub&nbsp;<img style="height: 22px;" src="doc/imgs/blacktocat.png"></a> -->
+<!-- 		      		</div> -->
+<!-- 		      		<div class="well col-md-6"> -->
+<!-- 			      		<h3><img style="height: 26px;" src="doc/imgs/npm.png"></h3> -->
+<!-- 			      		<p>YASQE is registered as a node package as well, so you'll be able to use the node package manager to keep your version of YASQE up to date.</p> -->
+<!-- 			      		<a class="btn btn-large btn-info" href="https://www.npmjs.org/package/yasgui-yasqe" target="_blank">Show NPM Package</a> -->
+<!-- 		      		</div> -->
+<!-- 	      		</div> -->
+<!-- 	      	</div> -->
+<!--       	</div> -->
+      	
+<!--       	<div class="row" id="thanks"> -->
+<!--       	<div class="col-md-12"> -->
+<!--       	<h1>Thanks!</h1> -->
+<!--       	A big thanks goes out to:  -->
+<!--       	<ul> -->
+<!--       	<li>The people behind the <a href="http://openuplabs.tso.co.uk/demos/sparqleditor" target="_blank">Flint SPARQL editor</a> for publishing the javascript SPARQL grammar</li> -->
+<!--       	<li>Marijn Haverbeke for his great work on the <a href="http://codemirror.net" target="_blank">CodeMirror library</a> syntax highlighting library</li> -->
+<!--       	<li>Pierre-Yves Vandenbussche and Bernard Vatant for their useful <a href='http://lov.okfn.org/' target="_blank">Linked Open Vocabularies service</a>, of which I use the <a target="_blank" href="lov.okfn.org/dataset/lov/apidoc/">API</a> to autocomplete properties and classes -->
+<!--       	<li>Richard Cyganiak for his simple but effective <a href='http://prefix.cc' target="_blank">Prefix.cc</a> service, which I use for autocompleting prefixes. -->
+<!--       	</ul> -->
+<!--       	</div> -->
+<!--       	</div> -->
+      	
+      
+     
+    </div> <!-- /container -->
+
+
+
+ <script src="dist/yasgui.bundled.min.js"></script>
+<script src="doc/doc.min.js"></script>
+<script type="text/javascript">
+	var yasgui = YASGUI(document.getElementById("showcase"));
+</script>
+  </body>
+</html>
+
+
+
+
+
+

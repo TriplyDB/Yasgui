@@ -1,0 +1,5 @@
+//We want this FIXED. Right now, we include the bundled css files, as the css import does not recursively fetch css files... 
+//(i.e., we cant use the import statement on yasr/yasqe scss files)
+
+@import "../../node_modules/yasgui-yasqe/dist/yasqe.css";
+@import "../../node_modules/yasgui-yasr/dist/yasr.css";

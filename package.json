@@ -1,40 +1,45 @@
 {
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "0.0.0",
+  "version": "2.2.3",
   "main": "src/main.js",
   "licenses": [
     {
       "type": "MIT",
-      "url": "http://yasgui.github.io/license.txt"
+      "url": "http://yasgui.org/license.txt"
     }
   ],
+  "author": "Laurens Rietveld",
+  "homepage": "http://yasgui.org",
   "devDependencies": {
+    "browserify": "^6.1.0",
     "gulp": "~3.6.0",
+    "gulp-bump": "^0.1.11",
+    "gulp-concat": "^2.4.1",
+    "gulp-connect": "^2.0.5",
+    "gulp-embedlr": "^0.5.2",
+    "gulp-filter": "^1.0.2",
+    "gulp-git": "^0.5.2",
+    "gulp-jsvalidate": "^0.2.0",
+    "gulp-livereload": "^1.3.1",
+    "gulp-minify-css": "^0.3.11",
+    "gulp-notify": "^2.0.1",
+    "gulp-rename": "^1.2.0",
+    "gulp-streamify": "0.0.5",
+    "gulp-tag-version": "^1.1.0",
+    "gulp-uglify": "^1.0.1",
+    "require-dir": "^0.1.0",
+    "run-sequence": "^1.0.1",
+    "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "~0.1.1",
     "watchify": "^0.6.4",
-    "gulp-uglify": "^0.2.1",
-    "gulp-concat": "^2.2.0",
-    "gulp-minify-css": "^0.3.0",
-    "gulp-browserify": "^0.5.0",
-    "vinyl-buffer": "0.0.0",
-    "browserify": "^3.38.1",
-    "express": "^3.5.1",
-    "connect-livereload": "^0.3.2",
-    "gulp-livereload": "^1.3.1",
-    "gulp-util": "^2.2.14",
-    "gulp-connect": "^2.0.5",
-    "gulp-notify": "^1.2.5",
-    "gulp-embedlr": "^0.5.2",
-    "gulp-changed": "^0.3.0",
-    "gulp-imagemin": "^0.2.0",
-    "gulp-open": "^0.2.8",
-    "connect": "^2.14.4",
-    "gulp-debug": "^0.3.0",
-    "amplify": "0.0.11",
-    "twitter-bootstrap-3.0.0": "^3.0.0",
-    "gulp-yuidoc": "^0.1.2",
-    "gulp-jsvalidate": "^0.2.0"
+    "gulp-sourcemaps": "^1.2.8",
+    "exorcist": "^0.1.6",
+    "vinyl-transform": "0.0.1",
+    "gulp-sass": "^1.2.2",
+    "browserify-transform-tools": "^1.2.1",
+    "browserify-shim": "^3.8.0",
+    "gulp-cssimport": "^1.3.1"
   },
   "bugs": "https://github.com/YASGUI/YASGUI/issues/",
   "keywords": [
@@ -44,8 +49,6 @@
     "Semantic Web",
     "Linked Data"
   ],
-  "homepage": "http://yasgui.github.io/",
-  "bugs": "https://github.com/YASGUI/YASGUI/issues/",
   "maintainers": [
     {
       "name": "Laurens Rietveld",
@@ -57,19 +60,38 @@
     "type": "git",
     "url": "https://github.com/YASGUI/YASGUI.git"
   },
-  "readme": "README.md",
   "dependencies": {
     "jquery": "~ 1.11.0",
-    "yasgui-utils": "^1.0.0",
-    "yasgui-yasr": "^1.0.0",
-    "yasgui-yasqe": "^1.0.0"
+    "codemirror": "^4.7.0",
+    "yasgui-utils": "^1.4.1",
+    "yasgui-yasqe": "^2.2.0",
+    "yasgui-yasr": "^2.2.0",
+    "bootstrap-sass": "^3.3.1",
+    "jasny-bootstrap": "jasny/bootstrap"
   },
   "browserify-shim": {
-    "twitter-bootstrap-3.0.0": "bootstrap"
+    "jQuery": "jquery"
   },
-  "browserify": {
-    "transform": [
-      "browserify-shim"
-    ]
+  "optionalShim": {
+    "codemirror": {
+      "require": "codemirror",
+      "global": "CodeMirror"
+    },
+    "jquery": {
+      "require": "jquery",
+      "global": "jQuery"
+    },
+    "jQuery": {
+      "require": "jquery",
+      "global": "jQuery"
+    },
+    "../../lib/codemirror": {
+      "require": "codemirror",
+      "global": "CodeMirror"
+    },
+    "../lib/DataTables/media/js/jquery.dataTables.js": {
+      "require": "datatables",
+      "global": "jQuery"
+    }
   }
 }

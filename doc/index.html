@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>YASQE</title>
+<link rel="icon"  type="image/png" href="imgs/favicon.png">
+  <link href="doc.min.css" rel="stylesheet" type="text/css" />
+  <style>
+
+  </style>
+  </head>
+  <body data-spy="scroll" data-target="#sidebarmenu">
+  
+  <a href="https://github.com/YASGUI/YASQE" target="_blank"><img style="z-index: 11111; position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+    <div class="navbar navbar-inverse navbar-static-top" role="navigation">
+      <div class="container">
+      <a class="navbar-brand" href="#">YASQE</a>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="../">About</a></li>
+            <li class="active"><a href="#l">Documentation</a></li>
+            <li><a target="_blank" href="http://laurensrietveld.nl">About me</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+   <div class="container" role="main">
+   <div class="row">
+   <div class="col-md-9">
+		<h1>Documentation</h1>
+		YASQE extends the <a href="http://codemirror.net/" target="_blank">CodeMirror Library</a>. For a complete overview of the functionality they offer (such as event hooks), check out the  <a href="http://codemirror.net/4/doc/manual.html" target="_blank">CodeMirror Documentation</a>.
+		Below we elaborate on the functionality YASQE offers (in addition to the CodeMiror API).
+		<br><small>Note: Where CodeMirror provides <code>CodeMirror</code> in the global namespace, we provide <code>YASQE</code>.</small>
+      
+     	
+     	<h2 id="gettingStarted">Getting Started</h2>
+     	<p>Initialize YASQE via its constructor, or via the command <code>fromTextArea</code>. Both return in instance of YASQE, from now on referred to as <code>yasqe</code> (lowercase). Both function take as argument a config object. See the section on <a href="#config">defaults</a> for more information on this config object.</p>
+     	<div class="doc">
+     		<code>YASQE(parent: DOM-Element, settings: Object) → YASQE instance: yasqe</code>
+     		<p>Main YASQE constructor. Pass a DOM element as argument to append the editor to, and (optionally) pass along config settings (see the YASQE.defaults object below, as well as the regular CodeMirror documentation, for more information on configurability)</p>
+     		
+     	</div>
+     	<div class="doc">
+     		<code>YASQE.fromTextArea(textArea: DOM element, config: Object) → YASQE instance: yasqe</code>
+     		<p>Initialize YASQE from an existing text area (see <a href="http://codemirror.net/doc/manual.html#fromTextArea" target="_blank">CodeMirror</a> for more info)</p>
+   		</div>
+     	<h3 id="gists">Examples</h3>
+     	<div id="gistContainer">
+     		
+     	</div>
+     	<h2 id="api">API</h2>
+     	API methods accessible via the <code>yasqe</code> instance
+		<div class="doc">
+			<code>yasqe.setValue(query: String)</code>
+			<p>Set query value in editor (<a href="http://codemirror.net/doc/manual.html#setValue" target="_blank">see also</a>)</p>
+		</div>
+		<div class="doc">
+			<code>yasqe.getValue() → query: String</code>
+			<p>Get query value from editor (<a href="http://codemirror.net/doc/manual.html#getValue" target="_blank">see also</a>)</p>
+		</div>
+		<div class="doc">
+			<code>yasqe.query(function|object)</code>
+			<p>Execute query. Pass a callback function, or a configuration object (see
+			the sparql settings in the <a href="#config">configuration object</a> for possible values) I.e., you can change the
+			query configuration by either changing the default settings, changing the
+			settings of this document, or by passing query settings to this function</p>
+		</div>
+		<div class="doc">
+			<code>yasqe.getQueryMode() → string: </code>
+			<p>Fetch the query mode: 'query' or 'update'</p>
+		</div>
+		<div class="doc">
+			<code>yasqe.getQueryType() → string: </code>
+			<p>Fetch the query type (e.g. SELECT, ASK, DESCRIBE, CONSTRUCT etc)</p>
+		</div>
+		<div class="doc">
+			<code>yasqe.getPrefixesFromQuery() → object: </code>
+			<p>Fetch defined prefixes from query string</p>
+		</div>
+		<div class="doc">
+			<code>yasqe.addPrefixes(prefixes: object)</code>
+			<p>Add prefixes to the query. The prefixes are defined as <code>{"rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"}</code></p>
+		</div>
+		<div class="doc">
+			<code>yasqe.removePrefixes(prefixes: object)</code>
+			<p>Remove prefixes from query. The prefixes are defined as <code>{"rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"}</code></p>
+		</div>
+		<div class="doc">
+			<code>yasqe.setSize(width: Number|string, height: Number|string)</code>
+			<p>Set size. Use null value to leave width or height unchanged. To resize the editor to fit its content, see http://codemirror.net/demo/resize.html</p>
+		</div>
+		<div class="doc">
+			<code>yasqe.enableCompleter(completerName: String)</code>
+			<p>Enable an autocompleter with this name. Only makes sense if you've programatically disabled this completer before, as a plugin is automatically enabled when registering it (see <a href="#registerAutocompleter">this function</a>)</p>
+		</div>
+		<div class="doc">
+			<code>yasqe.disableCompleter(completerName: String)</code>
+			<p>Disable an autocompleter with this name. </p>
+		</div>
+		<div class="doc">
+			<code>yasqe.storeBulkCompletions(type: String)</code>
+			<p>Store bulk completions in memory as trie, and in localstorage as well (if enabled). The argument should be a key from the <a href="#autocompletions">autocompletion</a> settings</p>
+		</div>
+		
+		<h2 id="statics">Statics</h2>
+     	Static functions YASQE
+   		<div class="doc" id="registerAutocompleter">
+   			<code>YASQE.registerAutocompleter(name: String, autocompleter: function)</code>
+   			<p>Register an <a href="#autocompletions">autocompleter</a> in YASQE. This automatically enables the completer as well</p>
+ 		</div>
+   		<div class="doc">
+   			<code>YASQE.consumeShareLink(doc: yasqe, urlArgs: object)</code>
+   			<p>Consume the share link, by parsing the document URL for possible yasqe arguments, and setting the appropriate values in the YASQE doc</p>
+ 		</div>
+ 		<div class="doc">
+ 			<code>YASQE.createShareLink(doc: yasqe) → object: </code>
+			<p>Create a share link</p>
+		</div>
+		<div class="doc">
+			<code>YASQE.determineId(doc: yasqe)</code>
+			<p>Determine unique ID of the YASQE object. Useful when several objects are
+			loaded on the same page, and all have 'persistency' enabled. Currently, the
+			ID is determined by selecting the nearest parent in the DOM with an ID set</p>
+		</div>
+		<div class="doc">
+			<code>YASQE.fetchFromLov(doc: yasqe, partialToken: Object, type: "properties" | "classes", callback: Function)</code>
+			<p>Fetch property and class autocompletions the Linked Open Vocabulary services. Issues an async autocompletion call</p>
+		</div>
+		<div class="doc">
+			<code>YASQE.fetchFromPrefixCc(doc: yasqe)</code>
+			<p>Fetch prefixes from prefix.cc, and store in the YASQE object</p>
+		</div>
+		<div class="doc">
+			<code>YASQE.getAcceptHeader(doc: yasqe)</code>
+			<p>Get accept header for this particular query. Get JSON for regular queries, and text/plain for update queries</p>
+		</div>
+		<div class="doc">
+			<code>YASQE.getAllVariableNames(doc: yasqe, token: Object) → variableNames: Array</code>
+			<p>Fetch all the used variables names from this query</p>
+		</div>
+		<div class="doc">
+			<code>YASQE.getCompleteToken(doc: yasqe, token: Object, cursor: Object) → token: Object</code>
+			<p>When typing a query, this query is sometimes syntactically invalid, causing
+			the current tokens to be incorrect This causes problem for autocompletion.
+			http://bla might result in two tokens: http:// and bla. We'll want to combine
+			these</p>
+		</div>
+		<div class="doc">
+			<code>YASQE.hideCompletionNotification(doc: yasqe, autocompletionType: String)</code>
+			<p>Hide completion notification</p>
+		</div>
+		<div class="doc">
+			<code>YASQE.showCompletionNotification(doc: yasqe, autocompletionType: String)</code>
+			<p>Show notification</p>
+		</div>
+		
+     	<h2 id="config">Configuration</h2>
+     	This configuration object is accessible/changeable via <code>YASQE.defaults</code> and <code>yasqe.options</code>, and you can pass these along when initializing YASQE as well.
+     	Other than the configuration we describe here, check the <a href="http://codemirror.net" target="_blank">CodeMirror</a> documentation for even more options you can set, such as disabling line numbers, or changing keyboard shortcut keys.
+     	<h3 id="defaults">Defaults</h3> 
+		<div class="doc">
+			<code>value: String (default: "SELECT * WHERE {\n  ?sub ?pred ?obj .\n} \nLIMIT 10")</code>
+			<p>Query string</p>
+		</div>
+		<div class="doc">
+			<code>autocompleters: array (default: ["prefixes", "properties", "classes", "variables"])</code>
+			<p>The list of enabled autocompletion plugins (See <a href="#autocompletions">this section</a> on how to write your own)</p>
+		</div>
+		<div class="doc">
+			<code>syntaxErrorCheck: boolean (default: true)</code>
+			<p>Whether to validate the SPARQL syntax</p>
+		</div>
+		<div class="doc" id="keyboardShortcuts">
+			<code>extraKeys: object</code>
+			<p>Extra shortcut keys. Check the <a href="http://codemirror.net" target="_blank">CodeMirror</a> manual on how to add your own</p>
+			
+			<p>Note: To avoid colissions with other browser shortcuts, these shortcuts <i>only</i> work when the YASQE editor is selected (has 'focus').<br>The list of shortcuts provided by YASQE:</p>
+			<ul>
+			<li><code>[Ctrl|Cmd]-Space</code>: Trigger Autocompletion</li>
+			<li><code>[Ctrl|Cmd]-D</code> and <code>[Ctrl|Cmd]-D</code>: Delete current/selected line(s)</li>
+			<li><code>[Ctrl|Cmd]-/</code>: Comment or uncomment current/selected line(s)</li>
+			<li><code>[Ctrl|Cmd]-Alt-Down</code>: Copy line down</li>
+			<li><code>[Ctrl|Cmd]-Alt-Up</code>: Copy line up</li>
+			<li><code>[Ctrl|Cmd]-Shift-F</code>: Auto-format/indent selected lines</li>
+			<li><code>[Ctrl|Cmd]-]</code>: Indent current/selected line(s) more</li>
+			<li><code>[Ctrl|Cmd]-[</code>: Indent current/selected line(s) less</li>
+			<li><code>[Ctrl|Cmd]-S</code>: Save current query in local storage</li>
+			<li><code>[Ctrl|Cmd]-Enter</code>: Execute Query</li>
+			<li><code>F11</code>: Set query editor full-screen (or leave full-screen)</li>
+			<li><code>Esc</code>: Leave full-screen</li>
+			</ul>
+		</div>
+		<div class="doc">
+			<code>createShareLink: function (default: YASQE.createShareLink)</code>
+			<p>Show a button with which users can create a link to this query. Set this value to null to disable this functionality.
+			By default, this feature is enabled, and only the query value is appended to the link.
+			This function should return an object which is parseable by <a href="http://api.jquery.com/jQuery.param/" target="_blank">jQuery.param</a></p>
+		</div>
+		<div class="doc">
+			<code>consumeShareLink: function (default: YASQE.consumeShareLink)</code>
+			<p>The callback for consuming the arguments of the current URL</p>
+		</div>
+		<div class="doc">
+			<code>persistent: function|string</code>
+			<p>Change persistency settings for the YASQE query value. Setting the values
+			to null, will disable persistancy: nothing is stored between browser
+			sessions. Setting the values to a string (or a function which returns a
+			string), will store the query in localstorage using the specified string.
+			By default, the ID is dynamically generated using the <code>YASQE.determineId</code>
+			function, to avoid collissions when using multiple YASQE instances on one
+			page</p>
+		</div>
+		<div id="sparql" class="doc">
+			<code>sparql: object</code>
+			<p>Settings for querying sparql endpoints</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;">
+			<code>showQueryButton: boolean (default: false)</code>
+			<p>Show a query button. You don't like it? Then disable this setting, and create your button which calls the query() function of the yasqe document</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;">
+			<code>endpoint: String|function (default: "http://dbpedia.org/sparql")</code>
+			<p>Endpoint to query</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;">
+			<code>requestMethod: String|function (default: "POST")</code>
+			<p>Request method via which to access the SPARQL endpoint</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;">
+			<code>acceptHeaderSelect: String|function (default: "application/sparql-results+json,*/*;q=0.9")</code>
+			<p>Accept header for regular <code>SELECT</code> queries</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;">
+			<code>acceptHeaderGraph: String|function (default: "text/turtle,*/*;q=0.9")</code>
+			<p>Accept header for queries returning a graph (e.g. <code>CONSTRUCT</code>)</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;">
+			<code>acceptHeaderUpdate: String|function (default: "text/plain,*/*;q=0.9")</code>
+			<p>Accept header for update queries</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;">
+			<code>namedGraphs: array (default: [])</code>
+			<p>Named graphs to query.</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;">
+			<code>defaultGraphs: array (default: [])</code>
+			<p>Default graphs to query.</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;">
+			<code>args: array (default: [])</code>
+			<p>Additional request arguments. Add them in the form: {name: "name", value: "value"}</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;">
+		<code>headers: array (default: {})</code>
+			<p>Additional request headers</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;">
+			<code>callbacks: object</code>
+			<p>Set of ajax callbacks</p>
+		</div>
+		<div class="doc" style="margin-left: 60px;">
+			<code>beforeSend: function (default: null)</code>
+			<p>See <a href="https://api.jquery.com/jQuery.ajax/" target="_blank">jQuery.ajax</a> for more information</p>
+		</div>
+		<div class="doc" style="margin-left: 60px;">
+			<code>complete: function (default: null)</code>
+			<p>See <a href="https://api.jquery.com/jQuery.ajax/" target="_blank">jQuery.ajax</a> for more information</p>
+		</div>
+		<div class="doc" style="margin-left: 60px;">
+			<code>error: function (default: null)</code>
+			<p>See <a href="https://api.jquery.com/jQuery.ajax/" target="_blank">jQuery.ajax</a> for more information</p>
+		</div>
+		<div class="doc" style="margin-left: 60px;">
+			<code>success: function (default: null)</code>
+			<p>See <a href="https://api.jquery.com/jQuery.ajax/" target="_blank">jQuery.ajax</a> for more information</p>
+		</div>
+		<h3 id="autocompletions">Writing an Autocompletion Plugin</h3>
+		To register an autocompletion, one needs to execute the <code>YASQE.registerAutocompleter</code> <a href="#registerAutocompleter">function</a>. 
+		Below, we describe the autocompletion function in more detail, and the object it should return.
+		
+		<div class="doc" >
+			<code>constructor(doc: yasqe) → configurationObject: Object</code>
+			<p>Autocompleter constructor, which should return the object described below</p>
+		</div>
+		<div class="doc" style="margin-left: 30px;"> 
+			<code>get: function|array</code> <span class="label label-primary">Required</span>
+			<p>Get the autocompletions. Either a function which returns an
+			array, or an actual array. The array should be in the form ["&lt;completionsString1&gt;", "&lt;completionsString2&gt;"].</p>
+			<p>If used as a function, the parameters it receives are</p>
+			<ol>
+				<li><code>token: object</code> If 'bulk' loading is disabled, use this token to return the appropriate list of suggestions for</li>
+				<li><code>callback: function</code> If 'async' is enabled, return the suggestions by passing it on to this callback</li>
+			</ol>
+		</div>
+		<div style="margin-left: 30px" class="doc" >
+			<code>isValidCompletionPosition: function() → boolean</code> <span class="label label-primary">Required</span>
+			<p>Check whether the cursor is in a proper position for this autocompletion.</p>
+		</div>
+		<div style="margin-left: 30px"  class="doc" > 
+			<code>preProcessToken: function(token: object|string)  → token: object</code> <span class="label label-default">Optional</span>
+			<p>Preprocesses the codemirror token before matching it with the autocompletions list.
+			Use this for e.g. autocompleting prefixed resources when your autocompletion list contains only full-length URIs
+			E.g., foaf:name -&gt; http://xmlns.com/foaf/0.1/name</p>
+		</div>
+		<div style="margin-left: 30px" class="doc" >
+			<code>postProcessToken: function(token: object|string, suggestion: string) → string</code> <span class="label label-default">Optional</span>
+			<p>Postprocesses the autocompletion suggestion.
+			Use this for e.g. returning a prefixed URI based on a full-length URI suggestion
+			E.g., http://xmlns.com/foaf/0.1/name -&gt; foaf:name</p>
+		</div>
+		<div style="margin-left: 30px" class="doc" >
+			<code>async: boolean </code> <span class="label label-primary">Required</span>
+			<p>Specifies that the get function is asynchronous</p>
+		</div>
+		<div style="margin-left: 30px" class="doc" >
+			<code>bulk: boolean</code> <span class="label label-primary">Required</span>
+			<p>Use bulk loading of completions: all completions are retrieved onLoad
+			using the get() function. Alternatively, disable bulk loading, to
+			call the get() function whenever a token needs autocompletion (in
+			which case the completion token is passed on to the get()
+			function). whenever you have an autocompletion list that is static, and that easily
+			fits in memory, we advice you to enable bulk for performance
+			reasons (especially because the autocompletions are stored in a trie)</p>
+		</div>
+		<div style="margin-left: 30px" class="doc">
+			<code>autoShow: boolean</code> <span class="label label-default">Optional</span>
+			<p>Auto-show the autocompletion dialog. Disabling this requires the
+			user to press [ctrl|cmd]-space to summon the dialog. Note: this
+			only works when completions are not fetched asynchronously</p>
+		</div>
+		<div style="margin-left: 30px" class="doc" >
+			<code>persistent: string|function </code> <span class="label label-default">Optional</span>
+			<p>Automatically store autocompletions in localstorage. This is
+			particularly useful when the get() function is an expensive ajax
+			call. Autocompletions are stored for a period of a month. Set
+			this property to null to disable persistency. Otherwise, set a string value (or a function
+			returning a string val), returning the key in which to store the
+			data.
+			Note: this feature only works when completions are
+			loaded in memory (i.e. <code>bulk</code>: true)</p>
+		</div>
+		<div style="margin-left: 30px" class="doc">
+			<code>callbacks: object</code> <span class="label label-default">Optional</span>
+			<p>A set of callbacks. Most, taken from the CodeMirror <a href="http://codemirror.net/doc/manual.html#addon_show-hint" target="_blank">showhint plugin</a></p>
+		</div>
+		<div  class="doc" style="margin-left: 60px;">
+			<code>validPosition: function</code> <span class="label label-default">Optional</span>
+			<p>Fires when a codemirror change occurs in a position where we
+			can show this particular type of autocompletion</p>
+		</div>
+		<div class="doc" style="margin-left: 60px;">
+			<code>invalidPosition: function</code> <span class="label label-default">Optional</span>
+			<p>Fires when a codemirror change occurs in a position where we
+			can <i>not</i> show this particular type of autocompletion</p>
+		</div>
+		<div  class="doc" style="margin-left: 60px;">
+			<code>showHint: function </code> <span class="label label-default">Optional</span>
+			<p>See <a href="http://codemirror.net/doc/manual.html#addon_show-hint" target="_blank">CodeMirror manual</a></p>
+		</div>
+		<div class="doc" style="margin-left: 60px;">
+			<code>select: function</code> <span class="label label-default">Optional</span>
+			<p>See <a href="http://codemirror.net/doc/manual.html#addon_show-hint" target="_blank">CodeMirror manual</a></p>
+		</div>
+		<div class="doc" style="margin-left: 60px;">
+			<code>pick: function</code> <span class="label label-default">Optional</span>
+			<p>See <a href="http://codemirror.net/doc/manual.html#addon_show-hint" target="_blank">CodeMirror manual</a></p>
+		</div>
+		<div  class="doc" style="margin-left: 60px;">
+			<code>close: function</code> <span class="label label-default">Optional</span>
+			<p>See <a href="http://codemirror.net/doc/manual.html#addon_show-hint" target="_blank">CodeMirror manual</a></p>
+		</div>
+     	
+     	
+     	
+     	
+		
+</div><!-- col -->
+<div class="col-md-3" id="sidebarmenu">
+	<div class="bs-docs-sidebar hidden-xs hidden-sm" data-spy="affix" data-offset-top="60">
+		<ul class="nav bs-docs-sidenav">
+			<li><a href="#gettingStarted">Getting Started</a>
+				<ul class="nav">
+					<li><a href="#gists">Examples</a>
+				</ul>
+			</li>
+			<li><a href="#api">API</a></li>
+			<li><a href="#statics">Statics</a></li>
+			<li><a href="#config">Configuration</a></li>
+			<li><a href="#autocompletions">Writing an Autocompletion Plugin</a></li>
+		</ul>
+	</div>
+</div><!-- col -->
+</div><!-- row -->
+</div><!-- container -->
+
+
+
+<script src="doc.min.js"></script>
+</body>
+</html>
+
+
+
+
+
+
