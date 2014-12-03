@@ -1,9 +1,7 @@
 "use strict";
 var $ = require('jquery');
 require('./bsTab.js');
-//require("../node_modules/bootstrap-sass/assets/javascripts/bootstrap.js");
-//window.jQuery = undefined;
-//var $ = require('jquery');
+
 
 
 var root = module.exports = function(parent, options) {
