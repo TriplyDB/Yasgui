@@ -3,11 +3,11 @@ var $ = require('jquery'),
 	utils = require('./utils.js'),
 	YASGUI = require('./main.js');
 
-module.exports = function(yasgui, id) {
+module.exports = function(yasgui, id, name) {
 	
-	var tab = {id: id};
+	var tab = {id: id, name: name};
 	var menu = require('./tabPaneMenu.js')(yasgui, tab);
-	var $pane = $('<div>', {id:id, style: 'position:relative', class: 'tabPane'}).appendTo(yasgui.tabManager.$tabPanesParent);
+	var $pane = $('<div>', {id:id, style: 'position:relative', class: 'tab-pane', role: 'tabpanel'}).appendTo(yasgui.tabManager.$tabPanesParent);
 	
 	var $paneContent = $('<div>', {class:'wrapper'}).appendTo($pane);
 	var $paneMenu = menu.initWrapper().appendTo($pane);
@@ -56,7 +56,7 @@ module.exports = function(yasgui, id) {
 	* Set some of the hooks to link YASR and YASQE
 	*/
 	tab.yasqe.options.sparql.callbacks.success =  function(data, textStatus, xhr) {
-		yasr.setResponse({response: data, contentType: xhr.getResponseHeader("Content-Type")});
+		tab.yasr.setResponse({response: data, contentType: xhr.getResponseHeader("Content-Type")});
 	};
 	tab.yasqe.options.sparql.callbacks.error = function(xhr, textStatus, errorThrown) {
 		var exceptionMsg = textStatus + " (#" + xhr.status + ")";

@@ -1,6 +1,9 @@
 .yasgui {
 	@import "mixins.scss";
-	@import "bootstrap.scss";
+	@import "bootstrap_full.scss";
+	@import "yasqe.scss";
+	@import "yasr.scss";
+	@import "tab.scss";
 	@import "menu.scss";
 	@import "controlbar.scss";
 }

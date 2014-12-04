@@ -1,12 +1,21 @@
 $controlbarPadding: 5px;
 .controlbar {
+	overflow-x: hidden;
+	position:relative;
+	left: 0;
+    -webkit-transition: all $menuSpeed;
+    -moz-transition: all $menuSpeed;
+    -ms-transition: all $menuSpeed;
+    -o-transition: all $menuSpeed;
+    transition: all $menuSpeed;
+    padding: $controlbarPadding;
+	border-left: 1px solid $nav-tabs-border-color;
 	.endpointText {
 		width: 300px;
 	}
 	form > * {
 		margin-right: $controlbarPadding;
 	}
-	padding: $controlbarPadding $controlbarPadding $controlbarPadding 0;
 	
 	.menuButton {
 		display: inline-block;
@@ -29,7 +38,7 @@ $controlbarPadding: 5px;
 
 .menu-open {
 	.controlbar {
+		border-left: 0;
 		left: $menuWidth;
-		padding-left: $controlbarPadding;
 	}
 }

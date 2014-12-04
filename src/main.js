@@ -1,6 +1,7 @@
 "use strict";
 var $ = require('jquery');
-require('./bsTab.js');
+require('./jquery/extendJquery.js');//extend some own jquery plugins
+
 
 
 

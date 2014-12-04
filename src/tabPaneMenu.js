@@ -20,10 +20,7 @@ module.exports = function(yasgui, tab) {
 	var initWrapper = function() {
 		$menu = $('<nav>', {class: 'menu-slide', id: 'navmenu'});
 		$menu.append(
-//			$('<div>', {class:'yasguiLogoContainer'})
-//				.append(
-						$(utils.svg.getElement(imgs.yasgui, {width: '70px', height: '58px'})).addClass('yasguiLogo')
-//				)
+				$(utils.svg.getElement(imgs.yasgui, {width: '70px', height: '58px'})).addClass('yasguiLogo')
 		);
 		
 		//tab panel contains tabs and panes
@@ -40,7 +37,7 @@ module.exports = function(yasgui, tab) {
 		/**
 		 * Init request tab
 		 */
-		var li = $("<li>", {role: "presentation", class: "active"}).appendTo($tabsParent);
+		var li = $("<li>", {role: "presentation"}).appendTo($tabsParent);
 		var reqPaneId = 'yasgui_reqConfig_' +tab.id;
 		li.append(
 			$('<a>', {href: '#' + reqPaneId, 'aria-controls': reqPaneId,  role: 'tab', 'data-toggle': 'tab'})
@@ -50,7 +47,7 @@ module.exports = function(yasgui, tab) {
 				$(this).tab('show')
 			})
 		);
-		var $reqPanel = $('<div>', {id: reqPaneId, class: 'tabPane requestConfig container-fluid'}).appendTo($tabPanesParent);
+		var $reqPanel = $('<div>', {id: reqPaneId, role: 'tabpanel',class: 'tab-pane requestConfig container-fluid'}).appendTo($tabPanesParent);
 		
 		//request method
 		var $reqRow = $('<div>', {class: 'row'}).appendTo($reqPanel);
@@ -114,7 +111,7 @@ module.exports = function(yasgui, tab) {
 				$(this).tab('show')
 			})
 		);
-		var $reqPanel = $('<div>', {id: historyPaneId, class: 'tabPane history container-fluid'}).appendTo($tabPanesParent);
+		var $reqPanel = $('<div>', {id: historyPaneId, role: 'tabpanel',class: 'tab-pane history container-fluid'}).appendTo($tabPanesParent);
 		
 		
 		
@@ -131,7 +128,7 @@ module.exports = function(yasgui, tab) {
 				$(this).tab('show')
 			})
 		);
-		var $reqPanel = $('<div>', {id: collectionsPaneId, class: 'tabPane collections container-fluid'}).appendTo($tabPanesParent);
+		var $reqPanel = $('<div>', {id: collectionsPaneId, role: 'tabpanel',class: 'tab-pane collections container-fluid'}).appendTo($tabPanesParent);
 		
 		
 		return $menu;
@@ -171,6 +168,9 @@ module.exports = function(yasgui, tab) {
 
 	
 	var updateWrapper = function() {
+		//if no tab is active, select first one
+		if ($menu.find('.tabPaneMenuTabs li.active').length == 0) $menu.find('.tabPaneMenuTabs a:first').tab('show');
+		
 		//we got most of the html. Now set the values in the html
 		var options = tab.yasqe.options.sparql;
 		

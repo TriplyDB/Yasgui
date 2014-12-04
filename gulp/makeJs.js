@@ -17,7 +17,7 @@ var gulp = require('gulp'),
 	sourcemaps = require('gulp-sourcemaps');
 
 gulp.task('browserify', function() {
-	browserify({entries: ["./src/main.js"],standalone: "YASGUI", debug: true})
+	browserify({entries: ["./src/entry.js"],standalone: "YASGUI", debug: true})
 		.transform({global:true}, optionalShim)
 		.exclude('jquery')
 		.exclude('codemirror')
@@ -48,7 +48,7 @@ gulp.task('browserify', function() {
 
 
 gulp.task('browserifyWithDeps', function() {
-	var bundler = browserify({entries: ["./src/main.js"],standalone: "YASGUI", debug: true});
+	var bundler = browserify({entries: ["./src/entry.js"],standalone: "YASGUI", debug: true});
 	
 	return bundler
 		.transform({global:true}, shim)
