@@ -1,5 +1,11 @@
 // Core variables and mixins
 @import "../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/variables";
+/**We need to set some bootstrap properties manually. These are normally assigned to body, but cannot do this as everyhing is namespaced*/
+font-family: $font-family-base;
+font-size: $font-size-base;
+line-height: $line-height-base;
+color: $text-color;
+background-color: $body-bg;
 @import "../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/mixins";
 
 // Reset and dependencies
