@@ -56,11 +56,16 @@ module.exports = function(yasgui) {
 		manager.$tabPanesParent = $('<div>', {class: 'tab-content'}).appendTo($tabPanel);
 		
 		addTab(true);
+		$tabsParent.sortable({
+			placeholder: "tab-sortable-highlight",
+			items: 'li:has([data-toggle="tab"])',//don't allow sorting after ('+') icon
+			forcePlaceholderSize: true
+				
+		});
 	};
 	
 	var closeTab = function(tabEl, id) {
 		delete manager.tabs[id];
-//		tabEl.closest('a[role="tab"]').tab('show');
 		tabEl.parents('li').remove();
         $("#"+id).remove();
 	};

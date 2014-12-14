@@ -1,4 +1,8 @@
 .nav-tabs {
+	li.tab-sortable-highlight {
+		border: 3px dashed #ddd;
+		border-bottom: 0;
+	}
 	li {
 		a[role="addTab"] {
 			padding: 0px;
