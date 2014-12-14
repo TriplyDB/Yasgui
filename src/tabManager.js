@@ -74,7 +74,7 @@ module.exports = function(yasgui) {
 				$(this).tab('show');
 				manager.tabs[id].yasqe.refresh();
 			})
-			.text(name)
+			.append($('<span>').text(name))
 			.append(
 				$('<button>',{ class:"close",type:"button"})
 					.text('x')
@@ -82,13 +82,24 @@ module.exports = function(yasgui) {
 						closeTab($(this), id);
 					})
 			);
-			
+		var $tabRename = $('<div><input></div>');
 		
-//		var $tabClose = $('<a>', {href: '#', role: 'closeTab'}).text('x');
 		$tabsParent.find('li:has(a[role="addTab"])').before(
 				$("<li>", {role: "presentation"})
 					.append($tabToggle)
-//					.append($tabClose)
+					
+					.append($tabRename)
+					.dblclick(function(){
+						var el = $(this);
+						var val = el.find('span').text();
+						el.addClass('rename');
+						el.find('input').val(val);
+						el.onOutsideClick(function(){
+							var val = el.find('input').val();
+							$tabToggle.find('span').text(el.find('input').val());
+							el.removeClass('rename');
+						})
+					})
 		);
 		
 		

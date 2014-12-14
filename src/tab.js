@@ -26,7 +26,9 @@ module.exports = function(yasgui, id, name) {
 				} else {
 					menu.updateWrapper();
 					$pane.addClass('menu-open');
-					utils.onOutsideClick($(".menu-slide,.menuButton"), function() {$pane.removeClass('menu-open'); menu.store();});
+//					utils.onOutsideClick($(".menu-slide,.menuButton"), function() {$pane.removeClass('menu-open'); menu.store();});
+					$(".menu-slide,.menuButton").onOutsideClick(function() {$pane.removeClass('menu-open'); menu.store();});
+					
 				}
 			})
 			.append($('<span>', {class:'icon-bar'}))

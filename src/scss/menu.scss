@@ -80,8 +80,12 @@ $menuWidth: 600px;
 	}
 }
 
-
-.tab-pane {
+/**A workaround for now, to only apply perspective when menu is open
+This perspective messes up the full screen capabilities of YASR/YASQE
+The easiest fix is only apply this style when menu is opened.
+As a consequence, the 'opening' transition has this perspective applied, where the closing transition does not
+**/
+.tab-pane.menu-open {
 	-webkit-perspective: 1500px;
 	perspective: 1500px;
 	-webkit-perspective-origin: 0% 50%;
