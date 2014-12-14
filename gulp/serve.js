@@ -4,7 +4,7 @@ var gulp = require('gulp'),
 	livereload = require('gulp-livereload');
 
 gulp.task('watch', function() {
-	gulp.watch(["./src/**/*.js", './lib/*.js'], [ 'browserifyForDebug' ]);
+	gulp.watch(["./src/**/*.js"], [ 'browserifyForDebug' ]);
 	gulp.watch("./src/**/*.scss", [ 'makeCss' ]);
 	  gulp.watch(
 		'./*.html'

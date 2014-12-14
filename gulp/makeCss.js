@@ -19,7 +19,13 @@ gulp.task('makeCss', function() {
 	    }))
 	    .pipe(concat(paths.bundleName + '.css'))
 	    .pipe(gulp.dest(paths.bundleDir))
-	    .pipe(minifyCSS())
+	    .pipe(minifyCSS({
+			//the minifyer does not work well with lines including a comment. e.g.
+			///* some comment */ } 
+			//is completely removed (including the final bracket)
+			//So, disable the 'advantaced' feature. This only makes the minified file 100 bytes larger
+			noAdvanced: true, 
+		}))
 	    .pipe(rename(paths.bundleName + '.min.css'))
 	    .pipe(gulp.dest(paths.bundleDir))
 	    .pipe(connect.reload());

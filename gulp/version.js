@@ -23,6 +23,12 @@ gulp.task('publish', function (done) {
   spawn('npm', ['publish'], { stdio: 'inherit' }).on('close', done);
 });
 
+gulp.task('push', function (done) {
+  git.push('origin', 'gh-pages', function (err) {
+    if (err) throw err;
+  });
+});
+
 gulp.task('commitDist', function() {
 	  return gulp.src(['./' + paths.docDir + '/*', './' + paths.bundleDir + '/*'])
 	    .pipe(git.add({args: '-f'}))
@@ -43,11 +49,11 @@ gulp.task('bumpMinor', function() { return inc('minor'); })
 gulp.task('bumpMajor', function() { return inc('major'); })
 
 gulp.task('patch', function() {
-	runSequence('bumpPatch', 'default', 'commitDist', 'tag', 'publish');
+	runSequence('bumpPatch', 'default', 'commitDist', 'tag', 'publish', 'push');
 });
 gulp.task('minor', function() {
-	runSequence('bumpMinor', 'default', 'commitDist', 'tag', 'publish');
+	runSequence('bumpMinor', 'default', 'commitDist', 'tag', 'publish', 'push');
 });
 gulp.task('major', function() {
-	runSequence('bumpMajor', 'default', 'commitDist', 'tag', 'publish');
+	runSequence('bumpMajor', 'default', 'commitDist', 'tag', 'publish', 'push');
 });
