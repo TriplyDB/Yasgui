@@ -1,7 +1,7 @@
 {
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.2.3",
+  "version": "0.0.0",
   "main": "src/main.js",
   "licenses": [
     {
@@ -67,7 +67,8 @@
     "yasgui-yasqe": "^2.2.0",
     "yasgui-yasr": "^2.2.0",
     "bootstrap-sass": "^3.3.1",
-    "jasny-bootstrap": "jasny/bootstrap"
+    "jquery-ui": "^1.10.5",
+    "bootstrap-contextmenu": "git://github.com/sydcanem/bootstrap-contextmenu"
   },
   "browserify-shim": {
     "jQuery": "jquery"

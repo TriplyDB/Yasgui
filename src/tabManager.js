@@ -1,9 +1,8 @@
 'use strict';
-//adding tabs: http://jsfiddle.net/dogoku/KdPdZ/2/
 var $ = require('jquery'),
 	utils = require('yasgui-utils'),
 	imgs = require('./imgs.js');
-
+require('jquery-ui/position');
 
 module.exports = function(yasgui) {
 	var manager = {};
@@ -11,7 +10,7 @@ module.exports = function(yasgui) {
 	var $tabsParent;
 	
 	var $tabPanel = null;
-	
+	var $contextMenu = null;
 	var panes = {};
 	
 	var getName = function(name, i) {
@@ -62,6 +61,27 @@ module.exports = function(yasgui) {
 			forcePlaceholderSize: true
 				
 		});
+		
+		//Add context menu
+		$contextMenu = $('<div>', {class:'tabDropDown'})
+			.append($('<ul>', {class:'dropdown-menu', role: 'menu'})
+					.append($('<li>').text('Action'))
+			)
+			.onOutsideClick(function() {
+				$contextMenu.hide();
+			}, {skipFirst: true})
+			.appendTo(yasgui.wrapperElement)
+//		<div id="context-menu" style="position: absolute; z-index: 9999; top: 255px; left: 663px;" class="open">
+//      	<ul class="dropdown-menu" role="menu">
+//        <li><a tabindex="-1">Action</a></li>
+//           <li><a tabindex="-1">Another action</a></li>
+//           <li><a tabindex="-1">Something else here</a></li>
+//           <li class="divider"></li>
+//           <li><a tabindex="-1">Separated link</a></li>
+//      	</ul>
+//      </div>
+		
+		
 	};
 	
 	var closeTab = function(tabEl, id) {
@@ -105,6 +125,18 @@ module.exports = function(yasgui) {
 							el.removeClass('rename');
 						})
 					})
+					.bind('contextmenu', function(e){ 
+				    	e.preventDefault();
+				    	$contextMenu.show();
+				    	$contextMenu
+				    		.addClass('open')
+				    		.position({
+				    			my: "left top",
+				    	        at: "left bottom",
+				    	        of: $(this),
+				    	        collision: "fit",
+				    		})
+				    }) 
 		);
 		
 		
