@@ -11,7 +11,7 @@ module.exports = function(yasgui, id, name) {
 	
 	var $paneContent = $('<div>', {class:'wrapper'}).appendTo($pane);
 	var $paneMenu = menu.initWrapper().appendTo($pane);
-	
+	var $endpointInput;
 	var addControlBar = function() {
 		var $controlBar = $('<div>', {class: 'controlbar'}).appendTo($paneContent);
 		var $form = $('<form>', {class: 'form-inline', role: 'form'}).appendTo($controlBar);
@@ -38,8 +38,11 @@ module.exports = function(yasgui, id, name) {
 		
 		//add endpoint text input
 		var $formGroup = $('<div>', {class: 'form-group'}).appendTo($form);
-		$('<input>', {type: 'text', class: 'form-control endpointText', placeholder: 'Enter endpoint'})
-			.on('keyup', function(){tab.yasqe.options.sparql.endpoint = this.value;})
+		$endpointInput = $('<input>', {type: 'text', class: 'form-control endpointText', placeholder: 'Enter endpoint'})
+			.on('keyup', function(){
+				tab.yasqe.options.sparql.endpoint = this.value;
+				yasgui.store();
+			})
 			.appendTo($formGroup);
 	};
 	
@@ -53,19 +56,26 @@ module.exports = function(yasgui, id, name) {
 		//this way, the URLs in the results are prettified using the defined prefixes in the query
 		getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
 	});
-
-	/**
-	* Set some of the hooks to link YASR and YASQE
-	*/
-	tab.yasqe.options.sparql.callbacks.success =  function(data, textStatus, xhr) {
-		tab.yasr.setResponse({response: data, contentType: xhr.getResponseHeader("Content-Type")});
-	};
-	tab.yasqe.options.sparql.callbacks.error = function(xhr, textStatus, errorThrown) {
-		var exceptionMsg = textStatus + " (#" + xhr.status + ")";
-		if (errorThrown && errorThrown.length) exceptionMsg += ": " + errorThrown;
-		tab.yasr.setResponse({exception: exceptionMsg});
+	tab.yasqe.options.sparql.callbacks.complete =  tab.yasr.setResponse;
+	
+	tab.generatePersistentSettings = function() {
+		//we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
+		//We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
+		return  {
+			name: tab.name,
+			yasqe: {
+				endpoint: tab.yasqe.options.sparql.endpoint,
+				acceptHeaderGraph: tab.yasqe.options.sparql.acceptHeaderGraph,
+				acceptHeaderSelect: tab.yasqe.options.sparql.acceptHeaderSelect,
+				args: tab.yasqe.options.sparql.args,
+				defaultGraphs: tab.yasqe.options.sparql.defaultGraphs,
+				namedGraphs: tab.yasqe.options.sparql.namedGraphs,
+				requestMethod: tab.yasqe.options.sparql.requestMethod,
+			}
+		}
 	};
 	
+	$endpointInput.val(tab.yasqe.options.sparql.endpoint);
 	
 	return tab;
 }

@@ -259,6 +259,8 @@ module.exports = function(yasgui, tab) {
 			if (inputVals[0] && inputVals[0].trim().length > 0) namedGraphs.push(inputVals[0]);
 		});
 		options.namedGraphs = namedGraphs;
+		
+		yasgui.store();
 	};
 	
 	

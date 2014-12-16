@@ -6,12 +6,20 @@ require('jquery-ui/position');
 
 module.exports = function(yasgui) {
 	var manager = {};
+	//tab object (containing e.g. yasqe/yasr)
 	manager.tabs = {};
+	
+	//the actual tabs parent containing the ul of tab buttons
 	var $tabsParent;
 	
+	//contains the tabs and panes
 	var $tabPanel = null;
+	
+	//context menu for the tab context menu
 	var $contextMenu = null;
-	var panes = {};
+	
+	//order of tab IDs
+	var tabOrder = [];
 	
 	var getName = function(name, i) {
 		if (!name) name = "Query";
@@ -63,30 +71,45 @@ module.exports = function(yasgui) {
 		});
 		
 		//Add context menu
-		$contextMenu = $('<div>', {class:'tabDropDown'})
-			.append($('<ul>', {class:'dropdown-menu', role: 'menu'})
-					.append($('<li>').text('Action'))
-			)
-			.onOutsideClick(function() {
-				$contextMenu.hide();
-			}, {skipFirst: true})
-			.appendTo(yasgui.wrapperElement)
-//		<div id="context-menu" style="position: absolute; z-index: 9999; top: 255px; left: 663px;" class="open">
-//      	<ul class="dropdown-menu" role="menu">
-//        <li><a tabindex="-1">Action</a></li>
-//           <li><a tabindex="-1">Another action</a></li>
-//           <li><a tabindex="-1">Something else here</a></li>
-//           <li class="divider"></li>
-//           <li><a tabindex="-1">Separated link</a></li>
-//      	</ul>
-//      </div>
-		
-		
+		$contextMenu = $('<div>', {class:'tabDropDown'}).appendTo(yasgui.wrapperElement);
+		var $contextMenuList = $('<ul>', {class:'dropdown-menu', role: 'menu'}).appendTo($contextMenu);
+		var addMenuItem = function(name, onClick) {
+			var $listItem = $('<li>', {role: 'presentation'}).appendTo($contextMenuList);
+			if (name) {
+				$listItem.append($('<a>', {role:'menuitem', href: '#'}).text(name))
+					.click(function(){
+						$contextMenu.hide();
+						event.preventDefault();
+						if (onClick) onClick($contextMenu.attr('target-tab'));
+					})
+			} else {
+				$listItem.addClass('divider');
+			}
+		};
+		addMenuItem('Rename', function(tabId) {
+			$tabsParent.find('a[href="#' +tabId+ '"]').dblclick();
+		});
+		addMenuItem('Copy', function(tabId){
+			console.log('todo');
+		});
+		addMenuItem();
+		addMenuItem('Close', closeTab);
+		addMenuItem('Close others', function(tabId) {
+			$tabsParent.find('a[role="tab"]').each(function() {
+				var currentId = $(this).attr('aria-controls');
+				if (currentId != tabId) closeTab(currentId);
+			})
+		});
+		addMenuItem('Close all', function() {
+			$tabsParent.find('a[role="tab"]').each(function() {
+				closeTab($(this).attr('aria-controls'));
+			})
+		});
 	};
 	
-	var closeTab = function(tabEl, id) {
+	var closeTab = function(id) {
 		delete manager.tabs[id];
-		tabEl.parents('li').remove();
+		$tabsParent.find('a[href="#' + id + '"]').closest('li').remove();
         $("#"+id).remove();
 	};
 	var addTab = function(active, id, name) {
@@ -104,42 +127,50 @@ module.exports = function(yasgui) {
 				$('<button>',{ class:"close",type:"button"})
 					.text('x')
 					.click(function() {
-						closeTab($(this), id);
+						closeTab(id);
 					})
 			);
 		var $tabRename = $('<div><input></div>');
 		
-		$tabsParent.find('li:has(a[role="addTab"])').before(
-				$("<li>", {role: "presentation"})
-					.append($tabToggle)
-					
-					.append($tabRename)
-					.dblclick(function(){
-						var el = $(this);
-						var val = el.find('span').text();
-						el.addClass('rename');
-						el.find('input').val(val);
-						el.onOutsideClick(function(){
-							var val = el.find('input').val();
-							$tabToggle.find('span').text(el.find('input').val());
-							el.removeClass('rename');
-						})
-					})
-					.bind('contextmenu', function(e){ 
-				    	e.preventDefault();
-				    	$contextMenu.show();
-				    	$contextMenu
-				    		.addClass('open')
-				    		.position({
-				    			my: "left top",
-				    	        at: "left bottom",
-				    	        of: $(this),
-				    	        collision: "fit",
-				    		})
-				    }) 
-		);
+		var $tabItem = $("<li>", {role: "presentation"})
+			.append($tabToggle)
+			
+			.append($tabRename)
+			.dblclick(function(){
+				var el = $(this);
+				var val = el.find('span').text();
+				el.addClass('rename');
+				el.find('input').val(val);
+				el.onOutsideClick(function(){
+					var tabId = el.find('a[role="tab"]').attr('aria-controls');
+					var val = el.find('input').val();
+					$tabToggle.find('span').text(el.find('input').val());
+					manager.tabs[tabId].name = val;
+					yasgui.store();
+					el.removeClass('rename');
+				})
+			})
+			.bind('contextmenu', function(e){ 
+		    	e.preventDefault();
+		    	$contextMenu
+		    		.show()
+			    	.onOutsideClick(function() {
+						$contextMenu.hide();
+					}, {allowedElements: $(this).closest('li')})
+		    		.addClass('open')
+		    		.position({
+		    			my: "left top-3",
+		    	        at: "left bottom",
+		    	        of: $(this),
+		    	        collision: "fit",
+		    		})
+		    		.attr('target-tab', $tabItem.find('a[role="tab"]').attr('aria-controls'))
+		    });
 		
 		
+		$tabsParent.find('li:has(a[role="addTab"])').before($tabItem);
+		
+		tabOrder.push(id);
 		manager.tabs[id] = require('./tab.js')(yasgui, id, name);
 		if (active) {
 			$tabToggle.tab('show');
@@ -150,7 +181,17 @@ module.exports = function(yasgui) {
 	manager.current = function() {
 		
 	};
-
+	
+	manager.generatePersistentSettings = function() {
+		var persistentSettings = {
+			tabOrder: tabOrder,
+			tabs: {},
+		};
+		for (var id in manager.tabs) {
+			persistentSettings.tabs[id] = manager.tabs[id].generatePersistentSettings();
+		}
+		return persistentSettings;
+	};
 	return manager;
 };
 
