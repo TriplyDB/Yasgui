@@ -3,7 +3,7 @@
 //the current browserify version does not support require-ing js files which are used as entry-point
 //this way, we can still require our main.js file
 module.exports = require('./main.js');
-},{"./main.js":87}],2:[function(require,module,exports){
+},{"./main.js":88}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -8657,7 +8657,7 @@ root.positionButtons = function(yasqe) {
 	if (scrollBar.is(":visible")) {
 		offset = scrollBar.outerWidth();
 	}
-	if (yasqe.buttons.is(":visible")) yasqe.buttons.css("right", offset);
+	if (yasqe.buttons.is(":visible")) yasqe.buttons.css("right", offset + 6);
 };
 
 /**
@@ -9433,6 +9433,321 @@ module.exports = {
 	elementsOverlap:elementsOverlap,
 };
 },{"jquery":undefined}],41:[function(require,module,exports){
+/**
+               _ _____           _          _     _      
+              | |  __ \         (_)        | |   | |     
+      ___ ___ | | |__) |___  ___ _ ______ _| |__ | | ___ 
+     / __/ _ \| |  _  // _ \/ __| |_  / _` | '_ \| |/ _ \
+    | (_| (_) | | | \ \  __/\__ \ |/ / (_| | |_) | |  __/
+     \___\___/|_|_|  \_\___||___/_/___\__,_|_.__/|_|\___|
+	 
+	v 1.4 - a jQuery plugin by Alvaro Prieto Lauroba
+	
+	Licences: MIT & GPL
+	Feel free to use or modify this plugin as far as my full name is kept	
+	
+	If you are going to use this plugin in production environments it is 
+	strongly recomended to use its minified version: colResizable.min.js
+
+*/
+
+var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();	
+	var d = $(document); 		//window object
+	var h = $("head");			//head object
+	var drag = null;			//reference to the current grip that is being dragged
+	var tables = [];			//array of the already processed tables (table.id as key)
+	var	count = 0;				//internal count to create unique IDs when needed.	
+	
+	//common strings for minification	(in the minified version there are plenty more)
+	var ID = "id";	
+	var PX = "px";
+	var SIGNATURE ="JColResizer";
+	
+	//shortcuts
+	var I = parseInt;
+	var M = Math;
+	var ie = navigator.userAgent.indexOf('Trident/4.0')>0;
+	var S;
+	try{S = sessionStorage;}catch(e){}	//Firefox crashes when executed as local file system
+	
+	//append required CSS rules  
+	h.append("<style type='text/css'>  .JColResizer{table-layout:fixed;} .JColResizer td, .JColResizer th{overflow:hidden;padding-left:0!important; padding-right:0!important;}  .JCLRgrips{ height:0px; position:relative;} .JCLRgrip{margin-left:-5px; position:absolute; z-index:5; } .JCLRgrip .JColResizer{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;top:0px} .JCLRLastGrip{position:absolute; width:1px; } .JCLRgripDrag{ border-left:1px dotted black;	}</style>");
+
+	
+	/**
+	 * Function to allow column resizing for table objects. It is the starting point to apply the plugin.
+	 * @param {DOM node} tb - refrence to the DOM table object to be enhanced
+	 * @param {Object} options	- some customization values
+	 */
+	var init = function( tb, options){	
+		var t = $(tb);										//the table object is wrapped
+		if(options.disable) return destroy(t);				//the user is asking to destroy a previously colResized table
+		var	id = t.id = t.attr(ID) || SIGNATURE+count++;	//its id is obtained, if null new one is generated		
+		t.p = options.postbackSafe; 						//shortcut to detect postback safe 		
+		if(!t.is("table") || tables[id]) return; 			//if the object is not a table or if it was already processed then it is ignored.
+		t.addClass(SIGNATURE).attr(ID, id).before('<div class="JCLRgrips"/>');	//the grips container object is added. Signature class forces table rendering in fixed-layout mode to prevent column's min-width
+		t.opt = options; t.g = []; t.c = []; t.w = t.width(); t.gc = t.prev();	//t.c and t.g are arrays of columns and grips respectively				
+		if(options.marginLeft) t.gc.css("marginLeft", options.marginLeft);  	//if the table contains margins, it must be specified
+		if(options.marginRight) t.gc.css("marginRight", options.marginRight);  	//since there is no (direct) way to obtain margin values in its original units (%, em, ...)
+		t.cs = I(ie? tb.cellSpacing || tb.currentStyle.borderSpacing :t.css('border-spacing'))||2;	//table cellspacing (not even jQuery is fully cross-browser)
+		t.b  = I(ie? tb.border || tb.currentStyle.borderLeftWidth :t.css('border-left-width'))||1;	//outer border width (again cross-browser isues)
+		// if(!(tb.style.width || tb.width)) t.width(t.width()); //I am not an IE fan at all, but it is a pitty that only IE has the currentStyle attribute working as expected. For this reason I can not check easily if the table has an explicit width or if it is rendered as "auto"
+		tables[id] = t; 	//the table object is stored using its id as key	
+		createGrips(t);		//grips are created
+	
+	};
+
+
+	/**
+	 * This function allows to remove any enhancements performed by this plugin on a previously processed table.
+	 * @param {jQuery ref} t - table object
+	 */
+	var destroy = function(t){
+		var id=t.attr(ID), t=tables[id];		//its table object is found
+		if(!t||!t.is("table")) return;			//if none, then it wasnt processed	 
+		t.removeClass(SIGNATURE).gc.remove();	//class and grips are removed
+		delete tables[id];						//clean up data
+	};
+
+
+	/**
+	 * Function to create all the grips associated with the table given by parameters 
+	 * @param {jQuery ref} t - table object
+	 */
+	var createGrips = function(t){	
+	
+		var th = t.find(">thead>tr>th,>thead>tr>td");	//if table headers are specified in its semantically correct tag, are obtained
+		if(!th.length) th = t.find(">tbody>tr:first>th,>tr:first>th,>tbody>tr:first>td, >tr:first>td");	 //but headers can also be included in different ways
+		t.cg = t.find("col"); 						//a table can also contain a colgroup with col elements		
+		t.ln = th.length;							//table length is stored	
+		if(t.p && S && S[t.id])memento(t,th);		//if 'postbackSafe' is enabled and there is data for the current table, its coloumn layout is restored
+		th.each(function(i){						//iterate through the table column headers			
+			var c = $(this); 						//jquery wrap for the current column			
+			var g = $(t.gc.append('<div class="JCLRgrip"></div>')[0].lastChild); //add the visual node to be used as grip
+			g.t = t; g.i = i; g.c = c;	c.w =c.width();		//some values are stored in the grip's node data
+			t.g.push(g); t.c.push(c);						//the current grip and column are added to its table object
+			c.width(c.w).removeAttr("width");				//the width of the column is converted into pixel-based measurements
+			if (i < t.ln-1) {
+				g.bind('touchstart mousedown', onGripMouseDown).append(t.opt.gripInnerHtml).append('<div class="'+SIGNATURE+'" style="cursor:'+t.opt.hoverCursor+'"></div>'); //bind the mousedown event to start dragging 
+			} else g.addClass("JCLRLastGrip").removeClass("JCLRgrip");	//the last grip is used only to store data			
+			g.data(SIGNATURE, {i:i, t:t.attr(ID)});						//grip index and its table name are stored in the HTML 												
+		}); 	
+		t.cg.removeAttr("width");	//remove the width attribute from elements in the colgroup (in any)
+		syncGrips(t); 				//the grips are positioned according to the current table layout			
+		//there is a small problem, some cells in the table could contain dimension values interfering with the 
+		//width value set by this plugin. Those values are removed
+		t.find('td, th').not(th).not('table th, table td').each(function(){  
+			$(this).removeAttr('width');	//the width attribute is removed from all table cells which are not nested in other tables and dont belong to the header
+		});		
+
+		
+	};
+	
+
+	/**
+	 * Function to allow the persistence of columns dimensions after a browser postback. It is based in
+	 * the HTML5 sessionStorage object, which can be emulated for older browsers using sessionstorage.js
+	 * @param {jQuery ref} t - table object
+	 * @param {jQuery ref} th - reference to the first row elements (only set in deserialization)
+	 */
+	var memento = function(t, th){ 
+		var w,m=0,i=0,aux =[];
+		if(th){										//in deserialization mode (after a postback)
+			t.cg.removeAttr("width");
+			if(t.opt.flush){ S[t.id] =""; return;} 	//if flush is activated, stored data is removed
+			w = S[t.id].split(";");					//column widths is obtained
+			for(;i<t.ln;i++){						//for each column
+				aux.push(100*w[i]/w[t.ln]+"%"); 	//width is stored in an array since it will be required again a couple of lines ahead
+				th.eq(i).css("width", aux[i] ); 	//each column width in % is resotred
+			}			
+			for(i=0;i<t.ln;i++)
+				t.cg.eq(i).css("width", aux[i]);	//this code is required in order to create an inline CSS rule with higher precedence than an existing CSS class in the "col" elements
+		}else{							//in serialization mode (after resizing a column)
+			S[t.id] ="";				//clean up previous data
+			for(;i < t.c.length; i++){		//iterate through columns
+			
+				w = t.c[i].width();		//width is obtained
+				S[t.id] += w+";";		//width is appended to the sessionStorage object using ID as key
+				m+=w;					//carriage is updated to obtain the full size used by columns
+			}
+			S[t.id]+=m;					//the last item of the serialized string is the table's active area (width), 
+										//to be able to obtain % width value of each columns while deserializing
+		}	
+	};
+	
+	
+	/**
+	 * Function that places each grip in the correct position according to the current table layout	 * 
+	 * @param {jQuery ref} t - table object
+	 */
+	var syncGrips = function (t){	
+		t.gc.width(t.w);			//the grip's container width is updated				
+		for(var i=0; i<t.ln; i++){	//for each column
+			var c = t.c[i]; 			
+			t.g[i].css({			//height and position of the grip is updated according to the table layout
+				left: c.offset().left - t.offset().left + c.outerWidth(false) + t.cs / 2 + PX,
+				height: t.opt.headerOnly? t.c[0].outerHeight(false) : t.outerHeight(false)				
+			});			
+		} 	
+	};
+	
+	
+	
+	/**
+	* This function updates column's width according to the horizontal position increment of the grip being
+	* dragged. The function can be called while dragging if liveDragging is enabled and also from the onGripDragOver
+	* event handler to synchronize grip's position with their related columns.
+	* @param {jQuery ref} t - table object
+	* @param {nunmber} i - index of the grip being dragged
+	* @param {bool} isOver - to identify when the function is being called from the onGripDragOver event	
+	*/
+	var syncCols = function(t,i,isOver){
+		var inc = drag.x-drag.l, c = t.c[i], c2 = t.c[i+1]; 			
+		var w = c.w + inc;	var w2= c2.w- inc;	//their new width is obtained					
+		c.width( w + PX);	c2.width(w2 + PX);	//and set	
+		t.cg.eq(i).width( w + PX); t.cg.eq(i+1).width( w2 + PX);
+		if(isOver){c.w=w; c2.w=w2;}
+	};
+
+	
+	/**
+	 * Event handler used while dragging a grip. It checks if the next grip's position is valid and updates it. 
+	 * @param {event} e - mousemove event binded to the window object
+	 */
+	var onGripDrag = function(e){	
+		if(!drag) return; var t = drag.t;		//table object reference 
+		
+		if (e.originalEvent.touches) {
+			var x = e.originalEvent.touches[0].pageX - drag.ox + drag.l;		//next position according to horizontal mouse position increment
+		} else {
+			var x = e.pageX - drag.ox + drag.l;		//next position according to horizontal mouse position increment
+		}
+		
+		
+			
+		var mw = t.opt.minWidth, i = drag.i ;	//cell's min width
+		var l = t.cs*1.5 + mw + t.b;
+
+		var max = i == t.ln-1? t.w-l: t.g[i+1].position().left-t.cs-mw; //max position according to the contiguous cells
+		var min = i? t.g[i-1].position().left+t.cs+mw: l;				//min position according to the contiguous cells
+		
+		x = M.max(min, M.min(max, x));						//apply boundings		
+		drag.x = x;	 drag.css("left",  x + PX); 			//apply position increment		
+			
+		if(t.opt.liveDrag){ 								//if liveDrag is enabled
+			syncCols(t,i); syncGrips(t);					//columns and grips are synchronized
+			var cb = t.opt.onDrag;							//check if there is an onDrag callback
+			if (cb) { e.currentTarget = t[0]; cb(e); }		//if any, it is fired			
+		}
+		
+		return false; 	//prevent text selection				
+	};
+	
+
+	/**
+	 * Event handler fired when the dragging is over, updating table layout
+	 */
+	var onGripDragOver = function(e){	
+		
+		d.unbind('touchend.'+SIGNATURE+' mouseup.'+SIGNATURE).unbind('touchmove.'+SIGNATURE+' mousemove.'+SIGNATURE);
+		$("head :last-child").remove(); 				//remove the dragging cursor style	
+		if(!drag) return;
+		drag.removeClass(drag.t.opt.draggingClass);		//remove the grip's dragging css-class
+		var t = drag.t;
+		var cb = t.opt.onResize; 			//get some values	
+		if(drag.x){ 									//only if the column width has been changed
+			syncCols(t,drag.i, true);	syncGrips(t);	//the columns and grips are updated
+			if (cb) { e.currentTarget = t[0]; cb(e); }	//if there is a callback function, it is fired
+		}
+		if(t.p && S) memento(t); 						//if postbackSafe is enabled and there is sessionStorage support, the new layout is serialized and stored
+		drag = null;									//since the grip's dragging is over									
+	};	
+	
+
+	/**
+	 * Event handler fired when the grip's dragging is about to start. Its main goal is to set up events 
+	 * and store some values used while dragging.
+	 * @param {event} e - grip's mousedown event
+	 */
+	var onGripMouseDown = function(e){
+		var o = $(this).data(SIGNATURE);			//retrieve grip's data
+		var t = tables[o.t],  g = t.g[o.i];			//shortcuts for the table and grip objects
+		if (e.originalEvent.touches) {
+			g.ox = e.originalEvent.touches[0].pageX;
+		} else {
+			g.ox = e.pageX;	//the initial position is kept
+		}
+		g.l = g.position().left;
+		d.bind('touchmove.'+SIGNATURE+' mousemove.'+SIGNATURE, onGripDrag).bind('touchend.'+SIGNATURE+' mouseup.'+SIGNATURE,onGripDragOver);	//mousemove and mouseup events are bound
+		h.append("<style type='text/css'>*{cursor:"+ t.opt.dragCursor +"!important}</style>"); 	//change the mouse cursor
+		g.addClass(t.opt.draggingClass); 	//add the dragging class (to allow some visual feedback)				
+		drag = g;							//the current grip is stored as the current dragging object
+		if(t.c[o.i].l) for(var i=0,c; i<t.ln; i++){ c=t.c[i]; c.l = false; c.w= c.width(); } 	//if the colum is locked (after browser resize), then c.w must be updated		
+		return false; 	//prevent text selection
+	};
+	
+	/**
+	 * Event handler fired when the browser is resized. The main purpose of this function is to update
+	 * table layout according to the browser's size synchronizing related grips 
+	 */
+	var onResize = function(){
+		for(t in tables){		
+			var t = tables[t], i, mw=0;				
+			t.removeClass(SIGNATURE);						//firefox doesnt like layout-fixed in some cases
+			if (t.w != t.width()) {							//if the the table's width has changed
+				t.w = t.width();							//its new value is kept
+				for(i=0; i<t.ln; i++) mw+= t.c[i].w;		//the active cells area is obtained
+				//cell rendering is not as trivial as it might seem, and it is slightly different for
+				//each browser. In the begining i had a big switch for each browser, but since the code
+				//was extremelly ugly now I use a different approach with several reflows. This works 
+				//pretty well but it's a bit slower. For now, lets keep things simple...   
+				for(i=0; i<t.ln; i++) t.c[i].css("width", M.round(1000*t.c[i].w/mw)/10 + "%").l=true; 
+				//c.l locks the column, telling us that its c.w is outdated									
+			}
+			syncGrips(t.addClass(SIGNATURE));
+		}
+	};		
+
+
+	//bind resize event, to update grips position 
+	$(window).bind('resize.'+SIGNATURE, onResize); 
+
+
+	/**
+	 * The plugin is added to the jQuery library
+	 * @param {Object} options -  an object containg some basic customization values 
+	 */
+    $.fn.extend({  
+        colResizable: function(options) {           
+            var defaults = {
+			
+				//attributes:
+                draggingClass: 'JCLRgripDrag',	//css-class used when a grip is being dragged (for visual feedback purposes)
+				gripInnerHtml: '',				//if it is required to use a custom grip it can be done using some custom HTML				
+				liveDrag: false,				//enables table-layout updaing while dragging			
+				minWidth: 15, 					//minimum width value in pixels allowed for a column 
+				headerOnly: false,				//specifies that the size of the the column resizing anchors will be bounded to the size of the first row 
+				hoverCursor: "e-resize",  		//cursor to be used on grip hover
+				dragCursor: "e-resize",  		//cursor to be used while dragging
+				postbackSafe: false, 			//when it is enabled, table layout can persist after postback. It requires browsers with sessionStorage support (it can be emulated with sessionStorage.js). Some browsers ony 
+				flush: false, 					//when postbakSafe is enabled, and it is required to prevent layout restoration after postback, 'flush' will remove its associated layout data 
+				marginLeft: null,				//in case the table contains any margins, colResizable needs to know the values used, e.g. "10%", "15em", "5px" ...
+				marginRight: null, 				//in case the table contains any margins, colResizable needs to know the values used, e.g. "10%", "15em", "5px" ...
+				disable: false,					//disables all the enhancements performed in a previously colResized table	
+				
+				//events:
+				onDrag: null, 					//callback function to be fired during the column resizing process if liveDrag is enabled
+				onResize: null					//callback function fired when the dragging process is over
+            }			
+			var options =  $.extend(defaults, options);			
+            return this.each(function() {				
+             	init( this, options);             
+            });
+        }
+    });
+
+
+},{"jquery":undefined}],42:[function(require,module,exports){
 /**
  * jQuery-csv (jQuery Plugin)
  * version: 0.71 (2012-11-19)
@@ -10282,17 +10597,17 @@ RegExp.escape= function(s) {
 
 })( jQuery );
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 module.exports=require(13)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/edit/matchbrackets.js":13,"codemirror":undefined}],43:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/edit/matchbrackets.js":13,"codemirror":undefined}],44:[function(require,module,exports){
 module.exports=require(14)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/brace-fold.js":14,"codemirror":undefined}],44:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/brace-fold.js":14,"codemirror":undefined}],45:[function(require,module,exports){
 module.exports=require(15)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldcode.js":15,"codemirror":undefined}],45:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldcode.js":15,"codemirror":undefined}],46:[function(require,module,exports){
 module.exports=require(16)
-},{"./foldcode":44,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldgutter.js":16,"codemirror":undefined}],46:[function(require,module,exports){
+},{"./foldcode":45,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldgutter.js":16,"codemirror":undefined}],47:[function(require,module,exports){
 module.exports=require(17)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/xml-fold.js":17,"codemirror":undefined}],47:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/xml-fold.js":17,"codemirror":undefined}],48:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -10978,7 +11293,7 @@ CodeMirror.defineMIME("application/typescript", { name: "javascript", typescript
 
 });
 
-},{"codemirror":undefined}],48:[function(require,module,exports){
+},{"codemirror":undefined}],49:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -11364,7 +11679,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
 
 });
 
-},{"codemirror":undefined}],49:[function(require,module,exports){
+},{"codemirror":undefined}],50:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.2"
@@ -20835,7 +21150,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
   if (typeof define === "function" && define.amd) define(d3); else if (typeof module === "object" && module.exports) module.exports = d3;
   this.d3 = d3;
 }();
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 var jQuery = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 
 /*!
@@ -21159,7 +21474,7 @@ $.extend( $.ui, {
 
 })( jQuery );
 
-},{"jquery":undefined}],51:[function(require,module,exports){
+},{"jquery":undefined}],52:[function(require,module,exports){
 var jQuery = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 require('./widget');
 
@@ -21333,7 +21648,7 @@ $.widget("ui.mouse", {
 
 })(jQuery);
 
-},{"./widget":53,"jquery":undefined}],52:[function(require,module,exports){
+},{"./widget":54,"jquery":undefined}],53:[function(require,module,exports){
 var jQuery = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 require('./core');
 require('./mouse');
@@ -22629,7 +22944,7 @@ $.widget("ui.sortable", $.ui.mouse, {
 
 })(jQuery);
 
-},{"./core":50,"./mouse":51,"./widget":53,"jquery":undefined}],53:[function(require,module,exports){
+},{"./core":51,"./mouse":52,"./widget":54,"jquery":undefined}],54:[function(require,module,exports){
 var jQuery = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 
 /*!
@@ -23154,7 +23469,7 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 
 })( jQuery );
 
-},{"jquery":undefined}],54:[function(require,module,exports){
+},{"jquery":undefined}],55:[function(require,module,exports){
 // Generated by CoffeeScript 1.4.0
 (function() {
 
@@ -23249,7 +23564,7 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 
 }).call(this);
 
-},{"jquery":undefined}],55:[function(require,module,exports){
+},{"jquery":undefined}],56:[function(require,module,exports){
 // Generated by CoffeeScript 1.4.0
 (function() {
 
@@ -23372,7 +23687,7 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 
 }).call(this);
 
-},{"jquery":undefined}],56:[function(require,module,exports){
+},{"jquery":undefined}],57:[function(require,module,exports){
 // Generated by CoffeeScript 1.4.0
 (function() {
   var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
@@ -24725,17 +25040,17 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 
 }).call(this);
 
-},{"jquery":undefined}],57:[function(require,module,exports){
+},{"jquery":undefined}],58:[function(require,module,exports){
 module.exports=require(4)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/node_modules/store/store.js":4}],58:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/node_modules/store/store.js":4}],59:[function(require,module,exports){
 module.exports=require(22)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/package.json":22}],59:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/package.json":22}],60:[function(require,module,exports){
 arguments[4][6][0].apply(exports,arguments)
-},{"../package.json":58,"./storage.js":60,"./svg.js":61,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/main.js":6}],60:[function(require,module,exports){
+},{"../package.json":59,"./storage.js":61,"./svg.js":62,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/main.js":6}],61:[function(require,module,exports){
 module.exports=require(24)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/src/storage.js":24,"store":57}],61:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/src/storage.js":24,"store":58}],62:[function(require,module,exports){
 module.exports=require(25)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/src/svg.js":25}],62:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/src/svg.js":25}],63:[function(require,module,exports){
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
@@ -24852,7 +25167,7 @@ module.exports={
   }
 }
 
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 'use strict';
 module.exports = function(result) {
 	var quote = "\"";
@@ -24912,7 +25227,7 @@ module.exports = function(result) {
 	createBody();
 	return csvString;
 };
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 
@@ -24972,7 +25287,7 @@ root.version = {
 };
 
 
-},{"../package.json":62,"./imgs.js":69,"jquery":undefined,"yasgui-utils":59}],65:[function(require,module,exports){
+},{"../package.json":63,"./imgs.js":70,"jquery":undefined,"yasgui-utils":60}],66:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 module.exports = {
@@ -25068,7 +25383,7 @@ module.exports = {
 	
 	
 };
-},{"jquery":undefined}],66:[function(require,module,exports){
+},{"jquery":undefined}],67:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 
@@ -25134,7 +25449,7 @@ var root = module.exports = function(yasr) {
 root.defaults = {
 	
 };
-},{"jquery":undefined}],67:[function(require,module,exports){
+},{"jquery":undefined}],68:[function(require,module,exports){
 (function (global){
 var EventEmitter = require('events').EventEmitter,
 	$ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
@@ -25244,7 +25559,7 @@ module.exports = new loader();
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"events":2,"jquery":undefined}],68:[function(require,module,exports){
+},{"events":2,"jquery":undefined}],69:[function(require,module,exports){
 (function (global){
 'use strict';
 /**
@@ -25498,7 +25813,7 @@ function deepEq$(x, y, type){
   }
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./gChartLoader.js":67,"./utils.js":80,"jquery":undefined,"yasgui-utils":59}],69:[function(require,module,exports){
+},{"./gChartLoader.js":68,"./utils.js":81,"jquery":undefined,"yasgui-utils":60}],70:[function(require,module,exports){
 'use strict';
 module.exports = {
 	cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
@@ -25511,7 +25826,7 @@ module.exports = {
 	fullscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="640"     inkscape:window-height="480"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="0"     inkscape:current-layer="Layer_1" /><path     d="m -7.962963,-10 v 38.889 l 16.667,-16.667 16.667,16.667 5.555,-5.555 -16.667,-16.667 16.667,-16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 92.037037,-10 v 38.889 l -16.667,-16.667 -16.666,16.667 -5.556,-5.555 16.666,-16.667 -16.666,-16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M -7.962963,90 V 51.111 l 16.667,16.666 16.667,-16.666 5.555,5.556 -16.667,16.666 16.667,16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M 92.037037,90 V 51.111 l -16.667,16.666 -16.666,-16.666 -5.556,5.556 16.666,16.666 -16.666,16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 	smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 };
-},{}],70:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 var utils = require("yasgui-utils");
@@ -25534,6 +25849,7 @@ var root = module.exports = function(parent, options, queryResults) {
 	
 	var yasr = {};
 	yasr.options = $.extend(true, {}, root.defaults, options);
+	
 	yasr.container = $("<div class='yasr'></div>").appendTo(parent);
 	yasr.header = $("<div class='yasr_header'></div>").appendTo(yasr.container);
 	yasr.resultsContainer = $("<div class='yasr_results'></div>").appendTo(yasr.container);
@@ -25566,6 +25882,7 @@ var root = module.exports = function(parent, options, queryResults) {
 	//first initialize plugins
 	yasr.plugins = {};
 	for (var pluginName in root.plugins) {
+		if (!yasr.options.useGoogleCharts && pluginName == "gchart") continue; 
 		yasr.plugins[pluginName] = new root.plugins[pluginName](yasr);
 	}
 	
@@ -25814,14 +26131,14 @@ try {root.registerOutput('rawResponse', require("./rawResponse.js"))} catch(e){}
 try {root.registerOutput('table', require("./table.js"))} catch(e){};
 try {root.registerOutput('error', require("./error.js"))} catch(e){};
 try {root.registerOutput('pivot', require("./pivot.js"))} catch(e){};
-if (root.defaults.useGoogleCharts) try {root.registerOutput('gchart', require("./gchart.js"))} catch(e){};
-},{"../package.json":62,"./boolean.js":64,"./defaults.js":65,"./error.js":66,"./gChartLoader.js":67,"./gchart.js":68,"./imgs.js":69,"./parsers/wrapper.js":75,"./pivot.js":77,"./rawResponse.js":78,"./table.js":79,"jquery":undefined,"yasgui-utils":59}],71:[function(require,module,exports){
+try {root.registerOutput('gchart', require("./gchart.js"))} catch(e){};
+},{"../package.json":63,"./boolean.js":65,"./defaults.js":66,"./error.js":67,"./gChartLoader.js":68,"./gchart.js":69,"./imgs.js":70,"./parsers/wrapper.js":76,"./pivot.js":78,"./rawResponse.js":79,"./table.js":80,"jquery":undefined,"yasgui-utils":60}],72:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, ",");
 };
-},{"./dlv.js":72,"jquery":undefined}],72:[function(require,module,exports){
+},{"./dlv.js":73,"jquery":undefined}],73:[function(require,module,exports){
 'use strict';
 var $ = jQuery = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 require("../../lib/jquery.csv-0.71.js");
@@ -25883,7 +26200,7 @@ var root = module.exports = function(queryResponse, separator) {
 	
 	return json;
 };
-},{"../../lib/jquery.csv-0.71.js":41,"jquery":undefined}],73:[function(require,module,exports){
+},{"../../lib/jquery.csv-0.71.js":42,"jquery":undefined}],74:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 var root = module.exports = function(queryResponse) {
@@ -25901,13 +26218,13 @@ var root = module.exports = function(queryResponse) {
 	return false;
 	
 };
-},{"jquery":undefined}],74:[function(require,module,exports){
+},{"jquery":undefined}],75:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, "\t");
 };
-},{"./dlv.js":72,"jquery":undefined}],75:[function(require,module,exports){
+},{"./dlv.js":73,"jquery":undefined}],76:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 
@@ -26141,7 +26458,7 @@ var root = module.exports = function(dataOrJqXhr, textStatus, jqXhrOrErrorString
 
 
 
-},{"./csv.js":71,"./json.js":73,"./tsv.js":74,"./xml.js":76,"jquery":undefined}],76:[function(require,module,exports){
+},{"./csv.js":72,"./json.js":74,"./tsv.js":75,"./xml.js":77,"jquery":undefined}],77:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 var root = module.exports = function(xml) {
@@ -26227,7 +26544,7 @@ var root = module.exports = function(xml) {
 	return json;
 };
 
-},{"jquery":undefined}],77:[function(require,module,exports){
+},{"jquery":undefined}],78:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	utils = require('./utils.js'),
@@ -26449,7 +26766,7 @@ root.version = {
 	"YASR-rawResponse" : require("../package.json").version,
 	"jquery": $.fn.jquery,
 };
-},{"../node_modules/pivottable/dist/d3_renderers.js":54,"../node_modules/pivottable/dist/gchart_renderers.js":55,"../package.json":62,"./gChartLoader.js":67,"./imgs.js":69,"./utils.js":80,"d3":49,"jquery":undefined,"jquery-ui/sortable":52,"pivottable":56,"yasgui-utils":59}],78:[function(require,module,exports){
+},{"../node_modules/pivottable/dist/d3_renderers.js":55,"../node_modules/pivottable/dist/gchart_renderers.js":56,"../package.json":63,"./gChartLoader.js":68,"./imgs.js":70,"./utils.js":81,"d3":50,"jquery":undefined,"jquery-ui/sortable":53,"pivottable":57,"yasgui-utils":60}],79:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	CodeMirror = (function(){try{return require('codemirror')}catch(e){return window.CodeMirror}})();
@@ -26538,12 +26855,13 @@ root.version = {
 	"jquery": $.fn.jquery,
 	"CodeMirror" : CodeMirror.version
 };
-},{"../package.json":62,"codemirror":undefined,"codemirror/addon/edit/matchbrackets.js":42,"codemirror/addon/fold/brace-fold.js":43,"codemirror/addon/fold/foldcode.js":44,"codemirror/addon/fold/foldgutter.js":45,"codemirror/addon/fold/xml-fold.js":46,"codemirror/mode/javascript/javascript.js":47,"codemirror/mode/xml/xml.js":48,"jquery":undefined}],79:[function(require,module,exports){
+},{"../package.json":63,"codemirror":undefined,"codemirror/addon/edit/matchbrackets.js":43,"codemirror/addon/fold/brace-fold.js":44,"codemirror/addon/fold/foldcode.js":45,"codemirror/addon/fold/foldgutter.js":46,"codemirror/addon/fold/xml-fold.js":47,"codemirror/mode/javascript/javascript.js":48,"codemirror/mode/xml/xml.js":49,"jquery":undefined}],80:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	yutils = require("yasgui-utils"),
 	imgs = require('./imgs.js');
 (function(){try{return require('datatables')}catch(e){return window.jQuery}})();
+require("../lib/colResizable-1.4.js");
 
 
 
@@ -26660,6 +26978,9 @@ var root = module.exports = function(yasr) {
 			.css("margin-bottom", "-" + headerHeight + "px");
 		}
 		
+		//finally, make the columns dragable:
+		table.colResizable();
+		
 		
 	};
 	
@@ -26670,10 +26991,8 @@ var root = module.exports = function(yasr) {
 			"sorting_desc": "sortDesc"
 		};
 		table.find(".sortIcons").remove();
-		var width = 8;
-		var height = 13;
 		for (var sorting in sortings) {
-			var svgDiv = $("<div class='sortIcons'></div>").css("float", "right").css("margin-right", "-12px").width(width).height(height);
+			var svgDiv = $("<div class='sortIcons'></div>");
 			yutils.svg.draw(svgDiv, imgs[sortings[sorting]]);
 			table.find("th." + sorting).append(svgDiv);
 		}
@@ -26747,7 +27066,7 @@ var getCellContent = function(yasr, plugin, bindings, sparqlVar, context) {
 	} else {
 		value = "<span class='nonUri'>" + formatLiteral(yasr, plugin, binding) + "</span>";
 	}
-	return value;
+	return "<div>" + value + "</div>";
 };
 
 
@@ -26819,7 +27138,7 @@ root.defaults = {
 		var cols = [];
 		cols.push({"title": ""});//row numbers column
 		yasr.results.getVariables().forEach(function(variable) {
-			cols.push({"title": variable, "visible": includeVariable(variable)});
+			cols.push({"title": "<span>" + variable + "</span>", "visible": includeVariable(variable)});
 		});
 		return cols;
 	},
@@ -26876,6 +27195,7 @@ root.defaults = {
 	 * @type object
 	 */
 	datatable: {
+		"autoWidth": false,
 		"order": [],//disable initial sorting
 		"pageLength": 50,//default page length
     	"lengthMenu": [[10, 50, 100, 1000, -1], [10, 50, 100, 1000, "All"]],//possible page lengths
@@ -26901,7 +27221,7 @@ root.defaults = {
         	}
 		},
 		"columnDefs": [
-			{ "width": "12px", "orderable": false, "targets": 0  }//disable row sorting for first col
+			{ "width": "32px", "orderable": false, "targets": 0  }//disable row sorting for first col
 		],
 	},
 };
@@ -26912,7 +27232,7 @@ root.version = {
 	"jquery-datatables": $.fn.DataTable.version
 };
 
-},{"../package.json":62,"./bindingsToCsv.js":63,"./imgs.js":69,"datatables":undefined,"jquery":undefined,"yasgui-utils":59}],80:[function(require,module,exports){
+},{"../lib/colResizable-1.4.js":41,"../package.json":63,"./bindingsToCsv.js":64,"./imgs.js":70,"datatables":undefined,"jquery":undefined,"yasgui-utils":60}],81:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 module.exports = {
@@ -26987,47 +27307,56 @@ module.exports = {
 		}
 	},
 };
-},{"jquery":undefined}],81:[function(require,module,exports){
+},{"jquery":undefined}],82:[function(require,module,exports){
 'use strict';
-module.exports = {};
-},{}],82:[function(require,module,exports){
+module.exports = {
+	persistent: function(yasgui) {
+		return "yasgui_" + $(yasgui.wrapperElement).closest('[id]').attr('id');
+	}
+};
+},{}],83:[function(require,module,exports){
 'use strict';
 
 module.exports = {
+	persistent: null,//handled in YASGUI directly
 	sparql: {
 		showQueryButton: true,
 		acceptHeaderGraph: "text/turtle",
 		acceptHeaderSelect: "application/sparql-results+json"
 	}
 };
-},{}],83:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 'use strict';
 module.exports = {
 	yasgui: '<svg   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" viewBox="0 0 603.99 522.51"  width="100%"   height="100%"   id="svg2"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="yasgui (copy).svg">  <defs     id="defs4">    <linearGradient       id="linearGradient5249"       osb:paint="solid">      <stop         style="stop-color:#3b3b3b;stop-opacity:1;"         offset="0"         id="stop5251" />    </linearGradient>    <inkscape:path-effect       effect="skeletal"       id="path-effect2997"       is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"       id="path-effect2995"       is_visible="true" />    <inkscape:path-effect       effect="skeletal"       id="path-effect2991"       is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"       id="path-effect2989"       is_visible="true" />  </defs>  <sodipodi:namedview     id="base"     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1.0"     inkscape:pageopacity="0.0"     inkscape:pageshadow="2"     inkscape:zoom="0.35"     inkscape:cx="-469.55507"     inkscape:cy="840.5292"     inkscape:document-units="px"     inkscape:current-layer="layer1"     showgrid="false"     inkscape:window-width="1855"     inkscape:window-height="1056"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0" />  <metadata     id="metadata7">    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />        <dc:title />      </cc:Work>    </rdf:RDF>  </metadata>  <g     inkscape:label="Layer 1"     inkscape:groupmode="layer"     id="layer1"     transform="translate(-50.966817,-280.33262)">    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"       id="rect5293-6-8"       width="40.000004"       height="478.57324"       x="-374.48849"       y="103.99496"       transform="matrix(-2.679181e-4,-0.99999996,0.99999993,-3.6684387e-4,0,0)" />    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"       id="rect5293-5-7"       width="40.000004"       height="560"       x="651.37634"       y="-132.06581"       transform="matrix(0.74639582,0.66550228,-0.66550228,0.74639582,0,0)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-9-7"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,92.132758,620.67568)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-3-0"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,457.84706,214.96137)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-1-2"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,-30.152972,219.81853)" />    <text       xml:space="preserve"       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#3b3b3b;fill-opacity:1;stroke:none;font-family:Sans"       x="-387.96655"       y="630.61871"       id="text5479-9-0-6-4"       sodipodi:linespacing="125%"       transform="matrix(0.68747304,-0.7262099,0.7262099,0.68747304,0,0)"       inkscape:transform-center-x="239.86342"       inkscape:transform-center-y="-26.958107"><tspan         sodipodi:role="line"         id="tspan5481-8-8-9-7"         x="-387.96655"         y="630.61871"         style="font-size:200px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;fill-opacity:1;font-family:RR Beaver;-inkscape-font-specification:RR Beaver">YAS</tspan></text>    <text       xml:space="preserve"       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Theorem NBP;-inkscape-font-specification:Theorem NBP"       x="349.24683"       y="750.29126"       id="text5483-4-3-2"       sodipodi:linespacing="125%"><tspan         sodipodi:role="line"         id="tspan5485-6-5-7"         x="349.24683"         y="750.29126"         style="font-size:170px;font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;letter-spacing:20px;fill:#c80000;fill-opacity:1;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic">GUI</tspan></text>    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-7-4-1-4"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.4331683,0,0,0.38716814,381.83246,155.72497)" />  </g></svg>',
 	cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
 	plus: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   viewBox="5 -10 59.259258 79.999999"   enable-background="new 0 0 100 100"   xml:space="preserve"   height="100%"   width="100%"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_79066_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="6.675088"     inkscape:cx="46.670641"     inkscape:cy="16.037704"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Your_Icon" /><g          transform="translate(-23.47037,-20)"><g       ><g         ><g            /></g><g          /></g></g><path     d="M 67.12963,22.5 H 42.129629 v -25 c 0,-4.142 -3.357,-7.5 -7.5,-7.5 -4.141999,0 -7.5,3.358 -7.5,7.5 v 25 H 2.1296295 c -4.142,0 -7.5,3.358 -7.5,7.5 0,4.143 3.358,7.5 7.5,7.5 H 27.129629 v 25 c 0,4.143 3.358001,7.5 7.5,7.5 4.143,0 7.5,-3.357 7.5,-7.5 v -25 H 67.12963 c 4.143,0 7.5,-3.357 7.5,-7.5 0,-4.142 -3.357,-7.5 -7.5,-7.5 z"          inkscape:connector-curvature="0"     style="fill:#000000" /></svg>',
 };
-},{}],84:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 //extend jquery
 
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 require('./outsideclick.js');
 require('./tab.js');
 
-},{"./outsideclick.js":85,"./tab.js":86,"jquery":undefined}],85:[function(require,module,exports){
-
+},{"./outsideclick.js":86,"./tab.js":87,"jquery":undefined}],86:[function(require,module,exports){
+'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 
 $.fn.onOutsideClick = function(onOutsideClick, config) {
 	config = $.extend({
-		skipFirst: false
+		skipFirst: false,
+		allowedElements: $()
 	}, config)
 	var el = $(this);
 	
 	var handler = function(e) {
-		if (!el.is(e.target) // if the target of the click isn't the container...
-				&& el.has(e.target).length === 0) // ... nor a descendant of the container
-		{
+		var clickOutsideIssued = function(elCheck) {
+			return !elCheck.is(e.target) // if the target of the click isn't the container...
+			&& elCheck.has(e.target).length === 0  // ... nor a descendant of the container
+		};
+		
+		if (clickOutsideIssued(el) && clickOutsideIssued(config.allowedElements)) {
 			if (config.skipFirst) {
 				config.skipFirst = false;
 			} else {
@@ -27042,7 +27371,7 @@ $.fn.onOutsideClick = function(onOutsideClick, config) {
 }
 
 
-},{"jquery":undefined}],86:[function(require,module,exports){
+},{"jquery":undefined}],87:[function(require,module,exports){
 //Based on Bootstrap: tab.js v3.3.1
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
   'use strict';
@@ -27188,9 +27517,10 @@ var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}}
     .on('click.bs.tab.data-api', '[data-toggle="pill"]', clickHandler)
 
 
-},{"jquery":undefined}],87:[function(require,module,exports){
+},{"jquery":undefined}],88:[function(require,module,exports){
 "use strict";
-var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
+var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
+	yUtils = require('yasgui-utils');
 require('./jquery/extendJquery.js');//extend some own jquery plugins
 
 
@@ -27199,8 +27529,27 @@ require('./jquery/extendJquery.js');//extend some own jquery plugins
 var root = module.exports = function(parent, options) {
 	var yasgui = {};
 	yasgui.wrapperElement = $('<div class="yasgui"></div>').appendTo($(parent));
-	yasgui.tabManager = require('./tabManager.js')(yasgui);
+	yasgui.options = $.extend(true, {}, root.defaults, options);
 	
+	
+	var persistencyId = null;
+	if (yasgui.options.persistent) persistencyId = (typeof yasgui.options.persistent == 'function'? yasgui.options.persistent(yasgui): yasgui.options.persistent);
+	
+	yasgui.store = function() {
+		if (yasgui.persistentOptions) {
+			yUtils.storage.set(persistencyId, yasgui.persistentOptions);
+		}
+	};
+	
+	var getSettingsFromStorage = function() {
+		var settings = yUtils.storage.get(persistencyId);
+		if (!settings) settings = {};//initialize blank. Default vals will be set as we go
+		return settings;
+	}
+	
+	yasgui.persistentOptions = getSettingsFromStorage();
+	
+	yasgui.tabManager = require('./tabManager.js')(yasgui);
 	yasgui.tabManager.init();
 	return yasgui;
 };
@@ -27212,21 +27561,36 @@ root.YASQE = require('yasgui-yasqe');
 root.YASQE.defaults = $.extend(true, root.YASQE.defaults, require('./defaultsYasqe.js'));
 root.YASR = require('yasgui-yasr');
 root.defaults = require('./defaults.js');
-},{"./defaults.js":81,"./defaultsYasqe.js":82,"./jquery/extendJquery.js":84,"./tabManager.js":89,"jquery":undefined,"yasgui-yasqe":35,"yasgui-yasr":70}],88:[function(require,module,exports){
+},{"./defaults.js":82,"./defaultsYasqe.js":83,"./jquery/extendJquery.js":85,"./tabManager.js":90,"jquery":undefined,"yasgui-utils":6,"yasgui-yasqe":35,"yasgui-yasr":71}],89:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	utils = require('./utils.js'),
 	YASGUI = require('./main.js');
-
-module.exports = function(yasgui, id, name) {
+module.exports = function(yasgui, id) {
+	//we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
+	//We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
+	var defaultPersistentYasqe = {
+		endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
+		acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
+		acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
+		args: YASGUI.YASQE.defaults.sparql.args,
+		defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
+		namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
+		requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod,
+	};
 	
-	var tab = {id: id, name: name};
+	var persistentOptions = yasgui.persistentOptions.tabManager.tabs[id];
+	if (!persistentOptions.yasqe) persistentOptions.yasqe = defaultPersistentYasqe;
+	var tab = {
+		persistentOptions: persistentOptions
+	};
+	
 	var menu = require('./tabPaneMenu.js')(yasgui, tab);
-	var $pane = $('<div>', {id:id, style: 'position:relative', class: 'tab-pane', role: 'tabpanel'}).appendTo(yasgui.tabManager.$tabPanesParent);
+	var $pane = $('<div>', {id:persistentOptions.id, style: 'position:relative', class: 'tab-pane', role: 'tabpanel'}).appendTo(yasgui.tabManager.$tabPanesParent);
 	
 	var $paneContent = $('<div>', {class:'wrapper'}).appendTo($pane);
 	var $paneMenu = menu.initWrapper().appendTo($pane);
-	
+	var $endpointInput;
 	var addControlBar = function() {
 		var $controlBar = $('<div>', {class: 'controlbar'}).appendTo($paneContent);
 		var $form = $('<form>', {class: 'form-inline', role: 'form'}).appendTo($controlBar);
@@ -27253,38 +27617,56 @@ module.exports = function(yasgui, id, name) {
 		
 		//add endpoint text input
 		var $formGroup = $('<div>', {class: 'form-group'}).appendTo($form);
-		$('<input>', {type: 'text', class: 'form-control endpointText', placeholder: 'Enter endpoint'})
-			.on('keyup', function(){tab.yasqe.options.sparql.endpoint = this.value;})
+		$endpointInput = $('<input>', {type: 'text', class: 'form-control endpointText', placeholder: 'Enter endpoint'})
+			.on('keyup', function(){
+				tab.persistentOptions.yasqe.endpoint = this.value;
+				yasgui.store();
+			})
+			.val(tab.persistentOptions.yasqe.endpoint)
 			.appendTo($formGroup);
 	};
 	
 	addControlBar();
-	var yasqeContainer = $('<div>', {id: 'yasqe_' + id}).appendTo($paneContent);
-	var yasrContainer = $('<div>', {id: 'yasq_' + id}).appendTo($paneContent);
+	var yasqeContainer = $('<div>', {id: 'yasqe_' + persistentOptions.id}).appendTo($paneContent);
+	var yasrContainer = $('<div>', {id: 'yasq_' + persistentOptions.id}).appendTo($paneContent);
 	
-	
-	tab.yasqe = YASGUI.YASQE(yasqeContainer[0]);
+	var yasqeOptions = {};
+	if (persistentOptions.yasqe.value) yasqeOptions.value = persistentOptions.yasqe.value;
+	tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
+	tab.yasqe.on('blur', function(yasqe) {
+			persistentOptions.yasqe.value = yasqe.getValue();
+			yasgui.store();
+		});
 	tab.yasr = YASGUI.YASR(yasrContainer[0], {
 		//this way, the URLs in the results are prettified using the defined prefixes in the query
 		getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
 	});
-
-	/**
-	* Set some of the hooks to link YASR and YASQE
-	*/
-	tab.yasqe.options.sparql.callbacks.success =  function(data, textStatus, xhr) {
-		tab.yasr.setResponse({response: data, contentType: xhr.getResponseHeader("Content-Type")});
-	};
-	tab.yasqe.options.sparql.callbacks.error = function(xhr, textStatus, errorThrown) {
-		var exceptionMsg = textStatus + " (#" + xhr.status + ")";
-		if (errorThrown && errorThrown.length) exceptionMsg += ": " + errorThrown;
-		tab.yasr.setResponse({exception: exceptionMsg});
-	};
+	tab.yasqe.options.sparql.callbacks.complete = tab.yasr.setResponse;
+	tab.destroy = function() {
+		console.log('todo: proper destorying of local storage');
+	}
+//	tab.generatePersistentSettings = function() {
+//		//we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
+//		//We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
+//		return  {
+//			name: tab.name,
+//			yasqe: {
+//				endpoint: tab.yasqe.options.sparql.endpoint,
+//				acceptHeaderGraph: tab.yasqe.options.sparql.acceptHeaderGraph,
+//				acceptHeaderSelect: tab.yasqe.options.sparql.acceptHeaderSelect,
+//				args: tab.yasqe.options.sparql.args,
+//				defaultGraphs: tab.yasqe.options.sparql.defaultGraphs,
+//				namedGraphs: tab.yasqe.options.sparql.namedGraphs,
+//				requestMethod: tab.yasqe.options.sparql.requestMethod,
+//			}
+//		}
+//	};
+	
 	
 	
 	return tab;
 }
-},{"./main.js":87,"./tabPaneMenu.js":90,"./utils.js":91,"jquery":undefined}],89:[function(require,module,exports){
+},{"./main.js":88,"./tabPaneMenu.js":91,"./utils.js":92,"jquery":undefined}],90:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	utils = require('yasgui-utils'),
@@ -27292,13 +27674,22 @@ var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}}
 require('jquery-ui/position');
 
 module.exports = function(yasgui) {
+	if (!yasgui.persistentOptions.tabManager) {
+		yasgui.persistentOptions.tabManager = {}
+	}
+	var persistentOptions = yasgui.persistentOptions.tabManager;
 	var manager = {};
+	//tab object (containing e.g. yasqe/yasr)
 	manager.tabs = {};
+	
+	//the actual tabs parent containing the ul of tab buttons
 	var $tabsParent;
 	
+	//contains the tabs and panes
 	var $tabPanel = null;
+	
+	//context menu for the tab context menu
 	var $contextMenu = null;
-	var panes = {};
 	
 	var getName = function(name, i) {
 		if (!name) name = "Query";
@@ -27310,7 +27701,7 @@ module.exports = function(yasgui) {
 	}
 	var nameTaken = function(name) {
 		for (var tabId in manager.tabs) {
-			if (manager.tabs[tabId].name == name) {
+			if (manager.tabs[tabId].persistentOptions.name == name) {
 				return true;
 			}
 		}
@@ -27323,15 +27714,17 @@ module.exports = function(yasgui) {
 	
 	
 	manager.init = function() {
+		
 		//tab panel contains tabs and panes
 		$tabPanel = $('<div>', {role: 'tabpanel'}).appendTo(yasgui.wrapperElement);
 		
 		//init tabs
 		$tabsParent = $('<ul>', {class:'nav nav-tabs mainTabs', role: 'tablist'}).appendTo($tabPanel);
 		
+		
 		//init add button
 		var $addTab= $('<a>', {role: 'addTab'})
-			.click(function(){addTab(true)})
+			.click(function(){addTab()})
 			.text('+');
 		$tabsParent.append(
 				$("<li>", {role: "presentation"})
@@ -27341,108 +27734,190 @@ module.exports = function(yasgui) {
 		//init panes
 		manager.$tabPanesParent = $('<div>', {class: 'tab-content'}).appendTo($tabPanel);
 		
-		addTab(true);
+		if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
+			persistentOptions.tabOrder = [];
+			persistentOptions.selected = null;
+			persistentOptions.tabs =  {};
+			addTab();
+		} else {
+			persistentOptions.tabOrder.forEach(function(tabId) {
+				if (tabId in persistentOptions.tabs) {
+					addTab(tabId);
+				}
+			});
+			
+		}
 		$tabsParent.sortable({
 			placeholder: "tab-sortable-highlight",
 			items: 'li:has([data-toggle="tab"])',//don't allow sorting after ('+') icon
-			forcePlaceholderSize: true
+			forcePlaceholderSize: true,
+			update: function() {
+				var newTabOrder = [];
+				$tabsParent.find('a[data-toggle="tab"]').each(function(){
+					newTabOrder.push($(this).attr('aria-controls'));
+				});
+				persistentOptions.tabOrder = newTabOrder;
+				yasgui.store();
+			}
 				
 		});
 		
 		//Add context menu
-		$contextMenu = $('<div>', {class:'tabDropDown'})
-			.append($('<ul>', {class:'dropdown-menu', role: 'menu'})
-					.append($('<li>').text('Action'))
-			)
-			.onOutsideClick(function() {
-				$contextMenu.hide();
-			}, {skipFirst: true})
-			.appendTo(yasgui.wrapperElement)
-//		<div id="context-menu" style="position: absolute; z-index: 9999; top: 255px; left: 663px;" class="open">
-//      	<ul class="dropdown-menu" role="menu">
-//        <li><a tabindex="-1">Action</a></li>
-//           <li><a tabindex="-1">Another action</a></li>
-//           <li><a tabindex="-1">Something else here</a></li>
-//           <li class="divider"></li>
-//           <li><a tabindex="-1">Separated link</a></li>
-//      	</ul>
-//      </div>
-		
-		
+		$contextMenu = $('<div>', {class:'tabDropDown'}).appendTo(yasgui.wrapperElement);
+		var $contextMenuList = $('<ul>', {class:'dropdown-menu', role: 'menu'}).appendTo($contextMenu);
+		var addMenuItem = function(name, onClick) {
+			var $listItem = $('<li>', {role: 'presentation'}).appendTo($contextMenuList);
+			if (name) {
+				$listItem.append($('<a>', {role:'menuitem', href: '#'}).text(name))
+					.click(function(){
+						$contextMenu.hide();
+						event.preventDefault();
+						if (onClick) onClick($contextMenu.attr('target-tab'));
+					})
+			} else {
+				$listItem.addClass('divider');
+			}
+		};
+		addMenuItem('Rename', function(tabId) {
+			$tabsParent.find('a[href="#' +tabId+ '"]').dblclick();
+		});
+		addMenuItem('Copy', function(tabId){
+			console.log('todo');
+		});
+		addMenuItem();
+		addMenuItem('Close', closeTab);
+		addMenuItem('Close others', function(tabId) {
+			$tabsParent.find('a[role="tab"]').each(function() {
+				var currentId = $(this).attr('aria-controls');
+				if (currentId != tabId) closeTab(currentId);
+			})
+		});
+		addMenuItem('Close all', function() {
+			$tabsParent.find('a[role="tab"]').each(function() {
+				closeTab($(this).attr('aria-controls'));
+			})
+		});
 	};
-	
-	var closeTab = function(tabEl, id) {
+	var selectTab = function(id) {
+		$tabsParent.find('a[aria-controls="' + id + '"]').tab('show');
+	}
+	var closeTab = function(id) {
+		/**
+		 * cleanup local storage
+		 */
+		manager.tabs[id].destroy();
+		
+		/**cleanup variables**/
 		delete manager.tabs[id];
-		tabEl.parents('li').remove();
+		delete persistentOptions.tabs[id];
+		var orderIndex = persistentOptions.tabOrder.indexOf(id);
+		if (orderIndex > -1) persistentOptions.tabOrder.splice(orderIndex, 1);
+		
+		/**
+		 * select new tab
+		 */
+		var newSelectedIndex = null;
+		if (persistentOptions.tabOrder[orderIndex]) {
+			//use the tab now in position of the old one
+			newSelectedIndex = orderIndex;
+		} else if (persistentOptions.tabOrder[orderIndex-1]) {
+			//use the tab in the previous position
+			newSelectedIndex = orderIndex-1;
+		}
+		if (newSelectedIndex !== null) selectTab(persistentOptions.tabOrder[newSelectedIndex]);
+		
+		/**
+		 * cleanup dom
+		 */
+		$tabsParent.find('a[href="#' + id + '"]').closest('li').remove();
         $("#"+id).remove();
+        
+        
+        yasgui.store();
 	};
-	var addTab = function(active, id, name) {
-		if (!id) id = getRandomId();
-		if (!name) name = getName();
+	var addTab = function(tabId) {
+		var newItem = !tabId;
+		if (!tabId) tabId = getRandomId();
+		if (!persistentOptions.tabs[tabId]) {
+			//initialize
+			persistentOptions.tabs[tabId] = {
+				name: getName(),
+				id: tabId
+			}
+		}
+		var persistentTabOptions = persistentOptions.tabs[tabId]; 
 		//first add tab
-		var $tabToggle = $('<a>', {href: '#' + id, 'aria-controls': id,  role: 'tab', 'data-toggle': 'tab'})
+		var $tabToggle = $('<a>', {href: '#' + tabId, 'aria-controls': tabId,  role: 'tab', 'data-toggle': 'tab'})
 			.click(function (e) {
 				e.preventDefault();
 				$(this).tab('show');
-				manager.tabs[id].yasqe.refresh();
+				manager.tabs[tabId].yasqe.refresh();
 			})
-			.append($('<span>').text(name))
+			.on('shown.bs.tab', function (e) {
+				persistentOptions.selected = $(this).attr('aria-controls');
+				yasgui.store();
+			})
+			.append($('<span>').text(persistentTabOptions.name))
 			.append(
 				$('<button>',{ class:"close",type:"button"})
 					.text('x')
 					.click(function() {
-						closeTab($(this), id);
+						closeTab(tabId);
 					})
 			);
 		var $tabRename = $('<div><input></div>');
 		
-		$tabsParent.find('li:has(a[role="addTab"])').before(
-				$("<li>", {role: "presentation"})
-					.append($tabToggle)
-					
-					.append($tabRename)
-					.dblclick(function(){
-						var el = $(this);
-						var val = el.find('span').text();
-						el.addClass('rename');
-						el.find('input').val(val);
-						el.onOutsideClick(function(){
-							var val = el.find('input').val();
-							$tabToggle.find('span').text(el.find('input').val());
-							el.removeClass('rename');
-						})
-					})
-					.bind('contextmenu', function(e){ 
-				    	e.preventDefault();
-				    	$contextMenu.show();
-				    	$contextMenu
-				    		.addClass('open')
-				    		.position({
-				    			my: "left top",
-				    	        at: "left bottom",
-				    	        of: $(this),
-				    	        collision: "fit",
-				    		})
-				    }) 
-		);
+		var $tabItem = $("<li>", {role: "presentation"})
+			.append($tabToggle)
+			
+			.append($tabRename)
+			.dblclick(function(){
+				var el = $(this);
+				var val = el.find('span').text();
+				el.addClass('rename');
+				el.find('input').val(val);
+				el.onOutsideClick(function(){
+					var tabId = el.find('a[role="tab"]').attr('aria-controls');
+					var val = el.find('input').val();
+					$tabToggle.find('span').text(el.find('input').val());
+					persistentOptions.tabs[tabId].name = val;
+					yasgui.store();
+					el.removeClass('rename');
+				})
+			})
+			.bind('contextmenu', function(e){ 
+		    	e.preventDefault();
+		    	$contextMenu
+		    		.show()
+			    	.onOutsideClick(function() {
+						$contextMenu.hide();
+					}, {allowedElements: $(this).closest('li')})
+		    		.addClass('open')
+		    		.position({
+		    			my: "left top-3",
+		    	        at: "left bottom",
+		    	        of: $(this),
+		    	        collision: "fit",
+		    		})
+		    		.attr('target-tab', $tabItem.find('a[role="tab"]').attr('aria-controls'))
+		    });
 		
 		
-		manager.tabs[id] = require('./tab.js')(yasgui, id, name);
-		if (active) {
+		$tabsParent.find('li:has(a[role="addTab"])').before($tabItem);
+		
+		if (newItem) persistentOptions.tabOrder.push(tabId);
+		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId);
+		if (newItem || persistentOptions.selected == tabId) {
 			$tabToggle.tab('show');
-			manager.tabs[id].yasqe.refresh();
+			manager.tabs[tabId].yasqe.refresh();
 		}
 	};
 	
-	manager.current = function() {
-		
-	};
-
 	return manager;
 };
 
 
-},{"./imgs.js":83,"./tab.js":88,"jquery":undefined,"jquery-ui/position":3,"yasgui-utils":6}],90:[function(require,module,exports){
+},{"./imgs.js":84,"./tab.js":89,"jquery":undefined,"jquery-ui/position":3,"yasgui-utils":6}],91:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	imgs = require('./imgs.js'),
@@ -27465,7 +27940,7 @@ module.exports = function(yasgui, tab) {
 	var initWrapper = function() {
 		$menu = $('<nav>', {class: 'menu-slide', id: 'navmenu'});
 		$menu.append(
-				$(utils.svg.getElement(imgs.yasgui, {width: '70px', height: '58px'})).addClass('yasguiLogo')
+			$(utils.svg.getElement(imgs.yasgui, {width: '70px', height: '58px'})).addClass('yasguiLogo')
 		);
 		
 		//tab panel contains tabs and panes
@@ -27483,7 +27958,7 @@ module.exports = function(yasgui, tab) {
 		 * Init request tab
 		 */
 		var li = $("<li>", {role: "presentation"}).appendTo($tabsParent);
-		var reqPaneId = 'yasgui_reqConfig_' +tab.id;
+		var reqPaneId = 'yasgui_reqConfig_' +tab.persistentOptions.id;
 		li.append(
 			$('<a>', {href: '#' + reqPaneId, 'aria-controls': reqPaneId,  role: 'tab', 'data-toggle': 'tab'})
 			.text("Configure Request")
@@ -27547,7 +28022,7 @@ module.exports = function(yasgui, tab) {
 		 * Init history tab
 		 */
 		var li = $("<li>", {role: "presentation"}).appendTo($tabsParent);
-		var historyPaneId = 'yasgui_history_' +tab.id;
+		var historyPaneId = 'yasgui_history_' +tab.persistentOptions.id;
 		li.append(
 			$('<a>', {href: '#' + historyPaneId, 'aria-controls': historyPaneId,  role: 'tab', 'data-toggle': 'tab'})
 			.text("History")
@@ -27564,7 +28039,7 @@ module.exports = function(yasgui, tab) {
 		 * Init collections tab
 		 */
 		var li = $("<li>", {role: "presentation"}).appendTo($tabsParent);
-		var collectionsPaneId = 'yasgui_collections_' +tab.id;
+		var collectionsPaneId = 'yasgui_collections_' +tab.persistentOptions.id;
 		li.append(
 			$('<a>', {href: '#' + collectionsPaneId, 'aria-controls': collectionsPaneId,  role: 'tab', 'data-toggle': 'tab'})
 			.text("Collections")
@@ -27593,16 +28068,21 @@ module.exports = function(yasgui, tab) {
 					});
 					if (lastHasContent) addTextInputsTo($el, num, true);
 				})
-				.css('width', (90/num) + '%')
+				.css('width', (92/num) + '%')
 				.appendTo($inputsAndTogglesContainer);
 		}
 		$inputsAndTogglesContainer.append(
-				$(utils.svg.getElement(imgs.cross, {width: '14px', height: '14px'}))
-				.addClass('closeBtn')
-				.css('display', '')//let our style sheets do the work here
-				.click(function(){
+				$('<button>',{ class:"close",type:"button"})
+				.text('x')
+				.click(function() {
 					$(this).closest('.textInputsRow').remove();
 				})
+//				$(utils.svg.getElement(imgs.cross, {width: '14px', height: '14px'}))
+//				.addClass('closeBtn')
+//				.css('display', '')//let our style sheets do the work here
+//				.click(function(){
+//					$(this).closest('.textInputsRow').remove();
+//				})
 		);
 		if (animate) {
 			$inputsAndTogglesContainer.hide().appendTo($el).show('fast');
@@ -27617,7 +28097,7 @@ module.exports = function(yasgui, tab) {
 		if ($menu.find('.tabPaneMenuTabs li.active').length == 0) $menu.find('.tabPaneMenuTabs a:first').tab('show');
 		
 		//we got most of the html. Now set the values in the html
-		var options = tab.yasqe.options.sparql;
+		var options = tab.persistentOptions.yasqe;
 		
 		
 		//Request method
@@ -27658,7 +28138,7 @@ module.exports = function(yasgui, tab) {
 	};
 	
 	var store = function() {
-		var options = tab.yasqe.options.sparql;
+		var options = tab.persistentOptions.yasqe;
 		if ($btnPost.hasClass('active')) {
 			options.requestMethod = "POST"; 
 		} else if ($btnGet.hasClass('active')) {
@@ -27704,6 +28184,7 @@ module.exports = function(yasgui, tab) {
 			if (inputVals[0] && inputVals[0].trim().length > 0) namedGraphs.push(inputVals[0]);
 		});
 		options.namedGraphs = namedGraphs;
+		yasgui.store();
 	};
 	
 	
@@ -27716,7 +28197,7 @@ module.exports = function(yasgui, tab) {
 };
 
 
-},{"./imgs.js":83,"jquery":undefined,"yasgui-utils":6}],91:[function(require,module,exports){
+},{"./imgs.js":84,"jquery":undefined,"yasgui-utils":6}],92:[function(require,module,exports){
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 module.exports = {
 	escapeHtmlEntities : function(unescapedString) {

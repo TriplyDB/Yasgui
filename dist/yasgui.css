@@ -4291,26 +4291,30 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     .yasgui .menu-slide .logo {
       margin-left: auto;
       margin-right: 0; }
-    .yasgui .menu-slide .requestConfig .textInputsRow:hover:not(:last-child) .closeBtn {
-      display: inline-block; }
-    .yasgui .menu-slide .requestConfig .closeBtn {
-      fill: #555555;
-      display: none;
-      cursor: pointer; }
-    .yasgui .menu-slide .requestConfig .textInputsRow * {
-      margin-right: 3px; }
-    .yasgui .menu-slide .requestConfig .row {
-      display: table;
-      margin: 5px 0px; }
-    .yasgui .menu-slide .requestConfig label {
-      font-size: 80%; }
-    .yasgui .menu-slide .requestConfig .rowLabel {
-      font-weight: bold; }
-    .yasgui .menu-slide .requestConfig [class*="col-"] {
-      float: none;
-      display: table-cell;
-      vertical-align: middle;
-      padding: 5px; }
+    .yasgui .menu-slide .requestConfig {
+      /* 		.closeBtn { */
+      /*          	fill: $gray; */
+      /*          	display:none; */
+      /*          	cursor:pointer; */
+      /* 		} */ }
+      .yasgui .menu-slide .requestConfig .textInputsRow:first-child .close {
+        display: none; }
+      .yasgui .menu-slide .requestConfig .close {
+        font-size: 18px; }
+      .yasgui .menu-slide .requestConfig .textInputsRow * {
+        margin: 5px 3px 0 0; }
+      .yasgui .menu-slide .requestConfig .row {
+        display: table;
+        margin: 5px 0px; }
+      .yasgui .menu-slide .requestConfig label {
+        font-size: 80%; }
+      .yasgui .menu-slide .requestConfig .rowLabel {
+        font-weight: bold; }
+      .yasgui .menu-slide .requestConfig [class*="col-"] {
+        float: none;
+        display: table-cell;
+        vertical-align: middle;
+        padding: 5px; }
   .yasgui .tab-pane.menu-open {
     -webkit-perspective: 1500px;
     perspective: 1500px;
@@ -5994,10 +5998,38 @@ li.CodeMirror-hint-active {
   vertical-align: middle; }
 
 .yasr table.dataTable thead th {
-  background: none !important; }
+  background: none !important;
+  border-right: 1px dotted gray;
+  padding: 7px 0px; }
+
+.yasr table.dataTable thead th:first-child, .yasr table.dataTable thead th:last-child {
+  border-right: 0; }
+
+.yasr table.dataTable thead th span {
+  margin-left: 5px; }
+
+.yasr table.dataTable td div {
+  -ms-word-break: break-all;
+  word-break: break-all;
+  /* Non standard for webkit */
+  word-break: break-word;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+  padding: 0px 5px; }
+
+.yasr .sortIcons {
+  float: right;
+  width: 8px;
+  height: 13px;
+  margin-right: 10px; }
 
 .yasr .pivotTable {
   margin-top: 5px; }
+
+.yasr .pivotTable > table {
+  background-color: white; }
 
 .yasr .pivotTable td.pvtAxisContainer, .yasr .pivotTable td.pvtVals {
   /**where vars are dragged to/from**/
