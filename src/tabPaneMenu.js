@@ -8,7 +8,7 @@ module.exports = function(yasgui, tab) {
 	var $tabsParent = null;
 	var $tabPanesParent = null;
 	var $paneReqConfig = null;
-	
+	var $histList = null;
 	
 	var $btnPost;
 	var $btnGet;
@@ -111,7 +111,9 @@ module.exports = function(yasgui, tab) {
 				$(this).tab('show')
 			})
 		);
-		var $reqPanel = $('<div>', {id: historyPaneId, role: 'tabpanel',class: 'tab-pane history container-fluid'}).appendTo($tabPanesParent);
+		
+		var $histPanel = $('<div>', {id: historyPaneId, role: 'tabpanel',class: 'tab-pane history container-fluid'}).appendTo($tabPanesParent);
+		$histList = $('<ul>', {class: 'list-group'}).appendTo($histPanel);
 		
 		
 		
@@ -171,8 +173,10 @@ module.exports = function(yasgui, tab) {
 		}
 	};
 
-	
 	var updateWrapper = function() {
+		/**
+		 * update request tab
+		 */
 		//if no tab is active, select first one
 		if ($menu.find('.tabPaneMenuTabs li.active').length == 0) $menu.find('.tabPaneMenuTabs a:first').tab('show');
 		
@@ -215,6 +219,41 @@ module.exports = function(yasgui, tab) {
 		}
 		addTextInputsTo($namedGraphsDiv, 1, false);//and, always add one item
 		
+		
+		
+		/**
+		 * update history tab
+		 */
+		$histList.empty();
+		if (yasgui.history.length == 0) {
+			$histList.append(
+				$('<a>', {class:'list-group-item disabled', href: '#'})
+					.text("No items in history yet")
+					.click(function(e){e.preventDefault()})
+			)
+		} else {
+			yasgui.history.forEach(function(histObject){
+				
+				var text = histObject.options.yasqe.endpoint;
+				if (histObject.resultSize) text += ' (' + histObject.resultSize + ' results)';
+				$histList.append(
+					$('<a>', {class:'list-group-item', href: '#', title: histObject.options.yasqe.value})
+						.text(text)
+						.click(function(e) {
+							//update tab
+							var tab = yasgui.tabManager.tabs[histObject.options.id];
+							$.extend(true, tab.persistentOptions, histObject.options);
+							tab.refreshYasqe();
+							
+							yasgui.store();
+							
+							//and close menu
+							$menu.closest('.tab-pane').removeClass('menu-open');
+							e.preventDefault();
+						})
+				)
+			});
+		}
 	};
 	
 	var store = function() {

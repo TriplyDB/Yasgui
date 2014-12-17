@@ -10,7 +10,7 @@ var root = module.exports = function(parent, options) {
 	var yasgui = {};
 	yasgui.wrapperElement = $('<div class="yasgui"></div>').appendTo($(parent));
 	yasgui.options = $.extend(true, {}, root.defaults, options);
-	
+	yasgui.history = [];
 	
 	var persistencyId = null;
 	if (yasgui.options.persistent) persistencyId = (typeof yasgui.options.persistent == 'function'? yasgui.options.persistent(yasgui): yasgui.options.persistent);

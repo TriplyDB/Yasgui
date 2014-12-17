@@ -2,7 +2,7 @@
 var $ = require('jquery'),
 	utils = require('./utils.js'),
 	YASGUI = require('./main.js');
-module.exports = function(yasgui, id) {
+module.exports = function(yasgui, id, name) {
 	//we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 	//We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
 	var defaultPersistentYasqe = {
@@ -15,8 +15,14 @@ module.exports = function(yasgui, id) {
 		requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod,
 	};
 	
+	if (!yasgui.persistentOptions.tabManager.tabs[id]) {
+		yasgui.persistentOptions.tabManager.tabs[id] = {
+			id: id,
+			name: name,
+			yasqe: defaultPersistentYasqe
+		}
+	}
 	var persistentOptions = yasgui.persistentOptions.tabManager.tabs[id];
-	if (!persistentOptions.yasqe) persistentOptions.yasqe = defaultPersistentYasqe;
 	var tab = {
 		persistentOptions: persistentOptions
 	};
@@ -70,14 +76,39 @@ module.exports = function(yasgui, id) {
 	if (persistentOptions.yasqe.value) yasqeOptions.value = persistentOptions.yasqe.value;
 	tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 	tab.yasqe.on('blur', function(yasqe) {
-			persistentOptions.yasqe.value = yasqe.getValue();
-			yasgui.store();
-		});
+		persistentOptions.yasqe.value = yasqe.getValue();
+		yasgui.store();
+	});
 	tab.yasr = YASGUI.YASR(yasrContainer[0], {
 		//this way, the URLs in the results are prettified using the defined prefixes in the query
 		getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
 	});
-	tab.yasqe.options.sparql.callbacks.complete = tab.yasr.setResponse;
+	tab.yasqe.options.sparql.callbacks.complete = function() {
+		tab.yasr.setResponse.apply(this, arguments);
+		
+		/**
+		 * store query in hist
+		 */
+		persistentOptions.yasqe.value = tab.yasqe.getValue();//in case the onblur hasnt happened yet
+		var resultSize = null;
+		if (tab.yasr.results.getBindings()) {
+			resultSize = tab.yasr.results.getBindings().length;
+		}
+		var histObject = {
+			options: $.extend(true, {}, persistentOptions),//create copy
+			resultSize: resultSize
+		};
+		delete histObject.options.name;//don't store this one
+		yasgui.history.unshift(histObject);
+	}
+	tab.setOptions = function() {
+	}
+	tab.refreshYasqe = function() {
+		$.extend(true, tab.yasqe.options.sparql, tab.persistentOptions.yasqe);
+		tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
+//		console.log(tab.yasqe.options);
+//		tab.yasqe.refresh();
+	}
 	tab.destroy = function() {
 		console.log('todo: proper destorying of local storage');
 	}

@@ -68,14 +68,9 @@ module.exports = function(yasgui) {
 		if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
 			persistentOptions.tabOrder = [];
 			persistentOptions.selected = null;
-			persistentOptions.tabs =  {};
 			addTab();
 		} else {
-			persistentOptions.tabOrder.forEach(function(tabId) {
-				if (tabId in persistentOptions.tabs) {
-					addTab(tabId);
-				}
-			});
+			persistentOptions.tabOrder.forEach(addTab);
 			
 		}
 		$tabsParent.sortable({
@@ -169,14 +164,15 @@ module.exports = function(yasgui) {
 	var addTab = function(tabId) {
 		var newItem = !tabId;
 		if (!tabId) tabId = getRandomId();
-		if (!persistentOptions.tabs[tabId]) {
-			//initialize
-			persistentOptions.tabs[tabId] = {
-				name: getName(),
-				id: tabId
-			}
-		}
-		var persistentTabOptions = persistentOptions.tabs[tabId]; 
+		var name = (persistentOptions.tabs[tabId]? persistentOptions.tabs[tabId].name: getName());
+//		if (!persistentOptions.tabs[tabId]) {
+//			//initialize
+//			persistentOptions.tabs[tabId] = {
+//				name: getName(),
+//				id: tabId
+//			}
+//		}
+//		var persistentTabOptions = persistentOptions.tabs[tabId]; 
 		//first add tab
 		var $tabToggle = $('<a>', {href: '#' + tabId, 'aria-controls': tabId,  role: 'tab', 'data-toggle': 'tab'})
 			.click(function (e) {
@@ -188,7 +184,7 @@ module.exports = function(yasgui) {
 				persistentOptions.selected = $(this).attr('aria-controls');
 				yasgui.store();
 			})
-			.append($('<span>').text(persistentTabOptions.name))
+			.append($('<span>').text(name))
 			.append(
 				$('<button>',{ class:"close",type:"button"})
 					.text('x')
@@ -237,13 +233,16 @@ module.exports = function(yasgui) {
 		$tabsParent.find('li:has(a[role="addTab"])').before($tabItem);
 		
 		if (newItem) persistentOptions.tabOrder.push(tabId);
-		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId);
+		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId, name);
 		if (newItem || persistentOptions.selected == tabId) {
 			$tabToggle.tab('show');
 			manager.tabs[tabId].yasqe.refresh();
 		}
 	};
 	
+	manager.current = function() {
+		return manager.tabs[persistentOptions.selected];
+	}
 	return manager;
 };
 
