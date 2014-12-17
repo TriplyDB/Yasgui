@@ -9,29 +9,28 @@ require('./jquery/extendJquery.js');//extend some own jquery plugins
 var root = module.exports = function(parent, options) {
 	var yasgui = {};
 	yasgui.wrapperElement = $('<div class="yasgui"></div>').appendTo($(parent));
-	yasgui.tabManager = require('./tabManager.js')(yasgui);
 	yasgui.options = $.extend(true, {}, root.defaults, options);
-	yasgui.tabManager.init();
 	
 	
 	var persistencyId = null;
 	if (yasgui.options.persistent) persistencyId = (typeof yasgui.options.persistent == 'function'? yasgui.options.persistent(yasgui): yasgui.options.persistent);
-	yasgui.generatePersistentSettings = function() {
-		return {
-			tabManager: yasgui.tabManager.generatePersistentSettings()
-		};
-	};
+	
 	yasgui.store = function() {
-		if (persistencyId) {
-			var settingsToStore = yasgui.generatePersistentSettings();
-			if (settingsToStore) {
-				yUtils.storage.set(persistencyId, settingsToStore);
-			}
+		if (yasgui.persistentOptions) {
+			yUtils.storage.set(persistencyId, yasgui.persistentOptions);
 		}
 	};
-	yasgui.getFromStorage = function() {
-		return yUtils.storage.get(persistencyId);
+	
+	var getSettingsFromStorage = function() {
+		var settings = yUtils.storage.get(persistencyId);
+		if (!settings) settings = {};//initialize blank. Default vals will be set as we go
+		return settings;
 	}
+	
+	yasgui.persistentOptions = getSettingsFromStorage();
+	
+	yasgui.tabManager = require('./tabManager.js')(yasgui);
+	yasgui.tabManager.init();
 	return yasgui;
 };
 

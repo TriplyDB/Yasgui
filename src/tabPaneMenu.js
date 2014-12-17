@@ -20,7 +20,7 @@ module.exports = function(yasgui, tab) {
 	var initWrapper = function() {
 		$menu = $('<nav>', {class: 'menu-slide', id: 'navmenu'});
 		$menu.append(
-				$(utils.svg.getElement(imgs.yasgui, {width: '70px', height: '58px'})).addClass('yasguiLogo')
+			$(utils.svg.getElement(imgs.yasgui, {width: '70px', height: '58px'})).addClass('yasguiLogo')
 		);
 		
 		//tab panel contains tabs and panes
@@ -38,7 +38,7 @@ module.exports = function(yasgui, tab) {
 		 * Init request tab
 		 */
 		var li = $("<li>", {role: "presentation"}).appendTo($tabsParent);
-		var reqPaneId = 'yasgui_reqConfig_' +tab.id;
+		var reqPaneId = 'yasgui_reqConfig_' +tab.persistentOptions.id;
 		li.append(
 			$('<a>', {href: '#' + reqPaneId, 'aria-controls': reqPaneId,  role: 'tab', 'data-toggle': 'tab'})
 			.text("Configure Request")
@@ -102,7 +102,7 @@ module.exports = function(yasgui, tab) {
 		 * Init history tab
 		 */
 		var li = $("<li>", {role: "presentation"}).appendTo($tabsParent);
-		var historyPaneId = 'yasgui_history_' +tab.id;
+		var historyPaneId = 'yasgui_history_' +tab.persistentOptions.id;
 		li.append(
 			$('<a>', {href: '#' + historyPaneId, 'aria-controls': historyPaneId,  role: 'tab', 'data-toggle': 'tab'})
 			.text("History")
@@ -119,7 +119,7 @@ module.exports = function(yasgui, tab) {
 		 * Init collections tab
 		 */
 		var li = $("<li>", {role: "presentation"}).appendTo($tabsParent);
-		var collectionsPaneId = 'yasgui_collections_' +tab.id;
+		var collectionsPaneId = 'yasgui_collections_' +tab.persistentOptions.id;
 		li.append(
 			$('<a>', {href: '#' + collectionsPaneId, 'aria-controls': collectionsPaneId,  role: 'tab', 'data-toggle': 'tab'})
 			.text("Collections")
@@ -148,16 +148,21 @@ module.exports = function(yasgui, tab) {
 					});
 					if (lastHasContent) addTextInputsTo($el, num, true);
 				})
-				.css('width', (90/num) + '%')
+				.css('width', (92/num) + '%')
 				.appendTo($inputsAndTogglesContainer);
 		}
 		$inputsAndTogglesContainer.append(
-				$(utils.svg.getElement(imgs.cross, {width: '14px', height: '14px'}))
-				.addClass('closeBtn')
-				.css('display', '')//let our style sheets do the work here
-				.click(function(){
+				$('<button>',{ class:"close",type:"button"})
+				.text('x')
+				.click(function() {
 					$(this).closest('.textInputsRow').remove();
 				})
+//				$(utils.svg.getElement(imgs.cross, {width: '14px', height: '14px'}))
+//				.addClass('closeBtn')
+//				.css('display', '')//let our style sheets do the work here
+//				.click(function(){
+//					$(this).closest('.textInputsRow').remove();
+//				})
 		);
 		if (animate) {
 			$inputsAndTogglesContainer.hide().appendTo($el).show('fast');
@@ -172,7 +177,7 @@ module.exports = function(yasgui, tab) {
 		if ($menu.find('.tabPaneMenuTabs li.active').length == 0) $menu.find('.tabPaneMenuTabs a:first').tab('show');
 		
 		//we got most of the html. Now set the values in the html
-		var options = tab.yasqe.options.sparql;
+		var options = tab.persistentOptions.yasqe;
 		
 		
 		//Request method
@@ -213,7 +218,7 @@ module.exports = function(yasgui, tab) {
 	};
 	
 	var store = function() {
-		var options = tab.yasqe.options.sparql;
+		var options = tab.persistentOptions.yasqe;
 		if ($btnPost.hasClass('active')) {
 			options.requestMethod = "POST"; 
 		} else if ($btnGet.hasClass('active')) {
@@ -259,7 +264,6 @@ module.exports = function(yasgui, tab) {
 			if (inputVals[0] && inputVals[0].trim().length > 0) namedGraphs.push(inputVals[0]);
 		});
 		options.namedGraphs = namedGraphs;
-		
 		yasgui.store();
 	};
 	

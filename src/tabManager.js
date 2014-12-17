@@ -5,6 +5,10 @@ var $ = require('jquery'),
 require('jquery-ui/position');
 
 module.exports = function(yasgui) {
+	if (!yasgui.persistentOptions.tabManager) {
+		yasgui.persistentOptions.tabManager = {}
+	}
+	var persistentOptions = yasgui.persistentOptions.tabManager;
 	var manager = {};
 	//tab object (containing e.g. yasqe/yasr)
 	manager.tabs = {};
@@ -18,9 +22,6 @@ module.exports = function(yasgui) {
 	//context menu for the tab context menu
 	var $contextMenu = null;
 	
-	//order of tab IDs
-	var tabOrder = [];
-	
 	var getName = function(name, i) {
 		if (!name) name = "Query";
 		if (!i) i = 0;
@@ -31,7 +32,7 @@ module.exports = function(yasgui) {
 	}
 	var nameTaken = function(name) {
 		for (var tabId in manager.tabs) {
-			if (manager.tabs[tabId].name == name) {
+			if (manager.tabs[tabId].persistentOptions.name == name) {
 				return true;
 			}
 		}
@@ -44,15 +45,17 @@ module.exports = function(yasgui) {
 	
 	
 	manager.init = function() {
+		
 		//tab panel contains tabs and panes
 		$tabPanel = $('<div>', {role: 'tabpanel'}).appendTo(yasgui.wrapperElement);
 		
 		//init tabs
 		$tabsParent = $('<ul>', {class:'nav nav-tabs mainTabs', role: 'tablist'}).appendTo($tabPanel);
 		
+		
 		//init add button
 		var $addTab= $('<a>', {role: 'addTab'})
-			.click(function(){addTab(true)})
+			.click(function(){addTab()})
 			.text('+');
 		$tabsParent.append(
 				$("<li>", {role: "presentation"})
@@ -62,11 +65,31 @@ module.exports = function(yasgui) {
 		//init panes
 		manager.$tabPanesParent = $('<div>', {class: 'tab-content'}).appendTo($tabPanel);
 		
-		addTab(true);
+		if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
+			persistentOptions.tabOrder = [];
+			persistentOptions.selected = null;
+			persistentOptions.tabs =  {};
+			addTab();
+		} else {
+			persistentOptions.tabOrder.forEach(function(tabId) {
+				if (tabId in persistentOptions.tabs) {
+					addTab(tabId);
+				}
+			});
+			
+		}
 		$tabsParent.sortable({
 			placeholder: "tab-sortable-highlight",
 			items: 'li:has([data-toggle="tab"])',//don't allow sorting after ('+') icon
-			forcePlaceholderSize: true
+			forcePlaceholderSize: true,
+			update: function() {
+				var newTabOrder = [];
+				$tabsParent.find('a[data-toggle="tab"]').each(function(){
+					newTabOrder.push($(this).attr('aria-controls'));
+				});
+				persistentOptions.tabOrder = newTabOrder;
+				yasgui.store();
+			}
 				
 		});
 		
@@ -106,28 +129,71 @@ module.exports = function(yasgui) {
 			})
 		});
 	};
-	
+	var selectTab = function(id) {
+		$tabsParent.find('a[aria-controls="' + id + '"]').tab('show');
+	}
 	var closeTab = function(id) {
+		/**
+		 * cleanup local storage
+		 */
+		manager.tabs[id].destroy();
+		
+		/**cleanup variables**/
 		delete manager.tabs[id];
+		delete persistentOptions.tabs[id];
+		var orderIndex = persistentOptions.tabOrder.indexOf(id);
+		if (orderIndex > -1) persistentOptions.tabOrder.splice(orderIndex, 1);
+		
+		/**
+		 * select new tab
+		 */
+		var newSelectedIndex = null;
+		if (persistentOptions.tabOrder[orderIndex]) {
+			//use the tab now in position of the old one
+			newSelectedIndex = orderIndex;
+		} else if (persistentOptions.tabOrder[orderIndex-1]) {
+			//use the tab in the previous position
+			newSelectedIndex = orderIndex-1;
+		}
+		if (newSelectedIndex !== null) selectTab(persistentOptions.tabOrder[newSelectedIndex]);
+		
+		/**
+		 * cleanup dom
+		 */
 		$tabsParent.find('a[href="#' + id + '"]').closest('li').remove();
         $("#"+id).remove();
+        
+        
+        yasgui.store();
 	};
-	var addTab = function(active, id, name) {
-		if (!id) id = getRandomId();
-		if (!name) name = getName();
+	var addTab = function(tabId) {
+		var newItem = !tabId;
+		if (!tabId) tabId = getRandomId();
+		if (!persistentOptions.tabs[tabId]) {
+			//initialize
+			persistentOptions.tabs[tabId] = {
+				name: getName(),
+				id: tabId
+			}
+		}
+		var persistentTabOptions = persistentOptions.tabs[tabId]; 
 		//first add tab
-		var $tabToggle = $('<a>', {href: '#' + id, 'aria-controls': id,  role: 'tab', 'data-toggle': 'tab'})
+		var $tabToggle = $('<a>', {href: '#' + tabId, 'aria-controls': tabId,  role: 'tab', 'data-toggle': 'tab'})
 			.click(function (e) {
 				e.preventDefault();
 				$(this).tab('show');
-				manager.tabs[id].yasqe.refresh();
+				manager.tabs[tabId].yasqe.refresh();
 			})
-			.append($('<span>').text(name))
+			.on('shown.bs.tab', function (e) {
+				persistentOptions.selected = $(this).attr('aria-controls');
+				yasgui.store();
+			})
+			.append($('<span>').text(persistentTabOptions.name))
 			.append(
 				$('<button>',{ class:"close",type:"button"})
 					.text('x')
 					.click(function() {
-						closeTab(id);
+						closeTab(tabId);
 					})
 			);
 		var $tabRename = $('<div><input></div>');
@@ -145,7 +211,7 @@ module.exports = function(yasgui) {
 					var tabId = el.find('a[role="tab"]').attr('aria-controls');
 					var val = el.find('input').val();
 					$tabToggle.find('span').text(el.find('input').val());
-					manager.tabs[tabId].name = val;
+					persistentOptions.tabs[tabId].name = val;
 					yasgui.store();
 					el.removeClass('rename');
 				})
@@ -170,28 +236,14 @@ module.exports = function(yasgui) {
 		
 		$tabsParent.find('li:has(a[role="addTab"])').before($tabItem);
 		
-		tabOrder.push(id);
-		manager.tabs[id] = require('./tab.js')(yasgui, id, name);
-		if (active) {
+		if (newItem) persistentOptions.tabOrder.push(tabId);
+		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId);
+		if (newItem || persistentOptions.selected == tabId) {
 			$tabToggle.tab('show');
-			manager.tabs[id].yasqe.refresh();
+			manager.tabs[tabId].yasqe.refresh();
 		}
 	};
 	
-	manager.current = function() {
-		
-	};
-	
-	manager.generatePersistentSettings = function() {
-		var persistentSettings = {
-			tabOrder: tabOrder,
-			tabs: {},
-		};
-		for (var id in manager.tabs) {
-			persistentSettings.tabs[id] = manager.tabs[id].generatePersistentSettings();
-		}
-		return persistentSettings;
-	};
 	return manager;
 };
 

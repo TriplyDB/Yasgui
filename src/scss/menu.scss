@@ -49,16 +49,19 @@ $menuWidth: 600px;
 	.requestConfig {
 		input {
 		}
-		.textInputsRow:hover:not(:last-child) .closeBtn {
-			display:inline-block;
+		.textInputsRow:first-child .close {
+			display:none;
 		}
-		.closeBtn {
-         	fill: $gray;
-         	display:none;
-         	cursor:pointer;
+/* 		.closeBtn { */
+/*          	fill: $gray; */
+/*          	display:none; */
+/*          	cursor:pointer; */
+/* 		} */
+		.close {
+			font-size: 18px;
 		}
 		.textInputsRow * {
-			margin-right: 3px;
+			margin: 5px 3px 0 0;
 		}
 		.row {
 			display: table;
