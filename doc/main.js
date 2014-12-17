@@ -1,22 +1,26 @@
-$ = jQuery = require("jquery");
-require("../node_modules/bootstrap-sass/assets/javascripts/bootstrap-sprockets.js");
+var $ = jQuery = require("jquery");
+require("../node_modules/bootstrap-sass/assets/javascripts/bootstrap/affix.js");
+require("../node_modules/bootstrap-sass/assets/javascripts/bootstrap/scrollspy.js");
 
-
-$(function() {
-  $('a[href*=#]:not([href=#])').click(function() {
-    if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
-      var target = $(this.hash);
-      target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
-      if (target.length) {
-        $('html,body').animate({
-          scrollTop: target.offset().top
-        }, 400);
-        return false;
-      }
-    }
-  });
-});
-
+/**
+ * only use for documentation page. The demo page (containing YASQE and YASR) might show some issues when adding these scroll tricks to hrefs
+ */
+if (location.pathname.indexOf('doc') >= 0) {
+	$(function() {
+	  $('a[href*=#]:not([href=#])').click(function() {
+	    if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
+	      var target = $(this.hash);
+	      target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
+	      if (target.length) {
+	        $('html,body').animate({
+	          scrollTop: target.offset().top
+	        }, 400);
+	        return false;
+	      }
+	    }
+	  });
+	});
+}
 
 $(document).ready(function() {
 	//get the latest hosted version
