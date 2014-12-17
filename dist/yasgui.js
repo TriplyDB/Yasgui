@@ -25054,7 +25054,7 @@ module.exports=require(25)
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "main": "src/main.js",
   "licenses": [
     {
@@ -27309,12 +27309,14 @@ module.exports = {
 };
 },{"jquery":undefined}],82:[function(require,module,exports){
 'use strict';
+
+var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 module.exports = {
 	persistent: function(yasgui) {
 		return "yasgui_" + $(yasgui.wrapperElement).closest('[id]').attr('id');
 	}
 };
-},{}],83:[function(require,module,exports){
+},{"jquery":undefined}],83:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -27530,7 +27532,7 @@ var root = module.exports = function(parent, options) {
 	var yasgui = {};
 	yasgui.wrapperElement = $('<div class="yasgui"></div>').appendTo($(parent));
 	yasgui.options = $.extend(true, {}, root.defaults, options);
-	
+	yasgui.history = [];
 	
 	var persistencyId = null;
 	if (yasgui.options.persistent) persistencyId = (typeof yasgui.options.persistent == 'function'? yasgui.options.persistent(yasgui): yasgui.options.persistent);
@@ -27566,7 +27568,7 @@ root.defaults = require('./defaults.js');
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	utils = require('./utils.js'),
 	YASGUI = require('./main.js');
-module.exports = function(yasgui, id) {
+module.exports = function(yasgui, id, name) {
 	//we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 	//We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
 	var defaultPersistentYasqe = {
@@ -27579,8 +27581,14 @@ module.exports = function(yasgui, id) {
 		requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod,
 	};
 	
+	if (!yasgui.persistentOptions.tabManager.tabs[id]) {
+		yasgui.persistentOptions.tabManager.tabs[id] = {
+			id: id,
+			name: name,
+			yasqe: defaultPersistentYasqe
+		}
+	}
 	var persistentOptions = yasgui.persistentOptions.tabManager.tabs[id];
-	if (!persistentOptions.yasqe) persistentOptions.yasqe = defaultPersistentYasqe;
 	var tab = {
 		persistentOptions: persistentOptions
 	};
@@ -27634,14 +27642,39 @@ module.exports = function(yasgui, id) {
 	if (persistentOptions.yasqe.value) yasqeOptions.value = persistentOptions.yasqe.value;
 	tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 	tab.yasqe.on('blur', function(yasqe) {
-			persistentOptions.yasqe.value = yasqe.getValue();
-			yasgui.store();
-		});
+		persistentOptions.yasqe.value = yasqe.getValue();
+		yasgui.store();
+	});
 	tab.yasr = YASGUI.YASR(yasrContainer[0], {
 		//this way, the URLs in the results are prettified using the defined prefixes in the query
 		getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
 	});
-	tab.yasqe.options.sparql.callbacks.complete = tab.yasr.setResponse;
+	tab.yasqe.options.sparql.callbacks.complete = function() {
+		tab.yasr.setResponse.apply(this, arguments);
+		
+		/**
+		 * store query in hist
+		 */
+		persistentOptions.yasqe.value = tab.yasqe.getValue();//in case the onblur hasnt happened yet
+		var resultSize = null;
+		if (tab.yasr.results.getBindings()) {
+			resultSize = tab.yasr.results.getBindings().length;
+		}
+		var histObject = {
+			options: $.extend(true, {}, persistentOptions),//create copy
+			resultSize: resultSize
+		};
+		delete histObject.options.name;//don't store this one
+		yasgui.history.unshift(histObject);
+	}
+	tab.setOptions = function() {
+	}
+	tab.refreshYasqe = function() {
+		$.extend(true, tab.yasqe.options.sparql, tab.persistentOptions.yasqe);
+		tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
+//		console.log(tab.yasqe.options);
+//		tab.yasqe.refresh();
+	}
 	tab.destroy = function() {
 		console.log('todo: proper destorying of local storage');
 	}
@@ -27737,14 +27770,9 @@ module.exports = function(yasgui) {
 		if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
 			persistentOptions.tabOrder = [];
 			persistentOptions.selected = null;
-			persistentOptions.tabs =  {};
 			addTab();
 		} else {
-			persistentOptions.tabOrder.forEach(function(tabId) {
-				if (tabId in persistentOptions.tabs) {
-					addTab(tabId);
-				}
-			});
+			persistentOptions.tabOrder.forEach(addTab);
 			
 		}
 		$tabsParent.sortable({
@@ -27838,14 +27866,15 @@ module.exports = function(yasgui) {
 	var addTab = function(tabId) {
 		var newItem = !tabId;
 		if (!tabId) tabId = getRandomId();
-		if (!persistentOptions.tabs[tabId]) {
-			//initialize
-			persistentOptions.tabs[tabId] = {
-				name: getName(),
-				id: tabId
-			}
-		}
-		var persistentTabOptions = persistentOptions.tabs[tabId]; 
+		var name = (persistentOptions.tabs[tabId]? persistentOptions.tabs[tabId].name: getName());
+//		if (!persistentOptions.tabs[tabId]) {
+//			//initialize
+//			persistentOptions.tabs[tabId] = {
+//				name: getName(),
+//				id: tabId
+//			}
+//		}
+//		var persistentTabOptions = persistentOptions.tabs[tabId]; 
 		//first add tab
 		var $tabToggle = $('<a>', {href: '#' + tabId, 'aria-controls': tabId,  role: 'tab', 'data-toggle': 'tab'})
 			.click(function (e) {
@@ -27857,7 +27886,7 @@ module.exports = function(yasgui) {
 				persistentOptions.selected = $(this).attr('aria-controls');
 				yasgui.store();
 			})
-			.append($('<span>').text(persistentTabOptions.name))
+			.append($('<span>').text(name))
 			.append(
 				$('<button>',{ class:"close",type:"button"})
 					.text('x')
@@ -27906,13 +27935,16 @@ module.exports = function(yasgui) {
 		$tabsParent.find('li:has(a[role="addTab"])').before($tabItem);
 		
 		if (newItem) persistentOptions.tabOrder.push(tabId);
-		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId);
+		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId, name);
 		if (newItem || persistentOptions.selected == tabId) {
 			$tabToggle.tab('show');
 			manager.tabs[tabId].yasqe.refresh();
 		}
 	};
 	
+	manager.current = function() {
+		return manager.tabs[persistentOptions.selected];
+	}
 	return manager;
 };
 
@@ -27928,7 +27960,7 @@ module.exports = function(yasgui, tab) {
 	var $tabsParent = null;
 	var $tabPanesParent = null;
 	var $paneReqConfig = null;
-	
+	var $histList = null;
 	
 	var $btnPost;
 	var $btnGet;
@@ -28031,7 +28063,9 @@ module.exports = function(yasgui, tab) {
 				$(this).tab('show')
 			})
 		);
-		var $reqPanel = $('<div>', {id: historyPaneId, role: 'tabpanel',class: 'tab-pane history container-fluid'}).appendTo($tabPanesParent);
+		
+		var $histPanel = $('<div>', {id: historyPaneId, role: 'tabpanel',class: 'tab-pane history container-fluid'}).appendTo($tabPanesParent);
+		$histList = $('<ul>', {class: 'list-group'}).appendTo($histPanel);
 		
 		
 		
@@ -28091,8 +28125,10 @@ module.exports = function(yasgui, tab) {
 		}
 	};
 
-	
 	var updateWrapper = function() {
+		/**
+		 * update request tab
+		 */
 		//if no tab is active, select first one
 		if ($menu.find('.tabPaneMenuTabs li.active').length == 0) $menu.find('.tabPaneMenuTabs a:first').tab('show');
 		
@@ -28135,6 +28171,41 @@ module.exports = function(yasgui, tab) {
 		}
 		addTextInputsTo($namedGraphsDiv, 1, false);//and, always add one item
 		
+		
+		
+		/**
+		 * update history tab
+		 */
+		$histList.empty();
+		if (yasgui.history.length == 0) {
+			$histList.append(
+				$('<a>', {class:'list-group-item disabled', href: '#'})
+					.text("No items in history yet")
+					.click(function(e){e.preventDefault()})
+			)
+		} else {
+			yasgui.history.forEach(function(histObject){
+				
+				var text = histObject.options.yasqe.endpoint;
+				if (histObject.resultSize) text += ' (' + histObject.resultSize + ' results)';
+				$histList.append(
+					$('<a>', {class:'list-group-item', href: '#', title: histObject.options.yasqe.value})
+						.text(text)
+						.click(function(e) {
+							//update tab
+							var tab = yasgui.tabManager.tabs[histObject.options.id];
+							$.extend(true, tab.persistentOptions, histObject.options);
+							tab.refreshYasqe();
+							
+							yasgui.store();
+							
+							//and close menu
+							$menu.closest('.tab-pane').removeClass('menu-open');
+							e.preventDefault();
+						})
+				)
+			});
+		}
 	};
 	
 	var store = function() {
