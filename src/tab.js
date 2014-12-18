@@ -72,11 +72,50 @@ module.exports = function(yasgui, id, name) {
 	var yasqeContainer = $('<div>', {id: 'yasqe_' + persistentOptions.id}).appendTo($paneContent);
 	var yasrContainer = $('<div>', {id: 'yasq_' + persistentOptions.id}).appendTo($paneContent);
 	
-	var yasqeOptions = {};
+	var yasqeOptions = {
+		createShareLink: function() {
+			var output = tab.yasr.options.output;
+			if (output == 'simpleTable') output = 'table';//for backwards compatability (yasgui v1 had this particular output plugin)
+			
+
+			var params = [
+				{name: 'outputFormat', value: output},
+				{name: 'query', value: tab.yasqe.getValue()},
+				{name: 'contentTypeConstruct', value: persistentOptions.yasqe.acceptHeaderGraph},
+				{name: 'contentTypeSelect', value: persistentOptions.yasqe.acceptHeaderSelect},
+				{name: 'endpoint', value: persistentOptions.yasqe.endpoint},
+				{name: 'requestMethod', value: persistentOptions.yasqe.requestMethod},
+				{name: 'tabTitle', value: persistentOptions.name}
+			];
+			
+			persistentOptions.yasqe.args.forEach(function(paramPair){
+				params.push(paramPair);
+			});
+			persistentOptions.yasqe.namedGraphs.forEach(function(ng) {
+				params.push({name: 'namedGraph', value: ng});
+			});
+			persistentOptions.yasqe.defaultGraphs.forEach(function(dg){
+				params.push({name: 'defaultGraph', value: dg});
+			});
+			
+			//extend existing link, so first fetch current arguments. But: make sure we don't include items already used in share link
+			var keys = [];
+			params.forEach(function(paramPair){keys.push(paramPair.name)});
+			var currentParams = $.deparam(window.location.search.substring(1));
+			for (var param in currentParams) {
+				if (keys.indexOf(param) == -1) {
+					params.push({name: param, value: currentParams[param]});
+				}
+			}
+			return params;
+		}
+	};
 	if (persistentOptions.yasqe.value) yasqeOptions.value = persistentOptions.yasqe.value;
 	
 	tab.onShow = function() {
 		if (!tab.yasqe || !tab.yasr) {
+			
+			
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.on('blur', function(yasqe) {
 				persistentOptions.yasqe.value = yasqe.getValue();
