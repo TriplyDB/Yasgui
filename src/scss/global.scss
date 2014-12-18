@@ -3,3 +3,6 @@
 
 @import "../../node_modules/yasgui-yasqe/dist/yasqe.css";
 @import "../../node_modules/yasgui-yasr/dist/yasr.css";
+div.modal-dialog.google-visualization-charteditor-dialog{
+	z-index: 100;
+}
