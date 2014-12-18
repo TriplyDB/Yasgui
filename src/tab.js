@@ -74,33 +74,39 @@ module.exports = function(yasgui, id, name) {
 	
 	var yasqeOptions = {};
 	if (persistentOptions.yasqe.value) yasqeOptions.value = persistentOptions.yasqe.value;
-	tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
-	tab.yasqe.on('blur', function(yasqe) {
-		persistentOptions.yasqe.value = yasqe.getValue();
-		yasgui.store();
-	});
-	tab.yasr = YASGUI.YASR(yasrContainer[0], {
-		//this way, the URLs in the results are prettified using the defined prefixes in the query
-		getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
-	});
-	tab.yasqe.options.sparql.callbacks.complete = function() {
-		tab.yasr.setResponse.apply(this, arguments);
-		
-		/**
-		 * store query in hist
-		 */
-		persistentOptions.yasqe.value = tab.yasqe.getValue();//in case the onblur hasnt happened yet
-		var resultSize = null;
-		if (tab.yasr.results.getBindings()) {
-			resultSize = tab.yasr.results.getBindings().length;
+	
+	tab.onShow = function() {
+		if (!tab.yasqe || !tab.yasr) {
+			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
+			tab.yasqe.on('blur', function(yasqe) {
+				persistentOptions.yasqe.value = yasqe.getValue();
+				yasgui.store();
+			});
+			tab.yasr = YASGUI.YASR(yasrContainer[0], {
+				//this way, the URLs in the results are prettified using the defined prefixes in the query
+				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
+			});
+			tab.yasqe.options.sparql.callbacks.complete = function() {
+				tab.yasr.setResponse.apply(this, arguments);
+				
+				/**
+				 * store query in hist
+				 */
+				persistentOptions.yasqe.value = tab.yasqe.getValue();//in case the onblur hasnt happened yet
+				var resultSize = null;
+				if (tab.yasr.results.getBindings()) {
+					resultSize = tab.yasr.results.getBindings().length;
+				}
+				var histObject = {
+					options: $.extend(true, {}, persistentOptions),//create copy
+					resultSize: resultSize
+				};
+				delete histObject.options.name;//don't store this one
+				yasgui.history.unshift(histObject);
+			}
 		}
-		var histObject = {
-			options: $.extend(true, {}, persistentOptions),//create copy
-			resultSize: resultSize
-		};
-		delete histObject.options.name;//don't store this one
-		yasgui.history.unshift(histObject);
-	}
+	};
+	
 	tab.setOptions = function() {
 	}
 	tab.refreshYasqe = function() {

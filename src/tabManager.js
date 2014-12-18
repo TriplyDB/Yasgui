@@ -182,6 +182,7 @@ module.exports = function(yasgui) {
 			})
 			.on('shown.bs.tab', function (e) {
 				persistentOptions.selected = $(this).attr('aria-controls');
+				manager.tabs[tabId].onShow();
 				yasgui.store();
 			})
 			.append($('<span>').text(name))
@@ -236,7 +237,6 @@ module.exports = function(yasgui) {
 		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId, name);
 		if (newItem || persistentOptions.selected == tabId) {
 			$tabToggle.tab('show');
-			manager.tabs[tabId].yasqe.refresh();
 		}
 	};
 	
