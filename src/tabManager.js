@@ -66,13 +66,28 @@ module.exports = function(yasgui) {
 		manager.$tabPanesParent = $('<div>', {class: 'tab-content'}).appendTo($tabPanel);
 		
 		if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
+			//ah, this is on first load. initialize some stuff
 			persistentOptions.tabOrder = [];
 			persistentOptions.selected = null;
-			addTab();
-		} else {
-			persistentOptions.tabOrder.forEach(addTab);
-			
 		}
+		var optionsFromUrl = require('./shareLink.js').getOptionsFromUrl();
+		if (optionsFromUrl) {
+			//hmm, we have options from the url. make sure we initialize everything using this tab
+			//the one thing we don't have is the ID. generate it.
+			var tabId = getRandomId();
+			optionsFromUrl.id = tabId;
+			persistentOptions.tabs[tabId] = optionsFromUrl;
+			persistentOptions.tabOrder.push(tabId);
+			persistentOptions.selected = tabId;
+		}
+		
+		if (persistentOptions.tabOrder.length > 0) {
+			persistentOptions.tabOrder.forEach(addTab);
+		} else {
+			//hmm, nothing to be drawn. just initiate a single tab
+			addTab();
+		}
+			
 		$tabsParent.sortable({
 			placeholder: "tab-sortable-highlight",
 			items: 'li:has([data-toggle="tab"])',//don't allow sorting after ('+') icon

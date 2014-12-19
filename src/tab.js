@@ -3,6 +3,16 @@ var $ = require('jquery'),
 	utils = require('./utils.js'),
 	YASGUI = require('./main.js');
 module.exports = function(yasgui, id, name) {
+	/**
+	 * 
+	 * TODO: fix proper merging of default settings with persistent settings. Take care of arrays as well!
+	 * 
+	 * 
+	 * 
+	 */
+	
+	
+	
 	//we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 	//We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
 	var defaultPersistentYasqe = {
@@ -73,42 +83,7 @@ module.exports = function(yasgui, id, name) {
 	var yasrContainer = $('<div>', {id: 'yasq_' + persistentOptions.id}).appendTo($paneContent);
 	
 	var yasqeOptions = {
-		createShareLink: function() {
-			var output = tab.yasr.options.output;
-			if (output == 'simpleTable') output = 'table';//for backwards compatability (yasgui v1 had this particular output plugin)
-			
-
-			var params = [
-				{name: 'outputFormat', value: output},
-				{name: 'query', value: tab.yasqe.getValue()},
-				{name: 'contentTypeConstruct', value: persistentOptions.yasqe.acceptHeaderGraph},
-				{name: 'contentTypeSelect', value: persistentOptions.yasqe.acceptHeaderSelect},
-				{name: 'endpoint', value: persistentOptions.yasqe.endpoint},
-				{name: 'requestMethod', value: persistentOptions.yasqe.requestMethod},
-				{name: 'tabTitle', value: persistentOptions.name}
-			];
-			
-			persistentOptions.yasqe.args.forEach(function(paramPair){
-				params.push(paramPair);
-			});
-			persistentOptions.yasqe.namedGraphs.forEach(function(ng) {
-				params.push({name: 'namedGraph', value: ng});
-			});
-			persistentOptions.yasqe.defaultGraphs.forEach(function(dg){
-				params.push({name: 'defaultGraph', value: dg});
-			});
-			
-			//extend existing link, so first fetch current arguments. But: make sure we don't include items already used in share link
-			var keys = [];
-			params.forEach(function(paramPair){keys.push(paramPair.name)});
-			var currentParams = $.deparam(window.location.search.substring(1));
-			for (var param in currentParams) {
-				if (keys.indexOf(param) == -1) {
-					params.push({name: param, value: currentParams[param]});
-				}
-			}
-			return params;
-		}
+		createShareLink: require('./shareLink').getCreateLinkHandler(tab)
 	};
 	if (persistentOptions.yasqe.value) yasqeOptions.value = persistentOptions.yasqe.value;
 	
