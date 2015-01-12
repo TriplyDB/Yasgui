@@ -179,6 +179,7 @@ module.exports = function(yasgui) {
 	var addTab = function(tabId) {
 		var newItem = !tabId;
 		if (!tabId) tabId = getRandomId();
+		if (!('tabs' in persistentOptions)) persistentOptions.tabs = {};
 		var name = (persistentOptions.tabs[tabId]? persistentOptions.tabs[tabId].name: getName());
 //		if (!persistentOptions.tabs[tabId]) {
 //			//initialize
