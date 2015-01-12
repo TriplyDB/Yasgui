@@ -2,35 +2,30 @@
 var $ = require('jquery'),
 	utils = require('./utils.js'),
 	YASGUI = require('./main.js');
-module.exports = function(yasgui, id, name) {
-	/**
-	 * 
-	 * TODO: fix proper merging of default settings with persistent settings. Take care of arrays as well!
-	 * 
-	 * 
-	 * 
-	 */
-	
-	
-	
-	//we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
-	//We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
-	var defaultPersistentYasqe = {
+
+//we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
+//We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
+var defaultPersistentYasqe = {
+	sparql: {
 		endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
 		acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
 		acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
 		args: YASGUI.YASQE.defaults.sparql.args,
 		defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
 		namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
-		requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod,
-	};
-	
+		requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod
+	}
+};
+
+module.exports = function(yasgui, id, name) {
 	if (!yasgui.persistentOptions.tabManager.tabs[id]) {
 		yasgui.persistentOptions.tabManager.tabs[id] = {
 			id: id,
 			name: name,
 			yasqe: defaultPersistentYasqe
 		}
+	} else {
+		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {}, defaultPersistentYasqe, yasgui.persistentOptions.tabManager.tabs[id]);
 	}
 	var persistentOptions = yasgui.persistentOptions.tabManager.tabs[id];
 	var tab = {
@@ -71,10 +66,11 @@ module.exports = function(yasgui, id, name) {
 		var $formGroup = $('<div>', {class: 'form-group'}).appendTo($form);
 		$endpointInput = $('<input>', {type: 'text', class: 'form-control endpointText', placeholder: 'Enter endpoint'})
 			.on('keyup', function(){
-				tab.persistentOptions.yasqe.endpoint = this.value;
+				tab.persistentOptions.yasqe.sparql.endpoint = this.value;
+				tab.yasqe.options.sparql.endpoint = this.value;
 				yasgui.store();
 			})
-			.val(tab.persistentOptions.yasqe.endpoint)
+			.val(tab.persistentOptions.yasqe.sparql.endpoint)
 			.appendTo($formGroup);
 	};
 	
@@ -82,10 +78,19 @@ module.exports = function(yasgui, id, name) {
 	var yasqeContainer = $('<div>', {id: 'yasqe_' + persistentOptions.id}).appendTo($paneContent);
 	var yasrContainer = $('<div>', {id: 'yasq_' + persistentOptions.id}).appendTo($paneContent);
 	
+	
+	
 	var yasqeOptions = {
 		createShareLink: require('./shareLink').getCreateLinkHandler(tab)
 	};
-	if (persistentOptions.yasqe.value) yasqeOptions.value = persistentOptions.yasqe.value;
+	tab.setPersistentInYasqe = function() {
+		if (tab.yasqe) {
+			$.extend(true, tab.yasqe.options, persistentOptions.yasqe);
+			//set value manualy, as this triggers a refresh
+			tab.yasqe.setValue(persistentOptions.yasqe.value);
+		}
+	}
+	$.extend(yasqeOptions, persistentOptions.yasqe);
 	
 	tab.onShow = function() {
 		if (!tab.yasqe || !tab.yasr) {
@@ -124,7 +129,7 @@ module.exports = function(yasgui, id, name) {
 	tab.setOptions = function() {
 	}
 	tab.refreshYasqe = function() {
-		$.extend(true, tab.yasqe.options.sparql, tab.persistentOptions.yasqe);
+		$.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
 		tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
 //		console.log(tab.yasqe.options);
 //		tab.yasqe.refresh();

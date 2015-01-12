@@ -185,19 +185,19 @@ module.exports = function(yasgui, tab) {
 		
 		
 		//Request method
-		if (options.requestMethod.toUpperCase() == "POST") {
+		if (options.sparql.requestMethod.toUpperCase() == "POST") {
 			$btnPost.addClass('active');
 		} else {
 			$btnGet.addClass('active');
 		}
 		//Request method
-		$acceptGraph.val(options.acceptHeaderGraph);
-		$acceptSelect.val(options.acceptHeaderSelect);
+		$acceptGraph.val(options.sparql.acceptHeaderGraph);
+		$acceptSelect.val(options.sparql.acceptHeaderSelect);
 		
 		//url args
 		$urlArgsDiv.empty();
-		if (options.args && options.args.length > 0) {
-			options.args.forEach(function(el) {
+		if (options.sparql.args && options.sparql.args.length > 0) {
+			options.sparql.args.forEach(function(el) {
 				var vals = [el.name, el.value];
 				addTextInputsTo($urlArgsDiv, 2, false, vals)
 			});
@@ -207,15 +207,15 @@ module.exports = function(yasgui, tab) {
 		
 		//default graphs
 		$defaultGraphsDiv.empty();
-		if (options.defaultGraphs && options.defaultGraphs.length > 0) {
-			addTextInputsTo($defaultGraphsDiv, 1, false, options.defaultGraphs)
+		if (options.sparql.defaultGraphs && options.sparql.defaultGraphs.length > 0) {
+			addTextInputsTo($defaultGraphsDiv, 1, false, options.sparql.defaultGraphs)
 		}
 		addTextInputsTo($defaultGraphsDiv, 1, false);//and, always add one item
 		
 		//default graphs
 		$namedGraphsDiv.empty();
-		if (options.namedGraphs && options.namedGraphs.length > 0) {
-			addTextInputsTo($namedGraphsDiv, 1, false, options.namedGraphs)
+		if (options.sparql.namedGraphs && options.sparql.namedGraphs.length > 0) {
+			addTextInputsTo($namedGraphsDiv, 1, false, options.sparql.namedGraphs)
 		}
 		addTextInputsTo($namedGraphsDiv, 1, false);//and, always add one item
 		
@@ -234,7 +234,7 @@ module.exports = function(yasgui, tab) {
 		} else {
 			yasgui.history.forEach(function(histObject){
 				
-				var text = histObject.options.yasqe.endpoint;
+				var text = histObject.options.yasqe.sparql.endpoint;
 				if (histObject.resultSize) text += ' (' + histObject.resultSize + ' results)';
 				$histList.append(
 					$('<a>', {class:'list-group-item', href: '#', title: histObject.options.yasqe.value})
@@ -257,7 +257,7 @@ module.exports = function(yasgui, tab) {
 	};
 	
 	var store = function() {
-		var options = tab.persistentOptions.yasqe;
+		var options = tab.persistentOptions.yasqe.sparql;
 		if ($btnPost.hasClass('active')) {
 			options.requestMethod = "POST"; 
 		} else if ($btnGet.hasClass('active')) {
@@ -304,6 +304,7 @@ module.exports = function(yasgui, tab) {
 		});
 		options.namedGraphs = namedGraphs;
 		yasgui.store();
+		tab.setPersistentInYasqe();
 	};
 	
 	
