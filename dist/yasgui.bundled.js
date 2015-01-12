@@ -25596,7 +25596,7 @@ module.exports = {
 module.exports={
   "name": "yasgui-yasqe",
   "description": "Yet Another SPARQL Query Editor",
-  "version": "2.2.6",
+  "version": "2.3.0",
   "main": "src/main.js",
   "licenses": [
     {
@@ -26987,9 +26987,7 @@ root.drawButtons = function(yasqe) {
 	
 	
 	if (yasqe.options.sparql.showQueryButton) {
-		var height = 40;
-		var width = 40;
-		$("<div class='yasqe_queryButton'></div>")
+		$("<div>", {class:'yasqe_queryButton'})
 		 	.click(function(){
 		 		if ($(this).hasClass("query_busy")) {
 		 			if (yasqe.xhr) yasqe.xhr.abort();
@@ -26998,8 +26996,6 @@ root.drawButtons = function(yasqe) {
 		 			yasqe.query();
 		 		}
 		 	})
-		 	.height(height)
-		 	.width(width)
 		 	.appendTo(yasqe.buttons);
 		root.updateQueryButton(yasqe);
 	}
@@ -27037,8 +27033,8 @@ root.updateQueryButton = function(yasqe, status) {
 				    return c.indexOf("query_") == 0;
 				}).join(" ");
 			})
-			.addClass("query_" + status)
-			.append(yutils.svg.getElement(imgs[queryButtonIds[status]]));
+			.addClass("query_" + status);
+		yutils.svg.draw(queryButton, imgs[queryButtonIds[status]]);
 		yasqe.queryStatus = status;
 	}
 };
@@ -58359,7 +58355,8 @@ var loader = function() {
 			checkAndWait();
 		} else {
 			if ((typeof window !== "undefined" ? window.google : typeof global !== "undefined" ? global.google : null)) {
-				mod.emit('initError');
+				//already loaded! everything is fine
+				mod.emit('initDone');
 			} else if (loadingFailed) {
 				mod.emit('initError')
 			} else {
@@ -59551,7 +59548,7 @@ var root = module.exports = function(yasr) {
 			/**
 			 * post process
 			 */
-			//use 'move' handler for variables
+			//use 'move' handler for variables. This removes the 'filter' button though. Might want to re-enable this in the future
 			var icon = $(yUtils.svg.getElement(imgs.move));
 			$pivotWrapper.find('.pvtTriangle').replaceWith(icon);
 			
@@ -59833,17 +59830,23 @@ var root = module.exports = function(yasr) {
 		
 		addEvents();
 		
+		//finally, make the columns dragable:
+		table.colResizable();
+		//and: make sure the height of the resize handlers matches the height of the table header
+		var thHeight = table.find('thead').outerHeight();
+		$(yasr.resultsContainer).find('.JCLRgrip').height(table.find('thead').outerHeight());
+		
 		//move the table upward, so the table options nicely aligns with the yasr header
 		var headerHeight = yasr.header.outerHeight() - 5; //add some space of 5 px between table and yasr header
 		if (headerHeight > 0) {
 			yasr.resultsContainer.find(".dataTables_wrapper")
-			.css("position", "relative")
-			.css("top", "-" + headerHeight + "px")
-			.css("margin-bottom", "-" + headerHeight + "px");
+				.css("position", "relative")
+				.css("top", "-" + headerHeight + "px")
+				.css("margin-bottom", "-" + headerHeight + "px");
+			
+			//and: make sure the height of the resize handlers matches the height of the table header
+			$(yasr.resultsContainer).find('.JCLRgrip').css('marginTop', headerHeight + 'px');
 		}
-		
-		//finally, make the columns dragable:
-		table.colResizable();
 		
 		
 	};
@@ -60185,6 +60188,8 @@ module.exports = {
 
 module.exports = {
 	persistent: null,//handled in YASGUI directly
+	consumeShareLink: null,
+	createShareLink: null,
 	sparql: {
 		showQueryButton: true,
 		acceptHeaderGraph: "text/turtle",
@@ -60427,12 +60432,124 @@ root.YASQE = require('yasgui-yasqe');
 root.YASQE.defaults = $.extend(true, root.YASQE.defaults, require('./defaultsYasqe.js'));
 root.YASR = require('yasgui-yasr');
 root.defaults = require('./defaults.js');
-},{"./defaults.js":88,"./defaultsYasqe.js":89,"./jquery/extendJquery.js":91,"./tabManager.js":96,"jquery":4,"yasgui-utils":7,"yasgui-yasqe":38,"yasgui-yasr":77}],95:[function(require,module,exports){
+},{"./defaults.js":88,"./defaultsYasqe.js":89,"./jquery/extendJquery.js":91,"./tabManager.js":97,"jquery":4,"yasgui-utils":7,"yasgui-yasqe":38,"yasgui-yasr":77}],95:[function(require,module,exports){
+var getUrlParams = function(queryString) {
+	var params = [];
+	if (!queryString) queryString = window.location.search.substring(1);
+	if (queryString.length > 0) {
+	    var vars = queryString.split("&");
+	    for (var i = 0; i < vars.length; i++) {
+	        var pair = vars[i].split("=");
+	        var key = pair[0];
+	        var val = pair[1];
+	        if (key.length > 0 && val && val.length > 0) {
+	        	//we at least need a key right
+	        	
+	        	//do the decoding. Do plus sign separately (not done by the native decode function)
+	        	val = val.replace(/\+/g, ' ');
+	        	val = decodeURIComponent(val);
+	        	params.push({name: pair[0], value: val});
+	        }
+	    }
+	}
+    return params;
+};
+
+module.exports = {
+	getCreateLinkHandler: function(tab) {
+		return function() {
+			var params = [
+				{name: 'outputFormat', value: tab.yasr.options.output},
+				{name: 'query', value: tab.yasqe.getValue()},
+				{name: 'contentTypeConstruct', value: tab.persistentOptions.yasqe.acceptHeaderGraph},
+				{name: 'contentTypeSelect', value: tab.persistentOptions.yasqe.acceptHeaderSelect},
+				{name: 'endpoint', value: tab.persistentOptions.yasqe.endpoint},
+				{name: 'requestMethod', value: tab.persistentOptions.yasqe.requestMethod},
+				{name: 'tabTitle', value: tab.persistentOptions.name}
+			];
+			
+			tab.persistentOptions.yasqe.args.forEach(function(paramPair){
+				params.push(paramPair);
+			});
+			tab.persistentOptions.yasqe.namedGraphs.forEach(function(ng) {
+				params.push({name: 'namedGraph', value: ng});
+			});
+			tab.persistentOptions.yasqe.defaultGraphs.forEach(function(dg){
+				params.push({name: 'defaultGraph', value: dg});
+			});
+			
+			//extend existing link, so first fetch current arguments. But: make sure we don't include items already used in share link
+			var keys = [];
+			params.forEach(function(paramPair){keys.push(paramPair.name)});
+			var currentParams = getUrlParams();
+			currentParams.forEach(function(paramPair) {
+				if (keys.indexOf(paramPair.name) == -1) {
+					params.push(paramPair);
+				}
+			});
+			
+			return params;
+		}
+	},
+	getOptionsFromUrl: function() {
+		var options = {yasqe: {}, yasr:{}};
+		var params = getUrlParams();
+		var validYasguiOptions = false;
+		
+		
+		params.forEach(function(paramPair){
+			if (paramPair.name == 'query') {
+				validYasguiOptions = true;
+				options.yasqe.value = paramPair.value;
+			} else if (paramPair.name == 'outputFormat') {
+				var output = paramPair.value;
+				if (output == 'simpleTable') output = 'table';//this query link is from v1. don't have this plugin anymore
+				options.yasr.output = output;
+			} else if (paramPair.name == 'contentTypeConstruct') {
+				options.yasqe.acceptHeaderGraph = paramPair.value;
+			} else if (paramPair.name == 'contentTypeSelect') {
+				options.yasqe.acceptHeaderSelect = paramPair.value;
+			} else if (paramPair.name == 'endpoint') {
+				options.yasqe.endpoint = paramPair.value;
+			} else if (paramPair.name == 'requestMethod') {
+				options.yasqe.requestMethod = paramPair.value;
+			} else if (paramPair.name == 'tabTitle') {
+				options.name = paramPair.value;
+			} else if (paramPair.name == 'namedGraph') {
+				if (!options.yasqe.namedGraphs) options.yasqe.namedGraphs = [];
+				options.yasqe.namedGraphs.push(paramPair);
+			} else if (paramPair.name == 'defaultGraph') {
+				if (!options.yasqe.defaultGraphs) options.yasqe.defaultGraphs = [];
+				options.yasqe.defaultGraphs.push(paramPair);
+			} else {
+				if (!options.yasqe.args) options.yasqe.args = [];
+				//regular arguments. So store them as regular arguments
+				options.yasqe.args.push(paramPair);
+			}
+		});
+		if (validYasguiOptions) {
+			return options;
+		} else {
+			return null;
+		}
+	}
+}
+},{}],96:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('./utils.js'),
 	YASGUI = require('./main.js');
 module.exports = function(yasgui, id, name) {
+	/**
+	 * 
+	 * TODO: fix proper merging of default settings with persistent settings. Take care of arrays as well!
+	 * 
+	 * 
+	 * 
+	 */
+	
+	
+	
 	//we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 	//We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
 	var defaultPersistentYasqe = {
@@ -60502,35 +60619,45 @@ module.exports = function(yasgui, id, name) {
 	var yasqeContainer = $('<div>', {id: 'yasqe_' + persistentOptions.id}).appendTo($paneContent);
 	var yasrContainer = $('<div>', {id: 'yasq_' + persistentOptions.id}).appendTo($paneContent);
 	
-	var yasqeOptions = {};
+	var yasqeOptions = {
+		createShareLink: require('./shareLink').getCreateLinkHandler(tab)
+	};
 	if (persistentOptions.yasqe.value) yasqeOptions.value = persistentOptions.yasqe.value;
-	tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
-	tab.yasqe.on('blur', function(yasqe) {
-		persistentOptions.yasqe.value = yasqe.getValue();
-		yasgui.store();
-	});
-	tab.yasr = YASGUI.YASR(yasrContainer[0], {
-		//this way, the URLs in the results are prettified using the defined prefixes in the query
-		getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
-	});
-	tab.yasqe.options.sparql.callbacks.complete = function() {
-		tab.yasr.setResponse.apply(this, arguments);
-		
-		/**
-		 * store query in hist
-		 */
-		persistentOptions.yasqe.value = tab.yasqe.getValue();//in case the onblur hasnt happened yet
-		var resultSize = null;
-		if (tab.yasr.results.getBindings()) {
-			resultSize = tab.yasr.results.getBindings().length;
+	
+	tab.onShow = function() {
+		if (!tab.yasqe || !tab.yasr) {
+			
+			
+			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
+			tab.yasqe.on('blur', function(yasqe) {
+				persistentOptions.yasqe.value = yasqe.getValue();
+				yasgui.store();
+			});
+			tab.yasr = YASGUI.YASR(yasrContainer[0], {
+				//this way, the URLs in the results are prettified using the defined prefixes in the query
+				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
+			});
+			tab.yasqe.options.sparql.callbacks.complete = function() {
+				tab.yasr.setResponse.apply(this, arguments);
+				
+				/**
+				 * store query in hist
+				 */
+				persistentOptions.yasqe.value = tab.yasqe.getValue();//in case the onblur hasnt happened yet
+				var resultSize = null;
+				if (tab.yasr.results.getBindings()) {
+					resultSize = tab.yasr.results.getBindings().length;
+				}
+				var histObject = {
+					options: $.extend(true, {}, persistentOptions),//create copy
+					resultSize: resultSize
+				};
+				delete histObject.options.name;//don't store this one
+				yasgui.history.unshift(histObject);
+			}
 		}
-		var histObject = {
-			options: $.extend(true, {}, persistentOptions),//create copy
-			resultSize: resultSize
-		};
-		delete histObject.options.name;//don't store this one
-		yasgui.history.unshift(histObject);
-	}
+	};
+	
 	tab.setOptions = function() {
 	}
 	tab.refreshYasqe = function() {
@@ -60563,7 +60690,7 @@ module.exports = function(yasgui, id, name) {
 	
 	return tab;
 }
-},{"./main.js":94,"./tabPaneMenu.js":97,"./utils.js":98,"jquery":4}],96:[function(require,module,exports){
+},{"./main.js":94,"./shareLink":95,"./tabPaneMenu.js":98,"./utils.js":99,"jquery":4}],97:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('yasgui-utils'),
@@ -60632,13 +60759,28 @@ module.exports = function(yasgui) {
 		manager.$tabPanesParent = $('<div>', {class: 'tab-content'}).appendTo($tabPanel);
 		
 		if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
+			//ah, this is on first load. initialize some stuff
 			persistentOptions.tabOrder = [];
 			persistentOptions.selected = null;
-			addTab();
-		} else {
-			persistentOptions.tabOrder.forEach(addTab);
-			
 		}
+		var optionsFromUrl = require('./shareLink.js').getOptionsFromUrl();
+		if (optionsFromUrl) {
+			//hmm, we have options from the url. make sure we initialize everything using this tab
+			//the one thing we don't have is the ID. generate it.
+			var tabId = getRandomId();
+			optionsFromUrl.id = tabId;
+			persistentOptions.tabs[tabId] = optionsFromUrl;
+			persistentOptions.tabOrder.push(tabId);
+			persistentOptions.selected = tabId;
+		}
+		
+		if (persistentOptions.tabOrder.length > 0) {
+			persistentOptions.tabOrder.forEach(addTab);
+		} else {
+			//hmm, nothing to be drawn. just initiate a single tab
+			addTab();
+		}
+			
 		$tabsParent.sortable({
 			placeholder: "tab-sortable-highlight",
 			items: 'li:has([data-toggle="tab"])',//don't allow sorting after ('+') icon
@@ -60730,6 +60872,7 @@ module.exports = function(yasgui) {
 	var addTab = function(tabId) {
 		var newItem = !tabId;
 		if (!tabId) tabId = getRandomId();
+		if (!('tabs' in persistentOptions)) persistentOptions.tabs = {};
 		var name = (persistentOptions.tabs[tabId]? persistentOptions.tabs[tabId].name: getName());
 //		if (!persistentOptions.tabs[tabId]) {
 //			//initialize
@@ -60748,6 +60891,7 @@ module.exports = function(yasgui) {
 			})
 			.on('shown.bs.tab', function (e) {
 				persistentOptions.selected = $(this).attr('aria-controls');
+				manager.tabs[tabId].onShow();
 				yasgui.store();
 			})
 			.append($('<span>').text(name))
@@ -60802,7 +60946,6 @@ module.exports = function(yasgui) {
 		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId, name);
 		if (newItem || persistentOptions.selected == tabId) {
 			$tabToggle.tab('show');
-			manager.tabs[tabId].yasqe.refresh();
 		}
 	};
 	
@@ -60813,7 +60956,7 @@ module.exports = function(yasgui) {
 };
 
 
-},{"./imgs.js":90,"./tab.js":95,"jquery":4,"jquery-ui/position":3,"yasgui-utils":7}],97:[function(require,module,exports){
+},{"./imgs.js":90,"./shareLink.js":95,"./tab.js":96,"jquery":4,"jquery-ui/position":3,"yasgui-utils":7}],98:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	imgs = require('./imgs.js'),
@@ -61132,7 +61275,7 @@ module.exports = function(yasgui, tab) {
 };
 
 
-},{"./imgs.js":90,"jquery":4,"yasgui-utils":7}],98:[function(require,module,exports){
+},{"./imgs.js":90,"jquery":4,"yasgui-utils":7}],99:[function(require,module,exports){
 var $ = require('jquery');
 module.exports = {
 	escapeHtmlEntities : function(unescapedString) {

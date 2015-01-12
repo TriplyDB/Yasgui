@@ -4818,7 +4818,12 @@ As a consequence, the 'opening' transition has this perspective applied, where t
 
 .yasqe .yasqe_queryButton {
   display: inline-block;
-  cursor: pointer; }
+  cursor: pointer;
+  width: 40px;
+  height: 40px; }
+
+.yasqe .yasqe_queryButton .svgImg {
+  display: block; }
 
 .yasqe .yasqe_share {
   cursor: pointer;
@@ -6101,3 +6106,6 @@ li.CodeMirror-hint-active {
   z-index: 11;
   width: auto;
   margin: inherit; }
+
+div.modal-dialog.google-visualization-charteditor-dialog {
+  z-index: 100; }
