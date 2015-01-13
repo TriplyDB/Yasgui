@@ -1,6 +1,6 @@
 $controlbarPadding: 5px;
 .controlbar {
-	overflow-x: hidden;
+/* 	overflow-x: hidden; */
 	position:relative;
 	left: 0;
     -webkit-transition: all $menuSpeed;
@@ -9,17 +9,54 @@ $controlbarPadding: 5px;
     -o-transition: all $menuSpeed;
     transition: all $menuSpeed;
     padding: $controlbarPadding;
+    padding-bottom: 0px;
 	border-left: 1px solid $nav-tabs-border-color;
 	.endpointText {
-		width: 300px;
+		width: 400px;
+		.endpointOptionRow {
+			&:hover {
+				background-color: #e6e6e6;
+			}
+			.close{
+				 display:table-cell;
+				 vertical-align:middle;
+			 }
+			vertical-align: middle;
+			
+			.endpointUrl {
+				font-weight: bold;
+				font-size: 0.9;
+				width: 95%;
+				/* Warning: Needed for oldIE support, but words are broken up letter-by-letter */
+				-ms-word-break: break-all;
+				    word-break: break-all;
+				
+				    /* Non standard for webkit */
+				     word-break: break-word;
+				
+				-webkit-hyphens: auto;
+				   -moz-hyphens: auto;
+				    -ms-hyphens: auto;
+				        hyphens: auto;
+			}
+			.endpointTitle {
+				font-size: 12px;
+				opacity: 0.5;
+			}
+		}
 	}
-	form > * {
+	& > * {
+		vertical-align: top;
 		margin-right: $controlbarPadding;
+		display:inline-block;
 	}
 	
 	.menuButton {
 		display: inline-block;
 	  	vertical-align:middle;
+	  	padding-left: 10px;
+	  	padding-right: 10px;
+	  	height: 34px;
 	  	&:focus {
 	  		outline: none;
 	  		background-color: transparent;
@@ -28,7 +65,7 @@ $controlbarPadding: 5px;
 		.icon-bar {
 		  margin-bottom:3px;
 		  display: block;
-		  width: 22px;
+		  width: 20px;
 		  height: 3px;
 		  background-color: $gray-light;
 		  border-radius: 1px;

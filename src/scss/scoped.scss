@@ -6,4 +6,7 @@
 	@import "tab.scss";
 	@import "menu.scss";
 	@import "controlbar.scss";
+	
+	@import "../../node_modules/selectize/dist/css/selectize.css";
+	@import "../../node_modules/selectize/dist/css/selectize.bootstrap3.css";
 }

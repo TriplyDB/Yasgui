@@ -2,7 +2,6 @@
 var $ = require('jquery'),
 	utils = require('./utils.js'),
 	YASGUI = require('./main.js');
-
 //we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 //We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
 var defaultPersistentYasqe = {
@@ -16,6 +15,8 @@ var defaultPersistentYasqe = {
 		requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod
 	}
 };
+
+
 
 module.exports = function(yasgui, id, name) {
 	if (!yasgui.persistentOptions.tabManager.tabs[id]) {
@@ -40,10 +41,7 @@ module.exports = function(yasgui, id, name) {
 	var $endpointInput;
 	var addControlBar = function() {
 		var $controlBar = $('<div>', {class: 'controlbar'}).appendTo($paneContent);
-		var $form = $('<form>', {class: 'form-inline', role: 'form'}).appendTo($controlBar);
 		
-		
-		var $formGroupButton = $('<div>', {class: 'form-group'}).appendTo($form);
 		$('<button>', {type:'button', class: 'menuButton btn btn-default'})
 			.on('click', function(e){
 				if ($pane.hasClass('menu-open')) {
@@ -60,18 +58,20 @@ module.exports = function(yasgui, id, name) {
 			.append($('<span>', {class:'icon-bar'}))
 			.append($('<span>', {class:'icon-bar'}))
 			.append($('<span>', {class:'icon-bar'}))
-			.appendTo($formGroupButton);
+			.appendTo($controlBar);
 		
 		//add endpoint text input
-		var $formGroup = $('<div>', {class: 'form-group'}).appendTo($form);
-		$endpointInput = $('<input>', {type: 'text', class: 'form-control endpointText', placeholder: 'Enter endpoint'})
-			.on('keyup', function(){
-				tab.persistentOptions.yasqe.sparql.endpoint = this.value;
-				tab.yasqe.options.sparql.endpoint = this.value;
-				yasgui.store();
-			})
-			.val(tab.persistentOptions.yasqe.sparql.endpoint)
-			.appendTo($formGroup);
+		$endpointInput = $('<select>')
+			.appendTo($controlBar)
+			.endpointCombi(yasgui, {
+				value: persistentOptions.yasqe.sparql.endpoint,
+				onChange: function(val){
+					persistentOptions.yasqe.sparql.endpoint = val;
+					yasgui.store();
+					
+				}
+			});
+		
 	};
 	
 	addControlBar();
@@ -158,3 +158,6 @@ module.exports = function(yasgui, id, name) {
 	
 	return tab;
 }
+
+
+

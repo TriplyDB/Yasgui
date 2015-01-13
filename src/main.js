@@ -12,17 +12,19 @@ var root = module.exports = function(parent, options) {
 	yasgui.options = $.extend(true, {}, root.defaults, options);
 	yasgui.history = [];
 	
-	var persistencyId = null;
-	if (yasgui.options.persistent) persistencyId = (typeof yasgui.options.persistent == 'function'? yasgui.options.persistent(yasgui): yasgui.options.persistent);
+	yasgui.persistencyPrefix = null;
+	if (yasgui.options.persistencyPrefix) {
+		yasgui.persistencyPrefix = (typeof yasgui.options.persistencyPrefix == 'function'? yasgui.options.persistencyPrefix(yasgui): yasgui.options.persistencyPrefix);
+	}
 	
 	yasgui.store = function() {
 		if (yasgui.persistentOptions) {
-			yUtils.storage.set(persistencyId, yasgui.persistentOptions);
+			yUtils.storage.set(yasgui.persistencyPrefix, yasgui.persistentOptions);
 		}
 	};
 	
 	var getSettingsFromStorage = function() {
-		var settings = yUtils.storage.get(persistencyId);
+		var settings = yUtils.storage.get(yasgui.persistencyPrefix);
 		if (!settings) settings = {};//initialize blank. Default vals will be set as we go
 		return settings;
 	}
