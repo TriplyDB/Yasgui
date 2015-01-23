@@ -1,7 +1,7 @@
 {
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "src/main.js",
   "licenses": [
     {
@@ -75,11 +75,11 @@
     "sifter": "^0.3.4"
   },
   "browser": {
-	  "selectize": "./node_modules/selectize/dist/js/selectize.js"
-	},
-"browserify-shim": {
-	"jQuery": "jquery"
-},
+    "selectize": "./node_modules/selectize/dist/js/selectize.js"
+  },
+  "browserify-shim": {
+    "jQuery": "jquery"
+  },
   "optionalShim": {
     "codemirror": {
       "require": "codemirror",
