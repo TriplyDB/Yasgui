@@ -3,7 +3,7 @@
 //the current browserify version does not support require-ing js files which are used as entry-point
 //this way, we can still require our main.js file
 module.exports = require('./main.js');
-},{"./main.js":94}],2:[function(require,module,exports){
+},{"./main.js":98}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -813,7 +813,7 @@ $.ui.position = {
 
 },{"jquery":4}],4:[function(require,module,exports){
 /*!
- * jQuery JavaScript Library v1.11.1
+ * jQuery JavaScript Library v1.11.2
  * http://jquery.com/
  *
  * Includes Sizzle.js
@@ -823,7 +823,7 @@ $.ui.position = {
  * Released under the MIT license
  * http://jquery.org/license
  *
- * Date: 2014-05-01T17:42Z
+ * Date: 2014-12-17T15:27Z
  */
 
 (function( global, factory ) {
@@ -878,7 +878,7 @@ var support = {};
 
 
 var
-	version = "1.11.1",
+	version = "1.11.2",
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
@@ -1083,7 +1083,8 @@ jQuery.extend({
 		// parseFloat NaNs numeric-cast false positives (null|true|false|"")
 		// ...but misinterprets leading-number strings, particularly hex literals ("0x...")
 		// subtraction forces infinities to NaN
-		return !jQuery.isArray( obj ) && obj - parseFloat( obj ) >= 0;
+		// adding 1 corrects loss of precision from parseFloat (#15100)
+		return !jQuery.isArray( obj ) && (obj - parseFloat( obj ) + 1) >= 0;
 	},
 
 	isEmptyObject: function( obj ) {
@@ -1398,14 +1399,14 @@ function isArraylike( obj ) {
 }
 var Sizzle =
 /*!
- * Sizzle CSS Selector Engine v1.10.19
+ * Sizzle CSS Selector Engine v2.2.0-pre
  * http://sizzlejs.com/
  *
- * Copyright 2013 jQuery Foundation, Inc. and other contributors
+ * Copyright 2008, 2014 jQuery Foundation, Inc. and other contributors
  * Released under the MIT license
  * http://jquery.org/license
  *
- * Date: 2014-04-18
+ * Date: 2014-12-16
  */
 (function( window ) {
 
@@ -1432,7 +1433,7 @@ var i,
 	contains,
 
 	// Instance-specific data
-	expando = "sizzle" + -(new Date()),
+	expando = "sizzle" + 1 * new Date(),
 	preferredDoc = window.document,
 	dirruns = 0,
 	done = 0,
@@ -1447,7 +1448,6 @@ var i,
 	},
 
 	// General-purpose constants
-	strundefined = typeof undefined,
 	MAX_NEGATIVE = 1 << 31,
 
 	// Instance methods
@@ -1457,12 +1457,13 @@ var i,
 	push_native = arr.push,
 	push = arr.push,
 	slice = arr.slice,
-	// Use a stripped-down indexOf if we can't use a native one
-	indexOf = arr.indexOf || function( elem ) {
+	// Use a stripped-down indexOf as it's faster than native
+	// http://jsperf.com/thor-indexof-vs-for/5
+	indexOf = function( list, elem ) {
 		var i = 0,
-			len = this.length;
+			len = list.length;
 		for ( ; i < len; i++ ) {
-			if ( this[i] === elem ) {
+			if ( list[i] === elem ) {
 				return i;
 			}
 		}
@@ -1502,6 +1503,7 @@ var i,
 		")\\)|)",
 
 	// Leading and non-escaped trailing whitespace, capturing some non-whitespace characters preceding the latter
+	rwhitespace = new RegExp( whitespace + "+", "g" ),
 	rtrim = new RegExp( "^" + whitespace + "+|((?:^|[^\\\\])(?:\\\\.)*)" + whitespace + "+$", "g" ),
 
 	rcomma = new RegExp( "^" + whitespace + "*," + whitespace + "*" ),
@@ -1553,6 +1555,14 @@ var i,
 				String.fromCharCode( high + 0x10000 ) :
 				// Supplemental Plane codepoint (surrogate pair)
 				String.fromCharCode( high >> 10 | 0xD800, high & 0x3FF | 0xDC00 );
+	},
+
+	// Used for iframes
+	// See setDocument()
+	// Removing the function wrapper causes a "Permission Denied"
+	// error in IE
+	unloadHandler = function() {
+		setDocument();
 	};
 
 // Optimize for push.apply( _, NodeList )
@@ -1595,19 +1605,18 @@ function Sizzle( selector, context, results, seed ) {
 
 	context = context || document;
 	results = results || [];
+	nodeType = context.nodeType;
 
-	if ( !selector || typeof selector !== "string" ) {
+	if ( typeof selector !== "string" || !selector ||
+		nodeType !== 1 && nodeType !== 9 && nodeType !== 11 ) {
+
 		return results;
 	}
 
-	if ( (nodeType = context.nodeType) !== 1 && nodeType !== 9 ) {
-		return [];
-	}
+	if ( !seed && documentIsHTML ) {
 
-	if ( documentIsHTML && !seed ) {
-
-		// Shortcuts
-		if ( (match = rquickExpr.exec( selector )) ) {
+		// Try to shortcut find operations when possible (e.g., not under DocumentFragment)
+		if ( nodeType !== 11 && (match = rquickExpr.exec( selector )) ) {
 			// Speed-up: Sizzle("#ID")
 			if ( (m = match[1]) ) {
 				if ( nodeType === 9 ) {
@@ -1639,7 +1648,7 @@ function Sizzle( selector, context, results, seed ) {
 				return results;
 
 			// Speed-up: Sizzle(".CLASS")
-			} else if ( (m = match[3]) && support.getElementsByClassName && context.getElementsByClassName ) {
+			} else if ( (m = match[3]) && support.getElementsByClassName ) {
 				push.apply( results, context.getElementsByClassName( m ) );
 				return results;
 			}
@@ -1649,7 +1658,7 @@ function Sizzle( selector, context, results, seed ) {
 		if ( support.qsa && (!rbuggyQSA || !rbuggyQSA.test( selector )) ) {
 			nid = old = expando;
 			newContext = context;
-			newSelector = nodeType === 9 && selector;
+			newSelector = nodeType !== 1 && selector;
 
 			// qSA works strangely on Element-rooted queries
 			// We can work around this by specifying an extra ID on the root
@@ -1836,7 +1845,7 @@ function createPositionalPseudo( fn ) {
  * @returns {Element|Object|Boolean} The input node if acceptable, otherwise a falsy value
  */
 function testContext( context ) {
-	return context && typeof context.getElementsByTagName !== strundefined && context;
+	return context && typeof context.getElementsByTagName !== "undefined" && context;
 }
 
 // Expose support vars for convenience
@@ -1860,9 +1869,8 @@ isXML = Sizzle.isXML = function( elem ) {
  * @returns {Object} Returns the current document
  */
 setDocument = Sizzle.setDocument = function( node ) {
-	var hasCompare,
-		doc = node ? node.ownerDocument || node : preferredDoc,
-		parent = doc.defaultView;
+	var hasCompare, parent,
+		doc = node ? node.ownerDocument || node : preferredDoc;
 
 	// If no document and documentElement is available, return
 	if ( doc === document || doc.nodeType !== 9 || !doc.documentElement ) {
@@ -1872,9 +1880,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// Set our document
 	document = doc;
 	docElem = doc.documentElement;
-
-	// Support tests
-	documentIsHTML = !isXML( doc );
+	parent = doc.defaultView;
 
 	// Support: IE>8
 	// If iframe document is assigned to "document" variable and if iframe has been reloaded,
@@ -1883,21 +1889,22 @@ setDocument = Sizzle.setDocument = function( node ) {
 	if ( parent && parent !== parent.top ) {
 		// IE11 does not have attachEvent, so all must suffer
 		if ( parent.addEventListener ) {
-			parent.addEventListener( "unload", function() {
-				setDocument();
-			}, false );
+			parent.addEventListener( "unload", unloadHandler, false );
 		} else if ( parent.attachEvent ) {
-			parent.attachEvent( "onunload", function() {
-				setDocument();
-			});
+			parent.attachEvent( "onunload", unloadHandler );
 		}
 	}
+
+	/* Support tests
+	---------------------------------------------------------------------- */
+	documentIsHTML = !isXML( doc );
 
 	/* Attributes
 	---------------------------------------------------------------------- */
 
 	// Support: IE<8
-	// Verify that getAttribute really returns attributes and not properties (excepting IE8 booleans)
+	// Verify that getAttribute really returns attributes and not properties
+	// (excepting IE8 booleans)
 	support.attributes = assert(function( div ) {
 		div.className = "i";
 		return !div.getAttribute("className");
@@ -1912,17 +1919,8 @@ setDocument = Sizzle.setDocument = function( node ) {
 		return !div.getElementsByTagName("*").length;
 	});
 
-	// Check if getElementsByClassName can be trusted
-	support.getElementsByClassName = rnative.test( doc.getElementsByClassName ) && assert(function( div ) {
-		div.innerHTML = "<div class='a'></div><div class='a i'></div>";
-
-		// Support: Safari<4
-		// Catch class over-caching
-		div.firstChild.className = "i";
-		// Support: Opera<10
-		// Catch gEBCN failure to find non-leading classes
-		return div.getElementsByClassName("i").length === 2;
-	});
+	// Support: IE<9
+	support.getElementsByClassName = rnative.test( doc.getElementsByClassName );
 
 	// Support: IE<10
 	// Check if getElementById returns elements by name
@@ -1936,7 +1934,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// ID find and filter
 	if ( support.getById ) {
 		Expr.find["ID"] = function( id, context ) {
-			if ( typeof context.getElementById !== strundefined && documentIsHTML ) {
+			if ( typeof context.getElementById !== "undefined" && documentIsHTML ) {
 				var m = context.getElementById( id );
 				// Check parentNode to catch when Blackberry 4.6 returns
 				// nodes that are no longer in the document #6963
@@ -1957,7 +1955,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 		Expr.filter["ID"] =  function( id ) {
 			var attrId = id.replace( runescape, funescape );
 			return function( elem ) {
-				var node = typeof elem.getAttributeNode !== strundefined && elem.getAttributeNode("id");
+				var node = typeof elem.getAttributeNode !== "undefined" && elem.getAttributeNode("id");
 				return node && node.value === attrId;
 			};
 		};
@@ -1966,14 +1964,20 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// Tag
 	Expr.find["TAG"] = support.getElementsByTagName ?
 		function( tag, context ) {
-			if ( typeof context.getElementsByTagName !== strundefined ) {
+			if ( typeof context.getElementsByTagName !== "undefined" ) {
 				return context.getElementsByTagName( tag );
+
+			// DocumentFragment nodes don't have gEBTN
+			} else if ( support.qsa ) {
+				return context.querySelectorAll( tag );
 			}
 		} :
+
 		function( tag, context ) {
 			var elem,
 				tmp = [],
 				i = 0,
+				// By happy coincidence, a (broken) gEBTN appears on DocumentFragment nodes too
 				results = context.getElementsByTagName( tag );
 
 			// Filter out possible comments
@@ -1991,7 +1995,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 	// Class
 	Expr.find["CLASS"] = support.getElementsByClassName && function( className, context ) {
-		if ( typeof context.getElementsByClassName !== strundefined && documentIsHTML ) {
+		if ( documentIsHTML ) {
 			return context.getElementsByClassName( className );
 		}
 	};
@@ -2020,13 +2024,15 @@ setDocument = Sizzle.setDocument = function( node ) {
 			// setting a boolean content attribute,
 			// since its presence should be enough
 			// http://bugs.jquery.com/ticket/12359
-			div.innerHTML = "<select msallowclip=''><option selected=''></option></select>";
+			docElem.appendChild( div ).innerHTML = "<a id='" + expando + "'></a>" +
+				"<select id='" + expando + "-\f]' msallowcapture=''>" +
+				"<option selected=''></option></select>";
 
 			// Support: IE8, Opera 11-12.16
 			// Nothing should be selected when empty strings follow ^= or $= or *=
 			// The test attribute must be unknown in Opera but "safe" for WinRT
 			// http://msdn.microsoft.com/en-us/library/ie/hh465388.aspx#attribute_section
-			if ( div.querySelectorAll("[msallowclip^='']").length ) {
+			if ( div.querySelectorAll("[msallowcapture^='']").length ) {
 				rbuggyQSA.push( "[*^$]=" + whitespace + "*(?:''|\"\")" );
 			}
 
@@ -2036,11 +2042,23 @@ setDocument = Sizzle.setDocument = function( node ) {
 				rbuggyQSA.push( "\\[" + whitespace + "*(?:value|" + booleans + ")" );
 			}
 
+			// Support: Chrome<29, Android<4.2+, Safari<7.0+, iOS<7.0+, PhantomJS<1.9.7+
+			if ( !div.querySelectorAll( "[id~=" + expando + "-]" ).length ) {
+				rbuggyQSA.push("~=");
+			}
+
 			// Webkit/Opera - :checked should return selected option elements
 			// http://www.w3.org/TR/2011/REC-css3-selectors-20110929/#checked
 			// IE8 throws error here and will not see later tests
 			if ( !div.querySelectorAll(":checked").length ) {
 				rbuggyQSA.push(":checked");
+			}
+
+			// Support: Safari 8+, iOS 8+
+			// https://bugs.webkit.org/show_bug.cgi?id=136851
+			// In-page `selector#id sibing-combinator selector` fails
+			if ( !div.querySelectorAll( "a#" + expando + "+*" ).length ) {
+				rbuggyQSA.push(".#.+[+~]");
 			}
 		});
 
@@ -2158,7 +2176,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 			// Maintain original order
 			return sortInput ?
-				( indexOf.call( sortInput, a ) - indexOf.call( sortInput, b ) ) :
+				( indexOf( sortInput, a ) - indexOf( sortInput, b ) ) :
 				0;
 		}
 
@@ -2185,7 +2203,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 				aup ? -1 :
 				bup ? 1 :
 				sortInput ?
-				( indexOf.call( sortInput, a ) - indexOf.call( sortInput, b ) ) :
+				( indexOf( sortInput, a ) - indexOf( sortInput, b ) ) :
 				0;
 
 		// If the nodes are siblings, we can do a quick check
@@ -2248,7 +2266,7 @@ Sizzle.matchesSelector = function( elem, expr ) {
 					elem.document && elem.document.nodeType !== 11 ) {
 				return ret;
 			}
-		} catch(e) {}
+		} catch (e) {}
 	}
 
 	return Sizzle( expr, document, null, [ elem ] ).length > 0;
@@ -2467,7 +2485,7 @@ Expr = Sizzle.selectors = {
 			return pattern ||
 				(pattern = new RegExp( "(^|" + whitespace + ")" + className + "(" + whitespace + "|$)" )) &&
 				classCache( className, function( elem ) {
-					return pattern.test( typeof elem.className === "string" && elem.className || typeof elem.getAttribute !== strundefined && elem.getAttribute("class") || "" );
+					return pattern.test( typeof elem.className === "string" && elem.className || typeof elem.getAttribute !== "undefined" && elem.getAttribute("class") || "" );
 				});
 		},
 
@@ -2489,7 +2507,7 @@ Expr = Sizzle.selectors = {
 					operator === "^=" ? check && result.indexOf( check ) === 0 :
 					operator === "*=" ? check && result.indexOf( check ) > -1 :
 					operator === "$=" ? check && result.slice( -check.length ) === check :
-					operator === "~=" ? ( " " + result + " " ).indexOf( check ) > -1 :
+					operator === "~=" ? ( " " + result.replace( rwhitespace, " " ) + " " ).indexOf( check ) > -1 :
 					operator === "|=" ? result === check || result.slice( 0, check.length + 1 ) === check + "-" :
 					false;
 			};
@@ -2609,7 +2627,7 @@ Expr = Sizzle.selectors = {
 							matched = fn( seed, argument ),
 							i = matched.length;
 						while ( i-- ) {
-							idx = indexOf.call( seed, matched[i] );
+							idx = indexOf( seed, matched[i] );
 							seed[ idx ] = !( matches[ idx ] = matched[i] );
 						}
 					}) :
@@ -2648,6 +2666,8 @@ Expr = Sizzle.selectors = {
 				function( elem, context, xml ) {
 					input[0] = elem;
 					matcher( input, null, xml, results );
+					// Don't keep the element (issue #299)
+					input[0] = null;
 					return !results.pop();
 				};
 		}),
@@ -2659,6 +2679,7 @@ Expr = Sizzle.selectors = {
 		}),
 
 		"contains": markFunction(function( text ) {
+			text = text.replace( runescape, funescape );
 			return function( elem ) {
 				return ( elem.textContent || elem.innerText || getText( elem ) ).indexOf( text ) > -1;
 			};
@@ -3080,7 +3101,7 @@ function setMatcher( preFilter, selector, matcher, postFilter, postFinder, postS
 				i = matcherOut.length;
 				while ( i-- ) {
 					if ( (elem = matcherOut[i]) &&
-						(temp = postFinder ? indexOf.call( seed, elem ) : preMap[i]) > -1 ) {
+						(temp = postFinder ? indexOf( seed, elem ) : preMap[i]) > -1 ) {
 
 						seed[temp] = !(results[temp] = elem);
 					}
@@ -3115,13 +3136,16 @@ function matcherFromTokens( tokens ) {
 			return elem === checkContext;
 		}, implicitRelative, true ),
 		matchAnyContext = addCombinator( function( elem ) {
-			return indexOf.call( checkContext, elem ) > -1;
+			return indexOf( checkContext, elem ) > -1;
 		}, implicitRelative, true ),
 		matchers = [ function( elem, context, xml ) {
-			return ( !leadingRelative && ( xml || context !== outermostContext ) ) || (
+			var ret = ( !leadingRelative && ( xml || context !== outermostContext ) ) || (
 				(checkContext = context).nodeType ?
 					matchContext( elem, context, xml ) :
 					matchAnyContext( elem, context, xml ) );
+			// Avoid hanging onto element (issue #299)
+			checkContext = null;
+			return ret;
 		} ];
 
 	for ( ; i < len; i++ ) {
@@ -3371,7 +3395,7 @@ select = Sizzle.select = function( selector, context, results, seed ) {
 // Sort stability
 support.sortStable = expando.split("").sort( sortOrder ).join("") === expando;
 
-// Support: Chrome<14
+// Support: Chrome 14-35+
 // Always assume duplicates if they aren't passed to the comparison function
 support.detectDuplicates = !!hasDuplicate;
 
@@ -6929,7 +6953,14 @@ var getStyles, curCSS,
 
 if ( window.getComputedStyle ) {
 	getStyles = function( elem ) {
-		return elem.ownerDocument.defaultView.getComputedStyle( elem, null );
+		// Support: IE<=11+, Firefox<=30+ (#15098, #14150)
+		// IE throws on elements created in popups
+		// FF meanwhile throws on frame elements through "defaultView.getComputedStyle"
+		if ( elem.ownerDocument.defaultView.opener ) {
+			return elem.ownerDocument.defaultView.getComputedStyle( elem, null );
+		}
+
+		return window.getComputedStyle( elem, null );
 	};
 
 	curCSS = function( elem, name, computed ) {
@@ -7177,6 +7208,8 @@ function addGetHookIf( conditionFn, hookFn ) {
 
 			reliableMarginRightVal =
 				!parseFloat( ( window.getComputedStyle( contents, null ) || {} ).marginRight );
+
+			div.removeChild( contents );
 		}
 
 		// Support: IE8
@@ -9884,7 +9917,8 @@ jQuery.extend({
 		}
 
 		// We can fire global events as of now if asked to
-		fireGlobals = s.global;
+		// Don't fire events if jQuery.event is undefined in an AMD-usage scenario (#15118)
+		fireGlobals = jQuery.event && s.global;
 
 		// Watch for a new set of requests
 		if ( fireGlobals && jQuery.active++ === 0 ) {
@@ -10143,13 +10177,6 @@ jQuery.each( [ "get", "post" ], function( i, method ) {
 	};
 });
 
-// Attach a bunch of functions for handling common AJAX events
-jQuery.each( [ "ajaxStart", "ajaxStop", "ajaxComplete", "ajaxError", "ajaxSuccess", "ajaxSend" ], function( i, type ) {
-	jQuery.fn[ type ] = function( fn ) {
-		return this.on( type, fn );
-	};
-});
-
 
 jQuery._evalUrl = function( url ) {
 	return jQuery.ajax({
@@ -10375,8 +10402,9 @@ var xhrId = 0,
 
 // Support: IE<10
 // Open requests must be manually aborted on unload (#5280)
-if ( window.ActiveXObject ) {
-	jQuery( window ).on( "unload", function() {
+// See https://support.microsoft.com/kb/2856746 for more info
+if ( window.attachEvent ) {
+	window.attachEvent( "onunload", function() {
 		for ( var key in xhrCallbacks ) {
 			xhrCallbacks[ key ]( undefined, true );
 		}
@@ -10810,6 +10838,16 @@ jQuery.fn.load = function( url, params, callback ) {
 
 
 
+// Attach a bunch of functions for handling common AJAX events
+jQuery.each( [ "ajaxStart", "ajaxStop", "ajaxComplete", "ajaxError", "ajaxSuccess", "ajaxSend" ], function( i, type ) {
+	jQuery.fn[ type ] = function( fn ) {
+		return this.on( type, fn );
+	};
+});
+
+
+
+
 jQuery.expr.filters.animated = function( elem ) {
 	return jQuery.grep(jQuery.timers, function( fn ) {
 		return elem === fn.elem;
@@ -11122,6 +11160,3509 @@ return jQuery;
 }));
 
 },{}],5:[function(require,module,exports){
+/**
+ * microplugin.js
+ * Copyright (c) 2013 Brian Reavis & contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ *
+ * @author Brian Reavis <brian@thirdroute.com>
+ */
+
+(function(root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		define(factory);
+	} else if (typeof exports === 'object') {
+		module.exports = factory();
+	} else {
+		root.MicroPlugin = factory();
+	}
+}(this, function() {
+	var MicroPlugin = {};
+
+	MicroPlugin.mixin = function(Interface) {
+		Interface.plugins = {};
+
+		/**
+		 * Initializes the listed plugins (with options).
+		 * Acceptable formats:
+		 *
+		 * List (without options):
+		 *   ['a', 'b', 'c']
+		 *
+		 * List (with options):
+		 *   [{'name': 'a', options: {}}, {'name': 'b', options: {}}]
+		 *
+		 * Hash (with options):
+		 *   {'a': { ... }, 'b': { ... }, 'c': { ... }}
+		 *
+		 * @param {mixed} plugins
+		 */
+		Interface.prototype.initializePlugins = function(plugins) {
+			var i, n, key;
+			var self  = this;
+			var queue = [];
+
+			self.plugins = {
+				names     : [],
+				settings  : {},
+				requested : {},
+				loaded    : {}
+			};
+
+			if (utils.isArray(plugins)) {
+				for (i = 0, n = plugins.length; i < n; i++) {
+					if (typeof plugins[i] === 'string') {
+						queue.push(plugins[i]);
+					} else {
+						self.plugins.settings[plugins[i].name] = plugins[i].options;
+						queue.push(plugins[i].name);
+					}
+				}
+			} else if (plugins) {
+				for (key in plugins) {
+					if (plugins.hasOwnProperty(key)) {
+						self.plugins.settings[key] = plugins[key];
+						queue.push(key);
+					}
+				}
+			}
+
+			while (queue.length) {
+				self.require(queue.shift());
+			}
+		};
+
+		Interface.prototype.loadPlugin = function(name) {
+			var self    = this;
+			var plugins = self.plugins;
+			var plugin  = Interface.plugins[name];
+
+			if (!Interface.plugins.hasOwnProperty(name)) {
+				throw new Error('Unable to find "' +  name + '" plugin');
+			}
+
+			plugins.requested[name] = true;
+			plugins.loaded[name] = plugin.fn.apply(self, [self.plugins.settings[name] || {}]);
+			plugins.names.push(name);
+		};
+
+		/**
+		 * Initializes a plugin.
+		 *
+		 * @param {string} name
+		 */
+		Interface.prototype.require = function(name) {
+			var self = this;
+			var plugins = self.plugins;
+
+			if (!self.plugins.loaded.hasOwnProperty(name)) {
+				if (plugins.requested[name]) {
+					throw new Error('Plugin has circular dependency ("' + name + '")');
+				}
+				self.loadPlugin(name);
+			}
+
+			return plugins.loaded[name];
+		};
+
+		/**
+		 * Registers a plugin.
+		 *
+		 * @param {string} name
+		 * @param {function} fn
+		 */
+		Interface.define = function(name, fn) {
+			Interface.plugins[name] = {
+				'name' : name,
+				'fn'   : fn
+			};
+		};
+	};
+
+	var utils = {
+		isArray: Array.isArray || function(vArg) {
+			return Object.prototype.toString.call(vArg) === '[object Array]';
+		}
+	};
+
+	return MicroPlugin;
+}));
+},{}],6:[function(require,module,exports){
+/**
+ * selectize.js (v0.11.2)
+ * Copyright (c) 2013 Brian Reavis & contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ *
+ * @author Brian Reavis <brian@thirdroute.com>
+ */
+
+/*jshint curly:false */
+/*jshint browser:true */
+
+(function(root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		define(['jquery','sifter','microplugin'], factory);
+	} else if (typeof exports === 'object') {
+		module.exports = factory(require('jquery'), require('sifter'), require('microplugin'));
+	} else {
+		root.Selectize = factory(root.jQuery, root.Sifter, root.MicroPlugin);
+	}
+}(this, function($, Sifter, MicroPlugin) {
+	'use strict';
+
+	var highlight = function($element, pattern) {
+		if (typeof pattern === 'string' && !pattern.length) return;
+		var regex = (typeof pattern === 'string') ? new RegExp(pattern, 'i') : pattern;
+	
+		var highlight = function(node) {
+			var skip = 0;
+			if (node.nodeType === 3) {
+				var pos = node.data.search(regex);
+				if (pos >= 0 && node.data.length > 0) {
+					var match = node.data.match(regex);
+					var spannode = document.createElement('span');
+					spannode.className = 'highlight';
+					var middlebit = node.splitText(pos);
+					var endbit = middlebit.splitText(match[0].length);
+					var middleclone = middlebit.cloneNode(true);
+					spannode.appendChild(middleclone);
+					middlebit.parentNode.replaceChild(spannode, middlebit);
+					skip = 1;
+				}
+			} else if (node.nodeType === 1 && node.childNodes && !/(script|style)/i.test(node.tagName)) {
+				for (var i = 0; i < node.childNodes.length; ++i) {
+					i += highlight(node.childNodes[i]);
+				}
+			}
+			return skip;
+		};
+	
+		return $element.each(function() {
+			highlight(this);
+		});
+	};
+	
+	var MicroEvent = function() {};
+	MicroEvent.prototype = {
+		on: function(event, fct){
+			this._events = this._events || {};
+			this._events[event] = this._events[event] || [];
+			this._events[event].push(fct);
+		},
+		off: function(event, fct){
+			var n = arguments.length;
+			if (n === 0) return delete this._events;
+			if (n === 1) return delete this._events[event];
+	
+			this._events = this._events || {};
+			if (event in this._events === false) return;
+			this._events[event].splice(this._events[event].indexOf(fct), 1);
+		},
+		trigger: function(event /* , args... */){
+			this._events = this._events || {};
+			if (event in this._events === false) return;
+			for (var i = 0; i < this._events[event].length; i++){
+				this._events[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
+			}
+		}
+	};
+	
+	/**
+	 * Mixin will delegate all MicroEvent.js function in the destination object.
+	 *
+	 * - MicroEvent.mixin(Foobar) will make Foobar able to use MicroEvent
+	 *
+	 * @param {object} the object which will support MicroEvent
+	 */
+	MicroEvent.mixin = function(destObject){
+		var props = ['on', 'off', 'trigger'];
+		for (var i = 0; i < props.length; i++){
+			destObject.prototype[props[i]] = MicroEvent.prototype[props[i]];
+		}
+	};
+	
+	var IS_MAC        = /Mac/.test(navigator.userAgent);
+	
+	var KEY_A         = 65;
+	var KEY_COMMA     = 188;
+	var KEY_RETURN    = 13;
+	var KEY_ESC       = 27;
+	var KEY_LEFT      = 37;
+	var KEY_UP        = 38;
+	var KEY_P         = 80;
+	var KEY_RIGHT     = 39;
+	var KEY_DOWN      = 40;
+	var KEY_N         = 78;
+	var KEY_BACKSPACE = 8;
+	var KEY_DELETE    = 46;
+	var KEY_SHIFT     = 16;
+	var KEY_CMD       = IS_MAC ? 91 : 17;
+	var KEY_CTRL      = IS_MAC ? 18 : 17;
+	var KEY_TAB       = 9;
+	
+	var TAG_SELECT    = 1;
+	var TAG_INPUT     = 2;
+	
+	
+	var isset = function(object) {
+		return typeof object !== 'undefined';
+	};
+	
+	/**
+	 * Converts a scalar to its best string representation
+	 * for hash keys and HTML attribute values.
+	 *
+	 * Transformations:
+	 *   'str'     -> 'str'
+	 *   null      -> ''
+	 *   undefined -> ''
+	 *   true      -> '1'
+	 *   false     -> '0'
+	 *   0         -> '0'
+	 *   1         -> '1'
+	 *
+	 * @param {string} value
+	 * @returns {string|null}
+	 */
+	var hash_key = function(value) {
+		if (typeof value === 'undefined' || value === null) return null;
+		if (typeof value === 'boolean') return value ? '1' : '0';
+		return value + '';
+	};
+	
+	/**
+	 * Escapes a string for use within HTML.
+	 *
+	 * @param {string} str
+	 * @returns {string}
+	 */
+	var escape_html = function(str) {
+		return (str + '')
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;');
+	};
+	
+	/**
+	 * Escapes "$" characters in replacement strings.
+	 *
+	 * @param {string} str
+	 * @returns {string}
+	 */
+	var escape_replace = function(str) {
+		return (str + '').replace(/\$/g, '$$$$');
+	};
+	
+	var hook = {};
+	
+	/**
+	 * Wraps `method` on `self` so that `fn`
+	 * is invoked before the original method.
+	 *
+	 * @param {object} self
+	 * @param {string} method
+	 * @param {function} fn
+	 */
+	hook.before = function(self, method, fn) {
+		var original = self[method];
+		self[method] = function() {
+			fn.apply(self, arguments);
+			return original.apply(self, arguments);
+		};
+	};
+	
+	/**
+	 * Wraps `method` on `self` so that `fn`
+	 * is invoked after the original method.
+	 *
+	 * @param {object} self
+	 * @param {string} method
+	 * @param {function} fn
+	 */
+	hook.after = function(self, method, fn) {
+		var original = self[method];
+		self[method] = function() {
+			var result = original.apply(self, arguments);
+			fn.apply(self, arguments);
+			return result;
+		};
+	};
+	
+	/**
+	 * Builds a hash table out of an array of
+	 * objects, using the specified `key` within
+	 * each object.
+	 *
+	 * @param {string} key
+	 * @param {mixed} objects
+	 */
+	var build_hash_table = function(key, objects) {
+		if (!$.isArray(objects)) return objects;
+		var i, n, table = {};
+		for (i = 0, n = objects.length; i < n; i++) {
+			if (objects[i].hasOwnProperty(key)) {
+				table[objects[i][key]] = objects[i];
+			}
+		}
+		return table;
+	};
+	
+	/**
+	 * Wraps `fn` so that it can only be invoked once.
+	 *
+	 * @param {function} fn
+	 * @returns {function}
+	 */
+	var once = function(fn) {
+		var called = false;
+		return function() {
+			if (called) return;
+			called = true;
+			fn.apply(this, arguments);
+		};
+	};
+	
+	/**
+	 * Wraps `fn` so that it can only be called once
+	 * every `delay` milliseconds (invoked on the falling edge).
+	 *
+	 * @param {function} fn
+	 * @param {int} delay
+	 * @returns {function}
+	 */
+	var debounce = function(fn, delay) {
+		var timeout;
+		return function() {
+			var self = this;
+			var args = arguments;
+			window.clearTimeout(timeout);
+			timeout = window.setTimeout(function() {
+				fn.apply(self, args);
+			}, delay);
+		};
+	};
+	
+	/**
+	 * Debounce all fired events types listed in `types`
+	 * while executing the provided `fn`.
+	 *
+	 * @param {object} self
+	 * @param {array} types
+	 * @param {function} fn
+	 */
+	var debounce_events = function(self, types, fn) {
+		var type;
+		var trigger = self.trigger;
+		var event_args = {};
+	
+		// override trigger method
+		self.trigger = function() {
+			var type = arguments[0];
+			if (types.indexOf(type) !== -1) {
+				event_args[type] = arguments;
+			} else {
+				return trigger.apply(self, arguments);
+			}
+		};
+	
+		// invoke provided function
+		fn.apply(self, []);
+		self.trigger = trigger;
+	
+		// trigger queued events
+		for (type in event_args) {
+			if (event_args.hasOwnProperty(type)) {
+				trigger.apply(self, event_args[type]);
+			}
+		}
+	};
+	
+	/**
+	 * A workaround for http://bugs.jquery.com/ticket/6696
+	 *
+	 * @param {object} $parent - Parent element to listen on.
+	 * @param {string} event - Event name.
+	 * @param {string} selector - Descendant selector to filter by.
+	 * @param {function} fn - Event handler.
+	 */
+	var watchChildEvent = function($parent, event, selector, fn) {
+		$parent.on(event, selector, function(e) {
+			var child = e.target;
+			while (child && child.parentNode !== $parent[0]) {
+				child = child.parentNode;
+			}
+			e.currentTarget = child;
+			return fn.apply(this, [e]);
+		});
+	};
+	
+	/**
+	 * Determines the current selection within a text input control.
+	 * Returns an object containing:
+	 *   - start
+	 *   - length
+	 *
+	 * @param {object} input
+	 * @returns {object}
+	 */
+	var getSelection = function(input) {
+		var result = {};
+		if ('selectionStart' in input) {
+			result.start = input.selectionStart;
+			result.length = input.selectionEnd - result.start;
+		} else if (document.selection) {
+			input.focus();
+			var sel = document.selection.createRange();
+			var selLen = document.selection.createRange().text.length;
+			sel.moveStart('character', -input.value.length);
+			result.start = sel.text.length - selLen;
+			result.length = selLen;
+		}
+		return result;
+	};
+	
+	/**
+	 * Copies CSS properties from one element to another.
+	 *
+	 * @param {object} $from
+	 * @param {object} $to
+	 * @param {array} properties
+	 */
+	var transferStyles = function($from, $to, properties) {
+		var i, n, styles = {};
+		if (properties) {
+			for (i = 0, n = properties.length; i < n; i++) {
+				styles[properties[i]] = $from.css(properties[i]);
+			}
+		} else {
+			styles = $from.css();
+		}
+		$to.css(styles);
+	};
+	
+	/**
+	 * Measures the width of a string within a
+	 * parent element (in pixels).
+	 *
+	 * @param {string} str
+	 * @param {object} $parent
+	 * @returns {int}
+	 */
+	var measureString = function(str, $parent) {
+		if (!str) {
+			return 0;
+		}
+	
+		var $test = $('<test>').css({
+			position: 'absolute',
+			top: -99999,
+			left: -99999,
+			width: 'auto',
+			padding: 0,
+			whiteSpace: 'pre'
+		}).text(str).appendTo('body');
+	
+		transferStyles($parent, $test, [
+			'letterSpacing',
+			'fontSize',
+			'fontFamily',
+			'fontWeight',
+			'textTransform'
+		]);
+	
+		var width = $test.width();
+		$test.remove();
+	
+		return width;
+	};
+	
+	/**
+	 * Sets up an input to grow horizontally as the user
+	 * types. If the value is changed manually, you can
+	 * trigger the "update" handler to resize:
+	 *
+	 * $input.trigger('update');
+	 *
+	 * @param {object} $input
+	 */
+	var autoGrow = function($input) {
+		var currentWidth = null;
+	
+		var update = function(e, options) {
+			var value, keyCode, printable, placeholder, width;
+			var shift, character, selection;
+			e = e || window.event || {};
+			options = options || {};
+	
+			if (e.metaKey || e.altKey) return;
+			if (!options.force && $input.data('grow') === false) return;
+	
+			value = $input.val();
+			if (e.type && e.type.toLowerCase() === 'keydown') {
+				keyCode = e.keyCode;
+				printable = (
+					(keyCode >= 97 && keyCode <= 122) || // a-z
+					(keyCode >= 65 && keyCode <= 90)  || // A-Z
+					(keyCode >= 48 && keyCode <= 57)  || // 0-9
+					keyCode === 32 // space
+				);
+	
+				if (keyCode === KEY_DELETE || keyCode === KEY_BACKSPACE) {
+					selection = getSelection($input[0]);
+					if (selection.length) {
+						value = value.substring(0, selection.start) + value.substring(selection.start + selection.length);
+					} else if (keyCode === KEY_BACKSPACE && selection.start) {
+						value = value.substring(0, selection.start - 1) + value.substring(selection.start + 1);
+					} else if (keyCode === KEY_DELETE && typeof selection.start !== 'undefined') {
+						value = value.substring(0, selection.start) + value.substring(selection.start + 1);
+					}
+				} else if (printable) {
+					shift = e.shiftKey;
+					character = String.fromCharCode(e.keyCode);
+					if (shift) character = character.toUpperCase();
+					else character = character.toLowerCase();
+					value += character;
+				}
+			}
+	
+			placeholder = $input.attr('placeholder');
+			if (!value && placeholder) {
+				value = placeholder;
+			}
+	
+			width = measureString(value, $input) + 4;
+			if (width !== currentWidth) {
+				currentWidth = width;
+				$input.width(width);
+				$input.triggerHandler('resize');
+			}
+		};
+	
+		$input.on('keydown keyup update blur', update);
+		update();
+	};
+	
+	var Selectize = function($input, settings) {
+		var key, i, n, dir, input, self = this;
+		input = $input[0];
+		input.selectize = self;
+	
+		// detect rtl environment
+		var computedStyle = window.getComputedStyle && window.getComputedStyle(input, null);
+		dir = computedStyle ? computedStyle.getPropertyValue('direction') : input.currentStyle && input.currentStyle.direction;
+		dir = dir || $input.parents('[dir]:first').attr('dir') || '';
+	
+		// setup default state
+		$.extend(self, {
+			settings         : settings,
+			$input           : $input,
+			tagType          : input.tagName.toLowerCase() === 'select' ? TAG_SELECT : TAG_INPUT,
+			rtl              : /rtl/i.test(dir),
+	
+			eventNS          : '.selectize' + (++Selectize.count),
+			highlightedValue : null,
+			isOpen           : false,
+			isDisabled       : false,
+			isRequired       : $input.is('[required]'),
+			isInvalid        : false,
+			isLocked         : false,
+			isFocused        : false,
+			isInputHidden    : false,
+			isSetup          : false,
+			isShiftDown      : false,
+			isCmdDown        : false,
+			isCtrlDown       : false,
+			ignoreFocus      : false,
+			ignoreBlur       : false,
+			ignoreHover      : false,
+			hasOptions       : false,
+			currentResults   : null,
+			lastValue        : '',
+			caretPos         : 0,
+			loading          : 0,
+			loadedSearches   : {},
+	
+			$activeOption    : null,
+			$activeItems     : [],
+	
+			optgroups        : {},
+			options          : {},
+			userOptions      : {},
+			items            : [],
+			renderCache      : {},
+			onSearchChange   : settings.loadThrottle === null ? self.onSearchChange : debounce(self.onSearchChange, settings.loadThrottle)
+		});
+	
+		// search system
+		self.sifter = new Sifter(this.options, {diacritics: settings.diacritics});
+	
+		// build options table
+		$.extend(self.options, build_hash_table(settings.valueField, settings.options));
+		delete self.settings.options;
+	
+		// build optgroup table
+		$.extend(self.optgroups, build_hash_table(settings.optgroupValueField, settings.optgroups));
+		delete self.settings.optgroups;
+	
+		// option-dependent defaults
+		self.settings.mode = self.settings.mode || (self.settings.maxItems === 1 ? 'single' : 'multi');
+		if (typeof self.settings.hideSelected !== 'boolean') {
+			self.settings.hideSelected = self.settings.mode === 'multi';
+		}
+	
+		self.initializePlugins(self.settings.plugins);
+		self.setupCallbacks();
+		self.setupTemplates();
+		self.setup();
+	};
+	
+	// mixins
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	
+	MicroEvent.mixin(Selectize);
+	MicroPlugin.mixin(Selectize);
+	
+	// methods
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	
+	$.extend(Selectize.prototype, {
+	
+		/**
+		 * Creates all elements and sets up event bindings.
+		 */
+		setup: function() {
+			var self      = this;
+			var settings  = self.settings;
+			var eventNS   = self.eventNS;
+			var $window   = $(window);
+			var $document = $(document);
+			var $input    = self.$input;
+	
+			var $wrapper;
+			var $control;
+			var $control_input;
+			var $dropdown;
+			var $dropdown_content;
+			var $dropdown_parent;
+			var inputMode;
+			var timeout_blur;
+			var timeout_focus;
+			var tab_index;
+			var classes;
+			var classes_plugins;
+	
+			inputMode         = self.settings.mode;
+			tab_index         = $input.attr('tabindex') || '';
+			classes           = $input.attr('class') || '';
+	
+			$wrapper          = $('<div>').addClass(settings.wrapperClass).addClass(classes).addClass(inputMode);
+			$control          = $('<div>').addClass(settings.inputClass).addClass('items').appendTo($wrapper);
+			$control_input    = $('<input type="text" autocomplete="off" />').appendTo($control).attr('tabindex', tab_index);
+			$dropdown_parent  = $(settings.dropdownParent || $wrapper);
+			$dropdown         = $('<div>').addClass(settings.dropdownClass).addClass(inputMode).hide().appendTo($dropdown_parent);
+			$dropdown_content = $('<div>').addClass(settings.dropdownContentClass).appendTo($dropdown);
+	
+			if(self.settings.copyClassesToDropdown) {
+				$dropdown.addClass(classes);
+			}
+	
+			$wrapper.css({
+				width: $input[0].style.width
+			});
+	
+			if (self.plugins.names.length) {
+				classes_plugins = 'plugin-' + self.plugins.names.join(' plugin-');
+				$wrapper.addClass(classes_plugins);
+				$dropdown.addClass(classes_plugins);
+			}
+	
+			if ((settings.maxItems === null || settings.maxItems > 1) && self.tagType === TAG_SELECT) {
+				$input.attr('multiple', 'multiple');
+			}
+	
+			if (self.settings.placeholder) {
+				$control_input.attr('placeholder', settings.placeholder);
+			}
+	
+			if ($input.attr('autocorrect')) {
+				$control_input.attr('autocorrect', $input.attr('autocorrect'));
+			}
+	
+			if ($input.attr('autocapitalize')) {
+				$control_input.attr('autocapitalize', $input.attr('autocapitalize'));
+			}
+	
+			self.$wrapper          = $wrapper;
+			self.$control          = $control;
+			self.$control_input    = $control_input;
+			self.$dropdown         = $dropdown;
+			self.$dropdown_content = $dropdown_content;
+	
+			$dropdown.on('mouseenter', '[data-selectable]', function() { return self.onOptionHover.apply(self, arguments); });
+			$dropdown.on('mousedown', '[data-selectable]', function() { return self.onOptionSelect.apply(self, arguments); });
+			watchChildEvent($control, 'mousedown', '*:not(input)', function() { return self.onItemSelect.apply(self, arguments); });
+			autoGrow($control_input);
+	
+			$control.on({
+				mousedown : function() { return self.onMouseDown.apply(self, arguments); },
+				click     : function() { return self.onClick.apply(self, arguments); }
+			});
+	
+			$control_input.on({
+				mousedown : function(e) { e.stopPropagation(); },
+				keydown   : function() { return self.onKeyDown.apply(self, arguments); },
+				keyup     : function() { return self.onKeyUp.apply(self, arguments); },
+				keypress  : function() { return self.onKeyPress.apply(self, arguments); },
+				resize    : function() { self.positionDropdown.apply(self, []); },
+				blur      : function() { return self.onBlur.apply(self, arguments); },
+				focus     : function() { self.ignoreBlur = false; return self.onFocus.apply(self, arguments); },
+				paste     : function() { return self.onPaste.apply(self, arguments); }
+			});
+	
+			$document.on('keydown' + eventNS, function(e) {
+				self.isCmdDown = e[IS_MAC ? 'metaKey' : 'ctrlKey'];
+				self.isCtrlDown = e[IS_MAC ? 'altKey' : 'ctrlKey'];
+				self.isShiftDown = e.shiftKey;
+			});
+	
+			$document.on('keyup' + eventNS, function(e) {
+				if (e.keyCode === KEY_CTRL) self.isCtrlDown = false;
+				if (e.keyCode === KEY_SHIFT) self.isShiftDown = false;
+				if (e.keyCode === KEY_CMD) self.isCmdDown = false;
+			});
+	
+			$document.on('mousedown' + eventNS, function(e) {
+				if (self.isFocused) {
+					// prevent events on the dropdown scrollbar from causing the control to blur
+					if (e.target === self.$dropdown[0] || e.target.parentNode === self.$dropdown[0]) {
+						return false;
+					}
+					// blur on click outside
+					if (!self.$control.has(e.target).length && e.target !== self.$control[0]) {
+						self.blur();
+					}
+				}
+			});
+	
+			$window.on(['scroll' + eventNS, 'resize' + eventNS].join(' '), function() {
+				if (self.isOpen) {
+					self.positionDropdown.apply(self, arguments);
+				}
+			});
+			$window.on('mousemove' + eventNS, function() {
+				self.ignoreHover = false;
+			});
+	
+			// store original children and tab index so that they can be
+			// restored when the destroy() method is called.
+			this.revertSettings = {
+				$children : $input.children().detach(),
+				tabindex  : $input.attr('tabindex')
+			};
+	
+			$input.attr('tabindex', -1).hide().after(self.$wrapper);
+	
+			if ($.isArray(settings.items)) {
+				self.setValue(settings.items);
+				delete settings.items;
+			}
+	
+			// feature detect for the validation API
+			if ($input[0].validity) {
+				$input.on('invalid' + eventNS, function(e) {
+					e.preventDefault();
+					self.isInvalid = true;
+					self.refreshState();
+				});
+			}
+	
+			self.updateOriginalInput();
+			self.refreshItems();
+			self.refreshState();
+			self.updatePlaceholder();
+			self.isSetup = true;
+	
+			if ($input.is(':disabled')) {
+				self.disable();
+			}
+	
+			self.on('change', this.onChange);
+	
+			$input.data('selectize', self);
+			$input.addClass('selectized');
+			self.trigger('initialize');
+	
+			// preload options
+			if (settings.preload === true) {
+				self.onSearchChange('');
+			}
+	
+		},
+	
+		/**
+		 * Sets up default rendering functions.
+		 */
+		setupTemplates: function() {
+			var self = this;
+			var field_label = self.settings.labelField;
+			var field_optgroup = self.settings.optgroupLabelField;
+	
+			var templates = {
+				'optgroup': function(data) {
+					return '<div class="optgroup">' + data.html + '</div>';
+				},
+				'optgroup_header': function(data, escape) {
+					return '<div class="optgroup-header">' + escape(data[field_optgroup]) + '</div>';
+				},
+				'option': function(data, escape) {
+					return '<div class="option">' + escape(data[field_label]) + '</div>';
+				},
+				'item': function(data, escape) {
+					return '<div class="item">' + escape(data[field_label]) + '</div>';
+				},
+				'option_create': function(data, escape) {
+					return '<div class="create">Add <strong>' + escape(data.input) + '</strong>&hellip;</div>';
+				}
+			};
+	
+			self.settings.render = $.extend({}, templates, self.settings.render);
+		},
+	
+		/**
+		 * Maps fired events to callbacks provided
+		 * in the settings used when creating the control.
+		 */
+		setupCallbacks: function() {
+			var key, fn, callbacks = {
+				'initialize'     : 'onInitialize',
+				'change'         : 'onChange',
+				'item_add'       : 'onItemAdd',
+				'item_remove'    : 'onItemRemove',
+				'clear'          : 'onClear',
+				'option_add'     : 'onOptionAdd',
+				'option_remove'  : 'onOptionRemove',
+				'option_clear'   : 'onOptionClear',
+				'dropdown_open'  : 'onDropdownOpen',
+				'dropdown_close' : 'onDropdownClose',
+				'type'           : 'onType',
+				'load'           : 'onLoad'
+			};
+	
+			for (key in callbacks) {
+				if (callbacks.hasOwnProperty(key)) {
+					fn = this.settings[callbacks[key]];
+					if (fn) this.on(key, fn);
+				}
+			}
+		},
+	
+		/**
+		 * Triggered when the main control element
+		 * has a click event.
+		 *
+		 * @param {object} e
+		 * @return {boolean}
+		 */
+		onClick: function(e) {
+			var self = this;
+	
+			// necessary for mobile webkit devices (manual focus triggering
+			// is ignored unless invoked within a click event)
+			if (!self.isFocused) {
+				self.focus();
+				e.preventDefault();
+			}
+		},
+	
+		/**
+		 * Triggered when the main control element
+		 * has a mouse down event.
+		 *
+		 * @param {object} e
+		 * @return {boolean}
+		 */
+		onMouseDown: function(e) {
+			var self = this;
+			var defaultPrevented = e.isDefaultPrevented();
+			var $target = $(e.target);
+	
+			if (self.isFocused) {
+				// retain focus by preventing native handling. if the
+				// event target is the input it should not be modified.
+				// otherwise, text selection within the input won't work.
+				if (e.target !== self.$control_input[0]) {
+					if (self.settings.mode === 'single') {
+						// toggle dropdown
+						self.isOpen ? self.close() : self.open();
+					} else if (!defaultPrevented) {
+						self.setActiveItem(null);
+					}
+					return false;
+				}
+			} else {
+				// give control focus
+				if (!defaultPrevented) {
+					window.setTimeout(function() {
+						self.focus();
+					}, 0);
+				}
+			}
+		},
+	
+		/**
+		 * Triggered when the value of the control has been changed.
+		 * This should propagate the event to the original DOM
+		 * input / select element.
+		 */
+		onChange: function() {
+			this.$input.trigger('change');
+		},
+	
+	
+		/**
+		 * Triggered on <input> paste.
+		 *
+		 * @param {object} e
+		 * @returns {boolean}
+		 */
+		onPaste: function(e) {
+			var self = this;
+			if (self.isFull() || self.isInputHidden || self.isLocked) {
+				e.preventDefault();
+			}
+		},
+	
+		/**
+		 * Triggered on <input> keypress.
+		 *
+		 * @param {object} e
+		 * @returns {boolean}
+		 */
+		onKeyPress: function(e) {
+			if (this.isLocked) return e && e.preventDefault();
+			var character = String.fromCharCode(e.keyCode || e.which);
+			if (this.settings.create && character === this.settings.delimiter) {
+				this.createItem();
+				e.preventDefault();
+				return false;
+			}
+		},
+	
+		/**
+		 * Triggered on <input> keydown.
+		 *
+		 * @param {object} e
+		 * @returns {boolean}
+		 */
+		onKeyDown: function(e) {
+			var isInput = e.target === this.$control_input[0];
+			var self = this;
+	
+			if (self.isLocked) {
+				if (e.keyCode !== KEY_TAB) {
+					e.preventDefault();
+				}
+				return;
+			}
+	
+			switch (e.keyCode) {
+				case KEY_A:
+					if (self.isCmdDown) {
+						self.selectAll();
+						return;
+					}
+					break;
+				case KEY_ESC:
+					self.close();
+					return;
+				case KEY_N:
+					if (!e.ctrlKey || e.altKey) break;
+				case KEY_DOWN:
+					if (!self.isOpen && self.hasOptions) {
+						self.open();
+					} else if (self.$activeOption) {
+						self.ignoreHover = true;
+						var $next = self.getAdjacentOption(self.$activeOption, 1);
+						if ($next.length) self.setActiveOption($next, true, true);
+					}
+					e.preventDefault();
+					return;
+				case KEY_P:
+					if (!e.ctrlKey || e.altKey) break;
+				case KEY_UP:
+					if (self.$activeOption) {
+						self.ignoreHover = true;
+						var $prev = self.getAdjacentOption(self.$activeOption, -1);
+						if ($prev.length) self.setActiveOption($prev, true, true);
+					}
+					e.preventDefault();
+					return;
+				case KEY_RETURN:
+					if (self.isOpen && self.$activeOption) {
+						self.onOptionSelect({currentTarget: self.$activeOption});
+					}
+					e.preventDefault();
+					return;
+				case KEY_LEFT:
+					self.advanceSelection(-1, e);
+					return;
+				case KEY_RIGHT:
+					self.advanceSelection(1, e);
+					return;
+				case KEY_TAB:
+					if (self.settings.selectOnTab && self.isOpen && self.$activeOption) {
+						self.onOptionSelect({currentTarget: self.$activeOption});
+						e.preventDefault();
+					}
+					if (self.settings.create && self.createItem()) {
+						e.preventDefault();
+					}
+					return;
+				case KEY_BACKSPACE:
+				case KEY_DELETE:
+					self.deleteSelection(e);
+					return;
+			}
+	
+			if ((self.isFull() || self.isInputHidden) && !(IS_MAC ? e.metaKey : e.ctrlKey)) {
+				e.preventDefault();
+				return;
+			}
+		},
+	
+		/**
+		 * Triggered on <input> keyup.
+		 *
+		 * @param {object} e
+		 * @returns {boolean}
+		 */
+		onKeyUp: function(e) {
+			var self = this;
+	
+			if (self.isLocked) return e && e.preventDefault();
+			var value = self.$control_input.val() || '';
+			if (self.lastValue !== value) {
+				self.lastValue = value;
+				self.onSearchChange(value);
+				self.refreshOptions();
+				self.trigger('type', value);
+			}
+		},
+	
+		/**
+		 * Invokes the user-provide option provider / loader.
+		 *
+		 * Note: this function is debounced in the Selectize
+		 * constructor (by `settings.loadDelay` milliseconds)
+		 *
+		 * @param {string} value
+		 */
+		onSearchChange: function(value) {
+			var self = this;
+			var fn = self.settings.load;
+			if (!fn) return;
+			if (self.loadedSearches.hasOwnProperty(value)) return;
+			self.loadedSearches[value] = true;
+			self.load(function(callback) {
+				fn.apply(self, [value, callback]);
+			});
+		},
+	
+		/**
+		 * Triggered on <input> focus.
+		 *
+		 * @param {object} e (optional)
+		 * @returns {boolean}
+		 */
+		onFocus: function(e) {
+			var self = this;
+	
+			self.isFocused = true;
+			if (self.isDisabled) {
+				self.blur();
+				e && e.preventDefault();
+				return false;
+			}
+	
+			if (self.ignoreFocus) return;
+			if (self.settings.preload === 'focus') self.onSearchChange('');
+	
+			if (!self.$activeItems.length) {
+				self.showInput();
+				self.setActiveItem(null);
+				self.refreshOptions(!!self.settings.openOnFocus);
+			}
+	
+			self.refreshState();
+		},
+	
+		/**
+		 * Triggered on <input> blur.
+		 *
+		 * @param {object} e
+		 * @returns {boolean}
+		 */
+		onBlur: function(e) {
+			var self = this;
+			self.isFocused = false;
+			if (self.ignoreFocus) return;
+	
+			// necessary to prevent IE closing the dropdown when the scrollbar is clicked
+			if (!self.ignoreBlur && document.activeElement === self.$dropdown_content[0]) {
+				self.ignoreBlur = true;
+				self.onFocus(e);
+	
+				return;
+			}
+	
+			if (self.settings.create && self.settings.createOnBlur) {
+				self.createItem(false);
+			}
+	
+			self.close();
+			self.setTextboxValue('');
+			self.setActiveItem(null);
+			self.setActiveOption(null);
+			self.setCaret(self.items.length);
+			self.refreshState();
+		},
+	
+		/**
+		 * Triggered when the user rolls over
+		 * an option in the autocomplete dropdown menu.
+		 *
+		 * @param {object} e
+		 * @returns {boolean}
+		 */
+		onOptionHover: function(e) {
+			if (this.ignoreHover) return;
+			this.setActiveOption(e.currentTarget, false);
+		},
+	
+		/**
+		 * Triggered when the user clicks on an option
+		 * in the autocomplete dropdown menu.
+		 *
+		 * @param {object} e
+		 * @returns {boolean}
+		 */
+		onOptionSelect: function(e) {
+			var value, $target, $option, self = this;
+	
+			if (e.preventDefault) {
+				e.preventDefault();
+				e.stopPropagation();
+			}
+	
+			$target = $(e.currentTarget);
+			if ($target.hasClass('create')) {
+				self.createItem();
+			} else {
+				value = $target.attr('data-value');
+				if (typeof value !== 'undefined') {
+					self.lastQuery = null;
+					self.setTextboxValue('');
+					self.addItem(value);
+					if (!self.settings.hideSelected && e.type && /mouse/.test(e.type)) {
+						self.setActiveOption(self.getOption(value));
+					}
+				}
+			}
+		},
+	
+		/**
+		 * Triggered when the user clicks on an item
+		 * that has been selected.
+		 *
+		 * @param {object} e
+		 * @returns {boolean}
+		 */
+		onItemSelect: function(e) {
+			var self = this;
+	
+			if (self.isLocked) return;
+			if (self.settings.mode === 'multi') {
+				e.preventDefault();
+				self.setActiveItem(e.currentTarget, e);
+			}
+		},
+	
+		/**
+		 * Invokes the provided method that provides
+		 * results to a callback---which are then added
+		 * as options to the control.
+		 *
+		 * @param {function} fn
+		 */
+		load: function(fn) {
+			var self = this;
+			var $wrapper = self.$wrapper.addClass('loading');
+	
+			self.loading++;
+			fn.apply(self, [function(results) {
+				self.loading = Math.max(self.loading - 1, 0);
+				if (results && results.length) {
+					self.addOption(results);
+					self.refreshOptions(self.isFocused && !self.isInputHidden);
+				}
+				if (!self.loading) {
+					$wrapper.removeClass('loading');
+				}
+				self.trigger('load', results);
+			}]);
+		},
+	
+		/**
+		 * Sets the input field of the control to the specified value.
+		 *
+		 * @param {string} value
+		 */
+		setTextboxValue: function(value) {
+			var $input = this.$control_input;
+			var changed = $input.val() !== value;
+			if (changed) {
+				$input.val(value).triggerHandler('update');
+				this.lastValue = value;
+			}
+		},
+	
+		/**
+		 * Returns the value of the control. If multiple items
+		 * can be selected (e.g. <select multiple>), this returns
+		 * an array. If only one item can be selected, this
+		 * returns a string.
+		 *
+		 * @returns {mixed}
+		 */
+		getValue: function() {
+			if (this.tagType === TAG_SELECT && this.$input.attr('multiple')) {
+				return this.items;
+			} else {
+				return this.items.join(this.settings.delimiter);
+			}
+		},
+	
+		/**
+		 * Resets the selected items to the given value.
+		 *
+		 * @param {mixed} value
+		 */
+		setValue: function(value) {
+			debounce_events(this, ['change'], function() {
+				this.clear();
+				this.addItems(value);
+			});
+		},
+	
+		/**
+		 * Sets the selected item.
+		 *
+		 * @param {object} $item
+		 * @param {object} e (optional)
+		 */
+		setActiveItem: function($item, e) {
+			var self = this;
+			var eventName;
+			var i, idx, begin, end, item, swap;
+			var $last;
+	
+			if (self.settings.mode === 'single') return;
+			$item = $($item);
+	
+			// clear the active selection
+			if (!$item.length) {
+				$(self.$activeItems).removeClass('active');
+				self.$activeItems = [];
+				if (self.isFocused) {
+					self.showInput();
+				}
+				return;
+			}
+	
+			// modify selection
+			eventName = e && e.type.toLowerCase();
+	
+			if (eventName === 'mousedown' && self.isShiftDown && self.$activeItems.length) {
+				$last = self.$control.children('.active:last');
+				begin = Array.prototype.indexOf.apply(self.$control[0].childNodes, [$last[0]]);
+				end   = Array.prototype.indexOf.apply(self.$control[0].childNodes, [$item[0]]);
+				if (begin > end) {
+					swap  = begin;
+					begin = end;
+					end   = swap;
+				}
+				for (i = begin; i <= end; i++) {
+					item = self.$control[0].childNodes[i];
+					if (self.$activeItems.indexOf(item) === -1) {
+						$(item).addClass('active');
+						self.$activeItems.push(item);
+					}
+				}
+				e.preventDefault();
+			} else if ((eventName === 'mousedown' && self.isCtrlDown) || (eventName === 'keydown' && this.isShiftDown)) {
+				if ($item.hasClass('active')) {
+					idx = self.$activeItems.indexOf($item[0]);
+					self.$activeItems.splice(idx, 1);
+					$item.removeClass('active');
+				} else {
+					self.$activeItems.push($item.addClass('active')[0]);
+				}
+			} else {
+				$(self.$activeItems).removeClass('active');
+				self.$activeItems = [$item.addClass('active')[0]];
+			}
+	
+			// ensure control has focus
+			self.hideInput();
+			if (!this.isFocused) {
+				self.focus();
+			}
+		},
+	
+		/**
+		 * Sets the selected item in the dropdown menu
+		 * of available options.
+		 *
+		 * @param {object} $object
+		 * @param {boolean} scroll
+		 * @param {boolean} animate
+		 */
+		setActiveOption: function($option, scroll, animate) {
+			var height_menu, height_item, y;
+			var scroll_top, scroll_bottom;
+			var self = this;
+	
+			if (self.$activeOption) self.$activeOption.removeClass('active');
+			self.$activeOption = null;
+	
+			$option = $($option);
+			if (!$option.length) return;
+	
+			self.$activeOption = $option.addClass('active');
+	
+			if (scroll || !isset(scroll)) {
+	
+				height_menu   = self.$dropdown_content.height();
+				height_item   = self.$activeOption.outerHeight(true);
+				scroll        = self.$dropdown_content.scrollTop() || 0;
+				y             = self.$activeOption.offset().top - self.$dropdown_content.offset().top + scroll;
+				scroll_top    = y;
+				scroll_bottom = y - height_menu + height_item;
+	
+				if (y + height_item > height_menu + scroll) {
+					self.$dropdown_content.stop().animate({scrollTop: scroll_bottom}, animate ? self.settings.scrollDuration : 0);
+				} else if (y < scroll) {
+					self.$dropdown_content.stop().animate({scrollTop: scroll_top}, animate ? self.settings.scrollDuration : 0);
+				}
+	
+			}
+		},
+	
+		/**
+		 * Selects all items (CTRL + A).
+		 */
+		selectAll: function() {
+			var self = this;
+			if (self.settings.mode === 'single') return;
+	
+			self.$activeItems = Array.prototype.slice.apply(self.$control.children(':not(input)').addClass('active'));
+			if (self.$activeItems.length) {
+				self.hideInput();
+				self.close();
+			}
+			self.focus();
+		},
+	
+		/**
+		 * Hides the input element out of view, while
+		 * retaining its focus.
+		 */
+		hideInput: function() {
+			var self = this;
+	
+			self.setTextboxValue('');
+			self.$control_input.css({opacity: 0, position: 'absolute', left: self.rtl ? 10000 : -10000});
+			self.isInputHidden = true;
+		},
+	
+		/**
+		 * Restores input visibility.
+		 */
+		showInput: function() {
+			this.$control_input.css({opacity: 1, position: 'relative', left: 0});
+			this.isInputHidden = false;
+		},
+	
+		/**
+		 * Gives the control focus. If "trigger" is falsy,
+		 * focus handlers won't be fired--causing the focus
+		 * to happen silently in the background.
+		 *
+		 * @param {boolean} trigger
+		 */
+		focus: function() {
+			var self = this;
+			if (self.isDisabled) return;
+	
+			self.ignoreFocus = true;
+			self.$control_input[0].focus();
+			window.setTimeout(function() {
+				self.ignoreFocus = false;
+				self.onFocus();
+			}, 0);
+		},
+	
+		/**
+		 * Forces the control out of focus.
+		 */
+		blur: function() {
+			this.$control_input.trigger('blur');
+		},
+	
+		/**
+		 * Returns a function that scores an object
+		 * to show how good of a match it is to the
+		 * provided query.
+		 *
+		 * @param {string} query
+		 * @param {object} options
+		 * @return {function}
+		 */
+		getScoreFunction: function(query) {
+			return this.sifter.getScoreFunction(query, this.getSearchOptions());
+		},
+	
+		/**
+		 * Returns search options for sifter (the system
+		 * for scoring and sorting results).
+		 *
+		 * @see https://github.com/brianreavis/sifter.js
+		 * @return {object}
+		 */
+		getSearchOptions: function() {
+			var settings = this.settings;
+			var sort = settings.sortField;
+			if (typeof sort === 'string') {
+				sort = {field: sort};
+			}
+	
+			return {
+				fields      : settings.searchField,
+				conjunction : settings.searchConjunction,
+				sort        : sort
+			};
+		},
+	
+		/**
+		 * Searches through available options and returns
+		 * a sorted array of matches.
+		 *
+		 * Returns an object containing:
+		 *
+		 *   - query {string}
+		 *   - tokens {array}
+		 *   - total {int}
+		 *   - items {array}
+		 *
+		 * @param {string} query
+		 * @returns {object}
+		 */
+		search: function(query) {
+			var i, value, score, result, calculateScore;
+			var self     = this;
+			var settings = self.settings;
+			var options  = this.getSearchOptions();
+	
+			// validate user-provided result scoring function
+			if (settings.score) {
+				calculateScore = self.settings.score.apply(this, [query]);
+				if (typeof calculateScore !== 'function') {
+					throw new Error('Selectize "score" setting must be a function that returns a function');
+				}
+			}
+	
+			// perform search
+			if (query !== self.lastQuery) {
+				self.lastQuery = query;
+				result = self.sifter.search(query, $.extend(options, {score: calculateScore}));
+				self.currentResults = result;
+			} else {
+				result = $.extend(true, {}, self.currentResults);
+			}
+	
+			// filter out selected items
+			if (settings.hideSelected) {
+				for (i = result.items.length - 1; i >= 0; i--) {
+					if (self.items.indexOf(hash_key(result.items[i].id)) !== -1) {
+						result.items.splice(i, 1);
+					}
+				}
+			}
+	
+			return result;
+		},
+	
+		/**
+		 * Refreshes the list of available options shown
+		 * in the autocomplete dropdown menu.
+		 *
+		 * @param {boolean} triggerDropdown
+		 */
+		refreshOptions: function(triggerDropdown) {
+			var i, j, k, n, groups, groups_order, option, option_html, optgroup, optgroups, html, html_children, has_create_option;
+			var $active, $active_before, $create;
+	
+			if (typeof triggerDropdown === 'undefined') {
+				triggerDropdown = true;
+			}
+	
+			var self              = this;
+			var query             = $.trim(self.$control_input.val());
+			var results           = self.search(query);
+			var $dropdown_content = self.$dropdown_content;
+			var active_before     = self.$activeOption && hash_key(self.$activeOption.attr('data-value'));
+	
+			// build markup
+			n = results.items.length;
+			if (typeof self.settings.maxOptions === 'number') {
+				n = Math.min(n, self.settings.maxOptions);
+			}
+	
+			// render and group available options individually
+			groups = {};
+	
+			if (self.settings.optgroupOrder) {
+				groups_order = self.settings.optgroupOrder;
+				for (i = 0; i < groups_order.length; i++) {
+					groups[groups_order[i]] = [];
+				}
+			} else {
+				groups_order = [];
+			}
+	
+			for (i = 0; i < n; i++) {
+				option      = self.options[results.items[i].id];
+				option_html = self.render('option', option);
+				optgroup    = option[self.settings.optgroupField] || '';
+				optgroups   = $.isArray(optgroup) ? optgroup : [optgroup];
+	
+				for (j = 0, k = optgroups && optgroups.length; j < k; j++) {
+					optgroup = optgroups[j];
+					if (!self.optgroups.hasOwnProperty(optgroup)) {
+						optgroup = '';
+					}
+					if (!groups.hasOwnProperty(optgroup)) {
+						groups[optgroup] = [];
+						groups_order.push(optgroup);
+					}
+					groups[optgroup].push(option_html);
+				}
+			}
+	
+			// render optgroup headers & join groups
+			html = [];
+			for (i = 0, n = groups_order.length; i < n; i++) {
+				optgroup = groups_order[i];
+				if (self.optgroups.hasOwnProperty(optgroup) && groups[optgroup].length) {
+					// render the optgroup header and options within it,
+					// then pass it to the wrapper template
+					html_children = self.render('optgroup_header', self.optgroups[optgroup]) || '';
+					html_children += groups[optgroup].join('');
+					html.push(self.render('optgroup', $.extend({}, self.optgroups[optgroup], {
+						html: html_children
+					})));
+				} else {
+					html.push(groups[optgroup].join(''));
+				}
+			}
+	
+			$dropdown_content.html(html.join(''));
+	
+			// highlight matching terms inline
+			if (self.settings.highlight && results.query.length && results.tokens.length) {
+				for (i = 0, n = results.tokens.length; i < n; i++) {
+					highlight($dropdown_content, results.tokens[i].regex);
+				}
+			}
+	
+			// add "selected" class to selected options
+			if (!self.settings.hideSelected) {
+				for (i = 0, n = self.items.length; i < n; i++) {
+					self.getOption(self.items[i]).addClass('selected');
+				}
+			}
+	
+			// add create option
+			has_create_option = self.canCreate(query);
+			if (has_create_option) {
+				$dropdown_content.prepend(self.render('option_create', {input: query}));
+				$create = $($dropdown_content[0].childNodes[0]);
+			}
+	
+			// activate
+			self.hasOptions = results.items.length > 0 || has_create_option;
+			if (self.hasOptions) {
+				if (results.items.length > 0) {
+					$active_before = active_before && self.getOption(active_before);
+					if ($active_before && $active_before.length) {
+						$active = $active_before;
+					} else if (self.settings.mode === 'single' && self.items.length) {
+						$active = self.getOption(self.items[0]);
+					}
+					if (!$active || !$active.length) {
+						if ($create && !self.settings.addPrecedence) {
+							$active = self.getAdjacentOption($create, 1);
+						} else {
+							$active = $dropdown_content.find('[data-selectable]:first');
+						}
+					}
+				} else {
+					$active = $create;
+				}
+				self.setActiveOption($active);
+				if (triggerDropdown && !self.isOpen) { self.open(); }
+			} else {
+				self.setActiveOption(null);
+				if (triggerDropdown && self.isOpen) { self.close(); }
+			}
+		},
+	
+		/**
+		 * Adds an available option. If it already exists,
+		 * nothing will happen. Note: this does not refresh
+		 * the options list dropdown (use `refreshOptions`
+		 * for that).
+		 *
+		 * Usage:
+		 *
+		 *   this.addOption(data)
+		 *
+		 * @param {object} data
+		 */
+		addOption: function(data) {
+			var i, n, optgroup, value, self = this;
+	
+			if ($.isArray(data)) {
+				for (i = 0, n = data.length; i < n; i++) {
+					self.addOption(data[i]);
+				}
+				return;
+			}
+	
+			value = hash_key(data[self.settings.valueField]);
+			if (typeof value !== 'string' || self.options.hasOwnProperty(value)) return;
+	
+			self.userOptions[value] = true;
+			self.options[value] = data;
+			self.lastQuery = null;
+			self.trigger('option_add', value, data);
+		},
+	
+		/**
+		 * Registers a new optgroup for options
+		 * to be bucketed into.
+		 *
+		 * @param {string} id
+		 * @param {object} data
+		 */
+		addOptionGroup: function(id, data) {
+			this.optgroups[id] = data;
+			this.trigger('optgroup_add', id, data);
+		},
+	
+		/**
+		 * Updates an option available for selection. If
+		 * it is visible in the selected items or options
+		 * dropdown, it will be re-rendered automatically.
+		 *
+		 * @param {string} value
+		 * @param {object} data
+		 */
+		updateOption: function(value, data) {
+			var self = this;
+			var $item, $item_new;
+			var value_new, index_item, cache_items, cache_options;
+	
+			value     = hash_key(value);
+			value_new = hash_key(data[self.settings.valueField]);
+	
+			// sanity checks
+			if (value === null) return;
+			if (!self.options.hasOwnProperty(value)) return;
+			if (typeof value_new !== 'string') throw new Error('Value must be set in option data');
+	
+			// update references
+			if (value_new !== value) {
+				delete self.options[value];
+				index_item = self.items.indexOf(value);
+				if (index_item !== -1) {
+					self.items.splice(index_item, 1, value_new);
+				}
+			}
+			self.options[value_new] = data;
+	
+			// invalidate render cache
+			cache_items = self.renderCache['item'];
+			cache_options = self.renderCache['option'];
+	
+			if (cache_items) {
+				delete cache_items[value];
+				delete cache_items[value_new];
+			}
+			if (cache_options) {
+				delete cache_options[value];
+				delete cache_options[value_new];
+			}
+	
+			// update the item if it's selected
+			if (self.items.indexOf(value_new) !== -1) {
+				$item = self.getItem(value);
+				$item_new = $(self.render('item', data));
+				if ($item.hasClass('active')) $item_new.addClass('active');
+				$item.replaceWith($item_new);
+			}
+	
+			//invalidate last query because we might have updated the sortField
+			self.lastQuery = null;
+	
+			// update dropdown contents
+			if (self.isOpen) {
+				self.refreshOptions(false);
+			}
+		},
+	
+		/**
+		 * Removes a single option.
+		 *
+		 * @param {string} value
+		 */
+		removeOption: function(value) {
+			var self = this;
+			value = hash_key(value);
+	
+			var cache_items = self.renderCache['item'];
+			var cache_options = self.renderCache['option'];
+			if (cache_items) delete cache_items[value];
+			if (cache_options) delete cache_options[value];
+	
+			delete self.userOptions[value];
+			delete self.options[value];
+			self.lastQuery = null;
+			self.trigger('option_remove', value);
+			self.removeItem(value);
+		},
+	
+		/**
+		 * Clears all options.
+		 */
+		clearOptions: function() {
+			var self = this;
+	
+			self.loadedSearches = {};
+			self.userOptions = {};
+			self.renderCache = {};
+			self.options = self.sifter.items = {};
+			self.lastQuery = null;
+			self.trigger('option_clear');
+			self.clear();
+		},
+	
+		/**
+		 * Returns the jQuery element of the option
+		 * matching the given value.
+		 *
+		 * @param {string} value
+		 * @returns {object}
+		 */
+		getOption: function(value) {
+			return this.getElementWithValue(value, this.$dropdown_content.find('[data-selectable]'));
+		},
+	
+		/**
+		 * Returns the jQuery element of the next or
+		 * previous selectable option.
+		 *
+		 * @param {object} $option
+		 * @param {int} direction  can be 1 for next or -1 for previous
+		 * @return {object}
+		 */
+		getAdjacentOption: function($option, direction) {
+			var $options = this.$dropdown.find('[data-selectable]');
+			var index    = $options.index($option) + direction;
+	
+			return index >= 0 && index < $options.length ? $options.eq(index) : $();
+		},
+	
+		/**
+		 * Finds the first element with a "data-value" attribute
+		 * that matches the given value.
+		 *
+		 * @param {mixed} value
+		 * @param {object} $els
+		 * @return {object}
+		 */
+		getElementWithValue: function(value, $els) {
+			value = hash_key(value);
+	
+			if (typeof value !== 'undefined' && value !== null) {
+				for (var i = 0, n = $els.length; i < n; i++) {
+					if ($els[i].getAttribute('data-value') === value) {
+						return $($els[i]);
+					}
+				}
+			}
+	
+			return $();
+		},
+	
+		/**
+		 * Returns the jQuery element of the item
+		 * matching the given value.
+		 *
+		 * @param {string} value
+		 * @returns {object}
+		 */
+		getItem: function(value) {
+			return this.getElementWithValue(value, this.$control.children());
+		},
+	
+		/**
+		 * "Selects" multiple items at once. Adds them to the list
+		 * at the current caret position.
+		 *
+		 * @param {string} value
+		 */
+		addItems: function(values) {
+			var items = $.isArray(values) ? values : [values];
+			for (var i = 0, n = items.length; i < n; i++) {
+				this.isPending = (i < n - 1);
+				this.addItem(items[i]);
+			}
+		},
+	
+		/**
+		 * "Selects" an item. Adds it to the list
+		 * at the current caret position.
+		 *
+		 * @param {string} value
+		 */
+		addItem: function(value) {
+			debounce_events(this, ['change'], function() {
+				var $item, $option, $options;
+				var self = this;
+				var inputMode = self.settings.mode;
+				var i, active, value_next, wasFull;
+				value = hash_key(value);
+	
+				if (self.items.indexOf(value) !== -1) {
+					if (inputMode === 'single') self.close();
+					return;
+				}
+	
+				if (!self.options.hasOwnProperty(value)) return;
+				if (inputMode === 'single') self.clear();
+				if (inputMode === 'multi' && self.isFull()) return;
+	
+				$item = $(self.render('item', self.options[value]));
+				wasFull = self.isFull();
+				self.items.splice(self.caretPos, 0, value);
+				self.insertAtCaret($item);
+				if (!self.isPending || (!wasFull && self.isFull())) {
+					self.refreshState();
+				}
+	
+				if (self.isSetup) {
+					$options = self.$dropdown_content.find('[data-selectable]');
+	
+					// update menu / remove the option (if this is not one item being added as part of series)
+					if (!self.isPending) {
+						$option = self.getOption(value);
+						value_next = self.getAdjacentOption($option, 1).attr('data-value');
+						self.refreshOptions(self.isFocused && inputMode !== 'single');
+						if (value_next) {
+							self.setActiveOption(self.getOption(value_next));
+						}
+					}
+	
+					// hide the menu if the maximum number of items have been selected or no options are left
+					if (!$options.length || self.isFull()) {
+						self.close();
+					} else {
+						self.positionDropdown();
+					}
+	
+					self.updatePlaceholder();
+					self.trigger('item_add', value, $item);
+					self.updateOriginalInput();
+				}
+			});
+		},
+	
+		/**
+		 * Removes the selected item matching
+		 * the provided value.
+		 *
+		 * @param {string} value
+		 */
+		removeItem: function(value) {
+			var self = this;
+			var $item, i, idx;
+	
+			$item = (typeof value === 'object') ? value : self.getItem(value);
+			value = hash_key($item.attr('data-value'));
+			i = self.items.indexOf(value);
+	
+			if (i !== -1) {
+				$item.remove();
+				if ($item.hasClass('active')) {
+					idx = self.$activeItems.indexOf($item[0]);
+					self.$activeItems.splice(idx, 1);
+				}
+	
+				self.items.splice(i, 1);
+				self.lastQuery = null;
+				if (!self.settings.persist && self.userOptions.hasOwnProperty(value)) {
+					self.removeOption(value);
+				}
+	
+				if (i < self.caretPos) {
+					self.setCaret(self.caretPos - 1);
+				}
+	
+				self.refreshState();
+				self.updatePlaceholder();
+				self.updateOriginalInput();
+				self.positionDropdown();
+				self.trigger('item_remove', value);
+			}
+		},
+	
+		/**
+		 * Invokes the `create` method provided in the
+		 * selectize options that should provide the data
+		 * for the new item, given the user input.
+		 *
+		 * Once this completes, it will be added
+		 * to the item list.
+		 *
+		 * @return {boolean}
+		 */
+		createItem: function(triggerDropdown) {
+			var self  = this;
+			var input = $.trim(self.$control_input.val() || '');
+			var caret = self.caretPos;
+			if (!self.canCreate(input)) return false;
+			self.lock();
+	
+			if (typeof triggerDropdown === 'undefined') {
+				triggerDropdown = true;
+			}
+	
+			var setup = (typeof self.settings.create === 'function') ? this.settings.create : function(input) {
+				var data = {};
+				data[self.settings.labelField] = input;
+				data[self.settings.valueField] = input;
+				return data;
+			};
+	
+			var create = once(function(data) {
+				self.unlock();
+	
+				if (!data || typeof data !== 'object') return;
+				var value = hash_key(data[self.settings.valueField]);
+				if (typeof value !== 'string') return;
+	
+				self.setTextboxValue('');
+				self.addOption(data);
+				self.setCaret(caret);
+				self.addItem(value);
+				self.refreshOptions(triggerDropdown && self.settings.mode !== 'single');
+			});
+	
+			var output = setup.apply(this, [input, create]);
+			if (typeof output !== 'undefined') {
+				create(output);
+			}
+	
+			return true;
+		},
+	
+		/**
+		 * Re-renders the selected item lists.
+		 */
+		refreshItems: function() {
+			this.lastQuery = null;
+	
+			if (this.isSetup) {
+				for (var i = 0; i < this.items.length; i++) {
+					this.addItem(this.items);
+				}
+			}
+	
+			this.refreshState();
+			this.updateOriginalInput();
+		},
+	
+		/**
+		 * Updates all state-dependent attributes
+		 * and CSS classes.
+		 */
+		refreshState: function() {
+			var invalid, self = this;
+			if (self.isRequired) {
+				if (self.items.length) self.isInvalid = false;
+				self.$control_input.prop('required', invalid);
+			}
+			self.refreshClasses();
+		},
+	
+		/**
+		 * Updates all state-dependent CSS classes.
+		 */
+		refreshClasses: function() {
+			var self     = this;
+			var isFull   = self.isFull();
+			var isLocked = self.isLocked;
+	
+			self.$wrapper
+				.toggleClass('rtl', self.rtl);
+	
+			self.$control
+				.toggleClass('focus', self.isFocused)
+				.toggleClass('disabled', self.isDisabled)
+				.toggleClass('required', self.isRequired)
+				.toggleClass('invalid', self.isInvalid)
+				.toggleClass('locked', isLocked)
+				.toggleClass('full', isFull).toggleClass('not-full', !isFull)
+				.toggleClass('input-active', self.isFocused && !self.isInputHidden)
+				.toggleClass('dropdown-active', self.isOpen)
+				.toggleClass('has-options', !$.isEmptyObject(self.options))
+				.toggleClass('has-items', self.items.length > 0);
+	
+			self.$control_input.data('grow', !isFull && !isLocked);
+		},
+	
+		/**
+		 * Determines whether or not more items can be added
+		 * to the control without exceeding the user-defined maximum.
+		 *
+		 * @returns {boolean}
+		 */
+		isFull: function() {
+			return this.settings.maxItems !== null && this.items.length >= this.settings.maxItems;
+		},
+	
+		/**
+		 * Refreshes the original <select> or <input>
+		 * element to reflect the current state.
+		 */
+		updateOriginalInput: function() {
+			var i, n, options, self = this;
+	
+			if (self.tagType === TAG_SELECT) {
+				options = [];
+				for (i = 0, n = self.items.length; i < n; i++) {
+					options.push('<option value="' + escape_html(self.items[i]) + '" selected="selected"></option>');
+				}
+				if (!options.length && !this.$input.attr('multiple')) {
+					options.push('<option value="" selected="selected"></option>');
+				}
+				self.$input.html(options.join(''));
+			} else {
+				self.$input.val(self.getValue());
+				self.$input.attr('value',self.$input.val());
+			}
+	
+			if (self.isSetup) {
+				self.trigger('change', self.$input.val());
+			}
+		},
+	
+		/**
+		 * Shows/hide the input placeholder depending
+		 * on if there items in the list already.
+		 */
+		updatePlaceholder: function() {
+			if (!this.settings.placeholder) return;
+			var $input = this.$control_input;
+	
+			if (this.items.length) {
+				$input.removeAttr('placeholder');
+			} else {
+				$input.attr('placeholder', this.settings.placeholder);
+			}
+			$input.triggerHandler('update', {force: true});
+		},
+	
+		/**
+		 * Shows the autocomplete dropdown containing
+		 * the available options.
+		 */
+		open: function() {
+			var self = this;
+	
+			if (self.isLocked || self.isOpen || (self.settings.mode === 'multi' && self.isFull())) return;
+			self.focus();
+			self.isOpen = true;
+			self.refreshState();
+			self.$dropdown.css({visibility: 'hidden', display: 'block'});
+			self.positionDropdown();
+			self.$dropdown.css({visibility: 'visible'});
+			self.trigger('dropdown_open', self.$dropdown);
+		},
+	
+		/**
+		 * Closes the autocomplete dropdown menu.
+		 */
+		close: function() {
+			var self = this;
+			var trigger = self.isOpen;
+	
+			if (self.settings.mode === 'single' && self.items.length) {
+				self.hideInput();
+			}
+	
+			self.isOpen = false;
+			self.$dropdown.hide();
+			self.setActiveOption(null);
+			self.refreshState();
+	
+			if (trigger) self.trigger('dropdown_close', self.$dropdown);
+		},
+	
+		/**
+		 * Calculates and applies the appropriate
+		 * position of the dropdown.
+		 */
+		positionDropdown: function() {
+			var $control = this.$control;
+			var offset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
+			offset.top += $control.outerHeight(true);
+	
+			this.$dropdown.css({
+				width : $control.outerWidth(),
+				top   : offset.top,
+				left  : offset.left
+			});
+		},
+	
+		/**
+		 * Resets / clears all selected items
+		 * from the control.
+		 */
+		clear: function() {
+			var self = this;
+	
+			if (!self.items.length) return;
+			self.$control.children(':not(input)').remove();
+			self.items = [];
+			self.lastQuery = null;
+			self.setCaret(0);
+			self.setActiveItem(null);
+			self.updatePlaceholder();
+			self.updateOriginalInput();
+			self.refreshState();
+			self.showInput();
+			self.trigger('clear');
+		},
+	
+		/**
+		 * A helper method for inserting an element
+		 * at the current caret position.
+		 *
+		 * @param {object} $el
+		 */
+		insertAtCaret: function($el) {
+			var caret = Math.min(this.caretPos, this.items.length);
+			if (caret === 0) {
+				this.$control.prepend($el);
+			} else {
+				$(this.$control[0].childNodes[caret]).before($el);
+			}
+			this.setCaret(caret + 1);
+		},
+	
+		/**
+		 * Removes the current selected item(s).
+		 *
+		 * @param {object} e (optional)
+		 * @returns {boolean}
+		 */
+		deleteSelection: function(e) {
+			var i, n, direction, selection, values, caret, option_select, $option_select, $tail;
+			var self = this;
+	
+			direction = (e && e.keyCode === KEY_BACKSPACE) ? -1 : 1;
+			selection = getSelection(self.$control_input[0]);
+	
+			if (self.$activeOption && !self.settings.hideSelected) {
+				option_select = self.getAdjacentOption(self.$activeOption, -1).attr('data-value');
+			}
+	
+			// determine items that will be removed
+			values = [];
+	
+			if (self.$activeItems.length) {
+				$tail = self.$control.children('.active:' + (direction > 0 ? 'last' : 'first'));
+				caret = self.$control.children(':not(input)').index($tail);
+				if (direction > 0) { caret++; }
+	
+				for (i = 0, n = self.$activeItems.length; i < n; i++) {
+					values.push($(self.$activeItems[i]).attr('data-value'));
+				}
+				if (e) {
+					e.preventDefault();
+					e.stopPropagation();
+				}
+			} else if ((self.isFocused || self.settings.mode === 'single') && self.items.length) {
+				if (direction < 0 && selection.start === 0 && selection.length === 0) {
+					values.push(self.items[self.caretPos - 1]);
+				} else if (direction > 0 && selection.start === self.$control_input.val().length) {
+					values.push(self.items[self.caretPos]);
+				}
+			}
+	
+			// allow the callback to abort
+			if (!values.length || (typeof self.settings.onDelete === 'function' && self.settings.onDelete.apply(self, [values]) === false)) {
+				return false;
+			}
+	
+			// perform removal
+			if (typeof caret !== 'undefined') {
+				self.setCaret(caret);
+			}
+			while (values.length) {
+				self.removeItem(values.pop());
+			}
+	
+			self.showInput();
+			self.positionDropdown();
+			self.refreshOptions(true);
+	
+			// select previous option
+			if (option_select) {
+				$option_select = self.getOption(option_select);
+				if ($option_select.length) {
+					self.setActiveOption($option_select);
+				}
+			}
+	
+			return true;
+		},
+	
+		/**
+		 * Selects the previous / next item (depending
+		 * on the `direction` argument).
+		 *
+		 * > 0 - right
+		 * < 0 - left
+		 *
+		 * @param {int} direction
+		 * @param {object} e (optional)
+		 */
+		advanceSelection: function(direction, e) {
+			var tail, selection, idx, valueLength, cursorAtEdge, $tail;
+			var self = this;
+	
+			if (direction === 0) return;
+			if (self.rtl) direction *= -1;
+	
+			tail = direction > 0 ? 'last' : 'first';
+			selection = getSelection(self.$control_input[0]);
+	
+			if (self.isFocused && !self.isInputHidden) {
+				valueLength = self.$control_input.val().length;
+				cursorAtEdge = direction < 0
+					? selection.start === 0 && selection.length === 0
+					: selection.start === valueLength;
+	
+				if (cursorAtEdge && !valueLength) {
+					self.advanceCaret(direction, e);
+				}
+			} else {
+				$tail = self.$control.children('.active:' + tail);
+				if ($tail.length) {
+					idx = self.$control.children(':not(input)').index($tail);
+					self.setActiveItem(null);
+					self.setCaret(direction > 0 ? idx + 1 : idx);
+				}
+			}
+		},
+	
+		/**
+		 * Moves the caret left / right.
+		 *
+		 * @param {int} direction
+		 * @param {object} e (optional)
+		 */
+		advanceCaret: function(direction, e) {
+			var self = this, fn, $adj;
+	
+			if (direction === 0) return;
+	
+			fn = direction > 0 ? 'next' : 'prev';
+			if (self.isShiftDown) {
+				$adj = self.$control_input[fn]();
+				if ($adj.length) {
+					self.hideInput();
+					self.setActiveItem($adj);
+					e && e.preventDefault();
+				}
+			} else {
+				self.setCaret(self.caretPos + direction);
+			}
+		},
+	
+		/**
+		 * Moves the caret to the specified index.
+		 *
+		 * @param {int} i
+		 */
+		setCaret: function(i) {
+			var self = this;
+	
+			if (self.settings.mode === 'single') {
+				i = self.items.length;
+			} else {
+				i = Math.max(0, Math.min(self.items.length, i));
+			}
+	
+			if(!self.isPending) {
+				// the input must be moved by leaving it in place and moving the
+				// siblings, due to the fact that focus cannot be restored once lost
+				// on mobile webkit devices
+				var j, n, fn, $children, $child;
+				$children = self.$control.children(':not(input)');
+				for (j = 0, n = $children.length; j < n; j++) {
+					$child = $($children[j]).detach();
+					if (j <  i) {
+						self.$control_input.before($child);
+					} else {
+						self.$control.append($child);
+					}
+				}
+			}
+	
+			self.caretPos = i;
+		},
+	
+		/**
+		 * Disables user input on the control. Used while
+		 * items are being asynchronously created.
+		 */
+		lock: function() {
+			this.close();
+			this.isLocked = true;
+			this.refreshState();
+		},
+	
+		/**
+		 * Re-enables user input on the control.
+		 */
+		unlock: function() {
+			this.isLocked = false;
+			this.refreshState();
+		},
+	
+		/**
+		 * Disables user input on the control completely.
+		 * While disabled, it cannot receive focus.
+		 */
+		disable: function() {
+			var self = this;
+			self.$input.prop('disabled', true);
+			self.isDisabled = true;
+			self.lock();
+		},
+	
+		/**
+		 * Enables the control so that it can respond
+		 * to focus and user input.
+		 */
+		enable: function() {
+			var self = this;
+			self.$input.prop('disabled', false);
+			self.isDisabled = false;
+			self.unlock();
+		},
+	
+		/**
+		 * Completely destroys the control and
+		 * unbinds all event listeners so that it can
+		 * be garbage collected.
+		 */
+		destroy: function() {
+			var self = this;
+			var eventNS = self.eventNS;
+			var revertSettings = self.revertSettings;
+	
+			self.trigger('destroy');
+			self.off();
+			self.$wrapper.remove();
+			self.$dropdown.remove();
+	
+			self.$input
+				.html('')
+				.append(revertSettings.$children)
+				.removeAttr('tabindex')
+				.removeClass('selectized')
+				.attr({tabindex: revertSettings.tabindex})
+				.show();
+	
+			self.$control_input.removeData('grow');
+			self.$input.removeData('selectize');
+	
+			$(window).off(eventNS);
+			$(document).off(eventNS);
+			$(document.body).off(eventNS);
+	
+			delete self.$input[0].selectize;
+		},
+	
+		/**
+		 * A helper method for rendering "item" and
+		 * "option" templates, given the data.
+		 *
+		 * @param {string} templateName
+		 * @param {object} data
+		 * @returns {string}
+		 */
+		render: function(templateName, data) {
+			var value, id, label;
+			var html = '';
+			var cache = false;
+			var self = this;
+			var regex_tag = /^[\t ]*<([a-z][a-z0-9\-_]*(?:\:[a-z][a-z0-9\-_]*)?)/i;
+	
+			if (templateName === 'option' || templateName === 'item') {
+				value = hash_key(data[self.settings.valueField]);
+				cache = !!value;
+			}
+	
+			// pull markup from cache if it exists
+			if (cache) {
+				if (!isset(self.renderCache[templateName])) {
+					self.renderCache[templateName] = {};
+				}
+				if (self.renderCache[templateName].hasOwnProperty(value)) {
+					return self.renderCache[templateName][value];
+				}
+			}
+	
+			// render markup
+			html = self.settings.render[templateName].apply(this, [data, escape_html]);
+	
+			// add mandatory attributes
+			if (templateName === 'option' || templateName === 'option_create') {
+				html = html.replace(regex_tag, '<$1 data-selectable');
+			}
+			if (templateName === 'optgroup') {
+				id = data[self.settings.optgroupValueField] || '';
+				html = html.replace(regex_tag, '<$1 data-group="' + escape_replace(escape_html(id)) + '"');
+			}
+			if (templateName === 'option' || templateName === 'item') {
+				html = html.replace(regex_tag, '<$1 data-value="' + escape_replace(escape_html(value || '')) + '"');
+			}
+	
+			// update cache
+			if (cache) {
+				self.renderCache[templateName][value] = html;
+			}
+	
+			return html;
+		},
+	
+		/**
+		 * Clears the render cache for a template. If
+		 * no template is given, clears all render
+		 * caches.
+		 *
+		 * @param {string} templateName
+		 */
+		clearCache: function(templateName) {
+			var self = this;
+			if (typeof templateName === 'undefined') {
+				self.renderCache = {};
+			} else {
+				delete self.renderCache[templateName];
+			}
+		},
+	
+		/**
+		 * Determines whether or not to display the
+		 * create item prompt, given a user input.
+		 *
+		 * @param {string} input
+		 * @return {boolean}
+		 */
+		canCreate: function(input) {
+			var self = this;
+			if (!self.settings.create) return false;
+			var filter = self.settings.createFilter;
+			return input.length
+				&& (typeof filter !== 'function' || filter.apply(self, [input]))
+				&& (typeof filter !== 'string' || new RegExp(filter).test(input))
+				&& (!(filter instanceof RegExp) || filter.test(input));
+		}
+	
+	});
+	
+	
+	Selectize.count = 0;
+	Selectize.defaults = {
+		plugins: [],
+		delimiter: ',',
+		persist: true,
+		diacritics: true,
+		create: false,
+		createOnBlur: false,
+		createFilter: null,
+		highlight: true,
+		openOnFocus: true,
+		maxOptions: 1000,
+		maxItems: null,
+		hideSelected: null,
+		addPrecedence: false,
+		selectOnTab: false,
+		preload: false,
+		allowEmptyOption: false,
+	
+		scrollDuration: 60,
+		loadThrottle: 300,
+	
+		dataAttr: 'data-data',
+		optgroupField: 'optgroup',
+		valueField: 'value',
+		labelField: 'text',
+		optgroupLabelField: 'label',
+		optgroupValueField: 'value',
+		optgroupOrder: null,
+	
+		sortField: '$order',
+		searchField: ['text'],
+		searchConjunction: 'and',
+	
+		mode: null,
+		wrapperClass: 'selectize-control',
+		inputClass: 'selectize-input',
+		dropdownClass: 'selectize-dropdown',
+		dropdownContentClass: 'selectize-dropdown-content',
+	
+		dropdownParent: null,
+	
+		copyClassesToDropdown: true,
+	
+		/*
+		load            : null, // function(query, callback) { ... }
+		score           : null, // function(search) { ... }
+		onInitialize    : null, // function() { ... }
+		onChange        : null, // function(value) { ... }
+		onItemAdd       : null, // function(value, $item) { ... }
+		onItemRemove    : null, // function(value) { ... }
+		onClear         : null, // function() { ... }
+		onOptionAdd     : null, // function(value, data) { ... }
+		onOptionRemove  : null, // function(value) { ... }
+		onOptionClear   : null, // function() { ... }
+		onDropdownOpen  : null, // function($dropdown) { ... }
+		onDropdownClose : null, // function($dropdown) { ... }
+		onType          : null, // function(str) { ... }
+		onDelete        : null, // function(values) { ... }
+		*/
+	
+		render: {
+			/*
+			item: null,
+			optgroup: null,
+			optgroup_header: null,
+			option: null,
+			option_create: null
+			*/
+		}
+	};
+	
+	
+	$.fn.selectize = function(settings_user) {
+		var defaults             = $.fn.selectize.defaults;
+		var settings             = $.extend({}, defaults, settings_user);
+		var attr_data            = settings.dataAttr;
+		var field_label          = settings.labelField;
+		var field_value          = settings.valueField;
+		var field_optgroup       = settings.optgroupField;
+		var field_optgroup_label = settings.optgroupLabelField;
+		var field_optgroup_value = settings.optgroupValueField;
+	
+		/**
+		 * Initializes selectize from a <input type="text"> element.
+		 *
+		 * @param {object} $input
+		 * @param {object} settings_element
+		 */
+		var init_textbox = function($input, settings_element) {
+			var i, n, values, option, value = $.trim($input.val() || '');
+			if (!settings.allowEmptyOption && !value.length) return;
+	
+			values = value.split(settings.delimiter);
+			for (i = 0, n = values.length; i < n; i++) {
+				option = {};
+				option[field_label] = values[i];
+				option[field_value] = values[i];
+	
+				settings_element.options[values[i]] = option;
+			}
+	
+			settings_element.items = values;
+		};
+	
+		/**
+		 * Initializes selectize from a <select> element.
+		 *
+		 * @param {object} $input
+		 * @param {object} settings_element
+		 */
+		var init_select = function($input, settings_element) {
+			var i, n, tagName, $children, order = 0;
+			var options = settings_element.options;
+	
+			var readData = function($el) {
+				var data = attr_data && $el.attr(attr_data);
+				if (typeof data === 'string' && data.length) {
+					return JSON.parse(data);
+				}
+				return null;
+			};
+	
+			var addOption = function($option, group) {
+				var value, option;
+	
+				$option = $($option);
+	
+				value = $option.attr('value') || '';
+				if (!value.length && !settings.allowEmptyOption) return;
+	
+				// if the option already exists, it's probably been
+				// duplicated in another optgroup. in this case, push
+				// the current group to the "optgroup" property on the
+				// existing option so that it's rendered in both places.
+				if (options.hasOwnProperty(value)) {
+					if (group) {
+						if (!options[value].optgroup) {
+							options[value].optgroup = group;
+						} else if (!$.isArray(options[value].optgroup)) {
+							options[value].optgroup = [options[value].optgroup, group];
+						} else {
+							options[value].optgroup.push(group);
+						}
+					}
+					return;
+				}
+	
+				option                 = readData($option) || {};
+				option[field_label]    = option[field_label] || $option.text();
+				option[field_value]    = option[field_value] || value;
+				option[field_optgroup] = option[field_optgroup] || group;
+	
+				option.$order = ++order;
+				options[value] = option;
+	
+				if ($option.is(':selected')) {
+					settings_element.items.push(value);
+				}
+			};
+	
+			var addGroup = function($optgroup) {
+				var i, n, id, optgroup, $options;
+	
+				$optgroup = $($optgroup);
+				id = $optgroup.attr('label');
+	
+				if (id) {
+					optgroup = readData($optgroup) || {};
+					optgroup[field_optgroup_label] = id;
+					optgroup[field_optgroup_value] = id;
+					settings_element.optgroups[id] = optgroup;
+				}
+	
+				$options = $('option', $optgroup);
+				for (i = 0, n = $options.length; i < n; i++) {
+					addOption($options[i], id);
+				}
+			};
+	
+			settings_element.maxItems = $input.attr('multiple') ? null : 1;
+	
+			$children = $input.children();
+			for (i = 0, n = $children.length; i < n; i++) {
+				tagName = $children[i].tagName.toLowerCase();
+				if (tagName === 'optgroup') {
+					addGroup($children[i]);
+				} else if (tagName === 'option') {
+					addOption($children[i]);
+				}
+			}
+		};
+	
+		return this.each(function() {
+			if (this.selectize) return;
+	
+			var instance;
+			var $input = $(this);
+			var tag_name = this.tagName.toLowerCase();
+			var placeholder = $input.attr('placeholder') || $input.attr('data-placeholder');
+			if (!placeholder && !settings.allowEmptyOption) {
+				placeholder = $input.children('option[value=""]').text();
+			}
+	
+			var settings_element = {
+				'placeholder' : placeholder,
+				'options'     : {},
+				'optgroups'   : {},
+				'items'       : []
+			};
+	
+			if (tag_name === 'select') {
+				init_select($input, settings_element);
+			} else {
+				init_textbox($input, settings_element);
+			}
+	
+			instance = new Selectize($input, $.extend(true, {}, defaults, settings_element, settings_user));
+		});
+	};
+	
+	$.fn.selectize.defaults = Selectize.defaults;
+	
+	
+	Selectize.define('drag_drop', function(options) {
+		if (!$.fn.sortable) throw new Error('The "drag_drop" plugin requires jQuery UI "sortable".');
+		if (this.settings.mode !== 'multi') return;
+		var self = this;
+	
+		self.lock = (function() {
+			var original = self.lock;
+			return function() {
+				var sortable = self.$control.data('sortable');
+				if (sortable) sortable.disable();
+				return original.apply(self, arguments);
+			};
+		})();
+	
+		self.unlock = (function() {
+			var original = self.unlock;
+			return function() {
+				var sortable = self.$control.data('sortable');
+				if (sortable) sortable.enable();
+				return original.apply(self, arguments);
+			};
+		})();
+	
+		self.setup = (function() {
+			var original = self.setup;
+			return function() {
+				original.apply(this, arguments);
+	
+				var $control = self.$control.sortable({
+					items: '[data-value]',
+					forcePlaceholderSize: true,
+					disabled: self.isLocked,
+					start: function(e, ui) {
+						ui.placeholder.css('width', ui.helper.css('width'));
+						$control.css({overflow: 'visible'});
+					},
+					stop: function() {
+						$control.css({overflow: 'hidden'});
+						var active = self.$activeItems ? self.$activeItems.slice() : null;
+						var values = [];
+						$control.children('[data-value]').each(function() {
+							values.push($(this).attr('data-value'));
+						});
+						self.setValue(values);
+						self.setActiveItem(active);
+					}
+				});
+			};
+		})();
+	
+	});
+	
+	Selectize.define('dropdown_header', function(options) {
+		var self = this;
+	
+		options = $.extend({
+			title         : 'Untitled',
+			headerClass   : 'selectize-dropdown-header',
+			titleRowClass : 'selectize-dropdown-header-title',
+			labelClass    : 'selectize-dropdown-header-label',
+			closeClass    : 'selectize-dropdown-header-close',
+	
+			html: function(data) {
+				return (
+					'<div class="' + data.headerClass + '">' +
+						'<div class="' + data.titleRowClass + '">' +
+							'<span class="' + data.labelClass + '">' + data.title + '</span>' +
+							'<a href="javascript:void(0)" class="' + data.closeClass + '">&times;</a>' +
+						'</div>' +
+					'</div>'
+				);
+			}
+		}, options);
+	
+		self.setup = (function() {
+			var original = self.setup;
+			return function() {
+				original.apply(self, arguments);
+				self.$dropdown_header = $(options.html(options));
+				self.$dropdown.prepend(self.$dropdown_header);
+			};
+		})();
+	
+	});
+	
+	Selectize.define('optgroup_columns', function(options) {
+		var self = this;
+	
+		options = $.extend({
+			equalizeWidth  : true,
+			equalizeHeight : true
+		}, options);
+	
+		this.getAdjacentOption = function($option, direction) {
+			var $options = $option.closest('[data-group]').find('[data-selectable]');
+			var index    = $options.index($option) + direction;
+	
+			return index >= 0 && index < $options.length ? $options.eq(index) : $();
+		};
+	
+		this.onKeyDown = (function() {
+			var original = self.onKeyDown;
+			return function(e) {
+				var index, $option, $options, $optgroup;
+	
+				if (this.isOpen && (e.keyCode === KEY_LEFT || e.keyCode === KEY_RIGHT)) {
+					self.ignoreHover = true;
+					$optgroup = this.$activeOption.closest('[data-group]');
+					index = $optgroup.find('[data-selectable]').index(this.$activeOption);
+	
+					if(e.keyCode === KEY_LEFT) {
+						$optgroup = $optgroup.prev('[data-group]');
+					} else {
+						$optgroup = $optgroup.next('[data-group]');
+					}
+	
+					$options = $optgroup.find('[data-selectable]');
+					$option  = $options.eq(Math.min($options.length - 1, index));
+					if ($option.length) {
+						this.setActiveOption($option);
+					}
+					return;
+				}
+	
+				return original.apply(this, arguments);
+			};
+		})();
+	
+		var getScrollbarWidth = function() {
+			var div;
+			var width = getScrollbarWidth.width;
+			var doc = document;
+	
+			if (typeof width === 'undefined') {
+				div = doc.createElement('div');
+				div.innerHTML = '<div style="width:50px;height:50px;position:absolute;left:-50px;top:-50px;overflow:auto;"><div style="width:1px;height:100px;"></div></div>';
+				div = div.firstChild;
+				doc.body.appendChild(div);
+				width = getScrollbarWidth.width = div.offsetWidth - div.clientWidth;
+				doc.body.removeChild(div);
+			}
+			return width;
+		};
+	
+		var equalizeSizes = function() {
+			var i, n, height_max, width, width_last, width_parent, $optgroups;
+	
+			$optgroups = $('[data-group]', self.$dropdown_content);
+			n = $optgroups.length;
+			if (!n || !self.$dropdown_content.width()) return;
+	
+			if (options.equalizeHeight) {
+				height_max = 0;
+				for (i = 0; i < n; i++) {
+					height_max = Math.max(height_max, $optgroups.eq(i).height());
+				}
+				$optgroups.css({height: height_max});
+			}
+	
+			if (options.equalizeWidth) {
+				width_parent = self.$dropdown_content.innerWidth() - getScrollbarWidth();
+				width = Math.round(width_parent / n);
+				$optgroups.css({width: width});
+				if (n > 1) {
+					width_last = width_parent - width * (n - 1);
+					$optgroups.eq(n - 1).css({width: width_last});
+				}
+			}
+		};
+	
+		if (options.equalizeHeight || options.equalizeWidth) {
+			hook.after(this, 'positionDropdown', equalizeSizes);
+			hook.after(this, 'refreshOptions', equalizeSizes);
+		}
+	
+	
+	});
+	
+	Selectize.define('remove_button', function(options) {
+		if (this.settings.mode === 'single') return;
+	
+		options = $.extend({
+			label     : '&times;',
+			title     : 'Remove',
+			className : 'remove',
+			append    : true
+		}, options);
+	
+		var self = this;
+		var html = '<a href="javascript:void(0)" class="' + options.className + '" tabindex="-1" title="' + escape_html(options.title) + '">' + options.label + '</a>';
+	
+		/**
+		 * Appends an element as a child (with raw HTML).
+		 *
+		 * @param {string} html_container
+		 * @param {string} html_element
+		 * @return {string}
+		 */
+		var append = function(html_container, html_element) {
+			var pos = html_container.search(/(<\/[^>]+>\s*)$/);
+			return html_container.substring(0, pos) + html_element + html_container.substring(pos);
+		};
+	
+		this.setup = (function() {
+			var original = self.setup;
+			return function() {
+				// override the item rendering method to add the button to each
+				if (options.append) {
+					var render_item = self.settings.render.item;
+					self.settings.render.item = function(data) {
+						return append(render_item.apply(this, arguments), html);
+					};
+				}
+	
+				original.apply(this, arguments);
+	
+				// add event listener
+				this.$control.on('click', '.' + options.className, function(e) {
+					e.preventDefault();
+					if (self.isLocked) return;
+	
+					var $item = $(e.currentTarget).parent();
+					self.setActiveItem($item);
+					if (self.deleteSelection()) {
+						self.setCaret(self.items.length);
+					}
+				});
+	
+			};
+		})();
+	
+	});
+	
+	Selectize.define('restore_on_backspace', function(options) {
+		var self = this;
+	
+		options.text = options.text || function(option) {
+			return option[this.settings.labelField];
+		};
+	
+		this.onKeyDown = (function(e) {
+			var original = self.onKeyDown;
+			return function(e) {
+				var index, option;
+				if (e.keyCode === KEY_BACKSPACE && this.$control_input.val() === '' && !this.$activeItems.length) {
+					index = this.caretPos - 1;
+					if (index >= 0 && index < this.items.length) {
+						option = this.options[this.items[index]];
+						if (this.deleteSelection(e)) {
+							this.setTextboxValue(options.text.apply(this, [option]));
+							this.refreshOptions(true);
+						}
+						e.preventDefault();
+						return;
+					}
+				}
+				return original.apply(this, arguments);
+			};
+		})();
+	});
+
+	return Selectize;
+}));
+},{"jquery":4,"microplugin":5,"sifter":7}],7:[function(require,module,exports){
+/**
+ * sifter.js
+ * Copyright (c) 2013 Brian Reavis & contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ *
+ * @author Brian Reavis <brian@thirdroute.com>
+ */
+
+(function(root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		define(factory);
+	} else if (typeof exports === 'object') {
+		module.exports = factory();
+	} else {
+		root.Sifter = factory();
+	}
+}(this, function() {
+
+	/**
+	 * Textually searches arrays and hashes of objects
+	 * by property (or multiple properties). Designed
+	 * specifically for autocomplete.
+	 *
+	 * @constructor
+	 * @param {array|object} items
+	 * @param {object} items
+	 */
+	var Sifter = function(items, settings) {
+		this.items = items;
+		this.settings = settings || {diacritics: true};
+	};
+
+	/**
+	 * Splits a search string into an array of individual
+	 * regexps to be used to match results.
+	 *
+	 * @param {string} query
+	 * @returns {array}
+	 */
+	Sifter.prototype.tokenize = function(query) {
+		query = trim(String(query || '').toLowerCase());
+		if (!query || !query.length) return [];
+
+		var i, n, regex, letter;
+		var tokens = [];
+		var words = query.split(/ +/);
+
+		for (i = 0, n = words.length; i < n; i++) {
+			regex = escape_regex(words[i]);
+			if (this.settings.diacritics) {
+				for (letter in DIACRITICS) {
+					if (DIACRITICS.hasOwnProperty(letter)) {
+						regex = regex.replace(new RegExp(letter, 'g'), DIACRITICS[letter]);
+					}
+				}
+			}
+			tokens.push({
+				string : words[i],
+				regex  : new RegExp(regex, 'i')
+			});
+		}
+
+		return tokens;
+	};
+
+	/**
+	 * Iterates over arrays and hashes.
+	 *
+	 * ```
+	 * this.iterator(this.items, function(item, id) {
+	 *    // invoked for each item
+	 * });
+	 * ```
+	 *
+	 * @param {array|object} object
+	 */
+	Sifter.prototype.iterator = function(object, callback) {
+		var iterator;
+		if (is_array(object)) {
+			iterator = Array.prototype.forEach || function(callback) {
+				for (var i = 0, n = this.length; i < n; i++) {
+					callback(this[i], i, this);
+				}
+			};
+		} else {
+			iterator = function(callback) {
+				for (var key in this) {
+					if (this.hasOwnProperty(key)) {
+						callback(this[key], key, this);
+					}
+				}
+			};
+		}
+
+		iterator.apply(object, [callback]);
+	};
+
+	/**
+	 * Returns a function to be used to score individual results.
+	 *
+	 * Good matches will have a higher score than poor matches.
+	 * If an item is not a match, 0 will be returned by the function.
+	 *
+	 * @param {object|string} search
+	 * @param {object} options (optional)
+	 * @returns {function}
+	 */
+	Sifter.prototype.getScoreFunction = function(search, options) {
+		var self, fields, tokens, token_count;
+
+		self        = this;
+		search      = self.prepareSearch(search, options);
+		tokens      = search.tokens;
+		fields      = search.options.fields;
+		token_count = tokens.length;
+
+		/**
+		 * Calculates how close of a match the
+		 * given value is against a search token.
+		 *
+		 * @param {mixed} value
+		 * @param {object} token
+		 * @return {number}
+		 */
+		var scoreValue = function(value, token) {
+			var score, pos;
+
+			if (!value) return 0;
+			value = String(value || '');
+			pos = value.search(token.regex);
+			if (pos === -1) return 0;
+			score = token.string.length / value.length;
+			if (pos === 0) score += 0.5;
+			return score;
+		};
+
+		/**
+		 * Calculates the score of an object
+		 * against the search query.
+		 *
+		 * @param {object} token
+		 * @param {object} data
+		 * @return {number}
+		 */
+		var scoreObject = (function() {
+			var field_count = fields.length;
+			if (!field_count) {
+				return function() { return 0; };
+			}
+			if (field_count === 1) {
+				return function(token, data) {
+					return scoreValue(data[fields[0]], token);
+				};
+			}
+			return function(token, data) {
+				for (var i = 0, sum = 0; i < field_count; i++) {
+					sum += scoreValue(data[fields[i]], token);
+				}
+				return sum / field_count;
+			};
+		})();
+
+		if (!token_count) {
+			return function() { return 0; };
+		}
+		if (token_count === 1) {
+			return function(data) {
+				return scoreObject(tokens[0], data);
+			};
+		}
+
+		if (search.options.conjunction === 'and') {
+			return function(data) {
+				var score;
+				for (var i = 0, sum = 0; i < token_count; i++) {
+					score = scoreObject(tokens[i], data);
+					if (score <= 0) return 0;
+					sum += score;
+				}
+				return sum / token_count;
+			};
+		} else {
+			return function(data) {
+				for (var i = 0, sum = 0; i < token_count; i++) {
+					sum += scoreObject(tokens[i], data);
+				}
+				return sum / token_count;
+			};
+		}
+	};
+
+	/**
+	 * Returns a function that can be used to compare two
+	 * results, for sorting purposes. If no sorting should
+	 * be performed, `null` will be returned.
+	 *
+	 * @param {string|object} search
+	 * @param {object} options
+	 * @return function(a,b)
+	 */
+	Sifter.prototype.getSortFunction = function(search, options) {
+		var i, n, self, field, fields, fields_count, multiplier, multipliers, get_field, implicit_score, sort;
+
+		self   = this;
+		search = self.prepareSearch(search, options);
+		sort   = (!search.query && options.sort_empty) || options.sort;
+
+		/**
+		 * Fetches the specified sort field value
+		 * from a search result item.
+		 *
+		 * @param  {string} name
+		 * @param  {object} result
+		 * @return {mixed}
+		 */
+		get_field  = function(name, result) {
+			if (name === '$score') return result.score;
+			return self.items[result.id][name];
+		};
+
+		// parse options
+		fields = [];
+		if (sort) {
+			for (i = 0, n = sort.length; i < n; i++) {
+				if (search.query || sort[i].field !== '$score') {
+					fields.push(sort[i]);
+				}
+			}
+		}
+
+		// the "$score" field is implied to be the primary
+		// sort field, unless it's manually specified
+		if (search.query) {
+			implicit_score = true;
+			for (i = 0, n = fields.length; i < n; i++) {
+				if (fields[i].field === '$score') {
+					implicit_score = false;
+					break;
+				}
+			}
+			if (implicit_score) {
+				fields.unshift({field: '$score', direction: 'desc'});
+			}
+		} else {
+			for (i = 0, n = fields.length; i < n; i++) {
+				if (fields[i].field === '$score') {
+					fields.splice(i, 1);
+					break;
+				}
+			}
+		}
+
+		multipliers = [];
+		for (i = 0, n = fields.length; i < n; i++) {
+			multipliers.push(fields[i].direction === 'desc' ? -1 : 1);
+		}
+
+		// build function
+		fields_count = fields.length;
+		if (!fields_count) {
+			return null;
+		} else if (fields_count === 1) {
+			field = fields[0].field;
+			multiplier = multipliers[0];
+			return function(a, b) {
+				return multiplier * cmp(
+					get_field(field, a),
+					get_field(field, b)
+				);
+			};
+		} else {
+			return function(a, b) {
+				var i, result, a_value, b_value, field;
+				for (i = 0; i < fields_count; i++) {
+					field = fields[i].field;
+					result = multipliers[i] * cmp(
+						get_field(field, a),
+						get_field(field, b)
+					);
+					if (result) return result;
+				}
+				return 0;
+			};
+		}
+	};
+
+	/**
+	 * Parses a search query and returns an object
+	 * with tokens and fields ready to be populated
+	 * with results.
+	 *
+	 * @param {string} query
+	 * @param {object} options
+	 * @returns {object}
+	 */
+	Sifter.prototype.prepareSearch = function(query, options) {
+		if (typeof query === 'object') return query;
+
+		options = extend({}, options);
+
+		var option_fields     = options.fields;
+		var option_sort       = options.sort;
+		var option_sort_empty = options.sort_empty;
+
+		if (option_fields && !is_array(option_fields)) options.fields = [option_fields];
+		if (option_sort && !is_array(option_sort)) options.sort = [option_sort];
+		if (option_sort_empty && !is_array(option_sort_empty)) options.sort_empty = [option_sort_empty];
+
+		return {
+			options : options,
+			query   : String(query || '').toLowerCase(),
+			tokens  : this.tokenize(query),
+			total   : 0,
+			items   : []
+		};
+	};
+
+	/**
+	 * Searches through all items and returns a sorted array of matches.
+	 *
+	 * The `options` parameter can contain:
+	 *
+	 *   - fields {string|array}
+	 *   - sort {array}
+	 *   - score {function}
+	 *   - filter {bool}
+	 *   - limit {integer}
+	 *
+	 * Returns an object containing:
+	 *
+	 *   - options {object}
+	 *   - query {string}
+	 *   - tokens {array}
+	 *   - total {int}
+	 *   - items {array}
+	 *
+	 * @param {string} query
+	 * @param {object} options
+	 * @returns {object}
+	 */
+	Sifter.prototype.search = function(query, options) {
+		var self = this, value, score, search, calculateScore;
+		var fn_sort;
+		var fn_score;
+
+		search  = this.prepareSearch(query, options);
+		options = search.options;
+		query   = search.query;
+
+		// generate result scoring function
+		fn_score = options.score || self.getScoreFunction(search);
+
+		// perform search and sort
+		if (query.length) {
+			self.iterator(self.items, function(item, id) {
+				score = fn_score(item);
+				if (options.filter === false || score > 0) {
+					search.items.push({'score': score, 'id': id});
+				}
+			});
+		} else {
+			self.iterator(self.items, function(item, id) {
+				search.items.push({'score': 1, 'id': id});
+			});
+		}
+
+		fn_sort = self.getSortFunction(search, options);
+		if (fn_sort) search.items.sort(fn_sort);
+
+		// apply limits
+		search.total = search.items.length;
+		if (typeof options.limit === 'number') {
+			search.items = search.items.slice(0, options.limit);
+		}
+
+		return search;
+	};
+
+	// utilities
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	var cmp = function(a, b) {
+		if (typeof a === 'number' && typeof b === 'number') {
+			return a > b ? 1 : (a < b ? -1 : 0);
+		}
+		a = String(a || '').toLowerCase();
+		b = String(b || '').toLowerCase();
+		if (a > b) return 1;
+		if (b > a) return -1;
+		return 0;
+	};
+
+	var extend = function(a, b) {
+		var i, n, k, object;
+		for (i = 1, n = arguments.length; i < n; i++) {
+			object = arguments[i];
+			if (!object) continue;
+			for (k in object) {
+				if (object.hasOwnProperty(k)) {
+					a[k] = object[k];
+				}
+			}
+		}
+		return a;
+	};
+
+	var trim = function(str) {
+		return (str + '').replace(/^\s+|\s+$|/g, '');
+	};
+
+	var escape_regex = function(str) {
+		return (str + '').replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1');
+	};
+
+	var is_array = Array.isArray || ($ && $.isArray) || function(object) {
+		return Object.prototype.toString.call(object) === '[object Array]';
+	};
+
+	var DIACRITICS = {
+		'a': '[aÀÁÂÃÄÅàáâãäåĀā]',
+		'c': '[cÇçćĆčČ]',
+		'd': '[dđĐďĎ]',
+		'e': '[eÈÉÊËèéêëěĚĒē]',
+		'i': '[iÌÍÎÏìíîïĪī]',
+		'n': '[nÑñňŇ]',
+		'o': '[oÒÓÔÕÕÖØòóôõöøŌō]',
+		'r': '[rřŘ]',
+		's': '[sŠš]',
+		't': '[tťŤ]',
+		'u': '[uÙÚÛÜùúûüůŮŪū]',
+		'y': '[yŸÿýÝ]',
+		'z': '[zŽž]'
+	};
+
+	// export
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	return Sifter;
+}));
+
+
+},{}],8:[function(require,module,exports){
 ;(function(win){
 	var store = {},
 		doc = win.document,
@@ -11298,10 +14839,10 @@ return jQuery;
 
 })(Function('return this')());
 
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports={
   "name": "yasgui-utils",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Utils for YASGUI libs",
   "main": "src/main.js",
   "repository": {
@@ -11333,11 +14874,15 @@ module.exports={
   },
   "readme": "A simple utils repo for the YASGUI tools\n",
   "readmeFilename": "README.md",
-  "_id": "yasgui-utils@1.4.1",
-  "_from": "yasgui-utils@1.4.1"
+  "_id": "yasgui-utils@1.5.0",
+  "dist": {
+    "shasum": "56f463556922fe4f0eb97f650bb8cfe9700061a7"
+  },
+  "_from": "yasgui-utils@1.5.0",
+  "_resolved": "https://registry.npmjs.org/yasgui-utils/-/yasgui-utils-1.5.0.tgz"
 }
 
-},{}],7:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 window.console = window.console || {"log":function(){}};//make sure any console statements don't break IE
 module.exports = {
 	storage: require("./storage.js"),
@@ -11347,7 +14892,7 @@ module.exports = {
 	}
 };
 
-},{"../package.json":6,"./storage.js":8,"./svg.js":9}],8:[function(require,module,exports){
+},{"../package.json":9,"./storage.js":11,"./svg.js":12}],11:[function(require,module,exports){
 var store = require("store");
 var times = {
 	day: function() {
@@ -11363,16 +14908,21 @@ var times = {
 
 var root = module.exports = {
 	set : function(key, val, exp) {
-		if (typeof exp == "string") {
-			exp = times[exp]();
+		if (val) {
+			if (typeof exp == "string") {
+				exp = times[exp]();
+			}
+			//try to store string for dom objects (e.g. XML result). Otherwise, we might get a circular reference error when stringifying this
+			if (val.documentElement) val = new XMLSerializer().serializeToString(val.documentElement);
+			store.set(key, {
+				val : val,
+				exp : exp,
+				time : new Date().getTime()
+			});
 		}
-		//try to store string for dom objects (e.g. XML result). Otherwise, we might get a circular reference error when stringifying this
-		if (val.documentElement) val = new XMLSerializer().serializeToString(val.documentElement);
-		store.set(key, {
-			val : val,
-			exp : exp,
-			time : new Date().getTime()
-		});
+	},
+	remove: function(key) {
+		store.remove(key)
 	},
 	get : function(key) {
 		var info = store.get(key);
@@ -11387,11 +14937,11 @@ var root = module.exports = {
 
 };
 
-},{"store":5}],9:[function(require,module,exports){
+},{"store":8}],12:[function(require,module,exports){
 module.exports = {
-	draw: function(parent, svgString, config) {
+	draw: function(parent, svgString) {
 		if (!parent) return;
-		var el = module.exports.getElement(svgString, config);
+		var el = module.exports.getElement(svgString);
 		if (el) {
 			if (parent.append) {
 				parent.append(el);
@@ -11401,26 +14951,22 @@ module.exports = {
 			}
 		}
 	},
-	getElement: function(svgString, config) {
+	getElement: function(svgString) {
 		if (svgString && svgString.indexOf("<svg") == 0) {
-			if (!config.width) config.width = "100%";
-			if (!config.height) config.height = "100%";
-			
+			//no style passed via config. guess own styles
 			var parser = new DOMParser();
 			var dom = parser.parseFromString(svgString, "text/xml");
 			var svg = dom.documentElement;
 			
 			var svgContainer = document.createElement("div");
-			svgContainer.style.display = "inline-block";
-			svgContainer.style.width = config.width;
-			svgContainer.style.height = config.height;
+			svgContainer.className = 'svgImg';
 			svgContainer.appendChild(svg);
 			return svgContainer;
 		}
 		return false;
 	}
 };
-},{}],10:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 /*
   jQuery deparam is an extraction of the deparam method from Ben Alman's jQuery BBQ
@@ -11519,7 +15065,7 @@ $.each(params.replace(/\+/g, ' ').split('&'), function (j,v) {
 return obj;
 };
 
-},{"jquery":23}],11:[function(require,module,exports){
+},{"jquery":26}],14:[function(require,module,exports){
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     mod(require("codemirror"));
@@ -15880,7 +19426,7 @@ return obj;
 	CodeMirror.defineMIME("application/x-sparql-query", "sparql11");
 });
 
-},{"codemirror":22}],12:[function(require,module,exports){
+},{"codemirror":25}],15:[function(require,module,exports){
 /*
 * TRIE implementation in Javascript
 * Copyright (c) 2010 Saurabh Odhyan | http://odhyan.com
@@ -16156,7 +19702,7 @@ Trie.prototype = {
     }
 };
 
-},{}],13:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -16199,7 +19745,7 @@ Trie.prototype = {
   }
 });
 
-},{"../../lib/codemirror":22}],14:[function(require,module,exports){
+},{"../../lib/codemirror":25}],17:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -16321,7 +19867,7 @@ Trie.prototype = {
   });
 });
 
-},{"../../lib/codemirror":22}],15:[function(require,module,exports){
+},{"../../lib/codemirror":25}],18:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -16428,7 +19974,7 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
 
 });
 
-},{"../../lib/codemirror":22}],16:[function(require,module,exports){
+},{"../../lib/codemirror":25}],19:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -16575,7 +20121,7 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
   }
 });
 
-},{"../../lib/codemirror":22}],17:[function(require,module,exports){
+},{"../../lib/codemirror":25}],20:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -16711,7 +20257,7 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
   }
 });
 
-},{"../../lib/codemirror":22,"./foldcode":16}],18:[function(require,module,exports){
+},{"../../lib/codemirror":25,"./foldcode":19}],21:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -16895,7 +20441,7 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
   };
 });
 
-},{"../../lib/codemirror":22}],19:[function(require,module,exports){
+},{"../../lib/codemirror":25}],22:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -17141,7 +20687,7 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
         }
       }
     }
-    var overlapX = box.left - winW;
+    var overlapX = box.right - winW;
     if (overlapX > 0) {
       if (box.right - box.left > winW) {
         hints.style.width = (winW - 5) + "px";
@@ -17286,7 +20832,7 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
   CodeMirror.defineOption("hintOptions", null);
 });
 
-},{"../../lib/codemirror":22}],20:[function(require,module,exports){
+},{"../../lib/codemirror":25}],23:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -17360,7 +20906,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
 });
 
-},{"../../lib/codemirror":22}],21:[function(require,module,exports){
+},{"../../lib/codemirror":25}],24:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -17551,7 +21097,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   });
 });
 
-},{"../../lib/codemirror":22}],22:[function(require,module,exports){
+},{"../../lib/codemirror":25}],25:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -17631,6 +21177,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     if (options.lineWrapping)
       this.display.wrapper.className += " CodeMirror-wrap";
     if (options.autofocus && !mobile) focusInput(this);
+    initScrollbars(this);
 
     this.state = {
       keyMaps: [],  // stores maps added by addKeyMap
@@ -17691,14 +21238,13 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
     // Wraps and hides input textarea
     d.inputDiv = elt("div", [input], null, "overflow: hidden; position: relative; width: 3px; height: 0px;");
-    // The fake scrollbar elements.
-    d.scrollbarH = elt("div", [elt("div", null, null, "height: 100%; min-height: 1px")], "CodeMirror-hscrollbar");
-    d.scrollbarV = elt("div", [elt("div", null, null, "min-width: 1px")], "CodeMirror-vscrollbar");
     // Covers bottom-right square when both scrollbars are present.
     d.scrollbarFiller = elt("div", null, "CodeMirror-scrollbar-filler");
+    d.scrollbarFiller.setAttribute("not-content", "true");
     // Covers bottom of gutter when coverGutterNextToScrollbar is on
     // and h scrollbar is present.
     d.gutterFiller = elt("div", null, "CodeMirror-gutter-filler");
+    d.gutterFiller.setAttribute("not-content", "true");
     // Will contain the actual code, positioned to cover the viewport.
     d.lineDiv = elt("div", null, "CodeMirror-code");
     // Elements are added to these to represent selection and cursors.
@@ -17715,10 +21261,11 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     d.mover = elt("div", [elt("div", [d.lineSpace], "CodeMirror-lines")], null, "position: relative");
     // Set to the height of the document, allowing scrolling.
     d.sizer = elt("div", [d.mover], "CodeMirror-sizer");
+    d.sizerWidth = null;
     // Behavior of elts with overflow: auto and padding is
     // inconsistent across browsers. This is used to ensure the
     // scrollable area is big enough.
-    d.heightForcer = elt("div", null, null, "position: absolute; height: " + scrollerCutOff + "px; width: 1px;");
+    d.heightForcer = elt("div", null, null, "position: absolute; height: " + scrollerGap + "px; width: 1px;");
     // Will contain the gutters, if any.
     d.gutters = elt("div", null, "CodeMirror-gutters");
     d.lineGutter = null;
@@ -17726,8 +21273,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     d.scroller = elt("div", [d.sizer, d.heightForcer, d.gutters], "CodeMirror-scroll");
     d.scroller.setAttribute("tabIndex", "-1");
     // The element in which the editor lives.
-    d.wrapper = elt("div", [d.inputDiv, d.scrollbarH, d.scrollbarV,
-                            d.scrollbarFiller, d.gutterFiller, d.scroller], "CodeMirror");
+    d.wrapper = elt("div", [d.inputDiv, d.scrollbarFiller, d.gutterFiller, d.scroller], "CodeMirror");
 
     // Work around IE7 z-index bug (not perfect, hence IE7 not really being supported)
     if (ie && ie_version < 8) { d.gutters.style.zIndex = -1; d.scroller.style.paddingRight = 0; }
@@ -17736,8 +21282,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     if (!webkit) d.scroller.draggable = true;
     // Needed to handle Tab key in KHTML
     if (khtml) { d.inputDiv.style.height = "1px"; d.inputDiv.style.position = "absolute"; }
-    // Need to set a minimum width to see the scrollbar on IE7 (but must not set it on IE8).
-    if (ie && ie_version < 8) d.scrollbarH.style.minHeight = d.scrollbarV.style.minWidth = "18px";
 
     if (place) {
       if (place.appendChild) place.appendChild(d.wrapper);
@@ -17746,8 +21290,10 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
     // Current rendered range (may be bigger than the view window).
     d.viewFrom = d.viewTo = doc.first;
+    d.reportedViewFrom = d.reportedViewTo = doc.first;
     // Information about the rendered lines.
     d.view = [];
+    d.renderedView = null;
     // Holds info about a single rendered line when it was rendered
     // for measurement, while not in view.
     d.externalMeasured = null;
@@ -17755,6 +21301,9 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     d.viewOffset = 0;
     d.lastWrapHeight = d.lastWrapWidth = 0;
     d.updateLineNumbers = null;
+
+    d.nativeBarWidth = d.barHeight = d.barWidth = 0;
+    d.scrollbarsClipped = false;
 
     // Used to only resize the line number gutter when necessary (when
     // the amount of lines crosses a boundary that makes its width change)
@@ -17819,6 +21368,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     if (cm.options.lineWrapping) {
       addClass(cm.display.wrapper, "CodeMirror-wrap");
       cm.display.sizer.style.minWidth = "";
+      cm.display.sizerWidth = null;
     } else {
       rmClass(cm.display.wrapper, "CodeMirror-wrap");
       findMaxLine(cm);
@@ -17890,7 +21440,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   function updateGutterSpace(cm) {
     var width = cm.display.gutters.offsetWidth;
     cm.display.sizer.style.marginLeft = width + "px";
-    cm.display.scrollbarH.style.left = cm.options.fixedGutter ? width + "px" : 0;
   }
 
   // Compute the character length of a line, taking into account
@@ -17943,78 +21492,166 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
   // SCROLLBARS
 
-  function hScrollbarTakesSpace(cm) {
-    return cm.display.scroller.clientHeight - cm.display.wrapper.clientHeight < scrollerCutOff - 3;
-  }
-
   // Prepare DOM reads needed to update the scrollbars. Done in one
   // shot to minimize update/measure roundtrips.
   function measureForScrollbars(cm) {
-    var scroll = cm.display.scroller;
+    var d = cm.display, gutterW = d.gutters.offsetWidth;
+    var docH = Math.round(cm.doc.height + paddingVert(cm.display));
     return {
-      clientHeight: scroll.clientHeight,
-      barHeight: cm.display.scrollbarV.clientHeight,
-      scrollWidth: scroll.scrollWidth, clientWidth: scroll.clientWidth,
-      hScrollbarTakesSpace: hScrollbarTakesSpace(cm),
-      barWidth: cm.display.scrollbarH.clientWidth,
-      docHeight: Math.round(cm.doc.height + paddingVert(cm.display))
+      clientHeight: d.scroller.clientHeight,
+      viewHeight: d.wrapper.clientHeight,
+      scrollWidth: d.scroller.scrollWidth, clientWidth: d.scroller.clientWidth,
+      viewWidth: d.wrapper.clientWidth,
+      barLeft: cm.options.fixedGutter ? gutterW : 0,
+      docHeight: docH,
+      scrollHeight: docH + scrollGap(cm) + d.barHeight,
+      nativeBarWidth: d.nativeBarWidth,
+      gutterWidth: gutterW
     };
+  }
+
+  function NativeScrollbars(place, scroll, cm) {
+    this.cm = cm;
+    var vert = this.vert = elt("div", [elt("div", null, null, "min-width: 1px")], "CodeMirror-vscrollbar");
+    var horiz = this.horiz = elt("div", [elt("div", null, null, "height: 100%; min-height: 1px")], "CodeMirror-hscrollbar");
+    place(vert); place(horiz);
+
+    on(vert, "scroll", function() {
+      if (vert.clientHeight) scroll(vert.scrollTop, "vertical");
+    });
+    on(horiz, "scroll", function() {
+      if (horiz.clientWidth) scroll(horiz.scrollLeft, "horizontal");
+    });
+
+    this.checkedOverlay = false;
+    // Need to set a minimum width to see the scrollbar on IE7 (but must not set it on IE8).
+    if (ie && ie_version < 8) this.horiz.style.minHeight = this.vert.style.minWidth = "18px";
+  }
+
+  NativeScrollbars.prototype = copyObj({
+    update: function(measure) {
+      var needsH = measure.scrollWidth > measure.clientWidth + 1;
+      var needsV = measure.scrollHeight > measure.clientHeight + 1;
+      var sWidth = measure.nativeBarWidth;
+
+      if (needsV) {
+        this.vert.style.display = "block";
+        this.vert.style.bottom = needsH ? sWidth + "px" : "0";
+        var totalHeight = measure.viewHeight - (needsH ? sWidth : 0);
+        // A bug in IE8 can cause this value to be negative, so guard it.
+        this.vert.firstChild.style.height =
+          Math.max(0, measure.scrollHeight - measure.clientHeight + totalHeight) + "px";
+      } else {
+        this.vert.style.display = "";
+        this.vert.firstChild.style.height = "0";
+      }
+
+      if (needsH) {
+        this.horiz.style.display = "block";
+        this.horiz.style.right = needsV ? sWidth + "px" : "0";
+        this.horiz.style.left = measure.barLeft + "px";
+        var totalWidth = measure.viewWidth - measure.barLeft - (needsV ? sWidth : 0);
+        this.horiz.firstChild.style.width =
+          (measure.scrollWidth - measure.clientWidth + totalWidth) + "px";
+      } else {
+        this.horiz.style.display = "";
+        this.horiz.firstChild.style.width = "0";
+      }
+
+      if (!this.checkedOverlay && measure.clientHeight > 0) {
+        if (sWidth == 0) this.overlayHack();
+        this.checkedOverlay = true;
+      }
+
+      return {right: needsV ? sWidth : 0, bottom: needsH ? sWidth : 0};
+    },
+    setScrollLeft: function(pos) {
+      if (this.horiz.scrollLeft != pos) this.horiz.scrollLeft = pos;
+    },
+    setScrollTop: function(pos) {
+      if (this.vert.scrollTop != pos) this.vert.scrollTop = pos;
+    },
+    overlayHack: function() {
+      var w = mac && !mac_geMountainLion ? "12px" : "18px";
+      this.horiz.style.minHeight = this.vert.style.minWidth = w;
+      var self = this;
+      var barMouseDown = function(e) {
+        if (e_target(e) != self.vert && e_target(e) != self.horiz)
+          operation(self.cm, onMouseDown)(e);
+      };
+      on(this.vert, "mousedown", barMouseDown);
+      on(this.horiz, "mousedown", barMouseDown);
+    },
+    clear: function() {
+      var parent = this.horiz.parentNode;
+      parent.removeChild(this.horiz);
+      parent.removeChild(this.vert);
+    }
+  }, NativeScrollbars.prototype);
+
+  function NullScrollbars() {}
+
+  NullScrollbars.prototype = copyObj({
+    update: function() { return {bottom: 0, right: 0}; },
+    setScrollLeft: function() {},
+    setScrollTop: function() {},
+    clear: function() {}
+  }, NullScrollbars.prototype);
+
+  CodeMirror.scrollbarModel = {"native": NativeScrollbars, "null": NullScrollbars};
+
+  function initScrollbars(cm) {
+    if (cm.display.scrollbars) {
+      cm.display.scrollbars.clear();
+      if (cm.display.scrollbars.addClass)
+        rmClass(cm.display.wrapper, cm.display.scrollbars.addClass);
+    }
+
+    cm.display.scrollbars = new CodeMirror.scrollbarModel[cm.options.scrollbarStyle](function(node) {
+      cm.display.wrapper.insertBefore(node, cm.display.scrollbarFiller);
+      on(node, "mousedown", function() {
+        if (cm.state.focused) setTimeout(bind(focusInput, cm), 0);
+      });
+      node.setAttribute("not-content", "true");
+    }, function(pos, axis) {
+      if (axis == "horizontal") setScrollLeft(cm, pos);
+      else setScrollTop(cm, pos);
+    }, cm);
+    if (cm.display.scrollbars.addClass)
+      addClass(cm.display.wrapper, cm.display.scrollbars.addClass);
+  }
+
+  function updateScrollbars(cm, measure) {
+    if (!measure) measure = measureForScrollbars(cm);
+    var startWidth = cm.display.barWidth, startHeight = cm.display.barHeight;
+    updateScrollbarsInner(cm, measure);
+    for (var i = 0; i < 4 && startWidth != cm.display.barWidth || startHeight != cm.display.barHeight; i++) {
+      if (startWidth != cm.display.barWidth && cm.options.lineWrapping)
+        updateHeightsInViewport(cm);
+      updateScrollbarsInner(cm, measureForScrollbars(cm));
+      startWidth = cm.display.barWidth; startHeight = cm.display.barHeight;
+    }
   }
 
   // Re-synchronize the fake scrollbars with the actual size of the
   // content.
-  function updateScrollbars(cm, measure) {
-    if (!measure) measure = measureForScrollbars(cm);
-    var d = cm.display, sWidth = scrollbarWidth(d.measure);
-    var scrollHeight = measure.docHeight + scrollerCutOff;
-    var needsH = measure.scrollWidth > measure.clientWidth;
-    if (needsH && measure.scrollWidth <= measure.clientWidth + 1 &&
-        sWidth > 0 && !measure.hScrollbarTakesSpace)
-      needsH = false; // (Issue #2562)
-    var needsV = scrollHeight > measure.clientHeight;
+  function updateScrollbarsInner(cm, measure) {
+    var d = cm.display;
+    var sizes = d.scrollbars.update(measure);
 
-    if (needsV) {
-      d.scrollbarV.style.display = "block";
-      d.scrollbarV.style.bottom = needsH ? sWidth + "px" : "0";
-      // A bug in IE8 can cause this value to be negative, so guard it.
-      d.scrollbarV.firstChild.style.height =
-        Math.max(0, scrollHeight - measure.clientHeight + (measure.barHeight || d.scrollbarV.clientHeight)) + "px";
-    } else {
-      d.scrollbarV.style.display = "";
-      d.scrollbarV.firstChild.style.height = "0";
-    }
-    if (needsH) {
-      d.scrollbarH.style.display = "block";
-      d.scrollbarH.style.right = needsV ? sWidth + "px" : "0";
-      d.scrollbarH.firstChild.style.width =
-        (measure.scrollWidth - measure.clientWidth + (measure.barWidth || d.scrollbarH.clientWidth)) + "px";
-    } else {
-      d.scrollbarH.style.display = "";
-      d.scrollbarH.firstChild.style.width = "0";
-    }
-    if (needsH && needsV) {
+    d.sizer.style.paddingRight = (d.barWidth = sizes.right) + "px";
+    d.sizer.style.paddingBottom = (d.barHeight = sizes.bottom) + "px";
+
+    if (sizes.right && sizes.bottom) {
       d.scrollbarFiller.style.display = "block";
-      d.scrollbarFiller.style.height = d.scrollbarFiller.style.width = sWidth + "px";
+      d.scrollbarFiller.style.height = sizes.bottom + "px";
+      d.scrollbarFiller.style.width = sizes.right + "px";
     } else d.scrollbarFiller.style.display = "";
-    if (needsH && cm.options.coverGutterNextToScrollbar && cm.options.fixedGutter) {
+    if (sizes.bottom && cm.options.coverGutterNextToScrollbar && cm.options.fixedGutter) {
       d.gutterFiller.style.display = "block";
-      d.gutterFiller.style.height = sWidth + "px";
-      d.gutterFiller.style.width = d.gutters.offsetWidth + "px";
+      d.gutterFiller.style.height = sizes.bottom + "px";
+      d.gutterFiller.style.width = measure.gutterWidth + "px";
     } else d.gutterFiller.style.display = "";
-
-    if (!cm.state.checkedOverlayScrollbar && measure.clientHeight > 0) {
-      if (sWidth === 0) {
-        var w = mac && !mac_geMountainLion ? "12px" : "18px";
-        d.scrollbarV.style.minWidth = d.scrollbarH.style.minHeight = w;
-        var barMouseDown = function(e) {
-          if (e_target(e) != d.scrollbarV && e_target(e) != d.scrollbarH)
-            operation(cm, onMouseDown)(e);
-        };
-        on(d.scrollbarV, "mousedown", barMouseDown);
-        on(d.scrollbarH, "mousedown", barMouseDown);
-      }
-      cm.state.checkedOverlayScrollbar = true;
-    }
   }
 
   // Compute the lines that are visible in a given viewport (defaults
@@ -18030,12 +21667,13 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     // forces those lines into the viewport (if possible).
     if (viewport && viewport.ensure) {
       var ensureFrom = viewport.ensure.from.line, ensureTo = viewport.ensure.to.line;
-      if (ensureFrom < from)
-        return {from: ensureFrom,
-                to: lineAtHeight(doc, heightAtLine(getLine(doc, ensureFrom)) + display.wrapper.clientHeight)};
-      if (Math.min(ensureTo, doc.lastLine()) >= to)
-        return {from: lineAtHeight(doc, heightAtLine(getLine(doc, ensureTo)) - display.wrapper.clientHeight),
-                to: ensureTo};
+      if (ensureFrom < from) {
+        from = ensureFrom;
+        to = lineAtHeight(doc, heightAtLine(getLine(doc, ensureFrom)) + display.wrapper.clientHeight);
+      } else if (Math.min(ensureTo, doc.lastLine()) >= to) {
+        from = lineAtHeight(doc, heightAtLine(getLine(doc, ensureTo)) - display.wrapper.clientHeight);
+        to = ensureTo;
+      }
     }
     return {from: from, to: Math.max(to, from + 1)};
   }
@@ -18103,10 +21741,20 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     this.editorIsHidden = !display.wrapper.offsetWidth;
     this.wrapperHeight = display.wrapper.clientHeight;
     this.wrapperWidth = display.wrapper.clientWidth;
-    this.oldViewFrom = display.viewFrom; this.oldViewTo = display.viewTo;
-    this.oldScrollerWidth = display.scroller.clientWidth;
+    this.oldDisplayWidth = displayWidth(cm);
     this.force = force;
     this.dims = getDimensions(cm);
+  }
+
+  function maybeClipScrollbars(cm) {
+    var display = cm.display;
+    if (!display.scrollbarsClipped && display.scroller.offsetWidth) {
+      display.nativeBarWidth = display.scroller.offsetWidth - display.scroller.clientWidth;
+      display.heightForcer.style.height = scrollGap(cm) + "px";
+      display.sizer.style.marginBottom = -display.nativeBarWidth + "px";
+      display.sizer.style.borderRightWidth = scrollGap(cm) + "px";
+      display.scrollbarsClipped = true;
+    }
   }
 
   // Does the actual updating of the line display. Bails out
@@ -18114,6 +21762,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   // false.
   function updateDisplayIfNeeded(cm, update) {
     var display = cm.display, doc = cm.doc;
+
     if (update.editorIsHidden) {
       resetView(cm);
       return false;
@@ -18123,7 +21772,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     if (!update.force &&
         update.visible.from >= display.viewFrom && update.visible.to <= display.viewTo &&
         (display.updateLineNumbers == null || display.updateLineNumbers >= display.viewTo) &&
-        countDirtyView(cm) == 0)
+        display.renderedView == display.view && countDirtyView(cm) == 0)
       return false;
 
     if (maybeUpdateLineNumberWidth(cm)) {
@@ -18151,7 +21800,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     cm.display.mover.style.top = display.viewOffset + "px";
 
     var toUpdate = countDirtyView(cm);
-    if (!different && toUpdate == 0 && !update.force &&
+    if (!different && toUpdate == 0 && !update.force && display.renderedView == display.view &&
         (display.updateLineNumbers == null || display.updateLineNumbers >= display.viewTo))
       return false;
 
@@ -18161,14 +21810,16 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     if (toUpdate > 4) display.lineDiv.style.display = "none";
     patchDisplay(cm, display.updateLineNumbers, update.dims);
     if (toUpdate > 4) display.lineDiv.style.display = "";
+    display.renderedView = display.view;
     // There might have been a widget with a focused element that got
     // hidden or updated, if so re-focus it.
     if (focused && activeElt() != focused && focused.offsetHeight) focused.focus();
 
     // Prevent selection and cursors from interfering with the scroll
-    // width.
+    // width and height.
     removeChildren(display.cursorDiv);
     removeChildren(display.selectionDiv);
+    display.gutters.style.height = 0;
 
     if (different) {
       display.lastWrapHeight = update.wrapperHeight;
@@ -18184,14 +21835,13 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   function postUpdateDisplay(cm, update) {
     var force = update.force, viewport = update.viewport;
     for (var first = true;; first = false) {
-      if (first && cm.options.lineWrapping && update.oldScrollerWidth != cm.display.scroller.clientWidth) {
+      if (first && cm.options.lineWrapping && update.oldDisplayWidth != displayWidth(cm)) {
         force = true;
       } else {
         force = false;
         // Clip forced viewport to actual scrollable area.
         if (viewport && viewport.top != null)
-          viewport = {top: Math.min(cm.doc.height + paddingVert(cm.display) - scrollerCutOff -
-                                    cm.display.scroller.clientHeight, viewport.top)};
+          viewport = {top: Math.min(cm.doc.height + paddingVert(cm.display) - displayHeight(cm), viewport.top)};
         // Updated line heights might result in the drawn area not
         // actually covering the viewport. Keep looping until it does.
         update.visible = visibleLines(cm.display, cm.doc, viewport);
@@ -18207,8 +21857,10 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     }
 
     signalLater(cm, "update", cm);
-    if (cm.display.viewFrom != update.oldViewFrom || cm.display.viewTo != update.oldViewTo)
+    if (cm.display.viewFrom != cm.display.reportedViewFrom || cm.display.viewTo != cm.display.reportedViewTo) {
       signalLater(cm, "viewportChange", cm, cm.display.viewFrom, cm.display.viewTo);
+      cm.display.reportedViewFrom = cm.display.viewFrom; cm.display.reportedViewTo = cm.display.viewTo;
+    }
   }
 
   function updateDisplaySimple(cm, viewport) {
@@ -18224,17 +21876,10 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   }
 
   function setDocumentHeight(cm, measure) {
-    cm.display.sizer.style.minHeight = cm.display.heightForcer.style.top = measure.docHeight + "px";
-    cm.display.gutters.style.height = Math.max(measure.docHeight, measure.clientHeight - scrollerCutOff) + "px";
-  }
-
-  function checkForWebkitWidthBug(cm, measure) {
-    // Work around Webkit bug where it sometimes reserves space for a
-    // non-existing phantom scrollbar in the scroller (Issue #2420)
-    if (cm.display.sizer.offsetWidth + cm.display.gutters.offsetWidth < cm.display.scroller.clientWidth - 1) {
-      cm.display.sizer.style.minHeight = cm.display.heightForcer.style.top = "0px";
-      cm.display.gutters.style.height = measure.docHeight + "px";
-    }
+    cm.display.sizer.style.minHeight = measure.docHeight + "px";
+    var total = measure.docHeight + cm.display.barHeight;
+    cm.display.heightForcer.style.top = total + "px";
+    cm.display.gutters.style.height = Math.max(total + scrollGap(cm), measure.clientHeight) + "px";
   }
 
   // Read the actual heights of the rendered lines, and update their
@@ -18478,7 +22123,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     var wrap = ensureLineWrapped(lineView);
     for (var i = 0, ws = line.widgets; i < ws.length; ++i) {
       var widget = ws[i], node = elt("div", [widget.node], "CodeMirror-linewidget");
-      if (!widget.handleMouseEvents) node.ignoreEvents = true;
+      if (!widget.handleMouseEvents) node.setAttribute("cm-ignore-events", "true");
       positionLineWidget(widget, node, lineView, dims);
       if (allowAbove && widget.above)
         wrap.insertBefore(node, lineView.gutter || lineView.text);
@@ -18873,7 +22518,8 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   function drawSelectionRange(cm, range, output) {
     var display = cm.display, doc = cm.doc;
     var fragment = document.createDocumentFragment();
-    var padding = paddingH(cm.display), leftSide = padding.left, rightSide = display.lineSpace.offsetWidth - padding.right;
+    var padding = paddingH(cm.display), leftSide = padding.left;
+    var rightSide = Math.max(display.sizerWidth, displayWidth(cm) - display.sizer.offsetLeft) - padding.right;
 
     function add(left, top, width, bottom) {
       if (top < 0) top = 0;
@@ -19052,13 +22698,21 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     return data;
   }
 
+  function scrollGap(cm) { return scrollerGap - cm.display.nativeBarWidth; }
+  function displayWidth(cm) {
+    return cm.display.scroller.clientWidth - scrollGap(cm) - cm.display.barWidth;
+  }
+  function displayHeight(cm) {
+    return cm.display.scroller.clientHeight - scrollGap(cm) - cm.display.barHeight;
+  }
+
   // Ensure the lineView.wrapping.heights array is populated. This is
   // an array of bottom offsets for the lines that make up a drawn
   // line. When lineWrapping is on, there might be more than one
   // height.
   function ensureLineHeights(cm, lineView, rect) {
     var wrapping = cm.options.lineWrapping;
-    var curWidth = wrapping && cm.display.scroller.clientWidth;
+    var curWidth = wrapping && displayWidth(cm);
     if (!lineView.measure.heights || wrapping && lineView.measure.width != curWidth) {
       var heights = lineView.measure.heights = [];
       if (wrapping) {
@@ -19576,6 +23230,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
   function endOperation_R1(op) {
     var cm = op.cm, display = cm.display;
+    maybeClipScrollbars(cm);
     if (op.updateMaxLine) findMaxLine(cm);
 
     op.mustUpdate = op.viewChanged || op.forceUpdate || op.scrollTop != null ||
@@ -19601,8 +23256,10 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     // updateDisplay_W2 will use these properties to do the actual resizing
     if (display.maxLineChanged && !cm.options.lineWrapping) {
       op.adjustWidthTo = measureChar(cm, display.maxLine, display.maxLine.text.length).left + 3;
-      op.maxScrollLeft = Math.max(0, display.sizer.offsetLeft + op.adjustWidthTo +
-                                  scrollerCutOff - display.scroller.clientWidth);
+      cm.display.sizerWidth = op.adjustWidthTo;
+      op.barMeasure.scrollWidth =
+        Math.max(display.scroller.clientWidth, display.sizer.offsetLeft + op.adjustWidthTo + scrollGap(cm) + cm.display.barWidth);
+      op.maxScrollLeft = Math.max(0, display.sizer.offsetLeft + op.adjustWidthTo - displayWidth(cm));
     }
 
     if (op.updatedDisplay || op.selectionChanged)
@@ -19635,9 +23292,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   function endOperation_finish(op) {
     var cm = op.cm, display = cm.display, doc = cm.doc;
 
-    if (op.adjustWidthTo != null && Math.abs(op.barMeasure.scrollWidth - cm.display.scroller.scrollWidth) > 1)
-      updateScrollbars(cm);
-
     if (op.updatedDisplay) postUpdateDisplay(cm, op.update);
 
     // Abort mouse wheel delta measurement, when scrolling explicitly
@@ -19646,12 +23300,14 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
     // Propagate the scroll position to the actual DOM scroller
     if (op.scrollTop != null && (display.scroller.scrollTop != op.scrollTop || op.forceScroll)) {
-      var top = Math.max(0, Math.min(display.scroller.scrollHeight - display.scroller.clientHeight, op.scrollTop));
-      display.scroller.scrollTop = display.scrollbarV.scrollTop = doc.scrollTop = top;
+      doc.scrollTop = Math.max(0, Math.min(display.scroller.scrollHeight - display.scroller.clientHeight, op.scrollTop));
+      display.scrollbars.setScrollTop(doc.scrollTop);
+      display.scroller.scrollTop = doc.scrollTop;
     }
     if (op.scrollLeft != null && (display.scroller.scrollLeft != op.scrollLeft || op.forceScroll)) {
-      var left = Math.max(0, Math.min(display.scroller.scrollWidth - display.scroller.clientWidth, op.scrollLeft));
-      display.scroller.scrollLeft = display.scrollbarH.scrollLeft = doc.scrollLeft = left;
+      doc.scrollLeft = Math.max(0, Math.min(display.scroller.scrollWidth - displayWidth(cm), op.scrollLeft));
+      display.scrollbars.setScrollLeft(doc.scrollLeft);
+      display.scroller.scrollLeft = doc.scrollLeft;
       alignHorizontally(cm);
     }
     // If we need to scroll a specific position into view, do so.
@@ -19671,16 +23327,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
     if (display.wrapper.offsetHeight)
       doc.scrollTop = cm.display.scroller.scrollTop;
-
-    // Apply workaround for two webkit bugs
-    if (op.updatedDisplay && webkit) {
-      if (cm.options.lineWrapping)
-        checkForWebkitWidthBug(cm, op.barMeasure); // (Issue #2420)
-      if (op.barMeasure.scrollWidth > op.barMeasure.clientWidth &&
-          op.barMeasure.scrollWidth < op.barMeasure.clientWidth + 1 &&
-          !hScrollbarTakesSpace(cm))
-        updateScrollbars(cm); // (Issue #2562)
-    }
 
     // Fire change events, and delayed event handlers
     if (op.changeObjs)
@@ -20040,6 +23686,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   // Reset the input to correspond to the selection (or to be empty,
   // when not typing and nothing is selected)
   function resetInput(cm, typing) {
+    if (cm.display.contextMenuPending) return;
     var minimal, selected, doc = cm.doc;
     if (cm.somethingSelected()) {
       cm.display.prevInput = "";
@@ -20106,28 +23753,18 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
         signal(cm, "scroll", cm);
       }
     });
-    on(d.scrollbarV, "scroll", function() {
-      if (d.scroller.clientHeight) setScrollTop(cm, d.scrollbarV.scrollTop);
-    });
-    on(d.scrollbarH, "scroll", function() {
-      if (d.scroller.clientHeight) setScrollLeft(cm, d.scrollbarH.scrollLeft);
-    });
 
     // Listen to wheel events in order to try and update the viewport on time.
     on(d.scroller, "mousewheel", function(e){onScrollWheel(cm, e);});
     on(d.scroller, "DOMMouseScroll", function(e){onScrollWheel(cm, e);});
 
-    // Prevent clicks in the scrollbars from killing focus
-    function reFocus() { if (cm.state.focused) setTimeout(bind(focusInput, cm), 0); }
-    on(d.scrollbarH, "mousedown", reFocus);
-    on(d.scrollbarV, "mousedown", reFocus);
     // Prevent wrapper from ever scrolling
     on(d.wrapper, "scroll", function() { d.wrapper.scrollTop = d.wrapper.scrollLeft = 0; });
 
     on(d.input, "keyup", function(e) { onKeyUp.call(cm, e); });
     on(d.input, "input", function() {
       if (ie && ie_version >= 9 && cm.display.inputHasSelection) cm.display.inputHasSelection = null;
-      fastPoll(cm);
+      readInput(cm);
     });
     on(d.input, "keydown", operation(cm, onKeyDown));
     on(d.input, "keypress", operation(cm, onKeyPress));
@@ -20213,6 +23850,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       return;
     // Might be a text scaling operation, clear size caches.
     d.cachedCharWidth = d.cachedTextHeight = d.cachedPaddingH = null;
+    d.scrollbarsClipped = false;
     cm.setSize();
   }
 
@@ -20221,7 +23859,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   // Return true when the given mouse event happened in a widget
   function eventInWidget(display, e) {
     for (var n = e_target(e); n != display.wrapper; n = n.parentNode) {
-      if (!n || n.ignoreEvents || n.parentNode == display.sizer && n != display.mover) return true;
+      if (!n || n.getAttribute("cm-ignore-events") == "true" || n.parentNode == display.sizer && n != display.mover) return true;
     }
   }
 
@@ -20232,11 +23870,8 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   // coordinates beyond the right of the text.
   function posFromMouse(cm, e, liberal, forRect) {
     var display = cm.display;
-    if (!liberal) {
-      var target = e_target(e);
-      if (target == display.scrollbarH || target == display.scrollbarV ||
-          target == display.scrollbarFiller || target == display.gutterFiller) return null;
-    }
+    if (!liberal && e_target(e).getAttribute("not-content") == "true") return null;
+
     var x, y, space = display.lineSpace.getBoundingClientRect();
     // Fails unpredictably on IE[67] when mouse is dragged around quickly.
     try { x = e.clientX - space.left; y = e.clientY - space.top; }
@@ -20306,9 +23941,10 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       lastClick = {time: now, pos: start};
     }
 
-    var sel = cm.doc.sel, modifier = mac ? e.metaKey : e.ctrlKey;
+    var sel = cm.doc.sel, modifier = mac ? e.metaKey : e.ctrlKey, contained;
     if (cm.options.dragDrop && dragAndDrop && !isReadOnly(cm) &&
-        type == "single" && sel.contains(start) > -1 && sel.somethingSelected())
+        type == "single" && (contained = sel.contains(start)) > -1 &&
+        !sel.ranges[contained].empty())
       leftButtonStartDrag(cm, e, start, modifier);
     else
       leftButtonSelect(cm, e, start, type, modifier);
@@ -20347,11 +23983,11 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     var display = cm.display, doc = cm.doc;
     e_preventDefault(e);
 
-    var ourRange, ourIndex, startSel = doc.sel;
+    var ourRange, ourIndex, startSel = doc.sel, ranges = startSel.ranges;
     if (addNew && !e.shiftKey) {
       ourIndex = doc.sel.contains(start);
       if (ourIndex > -1)
-        ourRange = doc.sel.ranges[ourIndex];
+        ourRange = ranges[ourIndex];
       else
         ourRange = new Range(start, start);
     } else {
@@ -20383,12 +24019,15 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       ourIndex = 0;
       setSelection(doc, new Selection([ourRange], 0), sel_mouse);
       startSel = doc.sel;
-    } else if (ourIndex > -1) {
-      replaceOneSelection(doc, ourIndex, ourRange, sel_mouse);
-    } else {
-      ourIndex = doc.sel.ranges.length;
-      setSelection(doc, normalizeSelection(doc.sel.ranges.concat([ourRange]), ourIndex),
+    } else if (ourIndex == -1) {
+      ourIndex = ranges.length;
+      setSelection(doc, normalizeSelection(ranges.concat([ourRange]), ourIndex),
                    {scroll: false, origin: "*mouse"});
+    } else if (ranges.length > 1 && ranges[ourIndex].empty() && type == "single") {
+      setSelection(doc, normalizeSelection(ranges.slice(0, ourIndex).concat(ranges.slice(ourIndex + 1)), 0));
+      startSel = doc.sel;
+    } else {
+      replaceOneSelection(doc, ourIndex, ourRange, sel_mouse);
     }
 
     var lastPos = start;
@@ -20594,7 +24233,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     cm.doc.scrollTop = val;
     if (!gecko) updateDisplaySimple(cm, {top: val});
     if (cm.display.scroller.scrollTop != val) cm.display.scroller.scrollTop = val;
-    if (cm.display.scrollbarV.scrollTop != val) cm.display.scrollbarV.scrollTop = val;
+    cm.display.scrollbars.setScrollTop(val);
     if (gecko) updateDisplaySimple(cm);
     startWorker(cm, 100);
   }
@@ -20606,7 +24245,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     cm.doc.scrollLeft = val;
     alignHorizontally(cm);
     if (cm.display.scroller.scrollLeft != val) cm.display.scroller.scrollLeft = val;
-    if (cm.display.scrollbarH.scrollLeft != val) cm.display.scrollbarH.scrollLeft = val;
+    cm.display.scrollbars.setScrollLeft(val);
   }
 
   // Since the delta values reported on mouse wheel events are
@@ -20630,11 +24269,22 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   else if (chrome) wheelPixelsPerUnit = -.7;
   else if (safari) wheelPixelsPerUnit = -1/3;
 
-  function onScrollWheel(cm, e) {
+  var wheelEventDelta = function(e) {
     var dx = e.wheelDeltaX, dy = e.wheelDeltaY;
     if (dx == null && e.detail && e.axis == e.HORIZONTAL_AXIS) dx = e.detail;
     if (dy == null && e.detail && e.axis == e.VERTICAL_AXIS) dy = e.detail;
     else if (dy == null) dy = e.wheelDelta;
+    return {x: dx, y: dy};
+  };
+  CodeMirror.wheelEventPixels = function(e) {
+    var delta = wheelEventDelta(e);
+    delta.x *= wheelPixelsPerUnit;
+    delta.y *= wheelPixelsPerUnit;
+    return delta;
+  };
+
+  function onScrollWheel(cm, e) {
+    var delta = wheelEventDelta(e), dx = delta.x, dy = delta.y;
 
     var display = cm.display, scroll = display.scroller;
     // Quit if there's nothing to scroll here
@@ -20727,11 +24377,11 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
   function lookupKeyForEditor(cm, name, handle) {
     for (var i = 0; i < cm.state.keyMaps.length; i++) {
-      var result = lookupKey(name, cm.state.keyMaps[i], handle);
+      var result = lookupKey(name, cm.state.keyMaps[i], handle, cm);
       if (result) return result;
     }
-    return (cm.options.extraKeys && lookupKey(name, cm.options.extraKeys, handle))
-      || lookupKey(name, cm.options.keyMap, handle);
+    return (cm.options.extraKeys && lookupKey(name, cm.options.extraKeys, handle, cm))
+      || lookupKey(name, cm.options.keyMap, handle, cm);
   }
 
   var stopSeq = new Delayed;
@@ -20905,6 +24555,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     resetInput(cm);
     // Adds "Select all" to context menu in FF
     if (!cm.somethingSelected()) display.input.value = display.prevInput = " ";
+    display.contextMenuPending = true;
     display.selForContextMenu = cm.doc.sel;
     clearTimeout(display.detectingSelectAll);
 
@@ -20923,9 +24574,10 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       }
     }
     function rehide() {
+      display.contextMenuPending = false;
       display.inputDiv.style.position = "relative";
       display.input.style.cssText = oldCSS;
-      if (ie && ie_version < 9) display.scrollbarV.scrollTop = display.scroller.scrollTop = scrollPos;
+      if (ie && ie_version < 9) display.scrollbars.setScrollTop(display.scroller.scrollTop = scrollPos);
       slowPoll(cm);
 
       // Try to detect the user choosing select-all
@@ -21275,7 +24927,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     if (doScroll != null && !phantom) {
       var scrollNode = elt("div", "\u200b", null, "position: absolute; top: " +
                            (coords.top - display.viewOffset - paddingTop(cm.display)) + "px; height: " +
-                           (coords.bottom - coords.top + scrollerCutOff) + "px; left: " +
+                           (coords.bottom - coords.top + scrollGap(cm) + display.barHeight) + "px; left: " +
                            coords.left + "px; width: 2px;");
       cm.display.lineSpace.appendChild(scrollNode);
       scrollNode.scrollIntoView(doScroll);
@@ -21304,8 +24956,9 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
         setScrollLeft(cm, scrollPos.scrollLeft);
         if (Math.abs(cm.doc.scrollLeft - startLeft) > 1) changed = true;
       }
-      if (!changed) return coords;
+      if (!changed) break;
     }
+    return coords;
   }
 
   // Scroll a given set of coordinates into view (immediately).
@@ -21323,7 +24976,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     var display = cm.display, snapMargin = textHeight(cm.display);
     if (y1 < 0) y1 = 0;
     var screentop = cm.curOp && cm.curOp.scrollTop != null ? cm.curOp.scrollTop : display.scroller.scrollTop;
-    var screen = display.scroller.clientHeight - scrollerCutOff, result = {};
+    var screen = displayHeight(cm), result = {};
     if (y2 - y1 > screen) y2 = y1 + screen;
     var docBottom = cm.doc.height + paddingVert(display);
     var atTop = y1 < snapMargin, atBottom = y2 > docBottom - snapMargin;
@@ -21335,7 +24988,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     }
 
     var screenleft = cm.curOp && cm.curOp.scrollLeft != null ? cm.curOp.scrollLeft : display.scroller.scrollLeft;
-    var screenw = display.scroller.clientWidth - scrollerCutOff - display.gutters.offsetWidth;
+    var screenw = displayWidth(cm) - (cm.options.fixedGutter ? display.gutters.offsetWidth : 0);
     var tooWide = x2 - x1 > screenw;
     if (tooWide) x2 = x1 + screenw;
     if (x1 < 10)
@@ -21344,7 +24997,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       result.scrollLeft = Math.max(0, x1 - (tooWide ? 0 : 10));
     else if (x2 > screenw + screenleft - 3)
       result.scrollLeft = x2 + (tooWide ? 0 : 10) - screenw;
-
     return result;
   }
 
@@ -21799,6 +25451,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       pos = cursorCoords(this, clipPos(this.doc, pos));
       var top = pos.bottom, left = pos.left;
       node.style.position = "absolute";
+      node.setAttribute("cm-ignore-events", "true");
       display.sizer.appendChild(node);
       if (vert == "over") {
         top = pos.top;
@@ -21933,10 +25586,11 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       if (y != null) this.curOp.scrollTop = y;
     }),
     getScrollInfo: function() {
-      var scroller = this.display.scroller, co = scrollerCutOff;
+      var scroller = this.display.scroller;
       return {left: scroller.scrollLeft, top: scroller.scrollTop,
-              height: scroller.scrollHeight - co, width: scroller.scrollWidth - co,
-              clientHeight: scroller.clientHeight - co, clientWidth: scroller.clientWidth - co};
+              height: scroller.scrollHeight - scrollGap(this) - this.display.barHeight,
+              width: scroller.scrollWidth - scrollGap(this) - this.display.barWidth,
+              clientHeight: displayHeight(this), clientWidth: displayWidth(this)};
     },
 
     scrollIntoView: methodOp(function(range, margin) {
@@ -22078,7 +25732,13 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     cm.display.gutters.style.left = val ? compensateForHScroll(cm.display) + "px" : "0";
     cm.refresh();
   }, true);
-  option("coverGutterNextToScrollbar", false, updateScrollbars, true);
+  option("coverGutterNextToScrollbar", false, function(cm) {updateScrollbars(cm);}, true);
+  option("scrollbarStyle", "native", function(cm) {
+    initScrollbars(cm);
+    updateScrollbars(cm);
+    cm.display.scrollbars.setScrollTop(cm.doc.scrollTop);
+    cm.display.scrollbars.setScrollLeft(cm.doc.scrollLeft);
+  }, true);
   option("lineNumbers", false, function(cm) {
     setGuttersForLineNumbers(cm.options);
     guttersChanged(cm);
@@ -22508,18 +26168,18 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     return keymap;
   };
 
-  var lookupKey = CodeMirror.lookupKey = function(key, map, handle) {
+  var lookupKey = CodeMirror.lookupKey = function(key, map, handle, context) {
     map = getKeyMap(map);
-    var found = map.call ? map.call(key) : map[key];
+    var found = map.call ? map.call(key, context) : map[key];
     if (found === false) return "nothing";
     if (found === "...") return "multi";
     if (found != null && handle(found)) return "handled";
 
     if (map.fallthrough) {
       if (Object.prototype.toString.call(map.fallthrough) != "[object Array]")
-        return lookupKey(key, map.fallthrough, handle);
+        return lookupKey(key, map.fallthrough, handle, context);
       for (var i = 0; i < map.fallthrough.length; i++) {
-        var result = lookupKey(key, map.fallthrough[i], handle);
+        var result = lookupKey(key, map.fallthrough[i], handle, context);
         if (result) return result;
       }
     }
@@ -22826,7 +26486,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       // Showing up as a widget implies collapsed (widget replaces text)
       marker.collapsed = true;
       marker.widgetNode = elt("span", [marker.replacedWith], "CodeMirror-widget");
-      if (!options.handleMouseEvents) marker.widgetNode.ignoreEvents = true;
+      if (!options.handleMouseEvents) marker.widgetNode.setAttribute("cm-ignore-events", "true");
       if (options.insertLeft) marker.widgetNode.insertLeft = true;
     }
     if (marker.collapsed) {
@@ -22870,7 +26530,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       if (updateMaxLine) cm.curOp.updateMaxLine = true;
       if (marker.collapsed)
         regChange(cm, from.line, to.line + 1);
-      else if (marker.className || marker.title || marker.startStyle || marker.endStyle)
+      else if (marker.className || marker.title || marker.startStyle || marker.endStyle || marker.css)
         for (var i = from.line; i <= to.line; i++) regLineChange(cm, i, "text");
       if (marker.atomic) reCheckSelection(cm.doc);
       signalLater(cm, "markerAdded", cm, marker);
@@ -23450,8 +27110,11 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
         if (mName) style = "m-" + (style ? mName + " " + style : mName);
       }
       if (!flattenSpans || curStyle != style) {
-        if (curStart < stream.start) f(stream.start, curStyle);
-        curStart = stream.start; curStyle = style;
+        while (curStart < stream.start) {
+          curStart = Math.min(stream.start, curStart + 50000);
+          f(curStart, curStyle);
+        }
+        curStyle = style;
       }
       stream.start = stream.pos;
     }
@@ -23608,7 +27271,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
   // Build up the DOM representation for a single token, and add it to
   // the line map. Takes care to render special characters separately.
-  function buildToken(builder, text, style, startStyle, endStyle, title) {
+  function buildToken(builder, text, style, startStyle, endStyle, title, css) {
     if (!text) return;
     var special = builder.cm.options.specialChars, mustWrap = false;
     if (!special.test(text)) {
@@ -23647,11 +27310,11 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
         builder.pos++;
       }
     }
-    if (style || startStyle || endStyle || mustWrap) {
+    if (style || startStyle || endStyle || mustWrap || css) {
       var fullStyle = style || "";
       if (startStyle) fullStyle += startStyle;
       if (endStyle) fullStyle += endStyle;
-      var token = elt("span", [content], fullStyle);
+      var token = elt("span", [content], fullStyle, css);
       if (title) token.title = title;
       return builder.content.appendChild(token);
     }
@@ -23710,11 +27373,11 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       return;
     }
 
-    var len = allText.length, pos = 0, i = 1, text = "", style;
+    var len = allText.length, pos = 0, i = 1, text = "", style, css;
     var nextChange = 0, spanStyle, spanEndStyle, spanStartStyle, title, collapsed;
     for (;;) {
       if (nextChange == pos) { // Update current marker set
-        spanStyle = spanEndStyle = spanStartStyle = title = "";
+        spanStyle = spanEndStyle = spanStartStyle = title = css = "";
         collapsed = null; nextChange = Infinity;
         var foundBookmarks = [];
         for (var j = 0; j < spans.length; ++j) {
@@ -23722,6 +27385,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
           if (sp.from <= pos && (sp.to == null || sp.to > pos)) {
             if (sp.to != null && nextChange > sp.to) { nextChange = sp.to; spanEndStyle = ""; }
             if (m.className) spanStyle += " " + m.className;
+            if (m.css) css = m.css;
             if (m.startStyle && sp.from == pos) spanStartStyle += " " + m.startStyle;
             if (m.endStyle && sp.to == nextChange) spanEndStyle += " " + m.endStyle;
             if (m.title && !title) title = m.title;
@@ -23749,7 +27413,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
           if (!collapsed) {
             var tokenText = end > upto ? text.slice(0, upto - pos) : text;
             builder.addToken(builder, tokenText, style ? style + spanStyle : spanStyle,
-                             spanStartStyle, pos + tokenText.length == nextChange ? spanEndStyle : "", title);
+                             spanStartStyle, pos + tokenText.length == nextChange ? spanEndStyle : "", title, css);
           }
           if (end >= upto) {text = text.slice(upto - pos); pos = upto; break;}
           pos = end;
@@ -24176,7 +27840,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       });
     }),
     removeLineClass: docMethodOp(function(handle, where, cls) {
-      return changeLine(this, handle, "class", function(line) {
+      return changeLine(this, handle, where == "gutter" ? "gutter" : "class", function(line) {
         var prop = where == "text" ? "textClass"
                  : where == "background" ? "bgClass"
                  : where == "gutter" ? "gutterClass" : "wrapClass";
@@ -24832,7 +28496,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   // MISC UTILITIES
 
   // Number of pixels added to scroller and sizer to hide scrollbar
-  var scrollerCutOff = 30;
+  var scrollerGap = 30;
 
   // Returned or thrown by various protocols to signal 'I'm not
   // handling this'.
@@ -25058,7 +28722,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     on(window, "resize", function() {
       if (resizeTimer == null) resizeTimer = setTimeout(function() {
         resizeTimer = null;
-        knownScrollbarWidth = null;
         forEachCodeMirror(onResize);
       }, 100);
     });
@@ -25078,16 +28741,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     var div = elt('div');
     return "draggable" in div || "dragDrop" in div;
   }();
-
-  var knownScrollbarWidth;
-  function scrollbarWidth(measure) {
-    if (knownScrollbarWidth != null) return knownScrollbarWidth;
-    var test = elt("div", null, null, "width: 50px; height: 50px; overflow-x: scroll");
-    removeChildrenAndAdd(measure, test);
-    if (test.offsetWidth)
-      knownScrollbarWidth = test.offsetHeight - test.clientHeight;
-    return knownScrollbarWidth || 0;
-  }
 
   var zwspSupported;
   function zeroWidthElement(measure) {
@@ -25470,16 +29123,16 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
   // THE END
 
-  CodeMirror.version = "4.8.0";
+  CodeMirror.version = "4.11.0";
 
   return CodeMirror;
 });
 
-},{}],23:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports=require(4)
-},{"/home/lrd900/yasgui/yasgui/node_modules/jquery/dist/jquery.js":4}],24:[function(require,module,exports){
-module.exports=require(5)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/node_modules/store/store.js":5}],25:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/jquery/dist/jquery.js":4}],27:[function(require,module,exports){
+module.exports=require(8)
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/node_modules/store/store.js":8}],28:[function(require,module,exports){
 module.exports={
   "name": "yasgui-utils",
   "version": "1.5.0",
@@ -25512,9 +29165,9 @@ module.exports={
   }
 }
 
-},{}],26:[function(require,module,exports){
-arguments[4][7][0].apply(exports,arguments)
-},{"../package.json":25,"./storage.js":27,"./svg.js":28,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/main.js":7}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
+arguments[4][10][0].apply(exports,arguments)
+},{"../package.json":28,"./storage.js":30,"./svg.js":31,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/main.js":10}],30:[function(require,module,exports){
 var store = require("store");
 var times = {
 	day: function() {
@@ -25563,36 +29216,9 @@ var root = module.exports = {
 
 };
 
-},{"store":24}],28:[function(require,module,exports){
-module.exports = {
-	draw: function(parent, svgString) {
-		if (!parent) return;
-		var el = module.exports.getElement(svgString);
-		if (el) {
-			if (parent.append) {
-				parent.append(el);
-			} else {
-				//regular dom doc
-				parent.appendChild(el);
-			}
-		}
-	},
-	getElement: function(svgString) {
-		if (svgString && svgString.indexOf("<svg") == 0) {
-			//no style passed via config. guess own styles
-			var parser = new DOMParser();
-			var dom = parser.parseFromString(svgString, "text/xml");
-			var svg = dom.documentElement;
-			
-			var svgContainer = document.createElement("div");
-			svgContainer.className = 'svgImg';
-			svgContainer.appendChild(svg);
-			return svgContainer;
-		}
-		return false;
-	}
-};
-},{}],29:[function(require,module,exports){
+},{"store":27}],31:[function(require,module,exports){
+module.exports=require(12)
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/svg.js":12}],32:[function(require,module,exports){
 module.exports={
   "name": "yasgui-yasqe",
   "description": "Yet Another SPARQL Query Editor",
@@ -25676,7 +29302,7 @@ module.exports={
   }
 }
 
-},{}],30:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('../utils.js'),
@@ -25969,7 +29595,7 @@ var selectHint = function(yasqe, data, completion) {
 //	loadBulkCompletions: loadBulkCompletions,
 //};
 
-},{"../../lib/trie.js":12,"../utils.js":43,"jquery":23,"yasgui-utils":26}],31:[function(require,module,exports){
+},{"../../lib/trie.js":15,"../utils.js":46,"jquery":26,"yasgui-utils":29}],34:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = function(yasqe, name) {
@@ -26013,7 +29639,7 @@ module.exports.preProcessToken = function(yasqe, token) {
 module.exports.postProcessToken = function(yasqe, token, suggestedString) {
 	return require('./utils.js').postprocessResourceTokenForCompletion(yasqe, token, suggestedString)
 };
-},{"./utils":34,"./utils.js":34,"jquery":23}],32:[function(require,module,exports){
+},{"./utils":37,"./utils.js":37,"jquery":26}],35:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 //this is a mapping from the class names (generic ones, for compatability with codemirror themes), to what they -actually- represent
@@ -26137,7 +29763,7 @@ module.exports.appendPrefixIfNeeded = function(yasqe, completerName) {
 };
 
 
-},{"jquery":23}],33:[function(require,module,exports){
+},{"jquery":26}],36:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = function(yasqe, name) {
@@ -26185,7 +29811,7 @@ module.exports.preProcessToken = function(yasqe, token) {
 module.exports.postProcessToken = function(yasqe, token, suggestedString) {
 	return require('./utils.js').postprocessResourceTokenForCompletion(yasqe, token, suggestedString)
 };
-},{"./utils":34,"./utils.js":34,"jquery":23}],34:[function(require,module,exports){
+},{"./utils":37,"./utils.js":37,"jquery":26}],37:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('./utils.js'),
@@ -26315,7 +29941,7 @@ module.exports = {
 	preprocessResourceTokenForCompletion: preprocessResourceTokenForCompletion,
 	postprocessResourceTokenForCompletion: postprocessResourceTokenForCompletion,
 };
-},{"../imgs.js":37,"./utils.js":34,"jquery":23,"yasgui-utils":26}],35:[function(require,module,exports){
+},{"../imgs.js":40,"./utils.js":37,"jquery":26,"yasgui-utils":29}],38:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = function(yasqe) {
@@ -26372,7 +29998,7 @@ module.exports = function(yasqe) {
 	}
 };
 
-},{"jquery":23}],36:[function(require,module,exports){
+},{"jquery":26}],39:[function(require,module,exports){
 /**
  * The default options of YASQE (check the CodeMirror documentation for even
  * more options, such as disabling line numbers, or changing keyboard shortcut
@@ -26542,7 +30168,7 @@ module.exports = {
 	}
 };
 
-},{"jquery":23}],37:[function(require,module,exports){
+},{"jquery":26}],40:[function(require,module,exports){
 'use strict';
 module.exports = {
 	loader: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="100%" height="100%" fill="black">  <circle cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(45 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.125s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(90 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.25s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(135 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.375s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(180 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(225 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.625s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(270 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.75s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(315 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.875s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(180 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle></svg>',
@@ -26554,7 +30180,7 @@ module.exports = {
 	fullscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="640"     inkscape:window-height="480"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="0"     inkscape:current-layer="Layer_1" /><path     d="m -7.962963,-10 v 38.889 l 16.667,-16.667 16.667,16.667 5.555,-5.555 -16.667,-16.667 16.667,-16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 92.037037,-10 v 38.889 l -16.667,-16.667 -16.666,16.667 -5.556,-5.555 16.666,-16.667 -16.666,-16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M -7.962963,90 V 51.111 l 16.667,16.666 16.667,-16.666 5.555,5.556 -16.667,16.666 16.667,16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M 92.037037,90 V 51.111 l -16.667,16.666 -16.666,-16.666 -5.556,5.556 16.666,16.666 -16.666,16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 	smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 };
-},{}],38:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 'use strict';
 //make sure any console statements
 window.console = window.console || {"log":function(){}};
@@ -27229,7 +30855,7 @@ root.version = {
 	"yasgui-utils": yutils.version
 };
 
-},{"../lib/deparam.js":10,"../lib/flint.js":11,"../package.json":29,"./autocompleters/autocompleterBase.js":30,"./autocompleters/classes.js":31,"./autocompleters/prefixes.js":32,"./autocompleters/properties.js":33,"./autocompleters/variables.js":35,"./defaults.js":36,"./imgs.js":37,"./prefixUtils.js":39,"./sparql.js":40,"./tokenUtils.js":41,"./tooltip":42,"./utils.js":43,"codemirror":22,"codemirror/addon/display/fullscreen.js":13,"codemirror/addon/edit/matchbrackets.js":14,"codemirror/addon/fold/brace-fold.js":15,"codemirror/addon/fold/foldcode.js":16,"codemirror/addon/fold/foldgutter.js":17,"codemirror/addon/fold/xml-fold.js":18,"codemirror/addon/hint/show-hint.js":19,"codemirror/addon/runmode/runmode.js":20,"codemirror/addon/search/searchcursor.js":21,"jquery":23,"yasgui-utils":26}],39:[function(require,module,exports){
+},{"../lib/deparam.js":13,"../lib/flint.js":14,"../package.json":32,"./autocompleters/autocompleterBase.js":33,"./autocompleters/classes.js":34,"./autocompleters/prefixes.js":35,"./autocompleters/properties.js":36,"./autocompleters/variables.js":38,"./defaults.js":39,"./imgs.js":40,"./prefixUtils.js":42,"./sparql.js":43,"./tokenUtils.js":44,"./tooltip":45,"./utils.js":46,"codemirror":25,"codemirror/addon/display/fullscreen.js":16,"codemirror/addon/edit/matchbrackets.js":17,"codemirror/addon/fold/brace-fold.js":18,"codemirror/addon/fold/foldcode.js":19,"codemirror/addon/fold/foldgutter.js":20,"codemirror/addon/fold/xml-fold.js":21,"codemirror/addon/hint/show-hint.js":22,"codemirror/addon/runmode/runmode.js":23,"codemirror/addon/search/searchcursor.js":24,"jquery":26,"yasgui-utils":29}],42:[function(require,module,exports){
 'use strict';
 /**
  * Append prefix declaration to list of prefixes in query window.
@@ -27367,7 +30993,7 @@ module.exports = {
 	removePrefixes: removePrefixes
 };
 
-},{}],40:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = {
@@ -27493,7 +31119,7 @@ var getAcceptHeader = function(yasqe, config) {
 	return acceptHeader;
 };
 
-},{"jquery":23}],41:[function(require,module,exports){
+},{"jquery":26}],44:[function(require,module,exports){
 'use strict';
 /**
  * When typing a query, this query is sometimes syntactically invalid, causing
@@ -27571,7 +31197,7 @@ module.exports = {
 };
 
 
-},{}],42:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('./utils.js');
@@ -27609,7 +31235,7 @@ module.exports = function(yasqe, parent, html) {
 };
 
 
-},{"./utils.js":43,"jquery":23}],43:[function(require,module,exports){
+},{"./utils.js":46,"jquery":26}],46:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 
@@ -27664,7 +31290,7 @@ module.exports = {
 	getPersistencyId: getPersistencyId,
 	elementsOverlap:elementsOverlap,
 };
-},{"jquery":23}],44:[function(require,module,exports){
+},{"jquery":26}],47:[function(require,module,exports){
 /*! DataTables 1.10.2
  * ©2008-2014 SpryMedia Ltd - datatables.net/license
  */
@@ -42288,7 +45914,7 @@ module.exports = {
 }(window, document));
 
 
-},{"jquery":60}],45:[function(require,module,exports){
+},{"jquery":63}],48:[function(require,module,exports){
 /**
                _ _____           _          _     _      
               | |  __ \         (_)        | |   | |     
@@ -42603,7 +46229,7 @@ var $ = require('jquery');
     });
 
 
-},{"jquery":60}],46:[function(require,module,exports){
+},{"jquery":63}],49:[function(require,module,exports){
 /**
  * jQuery-csv (jQuery Plugin)
  * version: 0.71 (2012-11-19)
@@ -43453,19 +47079,19 @@ RegExp.escape= function(s) {
 
 })( jQuery );
 
-},{}],47:[function(require,module,exports){
-module.exports=require(14)
-},{"../../lib/codemirror":52,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/edit/matchbrackets.js":14}],48:[function(require,module,exports){
-module.exports=require(15)
-},{"../../lib/codemirror":52,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/brace-fold.js":15}],49:[function(require,module,exports){
-module.exports=require(16)
-},{"../../lib/codemirror":52,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldcode.js":16}],50:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 module.exports=require(17)
-},{"../../lib/codemirror":52,"./foldcode":49,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldgutter.js":17}],51:[function(require,module,exports){
+},{"../../lib/codemirror":55,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/edit/matchbrackets.js":17}],51:[function(require,module,exports){
 module.exports=require(18)
-},{"../../lib/codemirror":52,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/xml-fold.js":18}],52:[function(require,module,exports){
-module.exports=require(22)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/lib/codemirror.js":22}],53:[function(require,module,exports){
+},{"../../lib/codemirror":55,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/brace-fold.js":18}],52:[function(require,module,exports){
+module.exports=require(19)
+},{"../../lib/codemirror":55,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldcode.js":19}],53:[function(require,module,exports){
+module.exports=require(20)
+},{"../../lib/codemirror":55,"./foldcode":52,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldgutter.js":20}],54:[function(require,module,exports){
+module.exports=require(21)
+},{"../../lib/codemirror":55,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/xml-fold.js":21}],55:[function(require,module,exports){
+module.exports=require(25)
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/lib/codemirror.js":25}],56:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -43673,6 +47299,8 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
         ++depth;
       } else if (wordRE.test(ch)) {
         sawSomething = true;
+      } else if (/["'\/]/.test(ch)) {
+        return;
       } else if (sawSomething && !depth) {
         ++pos;
         break;
@@ -44151,7 +47779,7 @@ CodeMirror.defineMIME("application/typescript", { name: "javascript", typescript
 
 });
 
-},{"../../lib/codemirror":52}],54:[function(require,module,exports){
+},{"../../lib/codemirror":55}],57:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -44537,10 +48165,10 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
 
 });
 
-},{"../../lib/codemirror":52}],55:[function(require,module,exports){
+},{"../../lib/codemirror":55}],58:[function(require,module,exports){
 !function() {
   var d3 = {
-    version: "3.5.2"
+    version: "3.5.3"
   };
   if (!Date.now) Date.now = function() {
     return +new Date();
@@ -53115,12 +56743,8 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     return function() {
       var lock, active;
       if ((lock = this[ns]) && (active = lock[lock.active])) {
-        if (--lock.count) {
-          delete lock[lock.active];
-          lock.active += .5;
-        } else {
-          delete this[ns];
-        }
+        if (--lock.count) delete lock[lock.active]; else delete this[ns];
+        lock.active += .5;
         active.event && active.event.interrupt.call(this, this.__data__, active.index);
       }
     };
@@ -54008,7 +57632,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
   if (typeof define === "function" && define.amd) define(d3); else if (typeof module === "object" && module.exports) module.exports = d3;
   this.d3 = d3;
 }();
-},{}],56:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 var jQuery = require('jquery');
 
 /*!
@@ -54332,7 +57956,7 @@ $.extend( $.ui, {
 
 })( jQuery );
 
-},{"jquery":60}],57:[function(require,module,exports){
+},{"jquery":63}],60:[function(require,module,exports){
 var jQuery = require('jquery');
 require('./widget');
 
@@ -54506,7 +58130,7 @@ $.widget("ui.mouse", {
 
 })(jQuery);
 
-},{"./widget":59,"jquery":60}],58:[function(require,module,exports){
+},{"./widget":62,"jquery":63}],61:[function(require,module,exports){
 var jQuery = require('jquery');
 require('./core');
 require('./mouse');
@@ -55802,7 +59426,7 @@ $.widget("ui.sortable", $.ui.mouse, {
 
 })(jQuery);
 
-},{"./core":56,"./mouse":57,"./widget":59,"jquery":60}],59:[function(require,module,exports){
+},{"./core":59,"./mouse":60,"./widget":62,"jquery":63}],62:[function(require,module,exports){
 var jQuery = require('jquery');
 
 /*!
@@ -56327,23 +59951,23 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 
 })( jQuery );
 
-},{"jquery":60}],60:[function(require,module,exports){
+},{"jquery":63}],63:[function(require,module,exports){
 module.exports=require(4)
-},{"/home/lrd900/yasgui/yasgui/node_modules/jquery/dist/jquery.js":4}],61:[function(require,module,exports){
-// Generated by CoffeeScript 1.4.0
+},{"/home/lrd900/yasgui/yasgui/node_modules/jquery/dist/jquery.js":4}],64:[function(require,module,exports){
 (function() {
+  var callWithJQuery;
 
-  (function(mod) {
+  callWithJQuery = function(pivotModule) {
     if (typeof exports === "object" && typeof module === "object") {
-      return mod(require("jquery"));
+      return pivotModule(require("jquery"));
     } else if (typeof define === "function" && define.amd) {
-      return define(["jquery"], mod);
+      return define(["jquery"], pivotModule);
     } else {
-      mod(jQuery);
+      return pivotModule(jQuery);
     }
-  })(function(jQuery) {
-    var $;
-    $ = jQuery;
+  };
+
+  callWithJQuery(function($) {
     return $.pivotUtilities.d3_renderers = {
       Treemap: function(pivotData, opts) {
         var addToTree, color, defaults, height, margin, result, rowKey, tree, treemap, value, width, _i, _len, _ref;
@@ -56357,18 +59981,18 @@ module.exports=require(4)
           children: []
         };
         addToTree = function(tree, path, value) {
-          var child, newChild, x, _i, _len, _ref, _ref1;
+          var child, newChild, x, _i, _len, _ref;
           if (path.length === 0) {
             tree.value = value;
             return;
           }
-          if ((_ref = tree.children) == null) {
+          if (tree.children == null) {
             tree.children = [];
           }
           x = path.shift();
-          _ref1 = tree.children;
-          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-            child = _ref1[_i];
+          _ref = tree.children;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            child = _ref[_i];
             if (!(child.name === x)) {
               continue;
             }
@@ -56424,21 +60048,23 @@ module.exports=require(4)
 
 }).call(this);
 
-},{"jquery":60}],62:[function(require,module,exports){
-// Generated by CoffeeScript 1.4.0
+//# sourceMappingURL=d3_renderers.js.map
+},{"jquery":63}],65:[function(require,module,exports){
 (function() {
+  var callWithJQuery;
 
-  (function(mod) {
+  callWithJQuery = function(pivotModule) {
     if (typeof exports === "object" && typeof module === "object") {
-      return mod(require("jquery"));
+      return pivotModule(require("jquery"));
     } else if (typeof define === "function" && define.amd) {
-      return define(["jquery"], mod);
+      return define(["jquery"], pivotModule);
     } else {
-      mod(jQuery);
+      return pivotModule(jQuery);
     }
-  })(function(jQuery) {
-    var $, makeGoogleChart;
-    $ = jQuery;
+  };
+
+  callWithJQuery(function($) {
+    var makeGoogleChart;
     makeGoogleChart = function(chartType, extraOptions) {
       return function(pivotData, opts) {
         var agg, colKey, colKeys, dataArray, dataTable, defaults, groupByTitle, h, hAxisTitle, headers, k, numCharsInHAxis, options, result, row, rowKey, rowKeys, title, v, vAxisTitle, wrapper, _i, _j, _len, _len1;
@@ -56547,30 +60173,31 @@ module.exports=require(4)
 
 }).call(this);
 
-},{"jquery":60}],63:[function(require,module,exports){
-// Generated by CoffeeScript 1.4.0
+//# sourceMappingURL=gchart_renderers.js.map
+},{"jquery":63}],66:[function(require,module,exports){
 (function() {
-  var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
+  var callWithJQuery,
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
     __slice = [].slice,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty;
 
-  (function(mod) {
+  callWithJQuery = function(pivotModule) {
     if (typeof exports === "object" && typeof module === "object") {
-      return mod(require("jquery"));
+      return pivotModule(require("jquery"));
     } else if (typeof define === "function" && define.amd) {
-      return define(["jquery"], mod);
+      return define(["jquery"], pivotModule);
     } else {
-      mod(jQuery);
+      return pivotModule(jQuery);
     }
-  })(function(jQuery) {
-    var $, PivotData, addSeparators, aggregatorTemplates, aggregators, dayNamesEn, derivers, locales, mthNamesEn, naturalSort, numberFormat, pivotTableRenderer, renderers, usFmt, usFmtInt, usFmtPct, zeroPad,
-      _this = this;
-    $ = jQuery;
-    /*
-    	Utilities
-    */
+  };
 
+  callWithJQuery(function($) {
+
+    /*
+    Utilities
+     */
+    var PivotData, addSeparators, aggregatorTemplates, aggregators, dayNamesEn, derivers, locales, mthNamesEn, naturalSort, numberFormat, pivotTableRenderer, renderers, usFmt, usFmtInt, usFmtPct, zeroPad;
     addSeparators = function(nStr, thousandsSep, decimalSep) {
       var rgx, x, x1, x2;
       nStr += '';
@@ -56932,43 +60559,45 @@ module.exports=require(4)
         };
       }
     };
-    naturalSort = function(as, bs) {
-      var a, a1, b, b1, rd, rx, rz;
-      rx = /(\d+)|(\D+)/g;
-      rd = /\d/;
-      rz = /^0/;
-      if (typeof as === "number" || typeof bs === "number") {
-        if (isNaN(as)) {
-          return 1;
+    naturalSort = (function(_this) {
+      return function(as, bs) {
+        var a, a1, b, b1, rd, rx, rz;
+        rx = /(\d+)|(\D+)/g;
+        rd = /\d/;
+        rz = /^0/;
+        if (typeof as === "number" || typeof bs === "number") {
+          if (isNaN(as)) {
+            return 1;
+          }
+          if (isNaN(bs)) {
+            return -1;
+          }
+          return as - bs;
         }
-        if (isNaN(bs)) {
-          return -1;
+        a = String(as).toLowerCase();
+        b = String(bs).toLowerCase();
+        if (a === b) {
+          return 0;
         }
-        return as - bs;
-      }
-      a = String(as).toLowerCase();
-      b = String(bs).toLowerCase();
-      if (a === b) {
-        return 0;
-      }
-      if (!(rd.test(a) && rd.test(b))) {
-        return (a > b ? 1 : -1);
-      }
-      a = a.match(rx);
-      b = b.match(rx);
-      while (a.length && b.length) {
-        a1 = a.shift();
-        b1 = b.shift();
-        if (a1 !== b1) {
-          if (rd.test(a1) && rd.test(b1)) {
-            return a1.replace(rz, ".0") - b1.replace(rz, ".0");
-          } else {
-            return (a1 > b1 ? 1 : -1);
+        if (!(rd.test(a) && rd.test(b))) {
+          return (a > b ? 1 : -1);
+        }
+        a = a.match(rx);
+        b = b.match(rx);
+        while (a.length && b.length) {
+          a1 = a.shift();
+          b1 = b.shift();
+          if (a1 !== b1) {
+            if (rd.test(a1) && rd.test(b1)) {
+              return a1.replace(rz, ".0") - b1.replace(rz, ".0");
+            } else {
+              return (a1 > b1 ? 1 : -1);
+            }
           }
         }
-      }
-      return a.length - b.length;
-    };
+        return a.length - b.length;
+      };
+    })(this);
     $.pivotUtilities = {
       aggregatorTemplates: aggregatorTemplates,
       aggregators: aggregators,
@@ -56978,26 +60607,18 @@ module.exports=require(4)
       naturalSort: naturalSort,
       numberFormat: numberFormat
     };
+
     /*
-    	Data Model class
-    */
-
+    Data Model class
+     */
     PivotData = (function() {
-
       function PivotData(input, opts) {
         this.getAggregator = __bind(this.getAggregator, this);
-
         this.getRowKeys = __bind(this.getRowKeys, this);
-
         this.getColKeys = __bind(this.getColKeys, this);
-
         this.sortKeys = __bind(this.sortKeys, this);
-
         this.arrSort = __bind(this.arrSort, this);
-
         this.natSort = __bind(this.natSort, this);
-
-        var _this = this;
         this.aggregator = opts.aggregator;
         this.aggregatorName = opts.aggregatorName;
         this.colAttrs = opts.cols;
@@ -57010,11 +60631,13 @@ module.exports=require(4)
         this.colTotals = {};
         this.allTotal = this.aggregator(this, [], []);
         this.sorted = false;
-        PivotData.forEachRecord(input, opts.derivedAttributes, function(record) {
-          if (opts.filter(record)) {
-            return _this.processRecord(record);
-          }
-        });
+        PivotData.forEachRecord(input, opts.derivedAttributes, (function(_this) {
+          return function(record) {
+            if (opts.filter(record)) {
+              return _this.processRecord(record);
+            }
+          };
+        })(this));
       }
 
       PivotData.forEachRecord = function(input, derivedAttributes, f) {
@@ -57180,10 +60803,10 @@ module.exports=require(4)
       return PivotData;
 
     })();
-    /*
-    	Default Renderer for hierarchical table layout
-    */
 
+    /*
+    Default Renderer for hierarchical table layout
+     */
     pivotTableRenderer = function(pivotData, opts) {
       var aggregator, c, colAttrs, colKey, colKeys, defaults, i, j, r, result, rowAttrs, rowKey, rowKeys, spanSize, td, th, totalAggregator, tr, txt, val, x;
       defaults = {
@@ -57352,12 +60975,12 @@ module.exports=require(4)
       result.setAttribute("data-numcols", colKeys.length);
       return result;
     };
-    /*
-    	Pivot Table core: create PivotData object and call Renderer on it
-    */
 
+    /*
+    Pivot Table core: create PivotData object and call Renderer on it
+     */
     $.fn.pivot = function(input, opts) {
-      var defaults, pivotData, result, x;
+      var defaults, e, pivotData, result, x;
       defaults = {
         cols: [],
         rows: [],
@@ -57377,13 +61000,15 @@ module.exports=require(4)
         pivotData = new PivotData(input, opts);
         try {
           result = opts.renderer(pivotData, opts.rendererOptions);
-        } catch (e) {
+        } catch (_error) {
+          e = _error;
           if (typeof console !== "undefined" && console !== null) {
             console.error(e.stack);
           }
           result = $("<span>").html(opts.localeStrings.renderError);
         }
-      } catch (e) {
+      } catch (_error) {
+        e = _error;
         if (typeof console !== "undefined" && console !== null) {
           console.error(e.stack);
         }
@@ -57395,13 +61020,12 @@ module.exports=require(4)
       }
       return this.append(result);
     };
-    /*
-    	Pivot Table UI: calls Pivot Table core above with options set by user
-    */
 
+    /*
+    Pivot Table UI: calls Pivot Table core above with options set by user
+     */
     $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-      var a, aggregator, attrLength, axisValues, c, colList, defaults, existingOpts, i, initialRender, k, opts, pivotTable, refresh, refreshDelayed, renderer, rendererControl, shownAttributes, tblCols, tr1, tr2, uiTable, unusedAttrsVerticalAutoOverride, x, _fn, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _ref4,
-        _this = this;
+      var a, aggregator, attrLength, axisValues, c, colList, defaults, e, existingOpts, i, initialRender, k, opts, pivotTable, refresh, refreshDelayed, renderer, rendererControl, shownAttributes, tblCols, tr1, tr2, uiTable, unusedAttrsVerticalAutoOverride, x, _fn, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _ref4;
       if (overwrite == null) {
         overwrite = false;
       }
@@ -57430,7 +61054,7 @@ module.exports=require(4)
         localeStrings: locales[locale].localeStrings
       };
       existingOpts = this.data("pivotUIOptions");
-      if (!(existingOpts != null) || overwrite) {
+      if ((existingOpts == null) || overwrite) {
         opts = $.extend(defaults, inputOpts);
       } else {
         opts = existingOpts;
@@ -57460,7 +61084,7 @@ module.exports=require(4)
           axisValues[x] = {};
         }
         PivotData.forEachRecord(input, opts.derivedAttributes, function(record) {
-          var v, _base, _ref1, _results;
+          var v, _base, _results;
           _results = [];
           for (k in record) {
             if (!__hasProp.call(record, k)) continue;
@@ -57471,7 +61095,7 @@ module.exports=require(4)
             if (v == null) {
               v = "null";
             }
-            if ((_ref1 = (_base = axisValues[k])[v]) == null) {
+            if ((_base = axisValues[k])[v] == null) {
               _base[v] = 0;
             }
             _results.push(axisValues[k][v]++);
@@ -57636,112 +61260,116 @@ module.exports=require(4)
           this.find(".pvtRenderer").val(opts.rendererName);
         }
         initialRender = true;
-        refreshDelayed = function() {
-          var attr, exclusions, natSort, newDropdown, numInputsToProcess, pivotUIOptions, pvtVals, subopts, unusedAttrsContainer, vals, _len4, _m, _n, _ref5;
-          subopts = {
-            derivedAttributes: opts.derivedAttributes,
-            localeStrings: opts.localeStrings,
-            rendererOptions: opts.rendererOptions,
-            cols: [],
-            rows: []
-          };
-          numInputsToProcess = (_ref5 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? _ref5 : 0;
-          vals = [];
-          _this.find(".pvtRows li span.pvtAttr").each(function() {
-            return subopts.rows.push($(this).data("attrName"));
-          });
-          _this.find(".pvtCols li span.pvtAttr").each(function() {
-            return subopts.cols.push($(this).data("attrName"));
-          });
-          _this.find(".pvtVals select.pvtAttrDropdown").each(function() {
-            if (numInputsToProcess === 0) {
-              return $(this).remove();
-            } else {
-              numInputsToProcess--;
-              if ($(this).val() !== "") {
-                return vals.push($(this).val());
-              }
-            }
-          });
-          if (numInputsToProcess !== 0) {
-            pvtVals = _this.find(".pvtVals");
-            for (x = _m = 0; 0 <= numInputsToProcess ? _m < numInputsToProcess : _m > numInputsToProcess; x = 0 <= numInputsToProcess ? ++_m : --_m) {
-              newDropdown = $("<select class='pvtAttrDropdown'>").append($("<option>")).bind("change", function() {
-                return refresh();
-              });
-              for (_n = 0, _len4 = shownAttributes.length; _n < _len4; _n++) {
-                attr = shownAttributes[_n];
-                newDropdown.append($("<option>").val(attr).text(attr));
-              }
-              pvtVals.append(newDropdown);
-            }
-          }
-          if (initialRender) {
-            vals = opts.vals;
-            i = 0;
-            _this.find(".pvtVals select.pvtAttrDropdown").each(function() {
-              $(this).val(vals[i]);
-              return i++;
+        refreshDelayed = (function(_this) {
+          return function() {
+            var attr, exclusions, natSort, newDropdown, numInputsToProcess, pivotUIOptions, pvtVals, subopts, unusedAttrsContainer, vals, _len4, _m, _n, _ref5;
+            subopts = {
+              derivedAttributes: opts.derivedAttributes,
+              localeStrings: opts.localeStrings,
+              rendererOptions: opts.rendererOptions,
+              cols: [],
+              rows: []
+            };
+            numInputsToProcess = (_ref5 = opts.aggregators[aggregator.val()]([])().numInputs) != null ? _ref5 : 0;
+            vals = [];
+            _this.find(".pvtRows li span.pvtAttr").each(function() {
+              return subopts.rows.push($(this).data("attrName"));
             });
-            initialRender = false;
-          }
-          subopts.aggregatorName = aggregator.val();
-          subopts.vals = vals;
-          subopts.aggregator = opts.aggregators[aggregator.val()](vals);
-          subopts.renderer = opts.renderers[renderer.val()];
-          exclusions = {};
-          _this.find('input.pvtFilter').not(':checked').each(function() {
-            var filter;
-            filter = $(this).data("filter");
-            if (exclusions[filter[0]] != null) {
-              return exclusions[filter[0]].push(filter[1]);
-            } else {
-              return exclusions[filter[0]] = [filter[1]];
+            _this.find(".pvtCols li span.pvtAttr").each(function() {
+              return subopts.cols.push($(this).data("attrName"));
+            });
+            _this.find(".pvtVals select.pvtAttrDropdown").each(function() {
+              if (numInputsToProcess === 0) {
+                return $(this).remove();
+              } else {
+                numInputsToProcess--;
+                if ($(this).val() !== "") {
+                  return vals.push($(this).val());
+                }
+              }
+            });
+            if (numInputsToProcess !== 0) {
+              pvtVals = _this.find(".pvtVals");
+              for (x = _m = 0; 0 <= numInputsToProcess ? _m < numInputsToProcess : _m > numInputsToProcess; x = 0 <= numInputsToProcess ? ++_m : --_m) {
+                newDropdown = $("<select class='pvtAttrDropdown'>").append($("<option>")).bind("change", function() {
+                  return refresh();
+                });
+                for (_n = 0, _len4 = shownAttributes.length; _n < _len4; _n++) {
+                  attr = shownAttributes[_n];
+                  newDropdown.append($("<option>").val(attr).text(attr));
+                }
+                pvtVals.append(newDropdown);
+              }
             }
-          });
-          subopts.filter = function(record) {
-            var excludedItems, _ref6;
-            if (!opts.filter(record)) {
-              return false;
+            if (initialRender) {
+              vals = opts.vals;
+              i = 0;
+              _this.find(".pvtVals select.pvtAttrDropdown").each(function() {
+                $(this).val(vals[i]);
+                return i++;
+              });
+              initialRender = false;
             }
-            for (k in exclusions) {
-              excludedItems = exclusions[k];
-              if (_ref6 = "" + record[k], __indexOf.call(excludedItems, _ref6) >= 0) {
+            subopts.aggregatorName = aggregator.val();
+            subopts.vals = vals;
+            subopts.aggregator = opts.aggregators[aggregator.val()](vals);
+            subopts.renderer = opts.renderers[renderer.val()];
+            exclusions = {};
+            _this.find('input.pvtFilter').not(':checked').each(function() {
+              var filter;
+              filter = $(this).data("filter");
+              if (exclusions[filter[0]] != null) {
+                return exclusions[filter[0]].push(filter[1]);
+              } else {
+                return exclusions[filter[0]] = [filter[1]];
+              }
+            });
+            subopts.filter = function(record) {
+              var excludedItems, _ref6;
+              if (!opts.filter(record)) {
                 return false;
               }
+              for (k in exclusions) {
+                excludedItems = exclusions[k];
+                if (_ref6 = "" + record[k], __indexOf.call(excludedItems, _ref6) >= 0) {
+                  return false;
+                }
+              }
+              return true;
+            };
+            pivotTable.pivot(input, subopts);
+            pivotUIOptions = $.extend(opts, {
+              cols: subopts.cols,
+              rows: subopts.rows,
+              vals: vals,
+              exclusions: exclusions,
+              aggregatorName: aggregator.val(),
+              rendererName: renderer.val()
+            });
+            _this.data("pivotUIOptions", pivotUIOptions);
+            if (opts.autoSortUnusedAttrs) {
+              natSort = $.pivotUtilities.naturalSort;
+              unusedAttrsContainer = _this.find("td.pvtUnused.pvtAxisContainer");
+              $(unusedAttrsContainer).children("li").sort(function(a, b) {
+                return natSort($(a).text(), $(b).text());
+              }).appendTo(unusedAttrsContainer);
             }
-            return true;
+            pivotTable.css("opacity", 1);
+            if (opts.onRefresh != null) {
+              return opts.onRefresh(pivotUIOptions);
+            }
           };
-          pivotTable.pivot(input, subopts);
-          pivotUIOptions = $.extend(opts, {
-            cols: subopts.cols,
-            rows: subopts.rows,
-            vals: vals,
-            exclusions: exclusions,
-            aggregatorName: aggregator.val(),
-            rendererName: renderer.val()
-          });
-          _this.data("pivotUIOptions", pivotUIOptions);
-          if (opts.autoSortUnusedAttrs) {
-            natSort = $.pivotUtilities.naturalSort;
-            unusedAttrsContainer = _this.find("td.pvtUnused.pvtAxisContainer");
-            $(unusedAttrsContainer).children("li").sort(function(a, b) {
-              return natSort($(a).text(), $(b).text());
-            }).appendTo(unusedAttrsContainer);
-          }
-          pivotTable.css("opacity", 1);
-          if (opts.onRefresh != null) {
-            return opts.onRefresh(pivotUIOptions);
-          }
-        };
-        refresh = function() {
-          pivotTable.css("opacity", 0.5);
-          return setTimeout(refreshDelayed, 10);
-        };
+        })(this);
+        refresh = (function(_this) {
+          return function() {
+            pivotTable.css("opacity", 0.5);
+            return setTimeout(refreshDelayed, 10);
+          };
+        })(this);
         refresh();
         this.find(".pvtAxisContainer").sortable({
           update: function(e, ui) {
-            if (!(ui.sender != null)) {
+            if (ui.sender == null) {
               return refresh();
             }
           },
@@ -57749,7 +61377,8 @@ module.exports=require(4)
           items: 'li',
           placeholder: 'pvtPlaceholder'
         });
-      } catch (e) {
+      } catch (_error) {
+        e = _error;
         if (typeof console !== "undefined" && console !== null) {
           console.error(e.stack);
         }
@@ -57757,13 +61386,12 @@ module.exports=require(4)
       }
       return this;
     };
-    /*
-    	Heatmap post-processing
-    */
 
+    /*
+    Heatmap post-processing
+     */
     $.fn.heatmap = function(scope) {
-      var colorGen, heatmapper, i, j, numCols, numRows, _i, _j,
-        _this = this;
+      var colorGen, heatmapper, i, j, numCols, numRows, _i, _j;
       if (scope == null) {
         scope = "heatmap";
       }
@@ -57797,26 +61425,28 @@ module.exports=require(4)
           return hexGen(hex);
         };
       };
-      heatmapper = function(scope, color) {
-        var colorFor, forEachCell, values;
-        forEachCell = function(f) {
-          return _this.find(scope).each(function() {
-            var x;
-            x = $(this).data("value");
-            if ((x != null) && isFinite(x)) {
-              return f(x, $(this));
-            }
+      heatmapper = (function(_this) {
+        return function(scope, color) {
+          var colorFor, forEachCell, values;
+          forEachCell = function(f) {
+            return _this.find(scope).each(function() {
+              var x;
+              x = $(this).data("value");
+              if ((x != null) && isFinite(x)) {
+                return f(x, $(this));
+              }
+            });
+          };
+          values = [];
+          forEachCell(function(x) {
+            return values.push(x);
+          });
+          colorFor = colorGen(color, Math.min.apply(Math, values), Math.max.apply(Math, values));
+          return forEachCell(function(x, elem) {
+            return elem.css("background-color", "#" + colorFor(x));
           });
         };
-        values = [];
-        forEachCell(function(x) {
-          return values.push(x);
-        });
-        colorFor = colorGen(color, Math.min.apply(Math, values), Math.max.apply(Math, values));
-        return forEachCell(function(x, elem) {
-          return elem.css("background-color", "#" + colorFor(x));
-        });
-      };
+      })(this);
       switch (scope) {
         case "heatmap":
           heatmapper(".pvtVal", "red");
@@ -57835,61 +61465,62 @@ module.exports=require(4)
       heatmapper(".pvtTotal.colTotal", "red");
       return this;
     };
-    /*
-    	Barchart post-processing
-    */
 
+    /*
+    Barchart post-processing
+     */
     return $.fn.barchart = function() {
-      var barcharter, i, numCols, numRows, _i,
-        _this = this;
+      var barcharter, i, numCols, numRows, _i;
       numRows = this.data("numrows");
       numCols = this.data("numcols");
-      barcharter = function(scope) {
-        var forEachCell, max, scaler, values;
-        forEachCell = function(f) {
-          return _this.find(scope).each(function() {
-            var x;
-            x = $(this).data("value");
-            if ((x != null) && isFinite(x)) {
-              return f(x, $(this));
-            }
+      barcharter = (function(_this) {
+        return function(scope) {
+          var forEachCell, max, scaler, values;
+          forEachCell = function(f) {
+            return _this.find(scope).each(function() {
+              var x;
+              x = $(this).data("value");
+              if ((x != null) && isFinite(x)) {
+                return f(x, $(this));
+              }
+            });
+          };
+          values = [];
+          forEachCell(function(x) {
+            return values.push(x);
+          });
+          max = Math.max.apply(Math, values);
+          scaler = function(x) {
+            return 100 * x / (1.4 * max);
+          };
+          return forEachCell(function(x, elem) {
+            var text, wrapper;
+            text = elem.text();
+            wrapper = $("<div>").css({
+              "position": "relative",
+              "height": "55px"
+            });
+            wrapper.append($("<div>").css({
+              "position": "absolute",
+              "bottom": 0,
+              "left": 0,
+              "right": 0,
+              "height": scaler(x) + "%",
+              "background-color": "gray"
+            }));
+            wrapper.append($("<div>").text(text).css({
+              "position": "relative",
+              "padding-left": "5px",
+              "padding-right": "5px"
+            }));
+            return elem.css({
+              "padding": 0,
+              "padding-top": "5px",
+              "text-align": "center"
+            }).html(wrapper);
           });
         };
-        values = [];
-        forEachCell(function(x) {
-          return values.push(x);
-        });
-        max = Math.max.apply(Math, values);
-        scaler = function(x) {
-          return 100 * x / (1.4 * max);
-        };
-        return forEachCell(function(x, elem) {
-          var text, wrapper;
-          text = elem.text();
-          wrapper = $("<div>").css({
-            "position": "relative",
-            "height": "55px"
-          });
-          wrapper.append($("<div>").css({
-            "position": "absolute",
-            "bottom": 0,
-            "left": 0,
-            "right": 0,
-            "height": scaler(x) + "%",
-            "background-color": "gray"
-          }));
-          wrapper.append($("<div>").text(text).css({
-            "position": "relative",
-            "padding-left": "5px",
-            "padding-right": "5px"
-          }));
-          return elem.css({
-            "padding": 0,
-            "padding-top": "5px",
-            "text-align": "center"
-          }).html(wrapper);
-        });
-      };
+      })(this);
       for (i = _i = 0; 0 <= numRows ? _i < numRows : _i > numRows; i = 0 <= numRows ? ++_i : --_i) {
         barcharter(".pvtVal.row" + i);
       }
@@ -57900,21 +61531,22 @@ module.exports=require(4)
 
 }).call(this);
 
-},{"jquery":60}],64:[function(require,module,exports){
-module.exports=require(5)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/node_modules/store/store.js":5}],65:[function(require,module,exports){
-module.exports=require(25)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/package.json":25}],66:[function(require,module,exports){
-arguments[4][7][0].apply(exports,arguments)
-},{"../package.json":65,"./storage.js":67,"./svg.js":68,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/main.js":7}],67:[function(require,module,exports){
-module.exports=require(27)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/src/storage.js":27,"store":64}],68:[function(require,module,exports){
+//# sourceMappingURL=pivot.js.map
+},{"jquery":63}],67:[function(require,module,exports){
+module.exports=require(8)
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/node_modules/store/store.js":8}],68:[function(require,module,exports){
 module.exports=require(28)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/src/svg.js":28}],69:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/package.json":28}],69:[function(require,module,exports){
+arguments[4][10][0].apply(exports,arguments)
+},{"../package.json":68,"./storage.js":70,"./svg.js":71,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/main.js":10}],70:[function(require,module,exports){
+module.exports=require(30)
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/src/storage.js":30,"store":67}],71:[function(require,module,exports){
+module.exports=require(12)
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/svg.js":12}],72:[function(require,module,exports){
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "main": "src/main.js",
   "licenses": [
     {
@@ -58027,7 +61659,7 @@ module.exports={
   }
 }
 
-},{}],70:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 'use strict';
 module.exports = function(result) {
 	var quote = "\"";
@@ -58087,7 +61719,7 @@ module.exports = function(result) {
 	createBody();
 	return csvString;
 };
-},{}],71:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 
@@ -58147,7 +61779,7 @@ root.version = {
 };
 
 
-},{"../package.json":69,"./imgs.js":76,"jquery":60,"yasgui-utils":66}],72:[function(require,module,exports){
+},{"../package.json":72,"./imgs.js":79,"jquery":63,"yasgui-utils":69}],75:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = {
@@ -58243,7 +61875,7 @@ module.exports = {
 	
 	
 };
-},{"jquery":60}],73:[function(require,module,exports){
+},{"jquery":63}],76:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 
@@ -58309,7 +61941,7 @@ var root = module.exports = function(yasr) {
 root.defaults = {
 	
 };
-},{"jquery":60}],74:[function(require,module,exports){
+},{"jquery":63}],77:[function(require,module,exports){
 (function (global){
 var EventEmitter = require('events').EventEmitter,
 	$ = require('jquery');
@@ -58420,7 +62052,8 @@ module.exports = new loader();
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"events":2,"jquery":60}],75:[function(require,module,exports){
+
+},{"events":2,"jquery":63}],78:[function(require,module,exports){
 (function (global){
 'use strict';
 /**
@@ -58674,7 +62307,8 @@ function deepEq$(x, y, type){
   }
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./gChartLoader.js":74,"./utils.js":87,"jquery":60,"yasgui-utils":66}],76:[function(require,module,exports){
+
+},{"./gChartLoader.js":77,"./utils.js":90,"jquery":63,"yasgui-utils":69}],79:[function(require,module,exports){
 'use strict';
 module.exports = {
 	cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
@@ -58687,7 +62321,7 @@ module.exports = {
 	fullscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="640"     inkscape:window-height="480"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="0"     inkscape:current-layer="Layer_1" /><path     d="m -7.962963,-10 v 38.889 l 16.667,-16.667 16.667,16.667 5.555,-5.555 -16.667,-16.667 16.667,-16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 92.037037,-10 v 38.889 l -16.667,-16.667 -16.666,16.667 -5.556,-5.555 16.666,-16.667 -16.666,-16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M -7.962963,90 V 51.111 l 16.667,16.666 16.667,-16.666 5.555,5.556 -16.667,16.666 16.667,16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M 92.037037,90 V 51.111 l -16.667,16.666 -16.666,-16.666 -5.556,5.556 16.666,16.666 -16.666,16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 	smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 };
-},{}],77:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var utils = require("yasgui-utils");
@@ -58933,10 +62567,13 @@ var drawHeader = function(yasr) {
 				if (currentPlugin && currentPlugin.getDownloadInfo) {
 					var downloadInfo = currentPlugin.getDownloadInfo();
 					var downloadUrl = stringToUrl(downloadInfo.getContent(), (downloadInfo.contentType? downloadInfo.contentType: "text/plain"));
-					var downloadMockLink = $("<a></a>");
-					downloadMockLink.attr("href", downloadUrl);
-					downloadMockLink.attr("download", downloadInfo.filename);
-					downloadMockLink.get(0).click();
+					var downloadMockLink = $("<a></a>",
+							{
+						href: downloadUrl,
+						download: downloadInfo.filename
+					});
+					require('./utils.js').fireClick(downloadMockLink);
+//					downloadMockLink[0].click();
 				}
 			});
 		yasr.header.append(button);
@@ -58993,13 +62630,13 @@ try {root.registerOutput('table', require("./table.js"))} catch(e){};
 try {root.registerOutput('error', require("./error.js"))} catch(e){};
 try {root.registerOutput('pivot', require("./pivot.js"))} catch(e){};
 try {root.registerOutput('gchart', require("./gchart.js"))} catch(e){};
-},{"../package.json":69,"./boolean.js":71,"./defaults.js":72,"./error.js":73,"./gChartLoader.js":74,"./gchart.js":75,"./imgs.js":76,"./parsers/wrapper.js":82,"./pivot.js":84,"./rawResponse.js":85,"./table.js":86,"jquery":60,"yasgui-utils":66}],78:[function(require,module,exports){
+},{"../package.json":72,"./boolean.js":74,"./defaults.js":75,"./error.js":76,"./gChartLoader.js":77,"./gchart.js":78,"./imgs.js":79,"./parsers/wrapper.js":85,"./pivot.js":87,"./rawResponse.js":88,"./table.js":89,"./utils.js":90,"jquery":63,"yasgui-utils":69}],81:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, ",");
 };
-},{"./dlv.js":79,"jquery":60}],79:[function(require,module,exports){
+},{"./dlv.js":82,"jquery":63}],82:[function(require,module,exports){
 'use strict';
 var $ = jQuery = require('jquery');
 require("../../lib/jquery.csv-0.71.js");
@@ -59061,7 +62698,7 @@ var root = module.exports = function(queryResponse, separator) {
 	
 	return json;
 };
-},{"../../lib/jquery.csv-0.71.js":46,"jquery":60}],80:[function(require,module,exports){
+},{"../../lib/jquery.csv-0.71.js":49,"jquery":63}],83:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
@@ -59079,13 +62716,13 @@ var root = module.exports = function(queryResponse) {
 	return false;
 	
 };
-},{"jquery":60}],81:[function(require,module,exports){
+},{"jquery":63}],84:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, "\t");
 };
-},{"./dlv.js":79,"jquery":60}],82:[function(require,module,exports){
+},{"./dlv.js":82,"jquery":63}],85:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 
@@ -59319,7 +62956,7 @@ var root = module.exports = function(dataOrJqXhr, textStatus, jqXhrOrErrorString
 
 
 
-},{"./csv.js":78,"./json.js":80,"./tsv.js":81,"./xml.js":83,"jquery":60}],83:[function(require,module,exports){
+},{"./csv.js":81,"./json.js":83,"./tsv.js":84,"./xml.js":86,"jquery":63}],86:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(xml) {
@@ -59405,7 +63042,7 @@ var root = module.exports = function(xml) {
 	return json;
 };
 
-},{"jquery":60}],84:[function(require,module,exports){
+},{"jquery":63}],87:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	utils = require('./utils.js'),
@@ -59627,7 +63264,7 @@ root.version = {
 	"YASR-rawResponse" : require("../package.json").version,
 	"jquery": $.fn.jquery,
 };
-},{"../node_modules/pivottable/dist/d3_renderers.js":61,"../node_modules/pivottable/dist/gchart_renderers.js":62,"../package.json":69,"./gChartLoader.js":74,"./imgs.js":76,"./utils.js":87,"d3":55,"jquery":60,"jquery-ui/sortable":58,"pivottable":63,"yasgui-utils":66}],85:[function(require,module,exports){
+},{"../node_modules/pivottable/dist/d3_renderers.js":64,"../node_modules/pivottable/dist/gchart_renderers.js":65,"../package.json":72,"./gChartLoader.js":77,"./imgs.js":79,"./utils.js":90,"d3":58,"jquery":63,"jquery-ui/sortable":61,"pivottable":66,"yasgui-utils":69}],88:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	CodeMirror = require("codemirror");
@@ -59716,7 +63353,7 @@ root.version = {
 	"jquery": $.fn.jquery,
 	"CodeMirror" : CodeMirror.version
 };
-},{"../package.json":69,"codemirror":52,"codemirror/addon/edit/matchbrackets.js":47,"codemirror/addon/fold/brace-fold.js":48,"codemirror/addon/fold/foldcode.js":49,"codemirror/addon/fold/foldgutter.js":50,"codemirror/addon/fold/xml-fold.js":51,"codemirror/mode/javascript/javascript.js":53,"codemirror/mode/xml/xml.js":54,"jquery":60}],86:[function(require,module,exports){
+},{"../package.json":72,"codemirror":55,"codemirror/addon/edit/matchbrackets.js":50,"codemirror/addon/fold/brace-fold.js":51,"codemirror/addon/fold/foldcode.js":52,"codemirror/addon/fold/foldgutter.js":53,"codemirror/addon/fold/xml-fold.js":54,"codemirror/mode/javascript/javascript.js":56,"codemirror/mode/xml/xml.js":57,"jquery":63}],89:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	yutils = require("yasgui-utils"),
@@ -60099,7 +63736,7 @@ root.version = {
 	"jquery-datatables": $.fn.DataTable.version
 };
 
-},{"../lib/DataTables/media/js/jquery.dataTables.js":44,"../lib/colResizable-1.4.js":45,"../package.json":69,"./bindingsToCsv.js":70,"./imgs.js":76,"jquery":60,"yasgui-utils":66}],87:[function(require,module,exports){
+},{"../lib/DataTables/media/js/jquery.dataTables.js":47,"../lib/colResizable-1.4.js":48,"../package.json":72,"./bindingsToCsv.js":73,"./imgs.js":79,"jquery":63,"yasgui-utils":69}],90:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = {
@@ -60173,17 +63810,32 @@ module.exports = {
 			}
 		}
 	},
+	fireClick : function($els) {
+		if (!$els)
+			return;
+		$els.each(function(i, el) {
+			var $el = $(el);
+			if (document.dispatchEvent) { // W3C
+				var oEvent = document.createEvent("MouseEvents");
+				oEvent.initMouseEvent("click", true, true, window, 1, 1, 1, 1, 1,
+						false, false, false, false, 0, $el[0]);
+				$el[0].dispatchEvent(oEvent);
+			} else if (document.fireEvent) { // IE
+				$el[0].click();
+			}
+		});
+	}
 };
-},{"jquery":60}],88:[function(require,module,exports){
+},{"jquery":63}],91:[function(require,module,exports){
 'use strict';
 
 var $ = require('jquery');
 module.exports = {
-	persistent: function(yasgui) {
-		return "yasgui_" + $(yasgui.wrapperElement).closest('[id]').attr('id');
+	persistencyPrefix: function(yasgui) {
+		return "yasgui_" + $(yasgui.wrapperElement).closest('[id]').attr('id') + "_";
 	}
 };
-},{"jquery":4}],89:[function(require,module,exports){
+},{"jquery":4}],92:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -60196,21 +63848,513 @@ module.exports = {
 		acceptHeaderSelect: "application/sparql-results+json"
 	}
 };
-},{}],90:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 'use strict';
 module.exports = {
 	yasgui: '<svg   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" viewBox="0 0 603.99 522.51"  width="100%"   height="100%"   id="svg2"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="yasgui (copy).svg">  <defs     id="defs4">    <linearGradient       id="linearGradient5249"       osb:paint="solid">      <stop         style="stop-color:#3b3b3b;stop-opacity:1;"         offset="0"         id="stop5251" />    </linearGradient>    <inkscape:path-effect       effect="skeletal"       id="path-effect2997"       is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"       id="path-effect2995"       is_visible="true" />    <inkscape:path-effect       effect="skeletal"       id="path-effect2991"       is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"       id="path-effect2989"       is_visible="true" />  </defs>  <sodipodi:namedview     id="base"     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1.0"     inkscape:pageopacity="0.0"     inkscape:pageshadow="2"     inkscape:zoom="0.35"     inkscape:cx="-469.55507"     inkscape:cy="840.5292"     inkscape:document-units="px"     inkscape:current-layer="layer1"     showgrid="false"     inkscape:window-width="1855"     inkscape:window-height="1056"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0" />  <metadata     id="metadata7">    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />        <dc:title />      </cc:Work>    </rdf:RDF>  </metadata>  <g     inkscape:label="Layer 1"     inkscape:groupmode="layer"     id="layer1"     transform="translate(-50.966817,-280.33262)">    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"       id="rect5293-6-8"       width="40.000004"       height="478.57324"       x="-374.48849"       y="103.99496"       transform="matrix(-2.679181e-4,-0.99999996,0.99999993,-3.6684387e-4,0,0)" />    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"       id="rect5293-5-7"       width="40.000004"       height="560"       x="651.37634"       y="-132.06581"       transform="matrix(0.74639582,0.66550228,-0.66550228,0.74639582,0,0)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-9-7"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,92.132758,620.67568)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-3-0"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,457.84706,214.96137)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-1-2"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,-30.152972,219.81853)" />    <text       xml:space="preserve"       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#3b3b3b;fill-opacity:1;stroke:none;font-family:Sans"       x="-387.96655"       y="630.61871"       id="text5479-9-0-6-4"       sodipodi:linespacing="125%"       transform="matrix(0.68747304,-0.7262099,0.7262099,0.68747304,0,0)"       inkscape:transform-center-x="239.86342"       inkscape:transform-center-y="-26.958107"><tspan         sodipodi:role="line"         id="tspan5481-8-8-9-7"         x="-387.96655"         y="630.61871"         style="font-size:200px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;fill-opacity:1;font-family:RR Beaver;-inkscape-font-specification:RR Beaver">YAS</tspan></text>    <text       xml:space="preserve"       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Theorem NBP;-inkscape-font-specification:Theorem NBP"       x="349.24683"       y="750.29126"       id="text5483-4-3-2"       sodipodi:linespacing="125%"><tspan         sodipodi:role="line"         id="tspan5485-6-5-7"         x="349.24683"         y="750.29126"         style="font-size:170px;font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;letter-spacing:20px;fill:#c80000;fill-opacity:1;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic">GUI</tspan></text>    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-7-4-1-4"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.4331683,0,0,0.38716814,381.83246,155.72497)" />  </g></svg>',
 	cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
 	plus: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   viewBox="5 -10 59.259258 79.999999"   enable-background="new 0 0 100 100"   xml:space="preserve"   height="100%"   width="100%"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_79066_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="6.675088"     inkscape:cx="46.670641"     inkscape:cy="16.037704"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Your_Icon" /><g          transform="translate(-23.47037,-20)"><g       ><g         ><g            /></g><g          /></g></g><path     d="M 67.12963,22.5 H 42.129629 v -25 c 0,-4.142 -3.357,-7.5 -7.5,-7.5 -4.141999,0 -7.5,3.358 -7.5,7.5 v 25 H 2.1296295 c -4.142,0 -7.5,3.358 -7.5,7.5 0,4.143 3.358,7.5 7.5,7.5 H 27.129629 v 25 c 0,4.143 3.358001,7.5 7.5,7.5 4.143,0 7.5,-3.357 7.5,-7.5 v -25 H 67.12963 c 4.143,0 7.5,-3.357 7.5,-7.5 0,-4.142 -3.357,-7.5 -7.5,-7.5 z"          inkscape:connector-curvature="0"     style="fill:#000000" /></svg>',
 };
-},{}],91:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
+'use strict';
+
+var $ = require('jquery'),
+	selectize = require('selectize'),
+	utils = require('yasgui-utils');
+	
+
+
+$.fn.endpointCombi = function(yasgui, options) {
+	var storeEndpoints = function(optGroup) {
+		var persistencyId =  null;
+		if (yasgui.persistencyPrefix) {
+			persistencyId = yasgui.persistencyPrefix + 'endpoint_' + optGroup;
+		}
+		var endpoints = [];
+		for (var val in $select[0].selectize.options) {
+			var option = $select[0].selectize.options[val];
+			if (option.optgroup == optGroup) {
+				var endpoint = {
+					endpoint: option.endpoint
+				}
+				if (option.text) endpoint.label = option.text;
+				endpoints.push(endpoint);
+			}
+		};
+		
+		
+		utils.storage.set(persistencyId, endpoints);
+		
+		
+		
+	}
+	
+	//support callback
+	var getEndpoints = function(callback, optGroup) {
+		var persistencyId =  null;
+		if (yasgui.persistencyPrefix) {
+			persistencyId = yasgui.persistencyPrefix + 'endpoint_' + optGroup;
+		}
+		var endpoints = utils.storage.get(persistencyId);
+		
+		if (!endpoints && optGroup == 'catalogue') {
+			endpoints = getCkanEndpoints();
+			
+			//and store them in localstorage as well!
+			utils.storage.set(persistencyId, endpoints);
+		}
+		callback(endpoints, optGroup);
+	};
+	
+	
+	
+	var $select = this;
+	test = this;
+	var defaults = {
+		selectize: {
+			create: function(input, callback) {
+				callback({'endpoint': input, optgroup:'own'});
+			},
+			
+			createOnBlur: true,
+			onItemAdd: function(value, $item) {
+				if (options.onChange) options.onChange(value);
+			},
+			onOptionRemove: function(value) {
+				storeEndpoints('own');
+				storeEndpoints('catalogue');
+			},
+			optgroups: [
+				{value: 'own', label: 'History'},
+				{value: 'catalogue', label: 'Catalogue'},
+			],
+			optgroupOrder: ['own', 'catalogue'],
+			sortField: 'endpoint',
+			valueField: 'endpoint',
+			labelField: 'endpoint',
+			searchField: ['endpoint', 'text'],
+			render: {
+				option: function(data, escape){
+					var remove = '<a href="javascript:void(0)"  class="close pull-right" tabindex="-1" '+
+						'title="Remove from ' + (data.optgroup == 'own'? 'history' : 'catalogue') + '">&times;</a>';
+					var url = '<div class="endpointUrl">' + escape(data.endpoint) + '</div>';
+					var label = '';
+					if (data.text) label = '<div class="endpointTitle">' + escape(data.text) + '</div>';
+					return '<div class="endpointOptionRow">' + remove + url + label + '</div>';
+				}
+			}
+		},
+	};
+	
+	
+	if (options) {
+		options = $.extend(true, {}, defaults, options);
+	} else {
+		options = defaults;
+	}
+	
+	
+	this.addClass('endpointText form-control');
+	this.selectize(options.selectize);
+	
+	/**
+	 * THIS IS UGLY!!!!
+	 * Problem: the original option handler from selectize executes the preventDefault and stopPropagation functions
+	 * I.e., I cannot add my own handler to a sub-element of the option (such as a 'deleteOption' button)
+	 * Only way to do this would be to haven an inline handler ('onMousDown') definition, which is even uglier
+	 * So, for now, remove all mousedown handlers for options, and add the same functionality of selectize myself.
+	 * I'll keep the stopPropagation in there to keep it as consistent as possible with the original code
+	 * But I'll add some logic which executed whenever the delete button is pressed...
+	 */
+	$select[0].selectize.$dropdown.off('mousedown', '[data-selectable]');//disable handler set by selectize
+	//add same handler (but slightly extended) myself:
+	$select[0].selectize.$dropdown.on('mousedown', '[data-selectable]', function(e) {
+		var value, $target, $option, self = $select[0].selectize;
+		
+		if (e.preventDefault) {
+			e.preventDefault();
+			e.stopPropagation();
+		}
+
+		$target = $(e.currentTarget);
+		if ($(e.target).hasClass('close')) {
+			$select[0].selectize.removeOption($target.attr('data-value'));
+			$select[0].selectize.refreshOptions();
+		} else if ($target.hasClass('create')) {
+			self.createItem();
+		} else {
+			value = $target.attr('data-value');
+			if (typeof value !== 'undefined') {
+				self.lastQuery = null;
+				self.setTextboxValue('');
+				self.addItem(value);
+				if (!self.settings.hideSelected && e.type && /mouse/.test(e.type)) {
+					self.setActiveOption(self.getOption(value));
+				}
+			}
+		}
+	});
+	
+	
+	var optionAddCallback = function(val, option) {
+		if (option.optgroup) {
+			storeEndpoints(option.optgroup);
+		}
+	};
+	
+	var storeEndpointsInSelectize = function(endpointArray, optgroup) {
+		if (endpointArray) {
+			//first disable callback. don't want to run this for endpoints fetched from local storage and ckan
+			$select[0].selectize.off('option_add', optionAddCallback);
+			
+			endpointArray.forEach(function(val) {
+				$select[0].selectize.addOption({endpoint: val.endpoint, text:val.title, optgroup:optgroup});
+			});
+			
+			//re-enable it again
+			$select[0].selectize.on('option_add', optionAddCallback);
+		}
+	}
+	
+	getEndpoints(storeEndpointsInSelectize, 'catalogue');
+	getEndpoints(storeEndpointsInSelectize, 'own');
+	
+	
+	if (options.value) {
+		if (!(options.value in $select[0].selectize.options)) {
+			$select[0].selectize.addOption({endpoint: options.value, optgroup:'own'});
+		}
+		$select[0].selectize.addItem(options.value);
+	}
+	
+	
+	
+	
+	return this;
+
+};
+
+
+
+
+
+/**
+ * Yes, UGLY as well... Problem is: there is NO public catalogue API or SPARQL endpoint (which is cors enabled and works without api key)
+ * I'm waiting for SPARQLES to make a public SPARQL endpoint of TPF API....
+ * For now, just store this list (scraped from the SPARQLES website) statically..
+ */
+var getCkanEndpoints = function() {
+	var endpoints = [
+        {endpoint: 'http%3A%2F%2Fvisualdataweb.infor.uva.es%2Fsparql'},
+		{endpoint: 'http%3A%2F%2Fbiolit.rkbexplorer.com%2Fsparql', title: 'A Short Biographical Dictionary of English Literature (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Faemet.linkeddata.es%2Fsparql', title: 'AEMET metereological dataset'},
+		{endpoint: 'http%3A%2F%2Fsparql.jesandco.org%3A8890%2Fsparql', title: 'ASN:US'},
+		{endpoint: 'http%3A%2F%2Fdata.allie.dbcls.jp%2Fsparql', title: 'Allie Abbreviation And Long Form Database in Life Science'},
+		{endpoint: 'http%3A%2F%2Fvocabulary.semantic-web.at%2FPoolParty%2Fsparql%2FAustrianSkiTeam', title: 'Alpine Ski Racers of Austria'},
+		{endpoint: 'http%3A%2F%2Fsemanticweb.cs.vu.nl%2Feuropeana%2Fsparql%2F', title: 'Amsterdam Museum as Linked Open Data in the Europeana Data Model'},
+		{endpoint: 'http%3A%2F%2Fopendata.aragon.es%2Fsparql', title: 'AragoDBPedia'},
+		{endpoint: 'http%3A%2F%2Fdata.archiveshub.ac.uk%2Fsparql', title: 'Archives Hub Linked Data'},
+		{endpoint: 'http%3A%2F%2Fwww.auth.gr%2Fsparql', title: 'Aristotle University'},
+		{endpoint: 'http%3A%2F%2Facm.rkbexplorer.com%2Fsparql%2F', title: 'Association for Computing Machinery (ACM) (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fabs.270a.info%2Fsparql', title: 'Australian Bureau of Statistics (ABS) Linked Data'},
+		{endpoint: 'http%3A%2F%2Flab.environment.data.gov.au%2Fsparql', title: 'Australian Climate Observations Reference Network - Surface Air Temperature Dataset'},
+		{endpoint: 'http%3A%2F%2Flod.b3kat.de%2Fsparql', title: 'B3Kat - Library Union Catalogues of Bavaria, Berlin and Brandenburg'},
+		{endpoint: 'http%3A%2F%2Fdati.camera.it%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Fbis.270a.info%2Fsparql', title: 'Bank for International Settlements (BIS) Linked Data'},
+		{endpoint: 'http%3A%2F%2Fwww.open-biomed.org.uk%2Fsparql%2Fendpoint%2Fbdgp_20081030', title: 'Bdgp'},
+		{endpoint: 'http%3A%2F%2Faffymetrix.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Affymetrix'},
+		{endpoint: 'http%3A%2F%2Fbiomodels.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Biomodels'},
+		{endpoint: 'http%3A%2F%2Fbioportal.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Bioportal'},
+		{endpoint: 'http%3A%2F%2Fclinicaltrials.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Clinicaltrials'},
+		{endpoint: 'http%3A%2F%2Fctd.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Ctd'},
+		{endpoint: 'http%3A%2F%2Fdbsnp.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Dbsnp'},
+		{endpoint: 'http%3A%2F%2Fdrugbank.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Drugbank'},
+		{endpoint: 'http%3A%2F%2Fgenage.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Genage'},
+		{endpoint: 'http%3A%2F%2Fgendr.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Gendr'},
+		{endpoint: 'http%3A%2F%2Fgoa.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Goa'},
+		{endpoint: 'http%3A%2F%2Fhgnc.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Hgnc'},
+		{endpoint: 'http%3A%2F%2Fhomologene.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Homologene'},
+		{endpoint: 'http%3A%2F%2Finoh.bio2rdf.org%2Fsparql', title: 'Bio2RDF::INOH'},
+		{endpoint: 'http%3A%2F%2Finterpro.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Interpro'},
+		{endpoint: 'http%3A%2F%2Fiproclass.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Iproclass'},
+		{endpoint: 'http%3A%2F%2Firefindex.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Irefindex'},
+		{endpoint: 'http%3A%2F%2Fbiopax.kegg.bio2rdf.org%2Fsparql', title: 'Bio2RDF::KEGG::BioPAX'},
+		{endpoint: 'http%3A%2F%2Flinkedspl.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Linkedspl'},
+		{endpoint: 'http%3A%2F%2Flsr.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Lsr'},
+		{endpoint: 'http%3A%2F%2Fmesh.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Mesh'},
+		{endpoint: 'http%3A%2F%2Fmgi.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Mgi'},
+		{endpoint: 'http%3A%2F%2Fncbigene.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Ncbigene'},
+		{endpoint: 'http%3A%2F%2Fndc.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Ndc'},
+		{endpoint: 'http%3A%2F%2Fnetpath.bio2rdf.org%2Fsparql', title: 'Bio2RDF::NetPath'},
+		{endpoint: 'http%3A%2F%2Fomim.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Omim'},
+		{endpoint: 'http%3A%2F%2Forphanet.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Orphanet'},
+		{endpoint: 'http%3A%2F%2Fpid.bio2rdf.org%2Fsparql', title: 'Bio2RDF::PID'},
+		{endpoint: 'http%3A%2F%2Fbiopax.pharmgkb.bio2rdf.org%2Fsparql', title: 'Bio2RDF::PharmGKB::BioPAX'},
+		{endpoint: 'http%3A%2F%2Fpharmgkb.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Pharmgkb'},
+		{endpoint: 'http%3A%2F%2Fpubchem.bio2rdf.org%2Fsparql', title: 'Bio2RDF::PubChem'},
+		{endpoint: 'http%3A%2F%2Frhea.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Rhea'},
+		{endpoint: 'http%3A%2F%2Fspike.bio2rdf.org%2Fsparql', title: 'Bio2RDF::SPIKE'},
+		{endpoint: 'http%3A%2F%2Fsabiork.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Sabiork'},
+		{endpoint: 'http%3A%2F%2Fsgd.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Sgd'},
+		{endpoint: 'http%3A%2F%2Fsider.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Sider'},
+		{endpoint: 'http%3A%2F%2Ftaxonomy.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Taxonomy'},
+		{endpoint: 'http%3A%2F%2Fwikipathways.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Wikipathways'},
+		{endpoint: 'http%3A%2F%2Fwormbase.bio2rdf.org%2Fsparql', title: 'Bio2RDF::Wormbase'},
+		{endpoint: 'https%3A%2F%2Fwww.ebi.ac.uk%2Frdf%2Fservices%2Fbiomodels%2Fsparql', title: 'BioModels RDF'},
+		{endpoint: 'https%3A%2F%2Fwww.ebi.ac.uk%2Frdf%2Fservices%2Fbiosamples%2Fsparql', title: 'BioSamples RDF'},
+		{endpoint: 'http%3A%2F%2Fhelheim.deusto.es%2Fbizkaisense%2Fsparql', title: 'BizkaiSense'},
+		{endpoint: 'http%3A%2F%2Fbnb.data.bl.uk%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Fbudapest.rkbexplorer.com%2Fsparql%2F', title: 'Budapest University of Technology and Economics (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fbfs.270a.info%2Fsparql', title: 'Bundesamt für Statistik (BFS) - Swiss Federal Statistical Office (FSO) Linked Data'},
+		{endpoint: 'http%3A%2F%2Fopendata-bundestag.de%2Fsparql', title: 'BundestagNebeneinkuenfte'},
+		{endpoint: 'http%3A%2F%2Fdata.colinda.org%2Fendpoint.php', title: 'COLINDA - Conference Linked Data'},
+		{endpoint: 'http%3A%2F%2Fcrtm.linkeddata.es%2Fsparql', title: 'CRTM'},
+		{endpoint: 'http%3A%2F%2Fdata.fundacionctic.org%2Fsparql', title: 'CTIC Public Dataset Catalogs'},
+		{endpoint: 'https%3A%2F%2Fwww.ebi.ac.uk%2Frdf%2Fservices%2Fchembl%2Fsparql', title: 'ChEMBL RDF'},
+		{endpoint: 'http%3A%2F%2Fchebi.bio2rdf.org%2Fsparql', title: 'Chemical Entities of Biological Interest (ChEBI)'},
+		{endpoint: 'http%3A%2F%2Fciteseer.rkbexplorer.com%2Fsparql%2F', title: 'CiteSeer (Research Index) (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fcordis.rkbexplorer.com%2Fsparql%2F', title: 'Community R&amp;D Information Service (CORDIS) (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fsemantic.ckan.net%2Fsparql%2F', title: 'Comprehensive Knowledge Archive Network'},
+		{endpoint: 'http%3A%2F%2Fvocabulary.wolterskluwer.de%2FPoolParty%2Fsparql%2Fcourt', title: 'Courts thesaurus'},
+		{endpoint: 'http%3A%2F%2Fcultura.linkeddata.es%2Fsparql', title: 'CulturaLinkedData'},
+		{endpoint: 'http%3A%2F%2Fdblp.rkbexplorer.com%2Fsparql%2F', title: 'DBLP Computer Science Bibliography (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fdblp.l3s.de%2Fd2r%2Fsparql', title: 'DBLP in RDF (L3S)'},
+		{endpoint: 'http%3A%2F%2Fdbtune.org%2Fmusicbrainz%2Fsparql', title: 'DBTune.org Musicbrainz D2R Server'},
+		{endpoint: 'http%3A%2F%2Fdbpedia.org%2Fsparql', title: 'DBpedia'},
+		{endpoint: 'http%3A%2F%2Feu.dbpedia.org%2Fsparql', title: 'DBpedia in Basque'},
+		{endpoint: 'http%3A%2F%2Fnl.dbpedia.org%2Fsparql', title: 'DBpedia in Dutch'},
+		{endpoint: 'http%3A%2F%2Ffr.dbpedia.org%2Fsparql', title: 'DBpedia in French'},
+		{endpoint: 'http%3A%2F%2Fde.dbpedia.org%2Fsparql', title: 'DBpedia in German'},
+		{endpoint: 'http%3A%2F%2Fja.dbpedia.org%2Fsparql', title: 'DBpedia in Japanese'},
+		{endpoint: 'http%3A%2F%2Fpt.dbpedia.org%2Fsparql', title: 'DBpedia in Portuguese'},
+		{endpoint: 'http%3A%2F%2Fes.dbpedia.org%2Fsparql', title: 'DBpedia in Spanish'},
+		{endpoint: 'http%3A%2F%2Flive.dbpedia.org%2Fsparql', title: 'DBpedia-Live'},
+		{endpoint: 'http%3A%2F%2Fdeploy.rkbexplorer.com%2Fsparql%2F', title: 'DEPLOY (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fdata.ox.ac.uk%2Fsparql%2F', },
+		{endpoint: 'http%3A%2F%2Fdatos.bcn.cl%2Fsparql', title: 'Datos.bcn.cl'},
+		{endpoint: 'http%3A%2F%2Fdeepblue.rkbexplorer.com%2Fsparql%2F', title: 'Deep Blue (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fdewey.info%2Fsparql.php', title: 'Dewey Decimal Classification (DDC)'},
+		{endpoint: 'http%3A%2F%2Frdf.disgenet.org%2Fsparql%2F', title: 'DisGeNET'},
+		{endpoint: 'http%3A%2F%2Fitaly.rkbexplorer.com%2Fsparql', title: 'Diverse Italian ReSIST Partner Institutions (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fdutchshipsandsailors.nl%2Fdata%2Fsparql%2F', title: 'Dutch Ships and Sailors '},
+		{endpoint: 'http%3A%2F%2Fsemanticweb.cs.vu.nl%2Fdss%2Fsparql%2F', title: 'Dutch Ships and Sailors '},
+		{endpoint: 'http%3A%2F%2Fwww.eclap.eu%2Fsparql', title: 'ECLAP'},
+		{endpoint: 'http%3A%2F%2Fcr.eionet.europa.eu%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Fera.rkbexplorer.com%2Fsparql%2F', title: 'ERA - Australian Research Council publication ratings (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fkent.zpr.fer.hr%3A8080%2FeducationalProgram%2Fsparql', title: 'Educational programs - SISVU'},
+		{endpoint: 'http%3A%2F%2Fwebenemasuno.linkeddata.es%2Fsparql', title: 'El Viajero\'s tourism dataset'},
+		{endpoint: 'http%3A%2F%2Fwww.ida.liu.se%2Fprojects%2Fsemtech%2Fopenrdf-sesame%2Frepositories%2Fenergy', title: 'Energy efficiency assessments and improvements'},
+		{endpoint: 'http%3A%2F%2Fheritagedata.org%2Flive%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Fenipedia.tudelft.nl%2Fsparql', title: 'Enipedia - Energy Industry Data'},
+		{endpoint: 'http%3A%2F%2Fenvironment.data.gov.uk%2Fsparql%2Fbwq%2Fquery', title: 'Environment Agency Bathing Water Quality'},
+		{endpoint: 'http%3A%2F%2Fecb.270a.info%2Fsparql', title: 'European Central Bank (ECB) Linked Data'},
+		{endpoint: 'http%3A%2F%2Fsemantic.eea.europa.eu%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Feuropeana.ontotext.com%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Feventmedia.eurecom.fr%2Fsparql', title: 'EventMedia'},
+		{endpoint: 'http%3A%2F%2Fdata.linkedu.eu%2Fforge%2Fquery', title: 'FORGE Course information'},
+		{endpoint: 'http%3A%2F%2Ffactforge.net%2Fsparql', title: 'Fact Forge'},
+		{endpoint: 'http%3A%2F%2Flogd.tw.rpi.edu%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Ffrb.270a.info%2Fsparql', title: 'Federal Reserve Board (FRB) Linked Data'},
+		{endpoint: 'http%3A%2F%2Fwww.open-biomed.org.uk%2Fsparql%2Fendpoint%2Fflybase', title: 'Flybase'},
+		{endpoint: 'http%3A%2F%2Fwww.open-biomed.org.uk%2Fsparql%2Fendpoint%2Fflyted', title: 'Flyted'},
+		{endpoint: 'http%3A%2F%2Ffao.270a.info%2Fsparql', title: 'Food and Agriculture Organization of the United Nations (FAO) Linked Data'},
+		{endpoint: 'http%3A%2F%2Fft.rkbexplorer.com%2Fsparql%2F', title: 'France Telecom Recherche et Développement (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Flisbon.rkbexplorer.com%2Fsparql', title: 'Fundação da Faculdade de Ciencas da Universidade de Lisboa (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fwww.ebi.ac.uk%2Frdf%2Fservices%2Fatlas%2Fsparql', title: 'Gene Expression Atlas RDF'},
+		{endpoint: 'http%3A%2F%2Fgeo.linkeddata.es%2Fsparql', title: 'GeoLinkedData'},
+		{endpoint: 'http%3A%2F%2Fresource.geolba.ac.at%2FPoolParty%2Fsparql%2FGeologicTimeScale', title: 'Geological Survey of Austria (GBA) - Thesaurus'},
+		{endpoint: 'http%3A%2F%2Fresource.geolba.ac.at%2FPoolParty%2Fsparql%2FGeologicUnit', title: 'Geological Survey of Austria (GBA) - Thesaurus'},
+		{endpoint: 'http%3A%2F%2Fresource.geolba.ac.at%2FPoolParty%2Fsparql%2Flithology', title: 'Geological Survey of Austria (GBA) - Thesaurus'},
+		{endpoint: 'http%3A%2F%2Fresource.geolba.ac.at%2FPoolParty%2Fsparql%2Ftectonicunit', title: 'Geological Survey of Austria (GBA) - Thesaurus'},
+		{endpoint: 'http%3A%2F%2Fvocabulary.wolterskluwer.de%2FPoolParty%2Fsparql%2Farbeitsrecht', title: 'German labor law thesaurus'},
+		{endpoint: 'http%3A%2F%2Fdata.globalchange.gov%2Fsparql', title: 'Global Change Information System'},
+		{endpoint: 'http%3A%2F%2Fwordnet.okfn.gr%3A8890%2Fsparql%2F', title: 'Greek Wordnet'},
+		{endpoint: 'http%3A%2F%2Flod.hebis.de%2Fsparql', title: 'HeBIS - Bibliographic Resources of the Library Union Catalogues of Hessen and parts of the Rhineland Palatinate'},
+		{endpoint: 'http%3A%2F%2Fhealthdata.tw.rpi.edu%2Fsparql', title: 'HealthData.gov Platform (HDP) on the Semantic Web'},
+		{endpoint: 'http%3A%2F%2Fhelheim.deusto.es%2Fhedatuz%2Fsparql', title: 'Hedatuz'},
+		{endpoint: 'http%3A%2F%2Fgreek-lod.auth.gr%2Ffire-brigade%2Fsparql', title: 'Hellenic Fire Brigade'},
+		{endpoint: 'http%3A%2F%2Fgreek-lod.auth.gr%2Fpolice%2Fsparql', title: 'Hellenic Police'},
+		{endpoint: 'http%3A%2F%2Fsetaria.oszk.hu%2Fsparql', title: 'Hungarian National Library (NSZL) catalog'},
+		{endpoint: 'http%3A%2F%2Fsemanticweb.cs.vu.nl%2Fiati%2Fsparql%2F', title: 'IATI as Linked Data'},
+		{endpoint: 'http%3A%2F%2Fibm.rkbexplorer.com%2Fsparql%2F', title: 'IBM Research GmbH (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fwww.icane.es%2Fopendata%2Fsparql', title: 'ICANE'},
+		{endpoint: 'http%3A%2F%2Fieee.rkbexplorer.com%2Fsparql%2F', title: 'IEEE Papers (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fieeevis.tw.rpi.edu%2Fsparql', title: 'IEEE VIS Source Data'},
+		{endpoint: 'http%3A%2F%2Fwww.imagesnippets.com%2Fsparql%2Fimages', title: 'Imagesnippets Image Descriptions'},
+		{endpoint: 'http%3A%2F%2Fopendatacommunities.org%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Fpurl.org%2Ftwc%2Fhub%2Fsparql', title: 'Instance Hub (all)'},
+		{endpoint: 'http%3A%2F%2Feurecom.rkbexplorer.com%2Fsparql%2F', title: 'Institut Eurécom (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fimf.270a.info%2Fsparql', title: 'International Monetary Fund (IMF) Linked Data'},
+		{endpoint: 'http%3A%2F%2Fwww.rechercheisidore.fr%2Fsparql', title: 'Isidore'},
+		{endpoint: 'http%3A%2F%2Fsparql.kupkb.org%2Fsparql', title: 'Kidney and Urinary Pathway Knowledge Base'},
+		{endpoint: 'http%3A%2F%2Fkisti.rkbexplorer.com%2Fsparql%2F', title: 'Korean Institute of Science Technology and Information (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Flod.kaist.ac.kr%2Fsparql', title: 'Korean Traditional Recipes'},
+		{endpoint: 'http%3A%2F%2Flaas.rkbexplorer.com%2Fsparql%2F', title: 'LAAS-CNRS (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fsmartcity.linkeddata.es%2Fsparql', title: 'LCC (Leeds City Council Energy Consumption Linked Data)'},
+		{endpoint: 'http%3A%2F%2Flod.ac%2Fbdls%2Fsparql', title: 'LODAC BDLS'},
+		{endpoint: 'http%3A%2F%2Fdata.linkededucation.org%2Frequest%2Flak-conference%2Fsparql', title: 'Learning Analytics and Knowledge (LAK) Dataset'},
+		{endpoint: 'http%3A%2F%2Fwww.linklion.org%3A8890%2Fsparql', title: 'LinkLion - A Link Repository for the Web of Data'},
+		{endpoint: 'http%3A%2F%2Fsparql.reegle.info%2F', title: 'Linked Clean Energy Data (reegle.info)'},
+		{endpoint: 'http%3A%2F%2Fsparql.contextdatacloud.org', title: 'Linked Crowdsourced Data'},
+		{endpoint: 'http%3A%2F%2Flinkedlifedata.com%2Fsparql', title: 'Linked Life Data'},
+		{endpoint: 'http%3A%2F%2Fdata.logainm.ie%2Fsparql', title: 'Linked Logainm'},
+		{endpoint: 'http%3A%2F%2Fdata.linkedmdb.org%2Fsparql', title: 'Linked Movie DataBase'},
+		{endpoint: 'http%3A%2F%2Fdata.aalto.fi%2Fsparql', title: 'Linked Open Aalto Data Service'},
+		{endpoint: 'http%3A%2F%2Fdbmi-icode-01.dbmi.pitt.edu%2FlinkedSPLs%2Fsparql', title: 'Linked Structured Product Labels'},
+		{endpoint: 'http%3A%2F%2Flinkedgeodata.org%2Fsparql%2F', title: 'LinkedGeoData'},
+		{endpoint: 'http%3A%2F%2Flinkedspending.aksw.org%2Fsparql', title: 'LinkedSpending: OpenSpending becomes Linked Open Data'},
+		{endpoint: 'http%3A%2F%2Fhelheim.deusto.es%2Flinkedstats%2Fsparql', title: 'LinkedStats'},
+		{endpoint: 'http%3A%2F%2Flinkedu.eu%2Fcatalogue%2Fsparql%2F', title: 'LinkedUp Catalogue of Educational Datasets'},
+		{endpoint: 'http%3A%2F%2Fid.sgcb.mcu.es%2Fsparql', title: 'Lista de  Encabezamientos de Materia as Linked Open Data'},
+		{endpoint: 'http%3A%2F%2Fonto.mondis.cz%2Fopenrdf-sesame%2Frepositories%2Fmondis-record-owlim', title: 'MONDIS'},
+		{endpoint: 'http%3A%2F%2Fapps.morelab.deusto.es%2Flabman%2Fsparql', title: 'MORElab'},
+		{endpoint: 'http%3A%2F%2Fsparql.msc2010.org', title: 'Mathematics Subject Classification'},
+		{endpoint: 'http%3A%2F%2Fdoc.metalex.eu%3A8000%2Fsparql%2F', title: 'MetaLex Document Server'},
+		{endpoint: 'http%3A%2F%2Frdf.muninn-project.org%2Fsparql', title: 'Muninn World War I'},
+		{endpoint: 'http%3A%2F%2Flod.sztaki.hu%2Fsparql', title: 'National Digital Data Archive of Hungary (partial)'},
+		{endpoint: 'http%3A%2F%2Fnsf.rkbexplorer.com%2Fsparql%2F', title: 'National Science Foundation (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fdata.nobelprize.org%2Fsparql', title: 'Nobel Prizes'},
+		{endpoint: 'http%3A%2F%2Fdata.lenka.no%2Fsparql', title: 'Norwegian geo-divisions'},
+		{endpoint: 'http%3A%2F%2Fspatial.ucd.ie%2Flod%2Fsparql', title: 'OSM Semantic Network'},
+		{endpoint: 'http%3A%2F%2Fdata.linkedu.eu%2Fdon%2Fquery', title: 'OUNL DSpace in RDF'},
+		{endpoint: 'http%3A%2F%2Fdata.oceandrilling.org%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Fonto.beef.org.pl%2Fsparql', title: 'OntoBeef'},
+		{endpoint: 'http%3A%2F%2Foai.rkbexplorer.com%2Fsparql%2F', title: 'Open Archive Initiative Harvest over OAI-PMH (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fdata.linkedu.eu%2Focw%2Fquery', title: 'Open Courseware Consortium metadata in RDF'},
+		{endpoint: 'http%3A%2F%2Fopendata.ccd.uniroma2.it%2FLMF%2Fsparql%2Fselect', title: 'Open Data @ Tor Vergata'},
+		{endpoint: 'http%3A%2F%2Fvocabulary.semantic-web.at%2FPoolParty%2Fsparql%2FOpenData', title: 'Open Data Thesaurus'},
+		{endpoint: 'http%3A%2F%2Fdata.cnr.it%2Fsparql-proxy%2F', title: 'Open Data from the Italian National Research Council'},
+		{endpoint: 'http%3A%2F%2Fdata.utpl.edu.ec%2Fecuadorresearch%2Flod%2Fsparql', title: 'Open Data of Ecuador'},
+		{endpoint: 'http%3A%2F%2Fen.openei.org%2Fsparql', title: 'OpenEI - Open Energy Info'},
+		{endpoint: 'http%3A%2F%2Flod.openlinksw.com%2Fsparql', title: 'OpenLink Software LOD Cache'},
+		{endpoint: 'http%3A%2F%2Fsparql.openmobilenetwork.org', title: 'OpenMobileNetwork'},
+		{endpoint: 'http%3A%2F%2Fapps.ideaconsult.net%3A8080%2Fontology', title: 'OpenTox'},
+		{endpoint: 'http%3A%2F%2Fgov.tso.co.uk%2Fcoins%2Fsparql', title: 'OpenUpLabs COINS'},
+		{endpoint: 'http%3A%2F%2Fgov.tso.co.uk%2Fdclg%2Fsparql', title: 'OpenUpLabs DCLG'},
+		{endpoint: 'http%3A%2F%2Fos.services.tso.co.uk%2Fgeo%2Fsparql', title: 'OpenUpLabs Geographic'},
+		{endpoint: 'http%3A%2F%2Fgov.tso.co.uk%2Flegislation%2Fsparql', title: 'OpenUpLabs Legislation'},
+		{endpoint: 'http%3A%2F%2Fgov.tso.co.uk%2Ftransport%2Fsparql', title: 'OpenUpLabs Transport'},
+		{endpoint: 'http%3A%2F%2Fos.rkbexplorer.com%2Fsparql%2F', title: 'Ordnance Survey (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fdata.organic-edunet.eu%2Fsparql', title: 'Organic Edunet Linked Open Data'},
+		{endpoint: 'http%3A%2F%2Foecd.270a.info%2Fsparql', title: 'Organisation for Economic Co-operation and Development (OECD) Linked Data'},
+		{endpoint: 'https%3A%2F%2Fdata.ox.ac.uk%2Fsparql%2F', title: 'OxPoints (University of Oxford)'},
+		{endpoint: 'http%3A%2F%2Fdata.linkedu.eu%2Fprod%2Fquery', title: 'PROD - JISC Project Directory in RDF'},
+		{endpoint: 'http%3A%2F%2Fld.panlex.org%2Fsparql', title: 'PanLex'},
+		{endpoint: 'http%3A%2F%2Flinked-data.org%2Fsparql', title: 'Phonetics Information Base and Lexicon (PHOIBLE)'},
+		{endpoint: 'http%3A%2F%2Flinked.opendata.cz%2Fsparql', title: 'Publications of Charles University in Prague'},
+		{endpoint: 'http%3A%2F%2Flinkeddata4.dia.fi.upm.es%3A8907%2Fsparql', title: 'RDFLicense'},
+		{endpoint: 'http%3A%2F%2Frisks.rkbexplorer.com%2Fsparql%2F', title: 'RISKS Digest (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fruian.linked.opendata.cz%2Fsparql', title: 'RUIAN - Register of territorial identification, addresses and real estates of the Czech Republic'},
+		{endpoint: 'http%3A%2F%2Fcurriculum.rkbexplorer.com%2Fsparql%2F', title: 'ReSIST MSc in Resilient Computing Curriculum (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fwiki.rkbexplorer.com%2Fsparql%2F', title: 'ReSIST Project Wiki (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fresex.rkbexplorer.com%2Fsparql%2F', title: 'ReSIST Resilience Mechanisms (RKBExplorer.com)'},
+		{endpoint: 'https%3A%2F%2Fwww.ebi.ac.uk%2Frdf%2Fservices%2Freactome%2Fsparql', title: 'Reactome RDF'},
+		{endpoint: 'http%3A%2F%2Flod.xdams.org%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Frae2001.rkbexplorer.com%2Fsparql%2F', title: 'Research Assessment Exercise 2001 (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fcourseware.rkbexplorer.com%2Fsparql%2F', title: 'Resilient Computing Courseware (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Flink.informatics.stonybrook.edu%2Fsparql%2F', title: 'RxNorm'},
+		{endpoint: 'http%3A%2F%2Fdata.rism.info%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Fbiordf.net%2Fsparql', title: 'SADI Semantic Web Services framework registry'},
+		{endpoint: 'http%3A%2F%2Fseek.rkbexplorer.com%2Fsparql%2F', title: 'SEEK-AT-WD ICT tools for education - Web-Share'},
+		{endpoint: 'http%3A%2F%2Fzbw.eu%2Fbeta%2Fsparql%2Fstw%2Fquery', title: 'STW Thesaurus for Economics'},
+		{endpoint: 'http%3A%2F%2Fsouthampton.rkbexplorer.com%2Fsparql%2F', title: 'School of Electronics and Computer Science, University of Southampton (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fserendipity.utpl.edu.ec%2Flod%2Fsparql', title: 'Serendipity'},
+		{endpoint: 'http%3A%2F%2Fdata.linkedu.eu%2Fslidewiki%2Fquery', title: 'Slidewiki (RDF/SPARQL)'},
+		{endpoint: 'http%3A%2F%2Fsmartlink.open.ac.uk%2Fsmartlink%2Fsparql', title: 'SmartLink: Linked Services Non-Functional Properties'},
+		{endpoint: 'http%3A%2F%2Fsocialarchive.iath.virginia.edu%2Fsparql%2Feac', title: 'Social Networks and Archival Context Fall 2011'},
+		{endpoint: 'http%3A%2F%2Fsocialarchive.iath.virginia.edu%2Fsparql%2Fsnac-viaf', title: 'Social Networks and Archival Context Fall 2011'},
+		{endpoint: 'http%3A%2F%2Fvocabulary.semantic-web.at%2FPoolParty%2Fsparql%2Fsemweb', title: 'Social Semantic Web Thesaurus'},
+		{endpoint: 'http%3A%2F%2Flinguistic.linkeddata.es%2Fsparql', title: 'Spanish Linguistic Datasets'},
+		{endpoint: 'http%3A%2F%2Fcrashmap.okfn.gr%3A8890%2Fsparql', title: 'Statistics on Fatal Traffic Accidents in greek roads'},
+		{endpoint: 'http%3A%2F%2Fcrime.rkbexplorer.com%2Fsparql%2F', title: 'Street level crime reports for England and Wales'},
+		{endpoint: 'http%3A%2F%2Fsymbolicdata.org%3A8890%2Fsparql', title: 'SymbolicData'},
+		{endpoint: 'http%3A%2F%2Fagalpha.mathbiol.org%2Frepositories%2Ftcga', title: 'TCGA Roadmap'},
+		{endpoint: 'http%3A%2F%2Fwww.open-biomed.org.uk%2Fsparql%2Fendpoint%2Ftcm', title: 'TCMGeneDIT Dataset'},
+		{endpoint: 'http%3A%2F%2Fdata.linkededucation.org%2Frequest%2Fted%2Fsparql', title: 'TED Talks'},
+		{endpoint: 'http%3A%2F%2Fdarmstadt.rkbexplorer.com%2Fsparql%2F', title: 'Technische Universität Darmstadt (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Flinguistic.linkeddata.es%2Fterminesp%2Fsparql-editor', title: 'Terminesp Linked Data'},
+		{endpoint: 'http%3A%2F%2Facademia6.poolparty.biz%2FPoolParty%2Fsparql%2FTesauro-Materias-BUPM', title: 'Tesauro materias BUPM'},
+		{endpoint: 'http%3A%2F%2Fapps.morelab.deusto.es%2Fteseo%2Fsparql', title: 'Teseo'},
+		{endpoint: 'http%3A%2F%2Flinkeddata.ge.imati.cnr.it%3A8890%2Fsparql', title: 'ThIST'},
+		{endpoint: 'http%3A%2F%2Fring.ciard.net%2Fsparql1', title: 'The CIARD RING'},
+		{endpoint: 'http%3A%2F%2Fvocab.getty.edu%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Flod.gesis.org%2Fthesoz%2Fsparql', title: 'TheSoz Thesaurus for the Social Sciences (GESIS)'},
+		{endpoint: 'http%3A%2F%2Fdigitale.bncf.firenze.sbn.it%2Fopenrdf-workbench%2Frepositories%2FNS%2Fquery', title: 'Thesaurus BNCF'},
+		{endpoint: 'http%3A%2F%2Ftour-pedia.org%2Fsparql', title: 'Tourpedia'},
+		{endpoint: 'http%3A%2F%2Ftkm.kiom.re.kr%2Fontology%2Fsparql', title: 'Traditional Korean Medicine Ontology'},
+		{endpoint: 'http%3A%2F%2Ftransparency.270a.info%2Fsparql', title: 'Transparency International Linked Data'},
+		{endpoint: 'http%3A%2F%2Fjisc.rkbexplorer.com%2Fsparql%2F', title: 'UK JISC (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Funlocode.rkbexplorer.com%2Fsparql%2F', title: 'UN/LOCODE (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fuis.270a.info%2Fsparql', title: 'UNESCO Institute for Statistics (UIS) Linked Data'},
+		{endpoint: 'http%3A%2F%2Fskos.um.es%2Fsparql%2F', title: 'UNESCO Thesaurus'},
+		{endpoint: 'http%3A%2F%2Fdata.linkedu.eu%2Fkis1112%2Fquery', title: 'UNISTAT-KIS 2011/2012 in RDF (Key Information Set - UK Universities)'},
+		{endpoint: 'http%3A%2F%2Fdata.linkedu.eu%2Fkis%2Fquery', title: 'UNISTAT-KIS in RDF (Key Information Set - UK Universities)'},
+		{endpoint: 'http%3A%2F%2Flinkeddata.uriburner.com%2Fsparql', title: 'URIBurner'},
+		{endpoint: 'http%3A%2F%2Fbeta.sparql.uniprot.org', },
+		{endpoint: 'http%3A%2F%2Fdata.utpl.edu.ec%2Futpl%2Flod%2Fsparql', title: 'Universidad Técnica Particular de Loja - Linked Open Data'},
+		{endpoint: 'http%3A%2F%2Fresrev.ilrt.bris.ac.uk%2Fdata-server-workshop%2Fsparql', title: 'University of Bristol'},
+		{endpoint: 'http%3A%2F%2Fdata.linkedu.eu%2Fhud%2Fquery', title: 'University of Huddersfield -- Circulation and Recommendation Data'},
+		{endpoint: 'http%3A%2F%2Fnewcastle.rkbexplorer.com%2Fsparql%2F', title: 'University of Newcastle upon Tyne (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Froma.rkbexplorer.com%2Fsparql%2F', title: 'Università degli studi di Roma "La Sapienza" (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fpisa.rkbexplorer.com%2Fsparql%2F', title: 'Università di Pisa (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fulm.rkbexplorer.com%2Fsparql%2F', title: 'Universität Ulm (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Firit.rkbexplorer.com%2Fsparql%2F', title: 'Université Paul Sabatier - Toulouse 3 (RKB Explorer)'},
+		{endpoint: 'http%3A%2F%2Fsemanticweb.cs.vu.nl%2Fverrijktkoninkrijk%2Fsparql%2F', title: 'Verrijkt Koninkrijk'},
+		{endpoint: 'http%3A%2F%2Fkaunas.rkbexplorer.com%2Fsparql', title: 'Vytautas Magnus University, Kaunas (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fwebscience.rkbexplorer.com%2Fsparql', title: 'Web Science Conference (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fsparql.wikipathways.org%2F', title: 'WikiPathways'},
+		{endpoint: 'http%3A%2F%2Fwww.opmw.org%2Fsparql', title: 'Wings workflow provenance dataset'},
+		{endpoint: 'http%3A%2F%2Fwordnet.rkbexplorer.com%2Fsparql%2F', title: 'WordNet (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fworldbank.270a.info%2Fsparql', title: 'World Bank Linked Data'},
+		{endpoint: 'http%3A%2F%2Fmlode.nlp2rdf.org%2Fsparql', },
+		{endpoint: 'http%3A%2F%2Fldf.fi%2Fww1lod%2Fsparql', title: 'World War 1 as Linked Open Data'},
+		{endpoint: 'http%3A%2F%2Faksw.org%2Fsparql', title: 'aksw.org Research Group dataset'},
+		{endpoint: 'http%3A%2F%2Fcrm.rkbexplorer.com%2Fsparql', title: 'crm'},
+		{endpoint: 'http%3A%2F%2Fdata.open.ac.uk%2Fquery', title: 'data.open.ac.uk, Linked Data from the Open University'},
+		{endpoint: 'http%3A%2F%2Fsparql.data.southampton.ac.uk%2F', },
+		{endpoint: 'http%3A%2F%2Fdatos.bne.es%2Fsparql', title: 'datos.bne.es'},
+		{endpoint: 'http%3A%2F%2Fkaiko.getalp.org%2Fsparql', title: 'dbnary'},
+		{endpoint: 'http%3A%2F%2Fdigitaleconomy.rkbexplorer.com%2Fsparql', title: 'digitaleconomy'},
+		{endpoint: 'http%3A%2F%2Fdotac.rkbexplorer.com%2Fsparql%2F', title: 'dotAC (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fforeign.rkbexplorer.com%2Fsparql%2F', title: 'ePrints Harvest (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Feprints.rkbexplorer.com%2Fsparql%2F', title: 'ePrints3 Institutional Archive Collection (RKBExplorer)'},
+		{endpoint: 'http%3A%2F%2Fservices.data.gov.uk%2Feducation%2Fsparql', title: 'education.data.gov.uk'},
+		{endpoint: 'http%3A%2F%2Fepsrc.rkbexplorer.com%2Fsparql', title: 'epsrc'},
+		{endpoint: 'http%3A%2F%2Fwww.open-biomed.org.uk%2Fsparql%2Fendpoint%2Fflyatlas', title: 'flyatlas'},
+		{endpoint: 'http%3A%2F%2Fiserve.kmi.open.ac.uk%2Fiserve%2Fsparql', title: 'iServe: Linked Services Registry'},
+		{endpoint: 'http%3A%2F%2Fichoose.tw.rpi.edu%2Fsparql', title: 'ichoose'},
+		{endpoint: 'http%3A%2F%2Fkdata.kr%2Fsparql%2Fendpoint.jsp', title: 'kdata'},
+		{endpoint: 'http%3A%2F%2Flofd.tw.rpi.edu%2Fsparql', title: 'lofd'},
+		{endpoint: 'http%3A%2F%2Fprovenanceweb.org%2Fsparql', title: 'provenanceweb'},
+		{endpoint: 'http%3A%2F%2Fservices.data.gov.uk%2Freference%2Fsparql', title: 'reference.data.gov.uk'},
+		{endpoint: 'http%3A%2F%2Fforeign.rkbexplorer.com%2Fsparql', title: 'rkb-explorer-foreign'},
+		{endpoint: 'http%3A%2F%2Fservices.data.gov.uk%2Fstatistics%2Fsparql', title: 'statistics.data.gov.uk'},
+		{endpoint: 'http%3A%2F%2Fservices.data.gov.uk%2Ftransport%2Fsparql', title: 'transport.data.gov.uk'},
+		{endpoint: 'http%3A%2F%2Fopendap.tw.rpi.edu%2Fsparql', title: 'twc-opendap'},
+		{endpoint: 'http%3A%2F%2Fwebconf.rkbexplorer.com%2Fsparql', title: 'webconf'},
+		{endpoint: 'http%3A%2F%2Fwiktionary.dbpedia.org%2Fsparql', title: 'wiktionary.dbpedia.org'},
+		{endpoint: 'http%3A%2F%2Fdiwis.imis.athena-innovation.gr%3A8181%2Fsparql', title: 'xxxxx'},
+	];
+	endpoints.forEach(function(endpointObj, i) {
+		endpoints[i].endpoint = decodeURIComponent(endpointObj.endpoint);
+	});
+	endpoints.sort(function(a,b){
+		var lhs = a.title || a.endpoint;
+		var rhs = b.title || b.endpoint;
+		return lhs.toUpperCase().localeCompare(rhs.toUpperCase());
+	});
+	return endpoints;
+};
+
+
+},{"jquery":4,"selectize":6,"yasgui-utils":10}],95:[function(require,module,exports){
 //extend jquery
 
-var $ = require('jquery');
 require('./outsideclick.js');
 require('./tab.js');
+require('./endpointCombi.js');
 
-},{"./outsideclick.js":92,"./tab.js":93,"jquery":4}],92:[function(require,module,exports){
+},{"./endpointCombi.js":94,"./outsideclick.js":96,"./tab.js":97}],96:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 
@@ -60242,7 +64386,7 @@ $.fn.onOutsideClick = function(onOutsideClick, config) {
 }
 
 
-},{"jquery":4}],93:[function(require,module,exports){
+},{"jquery":4}],97:[function(require,module,exports){
 //Based on Bootstrap: tab.js v3.3.1
 var $ = require('jquery');
   'use strict';
@@ -60388,7 +64532,7 @@ var $ = require('jquery');
     .on('click.bs.tab.data-api', '[data-toggle="pill"]', clickHandler)
 
 
-},{"jquery":4}],94:[function(require,module,exports){
+},{"jquery":4}],98:[function(require,module,exports){
 "use strict";
 var $ = require('jquery'),
 	yUtils = require('yasgui-utils');
@@ -60403,17 +64547,19 @@ var root = module.exports = function(parent, options) {
 	yasgui.options = $.extend(true, {}, root.defaults, options);
 	yasgui.history = [];
 	
-	var persistencyId = null;
-	if (yasgui.options.persistent) persistencyId = (typeof yasgui.options.persistent == 'function'? yasgui.options.persistent(yasgui): yasgui.options.persistent);
+	yasgui.persistencyPrefix = null;
+	if (yasgui.options.persistencyPrefix) {
+		yasgui.persistencyPrefix = (typeof yasgui.options.persistencyPrefix == 'function'? yasgui.options.persistencyPrefix(yasgui): yasgui.options.persistencyPrefix);
+	}
 	
 	yasgui.store = function() {
 		if (yasgui.persistentOptions) {
-			yUtils.storage.set(persistencyId, yasgui.persistentOptions);
+			yUtils.storage.set(yasgui.persistencyPrefix, yasgui.persistentOptions);
 		}
 	};
 	
 	var getSettingsFromStorage = function() {
-		var settings = yUtils.storage.get(persistencyId);
+		var settings = yUtils.storage.get(yasgui.persistencyPrefix);
 		if (!settings) settings = {};//initialize blank. Default vals will be set as we go
 		return settings;
 	}
@@ -60432,7 +64578,7 @@ root.YASQE = require('yasgui-yasqe');
 root.YASQE.defaults = $.extend(true, root.YASQE.defaults, require('./defaultsYasqe.js'));
 root.YASR = require('yasgui-yasr');
 root.defaults = require('./defaults.js');
-},{"./defaults.js":88,"./defaultsYasqe.js":89,"./jquery/extendJquery.js":91,"./tabManager.js":97,"jquery":4,"yasgui-utils":7,"yasgui-yasqe":38,"yasgui-yasr":77}],95:[function(require,module,exports){
+},{"./defaults.js":91,"./defaultsYasqe.js":92,"./jquery/extendJquery.js":95,"./tabManager.js":101,"jquery":4,"yasgui-utils":10,"yasgui-yasqe":41,"yasgui-yasr":80}],99:[function(require,module,exports){
 var getUrlParams = function(queryString) {
 	var params = [];
 	if (!queryString) queryString = window.location.search.substring(1);
@@ -60534,12 +64680,11 @@ module.exports = {
 		}
 	}
 }
-},{}],96:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('./utils.js'),
 	YASGUI = require('./main.js');
-
 //we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 //We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
 var defaultPersistentYasqe = {
@@ -60553,6 +64698,8 @@ var defaultPersistentYasqe = {
 		requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod
 	}
 };
+
+
 
 module.exports = function(yasgui, id, name) {
 	if (!yasgui.persistentOptions.tabManager.tabs[id]) {
@@ -60577,10 +64724,7 @@ module.exports = function(yasgui, id, name) {
 	var $endpointInput;
 	var addControlBar = function() {
 		var $controlBar = $('<div>', {class: 'controlbar'}).appendTo($paneContent);
-		var $form = $('<form>', {class: 'form-inline', role: 'form'}).appendTo($controlBar);
 		
-		
-		var $formGroupButton = $('<div>', {class: 'form-group'}).appendTo($form);
 		$('<button>', {type:'button', class: 'menuButton btn btn-default'})
 			.on('click', function(e){
 				if ($pane.hasClass('menu-open')) {
@@ -60597,18 +64741,20 @@ module.exports = function(yasgui, id, name) {
 			.append($('<span>', {class:'icon-bar'}))
 			.append($('<span>', {class:'icon-bar'}))
 			.append($('<span>', {class:'icon-bar'}))
-			.appendTo($formGroupButton);
+			.appendTo($controlBar);
 		
 		//add endpoint text input
-		var $formGroup = $('<div>', {class: 'form-group'}).appendTo($form);
-		$endpointInput = $('<input>', {type: 'text', class: 'form-control endpointText', placeholder: 'Enter endpoint'})
-			.on('keyup', function(){
-				tab.persistentOptions.yasqe.sparql.endpoint = this.value;
-				tab.yasqe.options.sparql.endpoint = this.value;
-				yasgui.store();
-			})
-			.val(tab.persistentOptions.yasqe.sparql.endpoint)
-			.appendTo($formGroup);
+		$endpointInput = $('<select>')
+			.appendTo($controlBar)
+			.endpointCombi(yasgui, {
+				value: persistentOptions.yasqe.sparql.endpoint,
+				onChange: function(val){
+					persistentOptions.yasqe.sparql.endpoint = val;
+					yasgui.store();
+					
+				}
+			});
+		
 	};
 	
 	addControlBar();
@@ -60695,7 +64841,11 @@ module.exports = function(yasgui, id, name) {
 	
 	return tab;
 }
-},{"./main.js":94,"./shareLink":95,"./tabPaneMenu.js":98,"./utils.js":99,"jquery":4}],97:[function(require,module,exports){
+
+
+
+
+},{"./main.js":98,"./shareLink":99,"./tabPaneMenu.js":102,"./utils.js":103,"jquery":4}],101:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('yasgui-utils'),
@@ -60961,7 +65111,7 @@ module.exports = function(yasgui) {
 };
 
 
-},{"./imgs.js":90,"./shareLink.js":95,"./tab.js":96,"jquery":4,"jquery-ui/position":3,"yasgui-utils":7}],98:[function(require,module,exports){
+},{"./imgs.js":93,"./shareLink.js":99,"./tab.js":100,"jquery":4,"jquery-ui/position":3,"yasgui-utils":10}],102:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	imgs = require('./imgs.js'),
@@ -61281,7 +65431,7 @@ module.exports = function(yasgui, tab) {
 };
 
 
-},{"./imgs.js":90,"jquery":4,"yasgui-utils":7}],99:[function(require,module,exports){
+},{"./imgs.js":93,"jquery":4,"yasgui-utils":10}],103:[function(require,module,exports){
 var $ = require('jquery');
 module.exports = {
 	escapeHtmlEntities : function(unescapedString) {
