@@ -63909,7 +63909,6 @@ $.fn.endpointCombi = function(yasgui, options) {
 	
 	
 	var $select = this;
-	test = this;
 	var defaults = {
 		selectize: {
 			create: function(input, callback) {
