@@ -20,7 +20,12 @@ module.exports = function(yasgui, tab) {
 	var initWrapper = function() {
 		$menu = $('<nav>', {class: 'menu-slide', id: 'navmenu'});
 		$menu.append(
-			$(utils.svg.getElement(imgs.yasgui, {width: '70px', height: '58px'})).addClass('yasguiLogo')
+			$(utils.svg.getElement(imgs.yasgui))
+				.addClass('yasguiLogo')
+				.attr('title', 'About YASGUI')
+				.click(function() {
+					window.open('http://about.yasgui.org', '_blank');
+				})
 		);
 		
 		//tab panel contains tabs and panes
