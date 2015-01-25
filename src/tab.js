@@ -1,6 +1,7 @@
 'use strict';
 var $ = require('jquery'),
 	utils = require('./utils.js'),
+	yUtils = require('yasgui-utils'),
 	YASGUI = require('./main.js');
 //we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 //We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
@@ -37,11 +38,10 @@ module.exports = function(yasgui, id, name) {
 	var $pane = $('<div>', {id:persistentOptions.id, style: 'position:relative', class: 'tab-pane', role: 'tabpanel'}).appendTo(yasgui.tabManager.$tabPanesParent);
 	
 	var $paneContent = $('<div>', {class:'wrapper'}).appendTo($pane);
+	var $controlBar = $('<div>', {class: 'controlbar'}).appendTo($paneContent);
 	var $paneMenu = menu.initWrapper().appendTo($pane);
 	var $endpointInput;
 	var addControlBar = function() {
-		var $controlBar = $('<div>', {class: 'controlbar'}).appendTo($paneContent);
-		
 		$('<button>', {type:'button', class: 'menuButton btn btn-default'})
 			.on('click', function(e){
 				if ($pane.hasClass('menu-open')) {
@@ -75,7 +75,7 @@ module.exports = function(yasgui, id, name) {
 		
 	};
 	
-	addControlBar();
+	
 	var yasqeContainer = $('<div>', {id: 'yasqe_' + persistentOptions.id}).appendTo($paneContent);
 	var yasrContainer = $('<div>', {id: 'yasq_' + persistentOptions.id}).appendTo($paneContent);
 	
@@ -95,8 +95,6 @@ module.exports = function(yasgui, id, name) {
 	
 	tab.onShow = function() {
 		if (!tab.yasqe || !tab.yasr) {
-			
-			
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.on('blur', function(yasqe) {
 				persistentOptions.yasqe.value = yasqe.getValue();
@@ -142,14 +140,15 @@ module.exports = function(yasgui, id, name) {
 					YASGUI.YASQE.executeQuery(tab.yasqe);
 				}
 			};
+			addControlBar();
 		}
 	};
 	tab.refreshYasqe = function() {
 		$.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
-		tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
-	}
+		if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
+	};
 	tab.destroy = function() {
-		console.log('todo: proper destorying of local storage');
+		yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
 	}
 	
 	
