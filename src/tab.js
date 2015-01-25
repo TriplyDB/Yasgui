@@ -67,6 +67,7 @@ module.exports = function(yasgui, id, name) {
 				value: persistentOptions.yasqe.sparql.endpoint,
 				onChange: function(val){
 					persistentOptions.yasqe.sparql.endpoint = val;
+					tab.refreshYasqe();
 					yasgui.store();
 					
 				}
@@ -123,37 +124,33 @@ module.exports = function(yasgui, id, name) {
 				delete histObject.options.name;//don't store this one
 				yasgui.history.unshift(histObject);
 			}
+			
+			tab.yasqe.query = function() {
+				if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
+					if (!yasgui.corsEnabled[persistentOptions.yasqe.sparql.endpoint]) {
+						//use the proxy //name value
+						var options = $.extend(true, {}, tab.yasqe.options.sparql);
+						options.args.push({name: 'endpoint', value: options.endpoint});
+						options.args.push({name: 'requestMethod', value: options.requestMethod});
+						options.requestMethod = "POST";
+						options.endpoint = yasgui.options.api.corsProxy;
+						YASGUI.YASQE.executeQuery(tab.yasqe, options);
+					} else {
+						YASGUI.YASQE.executeQuery(tab.yasqe);
+					}
+				} else {
+					YASGUI.YASQE.executeQuery(tab.yasqe);
+				}
+			};
 		}
 	};
-	
-	tab.setOptions = function() {
-	}
 	tab.refreshYasqe = function() {
 		$.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
 		tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
-//		console.log(tab.yasqe.options);
-//		tab.yasqe.refresh();
 	}
 	tab.destroy = function() {
 		console.log('todo: proper destorying of local storage');
 	}
-//	tab.generatePersistentSettings = function() {
-//		//we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
-//		//We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
-//		return  {
-//			name: tab.name,
-//			yasqe: {
-//				endpoint: tab.yasqe.options.sparql.endpoint,
-//				acceptHeaderGraph: tab.yasqe.options.sparql.acceptHeaderGraph,
-//				acceptHeaderSelect: tab.yasqe.options.sparql.acceptHeaderSelect,
-//				args: tab.yasqe.options.sparql.args,
-//				defaultGraphs: tab.yasqe.options.sparql.defaultGraphs,
-//				namedGraphs: tab.yasqe.options.sparql.namedGraphs,
-//				requestMethod: tab.yasqe.options.sparql.requestMethod,
-//			}
-//		}
-//	};
-	
 	
 	
 	return tab;

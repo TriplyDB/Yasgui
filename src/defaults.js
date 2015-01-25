@@ -4,5 +4,8 @@ var $ = require('jquery');
 module.exports = {
 	persistencyPrefix: function(yasgui) {
 		return "yasgui_" + $(yasgui.wrapperElement).closest('[id]').attr('id') + "_";
+	},
+	api: {
+		corsProxy: null,
 	}
 };

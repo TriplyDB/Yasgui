@@ -7,6 +7,18 @@ var $ = require('jquery'),
 
 
 $.fn.endpointCombi = function(yasgui, options) {
+	var checkCorsEnabled = function(endpoint) {
+		if (!yasgui.corsEnabled) yasgui.corsEnabled = {};
+		if (!(endpoint in yasgui.corsEnabled)) {
+			$.ajax({
+				url: endpoint, 
+				data: {query: 'ASK {?x ?y ?z}'}, 
+				complete: function(jqXHR){
+					yasgui.corsEnabled[endpoint] = jqXHR.status > 0;
+				}
+			});
+		}
+	};
 	var storeEndpoints = function(optGroup) {
 		var persistencyId =  null;
 		if (yasgui.persistencyPrefix) {
@@ -60,6 +72,7 @@ $.fn.endpointCombi = function(yasgui, options) {
 			createOnBlur: true,
 			onItemAdd: function(value, $item) {
 				if (options.onChange) options.onChange(value);
+				if (yasgui.options.api.corsProxy) checkCorsEnabled(value);
 			},
 			onOptionRemove: function(value) {
 				storeEndpoints('own');
