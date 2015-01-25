@@ -63833,6 +63833,9 @@ var $ = require('jquery');
 module.exports = {
 	persistencyPrefix: function(yasgui) {
 		return "yasgui_" + $(yasgui.wrapperElement).closest('[id]').attr('id') + "_";
+	},
+	api: {
+		corsProxy: null,
 	}
 };
 },{"jquery":4}],92:[function(require,module,exports){
@@ -63865,6 +63868,18 @@ var $ = require('jquery'),
 
 
 $.fn.endpointCombi = function(yasgui, options) {
+	var checkCorsEnabled = function(endpoint) {
+		if (!yasgui.corsEnabled) yasgui.corsEnabled = {};
+		if (!(endpoint in yasgui.corsEnabled)) {
+			$.ajax({
+				url: endpoint, 
+				data: {query: 'ASK {?x ?y ?z}'}, 
+				complete: function(jqXHR){
+					yasgui.corsEnabled[endpoint] = jqXHR.status > 0;
+				}
+			});
+		}
+	};
 	var storeEndpoints = function(optGroup) {
 		var persistencyId =  null;
 		if (yasgui.persistencyPrefix) {
@@ -63918,6 +63933,7 @@ $.fn.endpointCombi = function(yasgui, options) {
 			createOnBlur: true,
 			onItemAdd: function(value, $item) {
 				if (options.onChange) options.onChange(value);
+				if (yasgui.options.api.corsProxy) checkCorsEnabled(value);
 			},
 			onOptionRemove: function(value) {
 				storeEndpoints('own');
@@ -64683,6 +64699,7 @@ module.exports = {
 'use strict';
 var $ = require('jquery'),
 	utils = require('./utils.js'),
+	yUtils = require('yasgui-utils'),
 	YASGUI = require('./main.js');
 //we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 //We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
@@ -64719,11 +64736,10 @@ module.exports = function(yasgui, id, name) {
 	var $pane = $('<div>', {id:persistentOptions.id, style: 'position:relative', class: 'tab-pane', role: 'tabpanel'}).appendTo(yasgui.tabManager.$tabPanesParent);
 	
 	var $paneContent = $('<div>', {class:'wrapper'}).appendTo($pane);
+	var $controlBar = $('<div>', {class: 'controlbar'}).appendTo($paneContent);
 	var $paneMenu = menu.initWrapper().appendTo($pane);
 	var $endpointInput;
 	var addControlBar = function() {
-		var $controlBar = $('<div>', {class: 'controlbar'}).appendTo($paneContent);
-		
 		$('<button>', {type:'button', class: 'menuButton btn btn-default'})
 			.on('click', function(e){
 				if ($pane.hasClass('menu-open')) {
@@ -64749,6 +64765,7 @@ module.exports = function(yasgui, id, name) {
 				value: persistentOptions.yasqe.sparql.endpoint,
 				onChange: function(val){
 					persistentOptions.yasqe.sparql.endpoint = val;
+					tab.refreshYasqe();
 					yasgui.store();
 					
 				}
@@ -64756,7 +64773,7 @@ module.exports = function(yasgui, id, name) {
 		
 	};
 	
-	addControlBar();
+	
 	var yasqeContainer = $('<div>', {id: 'yasqe_' + persistentOptions.id}).appendTo($paneContent);
 	var yasrContainer = $('<div>', {id: 'yasq_' + persistentOptions.id}).appendTo($paneContent);
 	
@@ -64776,8 +64793,6 @@ module.exports = function(yasgui, id, name) {
 	
 	tab.onShow = function() {
 		if (!tab.yasqe || !tab.yasr) {
-			
-			
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.on('blur', function(yasqe) {
 				persistentOptions.yasqe.value = yasqe.getValue();
@@ -64805,37 +64820,34 @@ module.exports = function(yasgui, id, name) {
 				delete histObject.options.name;//don't store this one
 				yasgui.history.unshift(histObject);
 			}
+			
+			tab.yasqe.query = function() {
+				if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
+					if (!yasgui.corsEnabled[persistentOptions.yasqe.sparql.endpoint]) {
+						//use the proxy //name value
+						var options = $.extend(true, {}, tab.yasqe.options.sparql);
+						options.args.push({name: 'endpoint', value: options.endpoint});
+						options.args.push({name: 'requestMethod', value: options.requestMethod});
+						options.requestMethod = "POST";
+						options.endpoint = yasgui.options.api.corsProxy;
+						YASGUI.YASQE.executeQuery(tab.yasqe, options);
+					} else {
+						YASGUI.YASQE.executeQuery(tab.yasqe);
+					}
+				} else {
+					YASGUI.YASQE.executeQuery(tab.yasqe);
+				}
+			};
+			addControlBar();
 		}
 	};
-	
-	tab.setOptions = function() {
-	}
 	tab.refreshYasqe = function() {
 		$.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
-		tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
-//		console.log(tab.yasqe.options);
-//		tab.yasqe.refresh();
-	}
+		if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
+	};
 	tab.destroy = function() {
-		console.log('todo: proper destorying of local storage');
+		yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
 	}
-//	tab.generatePersistentSettings = function() {
-//		//we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
-//		//We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
-//		return  {
-//			name: tab.name,
-//			yasqe: {
-//				endpoint: tab.yasqe.options.sparql.endpoint,
-//				acceptHeaderGraph: tab.yasqe.options.sparql.acceptHeaderGraph,
-//				acceptHeaderSelect: tab.yasqe.options.sparql.acceptHeaderSelect,
-//				args: tab.yasqe.options.sparql.args,
-//				defaultGraphs: tab.yasqe.options.sparql.defaultGraphs,
-//				namedGraphs: tab.yasqe.options.sparql.namedGraphs,
-//				requestMethod: tab.yasqe.options.sparql.requestMethod,
-//			}
-//		}
-//	};
-	
 	
 	
 	return tab;
@@ -64844,7 +64856,7 @@ module.exports = function(yasgui, id, name) {
 
 
 
-},{"./main.js":98,"./shareLink":99,"./tabPaneMenu.js":102,"./utils.js":103,"jquery":4}],101:[function(require,module,exports){
+},{"./main.js":98,"./shareLink":99,"./tabPaneMenu.js":102,"./utils.js":103,"jquery":4,"yasgui-utils":10}],101:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('yasgui-utils'),
@@ -65133,7 +65145,12 @@ module.exports = function(yasgui, tab) {
 	var initWrapper = function() {
 		$menu = $('<nav>', {class: 'menu-slide', id: 'navmenu'});
 		$menu.append(
-			$(utils.svg.getElement(imgs.yasgui, {width: '70px', height: '58px'})).addClass('yasguiLogo')
+			$(utils.svg.getElement(imgs.yasgui))
+				.addClass('yasguiLogo')
+				.attr('title', 'About YASGUI')
+				.click(function() {
+					window.open('http://about.yasgui.org', '_blank');
+				})
 		);
 		
 		//tab panel contains tabs and panes

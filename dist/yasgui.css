@@ -4311,7 +4311,9 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     .yasgui .menu-slide .yasguiLogo {
       cursor: pointer;
       float: right;
-      margin: 5px; }
+      margin: 5px;
+      height: 100px;
+      width: 100px; }
     .yasgui .menu-slide::after {
       display: none; }
     .yasgui .menu-slide .tabPaneMenuTabs {
