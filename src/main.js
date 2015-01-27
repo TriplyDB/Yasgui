@@ -42,4 +42,5 @@ var root = module.exports = function(parent, options) {
 root.YASQE = require('yasgui-yasqe');
 root.YASQE.defaults = $.extend(true, root.YASQE.defaults, require('./defaultsYasqe.js'));
 root.YASR = require('yasgui-yasr');
+root.$ = $;
 root.defaults = require('./defaults.js');
