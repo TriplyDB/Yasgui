@@ -1,9 +1,38 @@
 'use strict';
-
 var $ = require('jquery'),
 	selectize = require('selectize'),
 	utils = require('yasgui-utils');
 	
+
+
+selectize.define('allowRegularTextInput', function(options) {
+	var self = this;
+
+	this.onMouseDown = (function() {
+
+		var original = self.onMouseDown;
+		return function(e) {
+			
+			
+			if (!self.$dropdown.is(":visible")) {
+				//receiving focus via mouse click
+				original.apply(this, arguments);
+				
+				//this is a trick to make each value editable
+				//a bit strange, but the only trick to avoid static values
+				//and, this allows copy-ing (ctrl-c) of endpoints as well now
+				var val = this.getValue();
+				this.clear(true);
+				this.setTextboxValue(val);
+				this.refreshOptions(true);
+			} else {
+				//avoid closing the dropdown on second click. now, we can move the cursor using the mouse
+				e.stopPropagation();
+				e.preventDefault();
+			}
+		}
+	})();
+});
 
 
 $.fn.endpointCombi = function(yasgui, options) {
@@ -63,8 +92,10 @@ $.fn.endpointCombi = function(yasgui, options) {
 	
 	
 	var $select = this;
+	console.log($select);
 	var defaults = {
 		selectize: {
+			plugins: ['allowRegularTextInput'],
 			create: function(input, callback) {
 				callback({'endpoint': input, optgroup:'own'});
 			},
