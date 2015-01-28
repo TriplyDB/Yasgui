@@ -9771,6 +9771,10 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
       return editorOptions[name];
     return defaultOptions[name];
   }
+
+  CodeMirror.defineExtension("foldOption", function(options, name) {
+    return getOption(this, options, name);
+  });
 });
 
 },{"codemirror":undefined}],19:[function(require,module,exports){
@@ -9843,14 +9847,16 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
 
   function updateFoldInfo(cm, from, to) {
     var opts = cm.state.foldGutter.options, cur = from;
+    var minSize = cm.foldOption(opts, "minFoldSize");
+    var func = cm.foldOption(opts, "rangeFinder");
     cm.eachLine(from, to, function(line) {
       var mark = null;
       if (isFolded(cm, cur)) {
         mark = marker(opts.indicatorFolded);
       } else {
-        var pos = Pos(cur, 0), func = opts.rangeFinder || CodeMirror.fold.auto;
+        var pos = Pos(cur, 0);
         var range = func && func(cm, pos);
-        if (range && range.from.line + 1 < range.to.line)
+        if (range && range.to.line - range.from.line >= minSize)
           mark = marker(opts.indicatorOpen);
       }
       cm.setGutterMarker(line, opts.gutter, mark);
@@ -14687,6 +14693,12 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
     if (type == "if") return cont(expression, comprehension);
   }
 
+  function isContinuedStatement(state, textAfter) {
+    return state.lastType == "operator" || state.lastType == "," ||
+      isOperatorChar.test(textAfter.charAt(0)) ||
+      /[,.]/.test(textAfter.charAt(0));
+  }
+
   // Interface
 
   return {
@@ -14738,7 +14750,7 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
       else if (type == "form" && firstChar == "{") return lexical.indented;
       else if (type == "form") return lexical.indented + indentUnit;
       else if (type == "stat")
-        return lexical.indented + (state.lastType == "operator" || state.lastType == "," ? statementIndent || indentUnit : 0);
+        return lexical.indented + (isContinuedStatement(state, textAfter) ? statementIndent || indentUnit : 0);
       else if (lexical.info == "switch" && !closing && parserConfig.doubleIndentSwitch != false)
         return lexical.indented + (/^(?:case|default)\b/.test(textAfter) ? indentUnit : 2 * indentUnit);
       else if (lexical.align) return lexical.column + (closing ? 0 : 1);
@@ -30944,7 +30956,6 @@ $.fn.endpointCombi = function(yasgui, options) {
 	
 	
 	var $select = this;
-	console.log($select);
 	var defaults = {
 		selectize: {
 			plugins: ['allowRegularTextInput'],
@@ -31645,20 +31656,20 @@ module.exports = {
 			var params = [
 				{name: 'outputFormat', value: tab.yasr.options.output},
 				{name: 'query', value: tab.yasqe.getValue()},
-				{name: 'contentTypeConstruct', value: tab.persistentOptions.yasqe.acceptHeaderGraph},
-				{name: 'contentTypeSelect', value: tab.persistentOptions.yasqe.acceptHeaderSelect},
-				{name: 'endpoint', value: tab.persistentOptions.yasqe.endpoint},
-				{name: 'requestMethod', value: tab.persistentOptions.yasqe.requestMethod},
+				{name: 'contentTypeConstruct', value: tab.persistentOptions.yasqe.sparql.acceptHeaderGraph},
+				{name: 'contentTypeSelect', value: tab.persistentOptions.yasqe.sparql.acceptHeaderSelect},
+				{name: 'endpoint', value: tab.persistentOptions.yasqe.sparql.endpoint},
+				{name: 'requestMethod', value: tab.persistentOptions.yasqe.sparql.requestMethod},
 				{name: 'tabTitle', value: tab.persistentOptions.name}
 			];
 			
-			tab.persistentOptions.yasqe.args.forEach(function(paramPair){
+			tab.persistentOptions.yasqe.sparql.args.forEach(function(paramPair){
 				params.push(paramPair);
 			});
-			tab.persistentOptions.yasqe.namedGraphs.forEach(function(ng) {
+			tab.persistentOptions.yasqe.sparql.namedGraphs.forEach(function(ng) {
 				params.push({name: 'namedGraph', value: ng});
 			});
-			tab.persistentOptions.yasqe.defaultGraphs.forEach(function(dg){
+			tab.persistentOptions.yasqe.sparql.defaultGraphs.forEach(function(dg){
 				params.push({name: 'defaultGraph', value: dg});
 			});
 			
@@ -31676,7 +31687,7 @@ module.exports = {
 		}
 	},
 	getOptionsFromUrl: function() {
-		var options = {yasqe: {}, yasr:{}};
+		var options = {yasqe: {sparql: {}}, yasr:{}};
 		var params = getUrlParams();
 		var validYasguiOptions = false;
 		
@@ -31690,25 +31701,25 @@ module.exports = {
 				if (output == 'simpleTable') output = 'table';//this query link is from v1. don't have this plugin anymore
 				options.yasr.output = output;
 			} else if (paramPair.name == 'contentTypeConstruct') {
-				options.yasqe.acceptHeaderGraph = paramPair.value;
+				options.yasqe.sparql.acceptHeaderGraph = paramPair.value;
 			} else if (paramPair.name == 'contentTypeSelect') {
-				options.yasqe.acceptHeaderSelect = paramPair.value;
+				options.yasqe.sparql.acceptHeaderSelect = paramPair.value;
 			} else if (paramPair.name == 'endpoint') {
-				options.yasqe.endpoint = paramPair.value;
+				options.yasqe.sparql.endpoint = paramPair.value;
 			} else if (paramPair.name == 'requestMethod') {
-				options.yasqe.requestMethod = paramPair.value;
+				options.yasqe.sparql.requestMethod = paramPair.value;
 			} else if (paramPair.name == 'tabTitle') {
 				options.name = paramPair.value;
 			} else if (paramPair.name == 'namedGraph') {
 				if (!options.yasqe.namedGraphs) options.yasqe.namedGraphs = [];
-				options.yasqe.namedGraphs.push(paramPair);
+				options.yasqe.sparql.namedGraphs.push(paramPair);
 			} else if (paramPair.name == 'defaultGraph') {
 				if (!options.yasqe.defaultGraphs) options.yasqe.defaultGraphs = [];
-				options.yasqe.defaultGraphs.push(paramPair);
+				options.yasqe.sparql.defaultGraphs.push(paramPair);
 			} else {
 				if (!options.yasqe.args) options.yasqe.args = [];
 				//regular arguments. So store them as regular arguments
-				options.yasqe.args.push(paramPair);
+				options.yasqe.sparql.args.push(paramPair);
 			}
 		});
 		if (validYasguiOptions) {
@@ -31726,15 +31737,17 @@ var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}}
 	YASGUI = require('./main.js');
 //we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 //We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
-var defaultPersistentYasqe = {
-	sparql: {
-		endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
-		acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
-		acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
-		args: YASGUI.YASQE.defaults.sparql.args,
-		defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
-		namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
-		requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod
+var defaultPersistent = {
+	yasqe: {
+		sparql: {
+			endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
+			acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
+			acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
+			args: YASGUI.YASQE.defaults.sparql.args,
+			defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
+			namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
+			requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod
+		}
 	}
 };
 
@@ -31748,7 +31761,7 @@ module.exports = function(yasgui, id, name) {
 			yasqe: defaultPersistentYasqe
 		}
 	} else {
-		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {}, defaultPersistentYasqe, yasgui.persistentOptions.tabManager.tabs[id]);
+		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {}, defaultPersistent, yasgui.persistentOptions.tabManager.tabs[id]);
 	}
 	var persistentOptions = yasgui.persistentOptions.tabManager.tabs[id];
 	var tab = {
@@ -31821,10 +31834,10 @@ module.exports = function(yasgui, id, name) {
 				persistentOptions.yasqe.value = yasqe.getValue();
 				yasgui.store();
 			});
-			tab.yasr = YASGUI.YASR(yasrContainer[0], {
+			tab.yasr = YASGUI.YASR(yasrContainer[0], $.extend({
 				//this way, the URLs in the results are prettified using the defined prefixes in the query
 				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
-			});
+			}, persistentOptions.yasr));
 			tab.yasqe.options.sparql.callbacks.complete = function() {
 				tab.yasr.setResponse.apply(this, arguments);
 				
@@ -31869,7 +31882,7 @@ module.exports = function(yasgui, id, name) {
 		if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
 	};
 	tab.destroy = function() {
-		yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
+		if (tab.yasr) yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
 	}
 	
 	
@@ -31950,6 +31963,7 @@ module.exports = function(yasgui) {
 		if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
 			//ah, this is on first load. initialize some stuff
 			persistentOptions.tabOrder = [];
+			persistentOptions.tabs = {};
 			persistentOptions.selected = null;
 		}
 		var optionsFromUrl = require('./shareLink.js').getOptionsFromUrl();
@@ -32091,8 +32105,26 @@ module.exports = function(yasgui) {
 						closeTab(tabId);
 					})
 			);
-		var $tabRename = $('<div><input></div>');
+		var $tabRename = $('<div><input type="text"></div>')
+			.keydown(function(e) {
+				if (event.which == 27 || event.keyCode == 27) {
+					//esc
+					$(this).closest('li').removeClass('rename');
+				} else if (event.which == 13 || event.keyCode == 13) {
+					//enter
+					storeRename($(this).closest('li'));
+				}
+			})
 		
+		
+		var storeRename = function($liEl) {
+			var tabId = $liEl.find('a[role="tab"]').attr('aria-controls');
+			var val = $liEl.find('input').val();
+			$tabToggle.find('span').text($liEl.find('input').val());
+			persistentOptions.tabs[tabId].name = val;
+			yasgui.store();
+			$liEl.removeClass('rename');
+		};
 		var $tabItem = $("<li>", {role: "presentation"})
 			.append($tabToggle)
 			
@@ -32103,12 +32135,7 @@ module.exports = function(yasgui) {
 				el.addClass('rename');
 				el.find('input').val(val);
 				el.onOutsideClick(function(){
-					var tabId = el.find('a[role="tab"]').attr('aria-controls');
-					var val = el.find('input').val();
-					$tabToggle.find('span').text(el.find('input').val());
-					persistentOptions.tabs[tabId].name = val;
-					yasgui.store();
-					el.removeClass('rename');
+					storeRename(el);
 				})
 			})
 			.bind('contextmenu', function(e){ 

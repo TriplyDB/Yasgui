@@ -20119,6 +20119,10 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
       return editorOptions[name];
     return defaultOptions[name];
   }
+
+  CodeMirror.defineExtension("foldOption", function(options, name) {
+    return getOption(this, options, name);
+  });
 });
 
 },{"../../lib/codemirror":25}],20:[function(require,module,exports){
@@ -20191,14 +20195,16 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
 
   function updateFoldInfo(cm, from, to) {
     var opts = cm.state.foldGutter.options, cur = from;
+    var minSize = cm.foldOption(opts, "minFoldSize");
+    var func = cm.foldOption(opts, "rangeFinder");
     cm.eachLine(from, to, function(line) {
       var mark = null;
       if (isFolded(cm, cur)) {
         mark = marker(opts.indicatorFolded);
       } else {
-        var pos = Pos(cur, 0), func = opts.rangeFinder || CodeMirror.fold.auto;
+        var pos = Pos(cur, 0);
         var range = func && func(cm, pos);
-        if (range && range.from.line + 1 < range.to.line)
+        if (range && range.to.line - range.from.line >= minSize)
           mark = marker(opts.indicatorOpen);
       }
       cm.setGutterMarker(line, opts.gutter, mark);
@@ -21212,6 +21218,11 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     maybeUpdateLineNumberWidth(this);
     for (var i = 0; i < initHooks.length; ++i) initHooks[i](this);
     endOperation(this);
+    // Suppress optimizelegibility in Webkit, since it breaks text
+    // measuring on line wrapping boundaries.
+    if (webkit && options.lineWrapping &&
+        getComputedStyle(display.lineDiv).textRendering == "optimizelegibility")
+      display.lineDiv.style.textRendering = "auto";
   }
 
   // DISPLAY CONSTRUCTOR
@@ -22947,7 +22958,8 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
   // Converts a {top, bottom, left, right} box from line-local
   // coordinates into another coordinate system. Context may be one of
-  // "line", "div" (display.lineDiv), "local"/null (editor), or "page".
+  // "line", "div" (display.lineDiv), "local"/null (editor), "window",
+  // or "page".
   function intoCoordSystem(cm, lineObj, rect, context) {
     if (lineObj.widgets) for (var i = 0; i < lineObj.widgets.length; ++i) if (lineObj.widgets[i].above) {
       var size = widgetHeight(lineObj.widgets[i]);
@@ -23859,7 +23871,9 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   // Return true when the given mouse event happened in a widget
   function eventInWidget(display, e) {
     for (var n = e_target(e); n != display.wrapper; n = n.parentNode) {
-      if (!n || n.getAttribute("cm-ignore-events") == "true" || n.parentNode == display.sizer && n != display.mover) return true;
+      if (!n || (n.nodeType == 1 && n.getAttribute("cm-ignore-events") == "true") ||
+          (n.parentNode == display.sizer && n != display.mover))
+        return true;
     }
   }
 
@@ -24888,7 +24902,9 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
     var lendiff = change.text.length - (to.line - from.line) - 1;
     // Remember that these lines changed, for updating the display
-    if (from.line == to.line && change.text.length == 1 && !isWholeLineUpdate(cm.doc, change))
+    if (change.full)
+      regChange(cm);
+    else if (from.line == to.line && change.text.length == 1 && !isWholeLineUpdate(cm.doc, change))
       regLineChange(cm, from.line, "text");
     else
       regChange(cm, from.line, to.line + 1, lendiff);
@@ -26670,6 +26686,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   // spans partially within the change. Returns an array of span
   // arrays with one element for each line in (after) the change.
   function stretchSpansOverChange(doc, change) {
+    if (change.full) return null;
     var oldFirst = isLine(doc, change.from.line) && getLine(doc, change.from.line).markedSpans;
     var oldLast = isLine(doc, change.to.line) && getLine(doc, change.to.line).markedSpans;
     if (!oldFirst && !oldLast) return null;
@@ -26979,7 +26996,9 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     if (!contains(document.body, widget.node)) {
       var parentStyle = "position: relative;";
       if (widget.coverGutter)
-        parentStyle += "margin-left: -" + widget.cm.getGutterElement().offsetWidth + "px;";
+        parentStyle += "margin-left: -" + widget.cm.display.gutters.offsetWidth + "px;";
+      if (widget.noHScroll)
+        parentStyle += "width: " + widget.cm.display.wrapper.clientWidth + "px;";
       removeChildrenAndAdd(widget.cm.display.measure, elt("div", [widget.node], null, parentStyle));
     }
     return widget.height = widget.node.offsetHeight;
@@ -27442,17 +27461,24 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       updateLine(line, text, spans, estimateHeight);
       signalLater(line, "change", line, change);
     }
+    function linesFor(start, end) {
+      for (var i = start, result = []; i < end; ++i)
+        result.push(new Line(text[i], spansFor(i), estimateHeight));
+      return result;
+    }
 
     var from = change.from, to = change.to, text = change.text;
     var firstLine = getLine(doc, from.line), lastLine = getLine(doc, to.line);
     var lastText = lst(text), lastSpans = spansFor(text.length - 1), nlines = to.line - from.line;
 
     // Adjust the line structure
-    if (isWholeLineUpdate(doc, change)) {
+    if (change.full) {
+      doc.insert(0, linesFor(0, text.length));
+      doc.remove(text.length, doc.size - text.length);
+    } else if (isWholeLineUpdate(doc, change)) {
       // This is a whole-line replace. Treated specially to make
       // sure line objects move the way they are supposed to.
-      for (var i = 0, added = []; i < text.length - 1; ++i)
-        added.push(new Line(text[i], spansFor(i), estimateHeight));
+      var added = linesFor(0, text.length - 1);
       update(lastLine, lastLine.text, lastSpans);
       if (nlines) doc.remove(from.line, nlines);
       if (added.length) doc.insert(from.line, added);
@@ -27460,8 +27486,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       if (text.length == 1) {
         update(firstLine, firstLine.text.slice(0, from.ch) + lastText + firstLine.text.slice(to.ch), lastSpans);
       } else {
-        for (var added = [], i = 1; i < text.length - 1; ++i)
-          added.push(new Line(text[i], spansFor(i), estimateHeight));
+        var added = linesFor(1, text.length - 1);
         added.push(new Line(lastText + firstLine.text.slice(to.ch), lastSpans, estimateHeight));
         update(firstLine, firstLine.text.slice(0, from.ch) + text[0], spansFor(0));
         doc.insert(from.line + 1, added);
@@ -27472,8 +27497,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     } else {
       update(firstLine, firstLine.text.slice(0, from.ch) + text[0], spansFor(0));
       update(lastLine, lastText + lastLine.text.slice(to.ch), lastSpans);
-      for (var i = 1, added = []; i < text.length - 1; ++i)
-        added.push(new Line(text[i], spansFor(i), estimateHeight));
+      var added = linesFor(1, text.length - 1);
       if (nlines > 1) doc.remove(from.line + 1, nlines - 1);
       doc.insert(from.line + 1, added);
     }
@@ -27684,7 +27708,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
     setValue: docMethodOp(function(code) {
       var top = Pos(this.first, 0), last = this.first + this.size - 1;
       makeChange(this, {from: top, to: Pos(last, getLine(this, last).text.length),
-                        text: splitLines(code), origin: "setValue"}, true);
+                        text: splitLines(code), origin: "setValue", full: true}, true);
       setSelection(this, simpleSelection(top));
     }),
     replaceRange: function(code, from, to, origin) {
@@ -28564,13 +28588,11 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
       if (array[i] == elt) return i;
     return -1;
   }
-  if ([].indexOf) indexOf = function(array, elt) { return array.indexOf(elt); };
   function map(array, f) {
     var out = [];
     for (var i = 0; i < array.length; i++) out[i] = f(array[i], i);
     return out;
   }
-  if ([].map) map = function(array, f) { return array.map(f); };
 
   function createObj(base, props) {
     var inst;
@@ -29123,7 +29145,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
   // THE END
 
-  CodeMirror.version = "4.11.0";
+  CodeMirror.version = "4.12.0";
 
   return CodeMirror;
 });
@@ -47694,6 +47716,12 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
     if (type == "if") return cont(expression, comprehension);
   }
 
+  function isContinuedStatement(state, textAfter) {
+    return state.lastType == "operator" || state.lastType == "," ||
+      isOperatorChar.test(textAfter.charAt(0)) ||
+      /[,.]/.test(textAfter.charAt(0));
+  }
+
   // Interface
 
   return {
@@ -47745,7 +47773,7 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
       else if (type == "form" && firstChar == "{") return lexical.indented;
       else if (type == "form") return lexical.indented + indentUnit;
       else if (type == "stat")
-        return lexical.indented + (state.lastType == "operator" || state.lastType == "," ? statementIndent || indentUnit : 0);
+        return lexical.indented + (isContinuedStatement(state, textAfter) ? statementIndent || indentUnit : 0);
       else if (lexical.info == "switch" && !closing && parserConfig.doubleIndentSwitch != false)
         return lexical.indented + (/^(?:case|default)\b/.test(textAfter) ? indentUnit : 2 * indentUnit);
       else if (lexical.align) return lexical.column + (closing ? 0 : 1);
@@ -63953,7 +63981,6 @@ $.fn.endpointCombi = function(yasgui, options) {
 	
 	
 	var $select = this;
-	console.log($select);
 	var defaults = {
 		selectize: {
 			plugins: ['allowRegularTextInput'],
@@ -64654,20 +64681,20 @@ module.exports = {
 			var params = [
 				{name: 'outputFormat', value: tab.yasr.options.output},
 				{name: 'query', value: tab.yasqe.getValue()},
-				{name: 'contentTypeConstruct', value: tab.persistentOptions.yasqe.acceptHeaderGraph},
-				{name: 'contentTypeSelect', value: tab.persistentOptions.yasqe.acceptHeaderSelect},
-				{name: 'endpoint', value: tab.persistentOptions.yasqe.endpoint},
-				{name: 'requestMethod', value: tab.persistentOptions.yasqe.requestMethod},
+				{name: 'contentTypeConstruct', value: tab.persistentOptions.yasqe.sparql.acceptHeaderGraph},
+				{name: 'contentTypeSelect', value: tab.persistentOptions.yasqe.sparql.acceptHeaderSelect},
+				{name: 'endpoint', value: tab.persistentOptions.yasqe.sparql.endpoint},
+				{name: 'requestMethod', value: tab.persistentOptions.yasqe.sparql.requestMethod},
 				{name: 'tabTitle', value: tab.persistentOptions.name}
 			];
 			
-			tab.persistentOptions.yasqe.args.forEach(function(paramPair){
+			tab.persistentOptions.yasqe.sparql.args.forEach(function(paramPair){
 				params.push(paramPair);
 			});
-			tab.persistentOptions.yasqe.namedGraphs.forEach(function(ng) {
+			tab.persistentOptions.yasqe.sparql.namedGraphs.forEach(function(ng) {
 				params.push({name: 'namedGraph', value: ng});
 			});
-			tab.persistentOptions.yasqe.defaultGraphs.forEach(function(dg){
+			tab.persistentOptions.yasqe.sparql.defaultGraphs.forEach(function(dg){
 				params.push({name: 'defaultGraph', value: dg});
 			});
 			
@@ -64685,7 +64712,7 @@ module.exports = {
 		}
 	},
 	getOptionsFromUrl: function() {
-		var options = {yasqe: {}, yasr:{}};
+		var options = {yasqe: {sparql: {}}, yasr:{}};
 		var params = getUrlParams();
 		var validYasguiOptions = false;
 		
@@ -64699,25 +64726,25 @@ module.exports = {
 				if (output == 'simpleTable') output = 'table';//this query link is from v1. don't have this plugin anymore
 				options.yasr.output = output;
 			} else if (paramPair.name == 'contentTypeConstruct') {
-				options.yasqe.acceptHeaderGraph = paramPair.value;
+				options.yasqe.sparql.acceptHeaderGraph = paramPair.value;
 			} else if (paramPair.name == 'contentTypeSelect') {
-				options.yasqe.acceptHeaderSelect = paramPair.value;
+				options.yasqe.sparql.acceptHeaderSelect = paramPair.value;
 			} else if (paramPair.name == 'endpoint') {
-				options.yasqe.endpoint = paramPair.value;
+				options.yasqe.sparql.endpoint = paramPair.value;
 			} else if (paramPair.name == 'requestMethod') {
-				options.yasqe.requestMethod = paramPair.value;
+				options.yasqe.sparql.requestMethod = paramPair.value;
 			} else if (paramPair.name == 'tabTitle') {
 				options.name = paramPair.value;
 			} else if (paramPair.name == 'namedGraph') {
 				if (!options.yasqe.namedGraphs) options.yasqe.namedGraphs = [];
-				options.yasqe.namedGraphs.push(paramPair);
+				options.yasqe.sparql.namedGraphs.push(paramPair);
 			} else if (paramPair.name == 'defaultGraph') {
 				if (!options.yasqe.defaultGraphs) options.yasqe.defaultGraphs = [];
-				options.yasqe.defaultGraphs.push(paramPair);
+				options.yasqe.sparql.defaultGraphs.push(paramPair);
 			} else {
 				if (!options.yasqe.args) options.yasqe.args = [];
 				//regular arguments. So store them as regular arguments
-				options.yasqe.args.push(paramPair);
+				options.yasqe.sparql.args.push(paramPair);
 			}
 		});
 		if (validYasguiOptions) {
@@ -64735,15 +64762,17 @@ var $ = require('jquery'),
 	YASGUI = require('./main.js');
 //we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 //We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
-var defaultPersistentYasqe = {
-	sparql: {
-		endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
-		acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
-		acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
-		args: YASGUI.YASQE.defaults.sparql.args,
-		defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
-		namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
-		requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod
+var defaultPersistent = {
+	yasqe: {
+		sparql: {
+			endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
+			acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
+			acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
+			args: YASGUI.YASQE.defaults.sparql.args,
+			defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
+			namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
+			requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod
+		}
 	}
 };
 
@@ -64757,7 +64786,7 @@ module.exports = function(yasgui, id, name) {
 			yasqe: defaultPersistentYasqe
 		}
 	} else {
-		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {}, defaultPersistentYasqe, yasgui.persistentOptions.tabManager.tabs[id]);
+		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {}, defaultPersistent, yasgui.persistentOptions.tabManager.tabs[id]);
 	}
 	var persistentOptions = yasgui.persistentOptions.tabManager.tabs[id];
 	var tab = {
@@ -64830,10 +64859,10 @@ module.exports = function(yasgui, id, name) {
 				persistentOptions.yasqe.value = yasqe.getValue();
 				yasgui.store();
 			});
-			tab.yasr = YASGUI.YASR(yasrContainer[0], {
+			tab.yasr = YASGUI.YASR(yasrContainer[0], $.extend({
 				//this way, the URLs in the results are prettified using the defined prefixes in the query
 				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
-			});
+			}, persistentOptions.yasr));
 			tab.yasqe.options.sparql.callbacks.complete = function() {
 				tab.yasr.setResponse.apply(this, arguments);
 				
@@ -64878,7 +64907,7 @@ module.exports = function(yasgui, id, name) {
 		if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
 	};
 	tab.destroy = function() {
-		yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
+		if (tab.yasr) yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
 	}
 	
 	
@@ -64959,6 +64988,7 @@ module.exports = function(yasgui) {
 		if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
 			//ah, this is on first load. initialize some stuff
 			persistentOptions.tabOrder = [];
+			persistentOptions.tabs = {};
 			persistentOptions.selected = null;
 		}
 		var optionsFromUrl = require('./shareLink.js').getOptionsFromUrl();
@@ -65100,8 +65130,26 @@ module.exports = function(yasgui) {
 						closeTab(tabId);
 					})
 			);
-		var $tabRename = $('<div><input></div>');
+		var $tabRename = $('<div><input type="text"></div>')
+			.keydown(function(e) {
+				if (event.which == 27 || event.keyCode == 27) {
+					//esc
+					$(this).closest('li').removeClass('rename');
+				} else if (event.which == 13 || event.keyCode == 13) {
+					//enter
+					storeRename($(this).closest('li'));
+				}
+			})
 		
+		
+		var storeRename = function($liEl) {
+			var tabId = $liEl.find('a[role="tab"]').attr('aria-controls');
+			var val = $liEl.find('input').val();
+			$tabToggle.find('span').text($liEl.find('input').val());
+			persistentOptions.tabs[tabId].name = val;
+			yasgui.store();
+			$liEl.removeClass('rename');
+		};
 		var $tabItem = $("<li>", {role: "presentation"})
 			.append($tabToggle)
 			
@@ -65112,12 +65160,7 @@ module.exports = function(yasgui) {
 				el.addClass('rename');
 				el.find('input').val(val);
 				el.onOutsideClick(function(){
-					var tabId = el.find('a[role="tab"]').attr('aria-controls');
-					var val = el.find('input').val();
-					$tabToggle.find('span').text(el.find('input').val());
-					persistentOptions.tabs[tabId].name = val;
-					yasgui.store();
-					el.removeClass('rename');
+					storeRename(el);
 				})
 			})
 			.bind('contextmenu', function(e){ 

@@ -10,7 +10,7 @@
   @font-face {
     font-family: 'Glyphicons Halflings';
     src: url('../fonts/bootstrap/glyphicons-halflings-regular.eot');
-    src: url('../fonts/bootstrap/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/bootstrap/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/bootstrap/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/bootstrap/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg'); }
+    src: url('../fonts/bootstrap/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/bootstrap/glyphicons-halflings-regular.woff2') format('woff2'), url('../fonts/bootstrap/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/bootstrap/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/bootstrap/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg'); }
 
   @-webkit-keyframes progress-bar-stripes {
     from {
@@ -174,59 +174,42 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       color: #000 !important;
       box-shadow: none !important;
       text-shadow: none !important; }
-
     .yasgui a, .yasgui a:visited {
       text-decoration: underline; }
-
     .yasgui a[href]:after {
       content: " (" attr(href) ")"; }
-
     .yasgui abbr[title]:after {
       content: " (" attr(title) ")"; }
-
     .yasgui a[href^="#"]:after, .yasgui a[href^="javascript:"]:after {
       content: ""; }
-
     .yasgui pre, .yasgui blockquote {
       border: 1px solid #999;
       page-break-inside: avoid; }
-
     .yasgui thead {
       display: table-header-group; }
-
     .yasgui tr, .yasgui img {
       page-break-inside: avoid; }
-
     .yasgui img {
       max-width: 100% !important; }
-
     .yasgui p, .yasgui h2, .yasgui h3 {
       orphans: 3;
       widows: 3; }
-
     .yasgui h2, .yasgui h3 {
       page-break-after: avoid; }
-
     .yasgui select {
       background: #fff !important; }
-
     .yasgui .navbar {
       display: none; }
-
     .yasgui .btn > .caret, .yasgui .dropup > .btn > .caret {
       border-top-color: #000 !important; }
-
     .yasgui .label {
       border: 1px solid #000; }
-
     .yasgui .table {
       border-collapse: collapse !important; }
       .yasgui .table td, .yasgui .table th {
         background-color: #fff !important; }
-
     .yasgui .table-bordered th, .yasgui .table-bordered td {
-      border: 1px solid #ddd !important; }
- }
+      border: 1px solid #ddd !important; } }
   .yasgui .glyphicon {
     position: relative;
     top: 1px;
@@ -637,6 +620,122 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     content: "\e199"; }
   .yasgui .glyphicon-tree-deciduous:before {
     content: "\e200"; }
+  .yasgui .glyphicon-cd:before {
+    content: "\e201"; }
+  .yasgui .glyphicon-save-file:before {
+    content: "\e202"; }
+  .yasgui .glyphicon-open-file:before {
+    content: "\e203"; }
+  .yasgui .glyphicon-level-up:before {
+    content: "\e204"; }
+  .yasgui .glyphicon-copy:before {
+    content: "\e205"; }
+  .yasgui .glyphicon-paste:before {
+    content: "\e206"; }
+  .yasgui .glyphicon-alert:before {
+    content: "\e209"; }
+  .yasgui .glyphicon-equalizer:before {
+    content: "\e210"; }
+  .yasgui .glyphicon-king:before {
+    content: "\e211"; }
+  .yasgui .glyphicon-queen:before {
+    content: "\e212"; }
+  .yasgui .glyphicon-pawn:before {
+    content: "\e213"; }
+  .yasgui .glyphicon-bishop:before {
+    content: "\e214"; }
+  .yasgui .glyphicon-knight:before {
+    content: "\e215"; }
+  .yasgui .glyphicon-baby-formula:before {
+    content: "\e216"; }
+  .yasgui .glyphicon-tent:before {
+    content: "\26fa"; }
+  .yasgui .glyphicon-blackboard:before {
+    content: "\e218"; }
+  .yasgui .glyphicon-bed:before {
+    content: "\e219"; }
+  .yasgui .glyphicon-apple:before {
+    content: "\f8ff"; }
+  .yasgui .glyphicon-erase:before {
+    content: "\e221"; }
+  .yasgui .glyphicon-hourglass:before {
+    content: "\231b"; }
+  .yasgui .glyphicon-lamp:before {
+    content: "\e223"; }
+  .yasgui .glyphicon-duplicate:before {
+    content: "\e224"; }
+  .yasgui .glyphicon-piggy-bank:before {
+    content: "\e225"; }
+  .yasgui .glyphicon-scissors:before {
+    content: "\e226"; }
+  .yasgui .glyphicon-bitcoin:before {
+    content: "\e227"; }
+  .yasgui .glyphicon-yen:before {
+    content: "\00a5"; }
+  .yasgui .glyphicon-ruble:before {
+    content: "\20bd"; }
+  .yasgui .glyphicon-scale:before {
+    content: "\e230"; }
+  .yasgui .glyphicon-ice-lolly:before {
+    content: "\e231"; }
+  .yasgui .glyphicon-ice-lolly-tasted:before {
+    content: "\e232"; }
+  .yasgui .glyphicon-education:before {
+    content: "\e233"; }
+  .yasgui .glyphicon-option-horizontal:before {
+    content: "\e234"; }
+  .yasgui .glyphicon-option-vertical:before {
+    content: "\e235"; }
+  .yasgui .glyphicon-menu-hamburger:before {
+    content: "\e236"; }
+  .yasgui .glyphicon-modal-window:before {
+    content: "\e237"; }
+  .yasgui .glyphicon-oil:before {
+    content: "\e238"; }
+  .yasgui .glyphicon-grain:before {
+    content: "\e239"; }
+  .yasgui .glyphicon-sunglasses:before {
+    content: "\e240"; }
+  .yasgui .glyphicon-text-size:before {
+    content: "\e241"; }
+  .yasgui .glyphicon-text-color:before {
+    content: "\e242"; }
+  .yasgui .glyphicon-text-background:before {
+    content: "\e243"; }
+  .yasgui .glyphicon-object-align-top:before {
+    content: "\e244"; }
+  .yasgui .glyphicon-object-align-bottom:before {
+    content: "\e245"; }
+  .yasgui .glyphicon-object-align-horizontal:before {
+    content: "\e246"; }
+  .yasgui .glyphicon-object-align-left:before {
+    content: "\e247"; }
+  .yasgui .glyphicon-object-align-vertical:before {
+    content: "\e248"; }
+  .yasgui .glyphicon-object-align-right:before {
+    content: "\e249"; }
+  .yasgui .glyphicon-triangle-right:before {
+    content: "\e250"; }
+  .yasgui .glyphicon-triangle-left:before {
+    content: "\e251"; }
+  .yasgui .glyphicon-triangle-bottom:before {
+    content: "\e252"; }
+  .yasgui .glyphicon-triangle-top:before {
+    content: "\e253"; }
+  .yasgui .glyphicon-console:before {
+    content: "\e254"; }
+  .yasgui .glyphicon-superscript:before {
+    content: "\e255"; }
+  .yasgui .glyphicon-subscript:before {
+    content: "\e256"; }
+  .yasgui .glyphicon-menu-left:before {
+    content: "\e257"; }
+  .yasgui .glyphicon-menu-right:before {
+    content: "\e258"; }
+  .yasgui .glyphicon-menu-down:before {
+    content: "\e259"; }
+  .yasgui .glyphicon-menu-up:before {
+    content: "\e260"; }
   .yasgui * {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -647,7 +746,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     box-sizing: border-box; }
   .yasgui html {
     font-size: 10px;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
+    -webkit-tap-highlight-color: transparent; }
   .yasgui body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 14px;
@@ -684,9 +783,9 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 4px;
-    -webkit-transition: all 0.2s ease-in-out;
-    -o-transition: all 0.2s ease-in-out;
-    transition: all 0.2s ease-in-out;
+    -webkit-transition: all .2s ease-in-out;
+    -o-transition: all .2s ease-in-out;
+    transition: all .2s ease-in-out;
     display: inline-block;
     max-width: 100%;
     height: auto; }
@@ -758,7 +857,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     font-size: 85%; }
   .yasgui mark, .yasgui .mark {
     background-color: #fcf8e3;
-    padding: 0.2em; }
+    padding: .2em; }
   .yasgui .text-left {
     text-align: left; }
   .yasgui .text-right {
@@ -862,10 +961,8 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
-
     .yasgui .dl-horizontal dd {
-      margin-left: 180px; }
- }
+      margin-left: 180px; } }
   .yasgui abbr[title], .yasgui abbr[data-original-title] {
     cursor: help;
     border-bottom: 1px dotted #777777; }
@@ -1091,474 +1188,318 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   @media (min-width: 768px) {
     .yasgui .col-sm-1, .yasgui .col-sm-2, .yasgui .col-sm-3, .yasgui .col-sm-4, .yasgui .col-sm-5, .yasgui .col-sm-6, .yasgui .col-sm-7, .yasgui .col-sm-8, .yasgui .col-sm-9, .yasgui .col-sm-10, .yasgui .col-sm-11, .yasgui .col-sm-12 {
       float: left; }
-
     .yasgui .col-sm-1 {
       width: 8.33333%; }
-
     .yasgui .col-sm-2 {
       width: 16.66667%; }
-
     .yasgui .col-sm-3 {
       width: 25%; }
-
     .yasgui .col-sm-4 {
       width: 33.33333%; }
-
     .yasgui .col-sm-5 {
       width: 41.66667%; }
-
     .yasgui .col-sm-6 {
       width: 50%; }
-
     .yasgui .col-sm-7 {
       width: 58.33333%; }
-
     .yasgui .col-sm-8 {
       width: 66.66667%; }
-
     .yasgui .col-sm-9 {
       width: 75%; }
-
     .yasgui .col-sm-10 {
       width: 83.33333%; }
-
     .yasgui .col-sm-11 {
       width: 91.66667%; }
-
     .yasgui .col-sm-12 {
       width: 100%; }
-
     .yasgui .col-sm-pull-0 {
       right: auto; }
-
     .yasgui .col-sm-pull-1 {
       right: 8.33333%; }
-
     .yasgui .col-sm-pull-2 {
       right: 16.66667%; }
-
     .yasgui .col-sm-pull-3 {
       right: 25%; }
-
     .yasgui .col-sm-pull-4 {
       right: 33.33333%; }
-
     .yasgui .col-sm-pull-5 {
       right: 41.66667%; }
-
     .yasgui .col-sm-pull-6 {
       right: 50%; }
-
     .yasgui .col-sm-pull-7 {
       right: 58.33333%; }
-
     .yasgui .col-sm-pull-8 {
       right: 66.66667%; }
-
     .yasgui .col-sm-pull-9 {
       right: 75%; }
-
     .yasgui .col-sm-pull-10 {
       right: 83.33333%; }
-
     .yasgui .col-sm-pull-11 {
       right: 91.66667%; }
-
     .yasgui .col-sm-pull-12 {
       right: 100%; }
-
     .yasgui .col-sm-push-0 {
       left: auto; }
-
     .yasgui .col-sm-push-1 {
       left: 8.33333%; }
-
     .yasgui .col-sm-push-2 {
       left: 16.66667%; }
-
     .yasgui .col-sm-push-3 {
       left: 25%; }
-
     .yasgui .col-sm-push-4 {
       left: 33.33333%; }
-
     .yasgui .col-sm-push-5 {
       left: 41.66667%; }
-
     .yasgui .col-sm-push-6 {
       left: 50%; }
-
     .yasgui .col-sm-push-7 {
       left: 58.33333%; }
-
     .yasgui .col-sm-push-8 {
       left: 66.66667%; }
-
     .yasgui .col-sm-push-9 {
       left: 75%; }
-
     .yasgui .col-sm-push-10 {
       left: 83.33333%; }
-
     .yasgui .col-sm-push-11 {
       left: 91.66667%; }
-
     .yasgui .col-sm-push-12 {
       left: 100%; }
-
     .yasgui .col-sm-offset-0 {
       margin-left: 0%; }
-
     .yasgui .col-sm-offset-1 {
       margin-left: 8.33333%; }
-
     .yasgui .col-sm-offset-2 {
       margin-left: 16.66667%; }
-
     .yasgui .col-sm-offset-3 {
       margin-left: 25%; }
-
     .yasgui .col-sm-offset-4 {
       margin-left: 33.33333%; }
-
     .yasgui .col-sm-offset-5 {
       margin-left: 41.66667%; }
-
     .yasgui .col-sm-offset-6 {
       margin-left: 50%; }
-
     .yasgui .col-sm-offset-7 {
       margin-left: 58.33333%; }
-
     .yasgui .col-sm-offset-8 {
       margin-left: 66.66667%; }
-
     .yasgui .col-sm-offset-9 {
       margin-left: 75%; }
-
     .yasgui .col-sm-offset-10 {
       margin-left: 83.33333%; }
-
     .yasgui .col-sm-offset-11 {
       margin-left: 91.66667%; }
-
     .yasgui .col-sm-offset-12 {
-      margin-left: 100%; }
- }
+      margin-left: 100%; } }
   @media (min-width: 992px) {
     .yasgui .col-md-1, .yasgui .col-md-2, .yasgui .col-md-3, .yasgui .col-md-4, .yasgui .col-md-5, .yasgui .col-md-6, .yasgui .col-md-7, .yasgui .col-md-8, .yasgui .col-md-9, .yasgui .col-md-10, .yasgui .col-md-11, .yasgui .col-md-12 {
       float: left; }
-
     .yasgui .col-md-1 {
       width: 8.33333%; }
-
     .yasgui .col-md-2 {
       width: 16.66667%; }
-
     .yasgui .col-md-3 {
       width: 25%; }
-
     .yasgui .col-md-4 {
       width: 33.33333%; }
-
     .yasgui .col-md-5 {
       width: 41.66667%; }
-
     .yasgui .col-md-6 {
       width: 50%; }
-
     .yasgui .col-md-7 {
       width: 58.33333%; }
-
     .yasgui .col-md-8 {
       width: 66.66667%; }
-
     .yasgui .col-md-9 {
       width: 75%; }
-
     .yasgui .col-md-10 {
       width: 83.33333%; }
-
     .yasgui .col-md-11 {
       width: 91.66667%; }
-
     .yasgui .col-md-12 {
       width: 100%; }
-
     .yasgui .col-md-pull-0 {
       right: auto; }
-
     .yasgui .col-md-pull-1 {
       right: 8.33333%; }
-
     .yasgui .col-md-pull-2 {
       right: 16.66667%; }
-
     .yasgui .col-md-pull-3 {
       right: 25%; }
-
     .yasgui .col-md-pull-4 {
       right: 33.33333%; }
-
     .yasgui .col-md-pull-5 {
       right: 41.66667%; }
-
     .yasgui .col-md-pull-6 {
       right: 50%; }
-
     .yasgui .col-md-pull-7 {
       right: 58.33333%; }
-
     .yasgui .col-md-pull-8 {
       right: 66.66667%; }
-
     .yasgui .col-md-pull-9 {
       right: 75%; }
-
     .yasgui .col-md-pull-10 {
       right: 83.33333%; }
-
     .yasgui .col-md-pull-11 {
       right: 91.66667%; }
-
     .yasgui .col-md-pull-12 {
       right: 100%; }
-
     .yasgui .col-md-push-0 {
       left: auto; }
-
     .yasgui .col-md-push-1 {
       left: 8.33333%; }
-
     .yasgui .col-md-push-2 {
       left: 16.66667%; }
-
     .yasgui .col-md-push-3 {
       left: 25%; }
-
     .yasgui .col-md-push-4 {
       left: 33.33333%; }
-
     .yasgui .col-md-push-5 {
       left: 41.66667%; }
-
     .yasgui .col-md-push-6 {
       left: 50%; }
-
     .yasgui .col-md-push-7 {
       left: 58.33333%; }
-
     .yasgui .col-md-push-8 {
       left: 66.66667%; }
-
     .yasgui .col-md-push-9 {
       left: 75%; }
-
     .yasgui .col-md-push-10 {
       left: 83.33333%; }
-
     .yasgui .col-md-push-11 {
       left: 91.66667%; }
-
     .yasgui .col-md-push-12 {
       left: 100%; }
-
     .yasgui .col-md-offset-0 {
       margin-left: 0%; }
-
     .yasgui .col-md-offset-1 {
       margin-left: 8.33333%; }
-
     .yasgui .col-md-offset-2 {
       margin-left: 16.66667%; }
-
     .yasgui .col-md-offset-3 {
       margin-left: 25%; }
-
     .yasgui .col-md-offset-4 {
       margin-left: 33.33333%; }
-
     .yasgui .col-md-offset-5 {
       margin-left: 41.66667%; }
-
     .yasgui .col-md-offset-6 {
       margin-left: 50%; }
-
     .yasgui .col-md-offset-7 {
       margin-left: 58.33333%; }
-
     .yasgui .col-md-offset-8 {
       margin-left: 66.66667%; }
-
     .yasgui .col-md-offset-9 {
       margin-left: 75%; }
-
     .yasgui .col-md-offset-10 {
       margin-left: 83.33333%; }
-
     .yasgui .col-md-offset-11 {
       margin-left: 91.66667%; }
-
     .yasgui .col-md-offset-12 {
-      margin-left: 100%; }
- }
+      margin-left: 100%; } }
   @media (min-width: 1200px) {
     .yasgui .col-lg-1, .yasgui .col-lg-2, .yasgui .col-lg-3, .yasgui .col-lg-4, .yasgui .col-lg-5, .yasgui .col-lg-6, .yasgui .col-lg-7, .yasgui .col-lg-8, .yasgui .col-lg-9, .yasgui .col-lg-10, .yasgui .col-lg-11, .yasgui .col-lg-12 {
       float: left; }
-
     .yasgui .col-lg-1 {
       width: 8.33333%; }
-
     .yasgui .col-lg-2 {
       width: 16.66667%; }
-
     .yasgui .col-lg-3 {
       width: 25%; }
-
     .yasgui .col-lg-4 {
       width: 33.33333%; }
-
     .yasgui .col-lg-5 {
       width: 41.66667%; }
-
     .yasgui .col-lg-6 {
       width: 50%; }
-
     .yasgui .col-lg-7 {
       width: 58.33333%; }
-
     .yasgui .col-lg-8 {
       width: 66.66667%; }
-
     .yasgui .col-lg-9 {
       width: 75%; }
-
     .yasgui .col-lg-10 {
       width: 83.33333%; }
-
     .yasgui .col-lg-11 {
       width: 91.66667%; }
-
     .yasgui .col-lg-12 {
       width: 100%; }
-
     .yasgui .col-lg-pull-0 {
       right: auto; }
-
     .yasgui .col-lg-pull-1 {
       right: 8.33333%; }
-
     .yasgui .col-lg-pull-2 {
       right: 16.66667%; }
-
     .yasgui .col-lg-pull-3 {
       right: 25%; }
-
     .yasgui .col-lg-pull-4 {
       right: 33.33333%; }
-
     .yasgui .col-lg-pull-5 {
       right: 41.66667%; }
-
     .yasgui .col-lg-pull-6 {
       right: 50%; }
-
     .yasgui .col-lg-pull-7 {
       right: 58.33333%; }
-
     .yasgui .col-lg-pull-8 {
       right: 66.66667%; }
-
     .yasgui .col-lg-pull-9 {
       right: 75%; }
-
     .yasgui .col-lg-pull-10 {
       right: 83.33333%; }
-
     .yasgui .col-lg-pull-11 {
       right: 91.66667%; }
-
     .yasgui .col-lg-pull-12 {
       right: 100%; }
-
     .yasgui .col-lg-push-0 {
       left: auto; }
-
     .yasgui .col-lg-push-1 {
       left: 8.33333%; }
-
     .yasgui .col-lg-push-2 {
       left: 16.66667%; }
-
     .yasgui .col-lg-push-3 {
       left: 25%; }
-
     .yasgui .col-lg-push-4 {
       left: 33.33333%; }
-
     .yasgui .col-lg-push-5 {
       left: 41.66667%; }
-
     .yasgui .col-lg-push-6 {
       left: 50%; }
-
     .yasgui .col-lg-push-7 {
       left: 58.33333%; }
-
     .yasgui .col-lg-push-8 {
       left: 66.66667%; }
-
     .yasgui .col-lg-push-9 {
       left: 75%; }
-
     .yasgui .col-lg-push-10 {
       left: 83.33333%; }
-
     .yasgui .col-lg-push-11 {
       left: 91.66667%; }
-
     .yasgui .col-lg-push-12 {
       left: 100%; }
-
     .yasgui .col-lg-offset-0 {
       margin-left: 0%; }
-
     .yasgui .col-lg-offset-1 {
       margin-left: 8.33333%; }
-
     .yasgui .col-lg-offset-2 {
       margin-left: 16.66667%; }
-
     .yasgui .col-lg-offset-3 {
       margin-left: 25%; }
-
     .yasgui .col-lg-offset-4 {
       margin-left: 33.33333%; }
-
     .yasgui .col-lg-offset-5 {
       margin-left: 41.66667%; }
-
     .yasgui .col-lg-offset-6 {
       margin-left: 50%; }
-
     .yasgui .col-lg-offset-7 {
       margin-left: 58.33333%; }
-
     .yasgui .col-lg-offset-8 {
       margin-left: 66.66667%; }
-
     .yasgui .col-lg-offset-9 {
       margin-left: 75%; }
-
     .yasgui .col-lg-offset-10 {
       margin-left: 83.33333%; }
-
     .yasgui .col-lg-offset-11 {
       margin-left: 91.66667%; }
-
     .yasgui .col-lg-offset-12 {
-      margin-left: 100%; }
- }
+      margin-left: 100%; } }
   .yasgui table {
     background-color: transparent; }
   .yasgui caption {
@@ -1594,7 +1535,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       border: 1px solid #ddd; }
     .yasgui .table-bordered > thead > tr > th, .yasgui .table-bordered > thead > tr > td {
       border-bottom-width: 2px; }
-  .yasgui .table-striped > tbody > tr:nth-child(odd) {
+  .yasgui .table-striped > tbody > tr:nth-of-type(odd) {
     background-color: #f9f9f9; }
   .yasgui .table-hover > tbody > tr:hover {
     background-color: #f5f5f5; }
@@ -1707,9 +1648,9 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     border-radius: 4px;
     -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-    -o-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s; }
+    -webkit-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s; }
     .yasgui .form-control:focus {
       border-color: #66afe9;
       outline: 0;
@@ -1723,7 +1664,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     .yasgui .form-control::-webkit-input-placeholder {
       color: #999; }
     .yasgui .form-control[disabled], .yasgui .form-control[readonly], fieldset[disabled] .yasgui .form-control {
-      cursor: not-allowed;
+      cursor: false;
       background-color: #eeeeee;
       opacity: 1; }
   .yasgui textarea.form-control {
@@ -1733,13 +1674,10 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   @media screen and (-webkit-min-device-pixel-ratio: 0) {
     .yasgui input[type="date"], .yasgui input[type="time"], .yasgui input[type="datetime-local"], .yasgui input[type="month"] {
       line-height: 34px; }
-
-    .yasgui input[type="date"].input-sm, .yasgui .input-group-sm > input[type="date"].form-control, .yasgui .input-group-sm > input[type="date"].input-group-addon, .yasgui .input-group-sm > .input-group-btn > input[type="date"].btn, .yasgui input[type="time"].input-sm, .yasgui .input-group-sm > input[type="time"].form-control, .yasgui .input-group-sm > input[type="time"].input-group-addon, .yasgui .input-group-sm > .input-group-btn > input[type="time"].btn, .yasgui input[type="datetime-local"].input-sm, .yasgui .input-group-sm > input[type="datetime-local"].form-control, .yasgui .input-group-sm > input[type="datetime-local"].input-group-addon, .yasgui .input-group-sm > .input-group-btn > input[type="datetime-local"].btn, .yasgui input[type="month"].input-sm, .yasgui .input-group-sm > input[type="month"].form-control, .yasgui .input-group-sm > input[type="month"].input-group-addon, .yasgui .input-group-sm > .input-group-btn > input[type="month"].btn {
-      line-height: 30px; }
-
-    .yasgui input[type="date"].input-lg, .yasgui .input-group-lg > input[type="date"].form-control, .yasgui .input-group-lg > input[type="date"].input-group-addon, .yasgui .input-group-lg > .input-group-btn > input[type="date"].btn, .yasgui input[type="time"].input-lg, .yasgui .input-group-lg > input[type="time"].form-control, .yasgui .input-group-lg > input[type="time"].input-group-addon, .yasgui .input-group-lg > .input-group-btn > input[type="time"].btn, .yasgui input[type="datetime-local"].input-lg, .yasgui .input-group-lg > input[type="datetime-local"].form-control, .yasgui .input-group-lg > input[type="datetime-local"].input-group-addon, .yasgui .input-group-lg > .input-group-btn > input[type="datetime-local"].btn, .yasgui input[type="month"].input-lg, .yasgui .input-group-lg > input[type="month"].form-control, .yasgui .input-group-lg > input[type="month"].input-group-addon, .yasgui .input-group-lg > .input-group-btn > input[type="month"].btn {
-      line-height: 46px; }
- }
+      .yasgui input[type="date"].input-sm, .yasgui .input-group-sm > input[type="date"].form-control, .yasgui .input-group-sm > input[type="date"].input-group-addon, .yasgui .input-group-sm > .input-group-btn > input[type="date"].btn, .input-group-sm .yasgui input[type="date"], .yasgui input[type="time"].input-sm, .yasgui .input-group-sm > input[type="time"].form-control, .yasgui .input-group-sm > input[type="time"].input-group-addon, .yasgui .input-group-sm > .input-group-btn > input[type="time"].btn, .input-group-sm .yasgui input[type="time"], .yasgui input[type="datetime-local"].input-sm, .yasgui .input-group-sm > input[type="datetime-local"].form-control, .yasgui .input-group-sm > input[type="datetime-local"].input-group-addon, .yasgui .input-group-sm > .input-group-btn > input[type="datetime-local"].btn, .input-group-sm .yasgui input[type="datetime-local"], .yasgui input[type="month"].input-sm, .yasgui .input-group-sm > input[type="month"].form-control, .yasgui .input-group-sm > input[type="month"].input-group-addon, .yasgui .input-group-sm > .input-group-btn > input[type="month"].btn, .input-group-sm .yasgui input[type="month"] {
+        line-height: 30px; }
+      .yasgui input[type="date"].input-lg, .yasgui .input-group-lg > input[type="date"].form-control, .yasgui .input-group-lg > input[type="date"].input-group-addon, .yasgui .input-group-lg > .input-group-btn > input[type="date"].btn, .input-group-lg .yasgui input[type="date"], .yasgui input[type="time"].input-lg, .yasgui .input-group-lg > input[type="time"].form-control, .yasgui .input-group-lg > input[type="time"].input-group-addon, .yasgui .input-group-lg > .input-group-btn > input[type="time"].btn, .input-group-lg .yasgui input[type="time"], .yasgui input[type="datetime-local"].input-lg, .yasgui .input-group-lg > input[type="datetime-local"].form-control, .yasgui .input-group-lg > input[type="datetime-local"].input-group-addon, .yasgui .input-group-lg > .input-group-btn > input[type="datetime-local"].btn, .input-group-lg .yasgui input[type="datetime-local"], .yasgui input[type="month"].input-lg, .yasgui .input-group-lg > input[type="month"].form-control, .yasgui .input-group-lg > input[type="month"].input-group-addon, .yasgui .input-group-lg > .input-group-btn > input[type="month"].btn, .input-group-lg .yasgui input[type="month"] {
+        line-height: 46px; } }
   .yasgui .form-group {
     margin-bottom: 15px; }
   .yasgui .radio, .yasgui .checkbox {
@@ -1770,11 +1708,11 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     margin-top: 0;
     margin-left: 10px; }
   .yasgui input[type="radio"][disabled], .yasgui input[type="radio"].disabled, fieldset[disabled] .yasgui input[type="radio"], .yasgui input[type="checkbox"][disabled], .yasgui input[type="checkbox"].disabled, fieldset[disabled] .yasgui input[type="checkbox"] {
-    cursor: not-allowed; }
+    cursor: false; }
   .yasgui .radio-inline.disabled, fieldset[disabled] .yasgui .radio-inline, .yasgui .checkbox-inline.disabled, fieldset[disabled] .yasgui .checkbox-inline {
-    cursor: not-allowed; }
+    cursor: false; }
   .yasgui .radio.disabled label, fieldset[disabled] .yasgui .radio label, .yasgui .checkbox.disabled label, fieldset[disabled] .yasgui .checkbox label {
-    cursor: not-allowed; }
+    cursor: false; }
   .yasgui .form-control-static {
     padding-top: 7px;
     padding-bottom: 7px;
@@ -1782,28 +1720,60 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     .yasgui .form-control-static.input-lg, .yasgui .input-group-lg > .form-control-static.form-control, .yasgui .input-group-lg > .form-control-static.input-group-addon, .yasgui .input-group-lg > .input-group-btn > .form-control-static.btn, .yasgui .form-control-static.input-sm, .yasgui .input-group-sm > .form-control-static.form-control, .yasgui .input-group-sm > .form-control-static.input-group-addon, .yasgui .input-group-sm > .input-group-btn > .form-control-static.btn {
       padding-left: 0;
       padding-right: 0; }
-  .yasgui .input-sm, .yasgui .input-group-sm > .form-control, .yasgui .input-group-sm > .input-group-addon, .yasgui .input-group-sm > .input-group-btn > .btn, .yasgui .form-group-sm .form-control {
+  .yasgui .input-sm, .yasgui .input-group-sm > .form-control, .yasgui .input-group-sm > .input-group-addon, .yasgui .input-group-sm > .input-group-btn > .btn {
     height: 30px;
     padding: 5px 10px;
     font-size: 12px;
     line-height: 1.5;
     border-radius: 3px; }
-  .yasgui select.input-sm, .yasgui .input-group-sm > select.form-control, .yasgui .input-group-sm > select.input-group-addon, .yasgui .input-group-sm > .input-group-btn > select.btn, .yasgui .form-group-sm .form-control {
+  .yasgui select.input-sm, .yasgui .input-group-sm > select.form-control, .yasgui .input-group-sm > select.input-group-addon, .yasgui .input-group-sm > .input-group-btn > select.btn {
     height: 30px;
     line-height: 30px; }
-  .yasgui textarea.input-sm, .yasgui .input-group-sm > textarea.form-control, .yasgui .input-group-sm > textarea.input-group-addon, .yasgui .input-group-sm > .input-group-btn > textarea.btn, .yasgui .form-group-sm .form-control, .yasgui select[multiple].input-sm, .yasgui .input-group-sm > select[multiple].form-control, .yasgui .input-group-sm > select[multiple].input-group-addon, .yasgui .input-group-sm > .input-group-btn > select[multiple].btn, .yasgui .form-group-sm .form-control {
+  .yasgui textarea.input-sm, .yasgui .input-group-sm > textarea.form-control, .yasgui .input-group-sm > textarea.input-group-addon, .yasgui .input-group-sm > .input-group-btn > textarea.btn, .yasgui select[multiple].input-sm, .yasgui .input-group-sm > select[multiple].form-control, .yasgui .input-group-sm > select[multiple].input-group-addon, .yasgui .input-group-sm > .input-group-btn > select[multiple].btn {
     height: auto; }
-  .yasgui .input-lg, .yasgui .input-group-lg > .form-control, .yasgui .input-group-lg > .input-group-addon, .yasgui .input-group-lg > .input-group-btn > .btn, .yasgui .form-group-lg .form-control {
+  .yasgui .form-group-sm .form-control {
+    height: 30px;
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px; }
+  .yasgui .form-group-sm select.form-control {
+    height: 30px;
+    line-height: 30px; }
+  .yasgui .form-group-sm textarea.form-control, .yasgui .form-group-sm select[multiple].form-control {
+    height: auto; }
+  .yasgui .form-group-sm .form-control-static {
+    height: 30px;
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5; }
+  .yasgui .input-lg, .yasgui .input-group-lg > .form-control, .yasgui .input-group-lg > .input-group-addon, .yasgui .input-group-lg > .input-group-btn > .btn {
     height: 46px;
     padding: 10px 16px;
     font-size: 18px;
-    line-height: 1.33;
+    line-height: 1.33333;
     border-radius: 6px; }
-  .yasgui select.input-lg, .yasgui .input-group-lg > select.form-control, .yasgui .input-group-lg > select.input-group-addon, .yasgui .input-group-lg > .input-group-btn > select.btn, .yasgui .form-group-lg .form-control {
+  .yasgui select.input-lg, .yasgui .input-group-lg > select.form-control, .yasgui .input-group-lg > select.input-group-addon, .yasgui .input-group-lg > .input-group-btn > select.btn {
     height: 46px;
     line-height: 46px; }
-  .yasgui textarea.input-lg, .yasgui .input-group-lg > textarea.form-control, .yasgui .input-group-lg > textarea.input-group-addon, .yasgui .input-group-lg > .input-group-btn > textarea.btn, .yasgui .form-group-lg .form-control, .yasgui select[multiple].input-lg, .yasgui .input-group-lg > select[multiple].form-control, .yasgui .input-group-lg > select[multiple].input-group-addon, .yasgui .input-group-lg > .input-group-btn > select[multiple].btn, .yasgui .form-group-lg .form-control {
+  .yasgui textarea.input-lg, .yasgui .input-group-lg > textarea.form-control, .yasgui .input-group-lg > textarea.input-group-addon, .yasgui .input-group-lg > .input-group-btn > textarea.btn, .yasgui select[multiple].input-lg, .yasgui .input-group-lg > select[multiple].form-control, .yasgui .input-group-lg > select[multiple].input-group-addon, .yasgui .input-group-lg > .input-group-btn > select[multiple].btn {
     height: auto; }
+  .yasgui .form-group-lg .form-control {
+    height: 46px;
+    padding: 10px 16px;
+    font-size: 18px;
+    line-height: 1.33333;
+    border-radius: 6px; }
+  .yasgui .form-group-lg select.form-control {
+    height: 46px;
+    line-height: 46px; }
+  .yasgui .form-group-lg textarea.form-control, .yasgui .form-group-lg select[multiple].form-control {
+    height: auto; }
+  .yasgui .form-group-lg .form-control-static {
+    height: 46px;
+    padding: 10px 16px;
+    font-size: 18px;
+    line-height: 1.33333; }
   .yasgui .has-feedback {
     position: relative; }
     .yasgui .has-feedback .form-control {
@@ -1889,28 +1859,22 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       display: inline-block;
       margin-bottom: 0;
       vertical-align: middle; }
-
     .yasgui .form-inline .form-control {
       display: inline-block;
       width: auto;
       vertical-align: middle; }
-
     .yasgui .form-inline .form-control-static {
       display: inline-block; }
-
     .yasgui .form-inline .input-group {
       display: inline-table;
       vertical-align: middle; }
       .yasgui .form-inline .input-group .input-group-addon, .yasgui .form-inline .input-group .input-group-btn, .yasgui .form-inline .input-group .form-control {
         width: auto; }
-
     .yasgui .form-inline .input-group > .form-control {
       width: 100%; }
-
     .yasgui .form-inline .control-label {
       margin-bottom: 0;
       vertical-align: middle; }
-
     .yasgui .form-inline .radio, .yasgui .form-inline .checkbox {
       display: inline-block;
       margin-top: 0;
@@ -1918,14 +1882,11 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       vertical-align: middle; }
       .yasgui .form-inline .radio label, .yasgui .form-inline .checkbox label {
         padding-left: 0; }
-
     .yasgui .form-inline .radio input[type="radio"], .yasgui .form-inline .checkbox input[type="checkbox"] {
       position: relative;
       margin-left: 0; }
-
     .yasgui .form-inline .has-feedback .form-control-feedback {
-      top: 0; }
- }
+      top: 0; } }
   .yasgui .form-horizontal .radio, .yasgui .form-horizontal .checkbox, .yasgui .form-horizontal .radio-inline, .yasgui .form-horizontal .checkbox-inline {
     margin-top: 0;
     margin-bottom: 0;
@@ -1944,18 +1905,15 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     .yasgui .form-horizontal .control-label {
       text-align: right;
       margin-bottom: 0;
-      padding-top: 7px; }
- }
+      padding-top: 7px; } }
   .yasgui .form-horizontal .has-feedback .form-control-feedback {
     right: 15px; }
   @media (min-width: 768px) {
     .yasgui .form-horizontal .form-group-lg .control-label {
-      padding-top: 14.3px; }
- }
+      padding-top: 14.33333px; } }
   @media (min-width: 768px) {
     .yasgui .form-horizontal .form-group-sm .control-label {
-      padding-top: 6px; }
- }
+      padding-top: 6px; } }
   .yasgui .btn {
     display: inline-block;
     margin-bottom: 0;
@@ -1988,7 +1946,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
       box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125); }
     .yasgui .btn.disabled, .yasgui .btn[disabled], fieldset[disabled] .yasgui .btn {
-      cursor: not-allowed;
+      cursor: false;
       pointer-events: none;
       opacity: 0.65;
       filter: alpha(opacity=65);
@@ -2110,7 +2068,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   .yasgui .btn-lg, .yasgui .btn-group-lg > .btn {
     padding: 10px 16px;
     font-size: 18px;
-    line-height: 1.33;
+    line-height: 1.33333;
     border-radius: 6px; }
   .yasgui .btn-sm, .yasgui .btn-group-sm > .btn {
     padding: 5px 10px;
@@ -2131,9 +2089,9 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     width: 100%; }
   .yasgui .fade {
     opacity: 0;
-    -webkit-transition: opacity 0.15s linear;
-    -o-transition: opacity 0.15s linear;
-    transition: opacity 0.15s linear; }
+    -webkit-transition: opacity .15s linear;
+    -o-transition: opacity .15s linear;
+    transition: opacity .15s linear; }
     .yasgui .fade.in {
       opacity: 1; }
   .yasgui .collapse {
@@ -2152,8 +2110,8 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     overflow: hidden;
     -webkit-transition-property: height, visibility;
     transition-property: height, visibility;
-    -webkit-transition-duration: 0.35s;
-    transition-duration: 0.35s;
+    -webkit-transition-duration: .35s;
+    transition-duration: .35s;
     -webkit-transition-timing-function: ease;
     transition-timing-function: ease; }
   .yasgui .caret {
@@ -2165,7 +2123,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     border-top: 4px solid;
     border-right: 4px solid transparent;
     border-left: 4px solid transparent; }
-  .yasgui .dropdown {
+  .yasgui .dropup, .yasgui .dropdown {
     position: relative; }
   .yasgui .dropdown-toggle:focus {
     outline: 0; }
@@ -2221,7 +2179,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     background-color: transparent;
     background-image: none;
     filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
-    cursor: not-allowed; }
+    cursor: false; }
   .yasgui .open > .dropdown-menu {
     display: block; }
   .yasgui .open > a {
@@ -2256,15 +2214,14 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   .yasgui .dropup .dropdown-menu, .yasgui .navbar-fixed-bottom .dropdown .dropdown-menu {
     top: auto;
     bottom: 100%;
-    margin-bottom: 1px; }
+    margin-bottom: 2px; }
   @media (min-width: 768px) {
     .yasgui .navbar-right .dropdown-menu {
       right: 0;
       left: auto; }
     .yasgui .navbar-right .dropdown-menu-left {
       left: 0;
-      right: auto; }
- }
+      right: auto; } }
   .yasgui .btn-group, .yasgui .btn-group-vertical {
     position: relative;
     display: inline-block;
@@ -2301,10 +2258,10 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     float: left; }
   .yasgui .btn-group > .btn-group:not(:first-child):not(:last-child) > .btn {
     border-radius: 0; }
-  .yasgui .btn-group > .btn-group:first-child > .btn:last-child, .yasgui .btn-group > .btn-group:first-child > .dropdown-toggle {
+  .yasgui .btn-group > .btn-group:first-child:not(:last-child) > .btn:last-child, .yasgui .btn-group > .btn-group:first-child:not(:last-child) > .dropdown-toggle {
     border-bottom-right-radius: 0;
     border-top-right-radius: 0; }
-  .yasgui .btn-group > .btn-group:last-child > .btn:first-child {
+  .yasgui .btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child {
     border-bottom-left-radius: 0;
     border-top-left-radius: 0; }
   .yasgui .btn-group .dropdown-toggle:active, .yasgui .btn-group.open .dropdown-toggle {
@@ -2469,7 +2426,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
           color: #777777;
           text-decoration: none;
           background-color: transparent;
-          cursor: not-allowed; }
+          cursor: false; }
     .yasgui .nav .open > a, .yasgui .nav .open > a:hover, .yasgui .nav .open > a:focus {
       background-color: #eeeeee;
       border-color: #337ab7; }
@@ -2527,8 +2484,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
         display: table-cell;
         width: 1%; }
         .yasgui .nav-justified > li > a, .yasgui .nav-tabs.nav-justified > li > a {
-          margin-bottom: 0; }
- }
+          margin-bottom: 0; } }
   .yasgui .nav-tabs-justified, .yasgui .nav-tabs.nav-justified {
     border-bottom: 0; }
     .yasgui .nav-tabs-justified > li > a, .yasgui .nav-tabs.nav-justified > li > a {
@@ -2540,10 +2496,8 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       .yasgui .nav-tabs-justified > li > a, .yasgui .nav-tabs.nav-justified > li > a {
         border-bottom: 1px solid #ddd;
         border-radius: 4px 4px 0 0; }
-
       .yasgui .nav-tabs-justified > .active > a, .yasgui .nav-tabs.nav-justified > .active > a, .yasgui .nav-tabs-justified > .active > a:hover, .yasgui .nav-tabs.nav-justified > .active > a:hover, .yasgui .nav-tabs-justified > .active > a:focus, .yasgui .nav-tabs.nav-justified > .active > a:focus {
-        border-bottom-color: #fff; }
- }
+        border-bottom-color: #fff; } }
   .yasgui .tab-content > .tab-pane {
     display: none;
     visibility: hidden; }
@@ -2650,8 +2604,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       display: block; }
     @media (min-width: 768px) {
       .navbar > .container .yasgui .navbar-brand, .navbar > .container-fluid .yasgui .navbar-brand {
-        margin-left: -15px; }
- }
+        margin-left: -15px; } }
   .yasgui .navbar-toggle {
     position: relative;
     float: right;
@@ -2695,8 +2648,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
         .yasgui .navbar-nav .open .dropdown-menu > li > a {
           line-height: 20px; }
           .yasgui .navbar-nav .open .dropdown-menu > li > a:hover, .yasgui .navbar-nav .open .dropdown-menu > li > a:focus {
-            background-image: none; }
- }
+            background-image: none; } }
     @media (min-width: 768px) {
       .yasgui .navbar-nav {
         float: left;
@@ -2721,28 +2673,22 @@ As a consequence, the 'opening' transition has this perspective applied, where t
         display: inline-block;
         margin-bottom: 0;
         vertical-align: middle; }
-
       .yasgui .navbar-form .form-control {
         display: inline-block;
         width: auto;
         vertical-align: middle; }
-
       .yasgui .navbar-form .form-control-static {
         display: inline-block; }
-
       .yasgui .navbar-form .input-group {
         display: inline-table;
         vertical-align: middle; }
         .yasgui .navbar-form .input-group .input-group-addon, .yasgui .navbar-form .input-group .input-group-btn, .yasgui .navbar-form .input-group .form-control {
           width: auto; }
-
       .yasgui .navbar-form .input-group > .form-control {
         width: 100%; }
-
       .yasgui .navbar-form .control-label {
         margin-bottom: 0;
         vertical-align: middle; }
-
       .yasgui .navbar-form .radio, .yasgui .navbar-form .checkbox {
         display: inline-block;
         margin-top: 0;
@@ -2750,14 +2696,11 @@ As a consequence, the 'opening' transition has this perspective applied, where t
         vertical-align: middle; }
         .yasgui .navbar-form .radio label, .yasgui .navbar-form .checkbox label {
           padding-left: 0; }
-
       .yasgui .navbar-form .radio input[type="radio"], .yasgui .navbar-form .checkbox input[type="checkbox"] {
         position: relative;
         margin-left: 0; }
-
       .yasgui .navbar-form .has-feedback .form-control-feedback {
-        top: 0; }
- }
+        top: 0; } }
     @media (max-width: 767px) {
       .yasgui .navbar-form .form-group {
         margin-bottom: 5px; }
@@ -2778,6 +2721,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     border-top-right-radius: 0;
     border-top-left-radius: 0; }
   .yasgui .navbar-fixed-bottom .navbar-nav > li > .dropdown-menu {
+    margin-bottom: 0;
     border-top-right-radius: 4px;
     border-top-left-radius: 4px;
     border-bottom-right-radius: 0;
@@ -2802,13 +2746,11 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   @media (min-width: 768px) {
     .yasgui .navbar-left {
       float: left !important; }
-
     .yasgui .navbar-right {
       float: right !important;
       margin-right: -15px; }
       .yasgui .navbar-right ~ .navbar-right {
-        margin-right: 0; }
- }
+        margin-right: 0; } }
   .yasgui .navbar-default {
     background-color: #f8f8f8;
     border-color: #e7e7e7; }
@@ -2852,8 +2794,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
         background-color: #e7e7e7; }
       .yasgui .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a, .yasgui .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:hover, .yasgui .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:focus {
         color: #ccc;
-        background-color: transparent; }
- }
+        background-color: transparent; } }
     .yasgui .navbar-default .navbar-link {
       color: #777; }
       .yasgui .navbar-default .navbar-link:hover {
@@ -2911,8 +2852,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
         background-color: #090909; }
       .yasgui .navbar-inverse .navbar-nav .open .dropdown-menu > .disabled > a, .yasgui .navbar-inverse .navbar-nav .open .dropdown-menu > .disabled > a:hover, .yasgui .navbar-inverse .navbar-nav .open .dropdown-menu > .disabled > a:focus {
         color: #444;
-        background-color: transparent; }
- }
+        background-color: transparent; } }
     .yasgui .navbar-inverse .navbar-link {
       color: #9d9d9d; }
       .yasgui .navbar-inverse .navbar-link:hover {
@@ -2975,7 +2915,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       color: #777777;
       background-color: #fff;
       border-color: #ddd;
-      cursor: not-allowed; }
+      cursor: false; }
   .yasgui .pagination-lg > li > a, .yasgui .pagination-lg > li > span {
     padding: 10px 16px;
     font-size: 18px; }
@@ -3022,10 +2962,10 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     .yasgui .pager .disabled > a, .yasgui .pager .disabled > a:hover, .yasgui .pager .disabled > a:focus, .yasgui .pager .disabled > span {
       color: #777777;
       background-color: #fff;
-      cursor: not-allowed; }
+      cursor: false; }
   .yasgui .label {
     display: inline;
-    padding: 0.2em 0.6em 0.3em;
+    padding: .2em .6em .3em;
     font-size: 75%;
     font-weight: bold;
     line-height: 1;
@@ -3033,7 +2973,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     text-align: center;
     white-space: nowrap;
     vertical-align: baseline;
-    border-radius: 0.25em; }
+    border-radius: .25em; }
     .yasgui .label:empty {
       display: none; }
     .btn .yasgui .label {
@@ -3134,9 +3074,9 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 4px;
-    -webkit-transition: border 0.2s ease-in-out;
-    -o-transition: border 0.2s ease-in-out;
-    transition: border 0.2s ease-in-out; }
+    -webkit-transition: border .2s ease-in-out;
+    -o-transition: border .2s ease-in-out;
+    transition: border .2s ease-in-out; }
     .yasgui .thumbnail > img, .yasgui .thumbnail a > img {
       display: block;
       max-width: 100%;
@@ -3220,9 +3160,9 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     background-color: #337ab7;
     -webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
     box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
-    -webkit-transition: width 0.6s ease;
-    -o-transition: width 0.6s ease;
-    transition: width 0.6s ease; }
+    -webkit-transition: width .6s ease;
+    -o-transition: width .6s ease;
+    transition: width .6s ease; }
   .yasgui .progress-striped .progress-bar, .yasgui .progress-bar-striped {
     background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
     background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
@@ -3260,6 +3200,13 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     margin-top: 15px; }
     .yasgui .media:first-child {
       margin-top: 0; }
+  .yasgui .media, .yasgui .media-body {
+    zoom: 1;
+    overflow: hidden; }
+  .yasgui .media-body {
+    width: 10000px; }
+  .yasgui .media-object {
+    display: block; }
   .yasgui .media-right, .yasgui .media > .pull-right {
     padding-left: 10px; }
   .yasgui .media-left, .yasgui .media > .pull-left {
@@ -3305,7 +3252,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   .yasgui .list-group-item.disabled, .yasgui .list-group-item.disabled:hover, .yasgui .list-group-item.disabled:focus {
     background-color: #eeeeee;
     color: #777777;
-    cursor: not-allowed; }
+    cursor: false; }
     .yasgui .list-group-item.disabled .list-group-item-heading, .yasgui .list-group-item.disabled:hover .list-group-item-heading, .yasgui .list-group-item.disabled:focus .list-group-item-heading {
       color: inherit; }
     .yasgui .list-group-item.disabled .list-group-item-text, .yasgui .list-group-item.disabled:hover .list-group-item-text, .yasgui .list-group-item.disabled:focus .list-group-item-text {
@@ -3407,7 +3354,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     margin-bottom: 0;
     font-size: 16px;
     color: inherit; }
-    .yasgui .panel-title > a {
+    .yasgui .panel-title > a, .yasgui .panel-title > small, .yasgui .panel-title > .small, .yasgui .panel-title > small > a, .yasgui .panel-title > .small > a {
       color: inherit; }
   .yasgui .panel-footer {
     padding: 10px 15px;
@@ -3718,18 +3665,14 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     .yasgui .modal-dialog {
       width: 600px;
       margin: 30px auto; }
-
     .yasgui .modal-content {
       -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); }
-
     .yasgui .modal-sm {
-      width: 300px; }
- }
+      width: 300px; } }
   @media (min-width: 992px) {
     .yasgui .modal-lg {
-      width: 900px; }
- }
+      width: 900px; } }
   .yasgui .tooltip {
     position: absolute;
     z-index: 1070;
@@ -3929,9 +3872,9 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     .yasgui .carousel-inner > .item {
       display: none;
       position: relative;
-      -webkit-transition: 0.6s ease-in-out left;
-      -o-transition: 0.6s ease-in-out left;
-      transition: 0.6s ease-in-out left; }
+      -webkit-transition: .6s ease-in-out left;
+      -o-transition: .6s ease-in-out left;
+      transition: .6s ease-in-out left; }
       .yasgui .carousel-inner > .item > img, .yasgui .carousel-inner > .item > a > img {
         display: block;
         max-width: 100%;
@@ -3939,16 +3882,26 @@ As a consequence, the 'opening' transition has this perspective applied, where t
         line-height: 1; }
       @media all and (transform-3d), (-webkit-transform-3d) {
         .yasgui .carousel-inner > .item {
+          -webkit-transition: -webkit-transform 0.6s ease-in-out;
+          -moz-transition: -moz-transform 0.6s ease-in-out;
+          -o-transition: -o-transform 0.6s ease-in-out;
           transition: transform 0.6s ease-in-out;
+          -webkit-backface-visibility: hidden;
+          -moz-backface-visibility: hidden;
           backface-visibility: hidden;
+          -webkit-perspective: 1000;
+          -moz-perspective: 1000;
           perspective: 1000; }
           .yasgui .carousel-inner > .item.next, .yasgui .carousel-inner > .item.active.right {
+            -webkit-transform: translate3d(100%, 0, 0);
             transform: translate3d(100%, 0, 0);
             left: 0; }
           .yasgui .carousel-inner > .item.prev, .yasgui .carousel-inner > .item.active.left {
+            -webkit-transform: translate3d(-100%, 0, 0);
             transform: translate3d(-100%, 0, 0);
             left: 0; }
           .yasgui .carousel-inner > .item.next.left, .yasgui .carousel-inner > .item.prev.right, .yasgui .carousel-inner > .item.active {
+            -webkit-transform: translate3d(0, 0, 0);
             transform: translate3d(0, 0, 0);
             left: 0; } }
     .yasgui .carousel-inner > .active, .yasgui .carousel-inner > .next, .yasgui .carousel-inner > .prev {
@@ -4016,6 +3969,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       width: 20px;
       height: 20px;
       margin-top: -10px;
+      line-height: 1;
       font-family: serif; }
     .yasgui .carousel-control .icon-prev:before {
       content: '\2039'; }
@@ -4041,7 +3995,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       border-radius: 10px;
       cursor: pointer;
       background-color: #000 \9;
-      background-color: rgba(0, 0, 0, 0); }
+      background-color: transparent; }
     .yasgui .carousel-indicators .active {
       margin: 0;
       width: 12px;
@@ -4070,15 +4024,12 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       margin-left: -15px; }
     .yasgui .carousel-control .glyphicon-chevron-right, .yasgui .carousel-control .icon-next {
       margin-right: -15px; }
-
     .yasgui .carousel-caption {
       left: 20%;
       right: 20%;
       padding-bottom: 30px; }
-
     .yasgui .carousel-indicators {
-      bottom: 20px; }
- }
+      bottom: 20px; } }
   .yasgui .clearfix:before, .yasgui .clearfix:after {
     content: " ";
     display: table; }
@@ -4109,23 +4060,25 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     visibility: hidden !important; }
   .yasgui .affix {
     position: fixed; }
-  .yasgui .visible-xs, .yasgui .visible-sm, .yasgui .visible-md, .yasgui .visible-lg {
+  .yasgui .visible-xs {
+    display: none !important; }
+  .yasgui .visible-sm {
+    display: none !important; }
+  .yasgui .visible-md {
+    display: none !important; }
+  .yasgui .visible-lg {
     display: none !important; }
   .yasgui .visible-xs-block, .yasgui .visible-xs-inline, .yasgui .visible-xs-inline-block, .yasgui .visible-sm-block, .yasgui .visible-sm-inline, .yasgui .visible-sm-inline-block, .yasgui .visible-md-block, .yasgui .visible-md-inline, .yasgui .visible-md-inline-block, .yasgui .visible-lg-block, .yasgui .visible-lg-inline, .yasgui .visible-lg-inline-block {
     display: none !important; }
   @media (max-width: 767px) {
     .yasgui .visible-xs {
       display: block !important; }
-
     .yasgui table.visible-xs {
       display: table; }
-
     .yasgui tr.visible-xs {
       display: table-row !important; }
-
     .yasgui th.visible-xs, .yasgui td.visible-xs {
-      display: table-cell !important; }
- }
+      display: table-cell !important; } }
   @media (max-width: 767px) {
     .yasgui .visible-xs-block {
       display: block !important; } }
@@ -4138,16 +4091,12 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   @media (min-width: 768px) and (max-width: 991px) {
     .yasgui .visible-sm {
       display: block !important; }
-
     .yasgui table.visible-sm {
       display: table; }
-
     .yasgui tr.visible-sm {
       display: table-row !important; }
-
     .yasgui th.visible-sm, .yasgui td.visible-sm {
-      display: table-cell !important; }
- }
+      display: table-cell !important; } }
   @media (min-width: 768px) and (max-width: 991px) {
     .yasgui .visible-sm-block {
       display: block !important; } }
@@ -4160,16 +4109,12 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   @media (min-width: 992px) and (max-width: 1199px) {
     .yasgui .visible-md {
       display: block !important; }
-
     .yasgui table.visible-md {
       display: table; }
-
     .yasgui tr.visible-md {
       display: table-row !important; }
-
     .yasgui th.visible-md, .yasgui td.visible-md {
-      display: table-cell !important; }
- }
+      display: table-cell !important; } }
   @media (min-width: 992px) and (max-width: 1199px) {
     .yasgui .visible-md-block {
       display: block !important; } }
@@ -4182,16 +4127,12 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   @media (min-width: 1200px) {
     .yasgui .visible-lg {
       display: block !important; }
-
     .yasgui table.visible-lg {
       display: table; }
-
     .yasgui tr.visible-lg {
       display: table-row !important; }
-
     .yasgui th.visible-lg, .yasgui td.visible-lg {
-      display: table-cell !important; }
- }
+      display: table-cell !important; } }
   @media (min-width: 1200px) {
     .yasgui .visible-lg-block {
       display: block !important; } }
@@ -4203,35 +4144,27 @@ As a consequence, the 'opening' transition has this perspective applied, where t
       display: inline-block !important; } }
   @media (max-width: 767px) {
     .yasgui .hidden-xs {
-      display: none !important; }
- }
+      display: none !important; } }
   @media (min-width: 768px) and (max-width: 991px) {
     .yasgui .hidden-sm {
-      display: none !important; }
- }
+      display: none !important; } }
   @media (min-width: 992px) and (max-width: 1199px) {
     .yasgui .hidden-md {
-      display: none !important; }
- }
+      display: none !important; } }
   @media (min-width: 1200px) {
     .yasgui .hidden-lg {
-      display: none !important; }
- }
+      display: none !important; } }
   .yasgui .visible-print {
     display: none !important; }
   @media print {
     .yasgui .visible-print {
       display: block !important; }
-
     .yasgui table.visible-print {
       display: table; }
-
     .yasgui tr.visible-print {
       display: table-row !important; }
-
     .yasgui th.visible-print, .yasgui td.visible-print {
-      display: table-cell !important; }
- }
+      display: table-cell !important; } }
   .yasgui .visible-print-block {
     display: none !important; }
     @media print {
@@ -4249,8 +4182,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
         display: inline-block !important; } }
   @media print {
     .yasgui .hidden-print {
-      display: none !important; }
- }
+      display: none !important; } }
   .yasgui .yasqe .CodeMirror {
     border-color: #ddd; }
   .yasgui .yasr .CodeMirror {
@@ -4736,7 +4668,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     vertical-align: middle;
     display: inline-block;
     padding: 1px 0 0 0;
-    border-left: 1px solid rgba(0, 0, 0, 0);
+    border-left: 1px solid transparent;
     -webkit-border-radius: 0 2px 2px 0;
     -moz-border-radius: 0 2px 2px 0;
     border-radius: 0 2px 2px 0;
@@ -4746,7 +4678,7 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   .yasgui .selectize-control.plugin-remove_button [data-value] .remove:hover {
     background: rgba(0, 0, 0, 0.05); }
   .yasgui .selectize-control.plugin-remove_button [data-value].active .remove {
-    border-left-color: rgba(0, 0, 0, 0); }
+    border-left-color: transparent; }
   .yasgui .selectize-control.plugin-remove_button .disabled [data-value] .remove:hover {
     background: none; }
   .yasgui .selectize-control.plugin-remove_button .disabled [data-value] .remove {
@@ -4804,11 +4736,11 @@ As a consequence, the 'opening' transition has this perspective applied, where t
     padding: 1px 3px;
     background: #efefef;
     color: #333333;
-    border: 0 solid rgba(0, 0, 0, 0); }
+    border: 0 solid transparent; }
   .yasgui .selectize-control.multi .selectize-input > div.active {
     background: #428bca;
     color: #ffffff;
-    border: 0 solid rgba(0, 0, 0, 0); }
+    border: 0 solid transparent; }
   .yasgui .selectize-control.multi .selectize-input.disabled > div, .yasgui .selectize-control.multi .selectize-input.disabled > div.active {
     color: #808080;
     background: #ffffff;
@@ -5365,10 +5297,8 @@ As a consequence, the 'opening' transition has this perspective applied, where t
 @media print {
   .yasqe {
     /* Hide the cursor when printing */ }
-
   .yasqe .CodeMirror div.CodeMirror-cursors {
-    visibility: hidden; }
- }
+    visibility: hidden; } }
 
 .yasqe .cm-tab-wrap-hack:after {
   content: ''; }
@@ -6003,19 +5933,15 @@ li.CodeMirror-hint-active {
   .yasr .dataTables_wrapper .dataTables_info, .yasr .dataTables_wrapper .dataTables_paginate {
     float: none;
     text-align: center; }
-
   .yasr .dataTables_wrapper .dataTables_paginate {
-    margin-top: 0.5em; }
- }
+    margin-top: 0.5em; } }
 
 @media screen and (max-width: 640px) {
   .yasr .dataTables_wrapper .dataTables_length, .yasr .dataTables_wrapper .dataTables_filter {
     float: none;
     text-align: center; }
-
   .yasr .dataTables_wrapper .dataTables_filter {
-    margin-top: 0.5em; }
- }
+    margin-top: 0.5em; } }
 
 .yasr table.pvtTable {
   font-family: arial;
@@ -6438,10 +6364,8 @@ li.CodeMirror-hint-active {
 @media print {
   .yasr {
     /* Hide the cursor when printing */ }
-
   .yasr .CodeMirror div.CodeMirror-cursors {
-    visibility: hidden; }
- }
+    visibility: hidden; } }
 
 .yasr .cm-tab-wrap-hack:after {
   content: ''; }
@@ -6716,4 +6640,7 @@ li.CodeMirror-hint-active {
   margin: inherit; }
 
 div.modal-dialog.google-visualization-charteditor-dialog {
+  z-index: 100; }
+
+.CodeMirror-hints {
   z-index: 100; }
