@@ -5,15 +5,17 @@ var $ = require('jquery'),
 	YASGUI = require('./main.js');
 //we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 //We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
-var defaultPersistentYasqe = {
-	sparql: {
-		endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
-		acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
-		acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
-		args: YASGUI.YASQE.defaults.sparql.args,
-		defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
-		namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
-		requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod
+var defaultPersistent = {
+	yasqe: {
+		sparql: {
+			endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
+			acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
+			acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
+			args: YASGUI.YASQE.defaults.sparql.args,
+			defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
+			namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
+			requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod
+		}
 	}
 };
 
@@ -27,7 +29,7 @@ module.exports = function(yasgui, id, name) {
 			yasqe: defaultPersistentYasqe
 		}
 	} else {
-		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {}, defaultPersistentYasqe, yasgui.persistentOptions.tabManager.tabs[id]);
+		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {}, defaultPersistent, yasgui.persistentOptions.tabManager.tabs[id]);
 	}
 	var persistentOptions = yasgui.persistentOptions.tabManager.tabs[id];
 	var tab = {
@@ -100,10 +102,10 @@ module.exports = function(yasgui, id, name) {
 				persistentOptions.yasqe.value = yasqe.getValue();
 				yasgui.store();
 			});
-			tab.yasr = YASGUI.YASR(yasrContainer[0], {
+			tab.yasr = YASGUI.YASR(yasrContainer[0], $.extend({
 				//this way, the URLs in the results are prettified using the defined prefixes in the query
 				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
-			});
+			}, persistentOptions.yasr));
 			tab.yasqe.options.sparql.callbacks.complete = function() {
 				tab.yasr.setResponse.apply(this, arguments);
 				
@@ -148,7 +150,7 @@ module.exports = function(yasgui, id, name) {
 		if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
 	};
 	tab.destroy = function() {
-		yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
+		if (tab.yasr) yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
 	}
 	
 	

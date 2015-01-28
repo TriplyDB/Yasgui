@@ -92,7 +92,6 @@ $.fn.endpointCombi = function(yasgui, options) {
 	
 	
 	var $select = this;
-	console.log($select);
 	var defaults = {
 		selectize: {
 			plugins: ['allowRegularTextInput'],

@@ -68,6 +68,7 @@ module.exports = function(yasgui) {
 		if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
 			//ah, this is on first load. initialize some stuff
 			persistentOptions.tabOrder = [];
+			persistentOptions.tabs = {};
 			persistentOptions.selected = null;
 		}
 		var optionsFromUrl = require('./shareLink.js').getOptionsFromUrl();

@@ -26,20 +26,20 @@ module.exports = {
 			var params = [
 				{name: 'outputFormat', value: tab.yasr.options.output},
 				{name: 'query', value: tab.yasqe.getValue()},
-				{name: 'contentTypeConstruct', value: tab.persistentOptions.yasqe.acceptHeaderGraph},
-				{name: 'contentTypeSelect', value: tab.persistentOptions.yasqe.acceptHeaderSelect},
-				{name: 'endpoint', value: tab.persistentOptions.yasqe.endpoint},
-				{name: 'requestMethod', value: tab.persistentOptions.yasqe.requestMethod},
+				{name: 'contentTypeConstruct', value: tab.persistentOptions.yasqe.sparql.acceptHeaderGraph},
+				{name: 'contentTypeSelect', value: tab.persistentOptions.yasqe.sparql.acceptHeaderSelect},
+				{name: 'endpoint', value: tab.persistentOptions.yasqe.sparql.endpoint},
+				{name: 'requestMethod', value: tab.persistentOptions.yasqe.sparql.requestMethod},
 				{name: 'tabTitle', value: tab.persistentOptions.name}
 			];
 			
-			tab.persistentOptions.yasqe.args.forEach(function(paramPair){
+			tab.persistentOptions.yasqe.sparql.args.forEach(function(paramPair){
 				params.push(paramPair);
 			});
-			tab.persistentOptions.yasqe.namedGraphs.forEach(function(ng) {
+			tab.persistentOptions.yasqe.sparql.namedGraphs.forEach(function(ng) {
 				params.push({name: 'namedGraph', value: ng});
 			});
-			tab.persistentOptions.yasqe.defaultGraphs.forEach(function(dg){
+			tab.persistentOptions.yasqe.sparql.defaultGraphs.forEach(function(dg){
 				params.push({name: 'defaultGraph', value: dg});
 			});
 			
@@ -57,7 +57,7 @@ module.exports = {
 		}
 	},
 	getOptionsFromUrl: function() {
-		var options = {yasqe: {}, yasr:{}};
+		var options = {yasqe: {sparql: {}}, yasr:{}};
 		var params = getUrlParams();
 		var validYasguiOptions = false;
 		
@@ -71,25 +71,25 @@ module.exports = {
 				if (output == 'simpleTable') output = 'table';//this query link is from v1. don't have this plugin anymore
 				options.yasr.output = output;
 			} else if (paramPair.name == 'contentTypeConstruct') {
-				options.yasqe.acceptHeaderGraph = paramPair.value;
+				options.yasqe.sparql.acceptHeaderGraph = paramPair.value;
 			} else if (paramPair.name == 'contentTypeSelect') {
-				options.yasqe.acceptHeaderSelect = paramPair.value;
+				options.yasqe.sparql.acceptHeaderSelect = paramPair.value;
 			} else if (paramPair.name == 'endpoint') {
-				options.yasqe.endpoint = paramPair.value;
+				options.yasqe.sparql.endpoint = paramPair.value;
 			} else if (paramPair.name == 'requestMethod') {
-				options.yasqe.requestMethod = paramPair.value;
+				options.yasqe.sparql.requestMethod = paramPair.value;
 			} else if (paramPair.name == 'tabTitle') {
 				options.name = paramPair.value;
 			} else if (paramPair.name == 'namedGraph') {
 				if (!options.yasqe.namedGraphs) options.yasqe.namedGraphs = [];
-				options.yasqe.namedGraphs.push(paramPair);
+				options.yasqe.sparql.namedGraphs.push(paramPair);
 			} else if (paramPair.name == 'defaultGraph') {
 				if (!options.yasqe.defaultGraphs) options.yasqe.defaultGraphs = [];
-				options.yasqe.defaultGraphs.push(paramPair);
+				options.yasqe.sparql.defaultGraphs.push(paramPair);
 			} else {
 				if (!options.yasqe.args) options.yasqe.args = [];
 				//regular arguments. So store them as regular arguments
-				options.yasqe.args.push(paramPair);
+				options.yasqe.sparql.args.push(paramPair);
 			}
 		});
 		if (validYasguiOptions) {
