@@ -209,8 +209,26 @@ module.exports = function(yasgui) {
 						closeTab(tabId);
 					})
 			);
-		var $tabRename = $('<div><input></div>');
+		var $tabRename = $('<div><input type="text"></div>')
+			.keydown(function(e) {
+				if (event.which == 27 || event.keyCode == 27) {
+					//esc
+					$(this).closest('li').removeClass('rename');
+				} else if (event.which == 13 || event.keyCode == 13) {
+					//enter
+					storeRename($(this).closest('li'));
+				}
+			})
 		
+		
+		var storeRename = function($liEl) {
+			var tabId = $liEl.find('a[role="tab"]').attr('aria-controls');
+			var val = $liEl.find('input').val();
+			$tabToggle.find('span').text($liEl.find('input').val());
+			persistentOptions.tabs[tabId].name = val;
+			yasgui.store();
+			$liEl.removeClass('rename');
+		};
 		var $tabItem = $("<li>", {role: "presentation"})
 			.append($tabToggle)
 			
@@ -221,12 +239,7 @@ module.exports = function(yasgui) {
 				el.addClass('rename');
 				el.find('input').val(val);
 				el.onOutsideClick(function(){
-					var tabId = el.find('a[role="tab"]').attr('aria-controls');
-					var val = el.find('input').val();
-					$tabToggle.find('span').text(el.find('input').val());
-					persistentOptions.tabs[tabId].name = val;
-					yasgui.store();
-					el.removeClass('rename');
+					storeRename(el);
 				})
 			})
 			.bind('contextmenu', function(e){ 
