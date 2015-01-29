@@ -85,6 +85,34 @@ module.exports = function(yasgui, id, name) {
 	var yasqeOptions = {
 		createShareLink: require('./shareLink').getCreateLinkHandler(tab)
 	};
+	
+	var storeInHist = function() {
+		persistentOptions.yasqe.value = tab.yasqe.getValue();//in case the onblur hasnt happened yet
+		var resultSize = null;
+		if (tab.yasr.results.getBindings()) {
+			resultSize = tab.yasr.results.getBindings().length;
+		}
+		var histObject = {
+			options: $.extend(true, {}, persistentOptions),//create copy
+			resultSize: resultSize
+		};
+		delete histObject.options.name;//don't store this one
+		yasgui.history.unshift(histObject);
+		
+		var maxHistSize = 50;
+		if (yasgui.history.length > maxHistSize) {
+			yasgui.history = yasgui.history.slice(0, maxHistSize);
+		}
+		
+		
+		//store in localstorage as well
+		if (yasgui.persistencyPrefix) {
+			yUtils.storage.set(yasgui.persistencyPrefix + 'history', yasgui.history);
+		}
+		
+		
+	};
+	
 	tab.setPersistentInYasqe = function() {
 		if (tab.yasqe) {
 			$.extend(true, tab.yasqe.options, persistentOptions.yasqe);
@@ -107,22 +135,9 @@ module.exports = function(yasgui, id, name) {
 			}, persistentOptions.yasr));
 			tab.yasqe.options.sparql.callbacks.complete = function() {
 				tab.yasr.setResponse.apply(this, arguments);
-				
-				/**
-				 * store query in hist
-				 */
-				persistentOptions.yasqe.value = tab.yasqe.getValue();//in case the onblur hasnt happened yet
-				var resultSize = null;
-				if (tab.yasr.results.getBindings()) {
-					resultSize = tab.yasr.results.getBindings().length;
-				}
-				var histObject = {
-					options: $.extend(true, {}, persistentOptions),//create copy
-					resultSize: resultSize
-				};
-				delete histObject.options.name;//don't store this one
-				yasgui.history.unshift(histObject);
+				storeInHist();
 			}
+			
 			
 			tab.yasqe.query = function() {
 				if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
@@ -149,6 +164,8 @@ module.exports = function(yasgui, id, name) {
 		if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
 	};
 	tab.destroy = function() {
+		//TODO: fix this!! Don't want this tab.yasr check
+		
 		if (tab.yasr) yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
 	}
 	

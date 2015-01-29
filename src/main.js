@@ -17,6 +17,10 @@ var root = module.exports = function(parent, options) {
 		yasgui.persistencyPrefix = (typeof yasgui.options.persistencyPrefix == 'function'? yasgui.options.persistencyPrefix(yasgui): yasgui.options.persistencyPrefix);
 	}
 	
+	if (yasgui.persistencyPrefix) {
+		var histFromStorage = yUtils.storage.get(yasgui.persistencyPrefix + 'history');
+		if (histFromStorage) yasgui.history = histFromStorage;
+	}
 	yasgui.store = function() {
 		if (yasgui.persistentOptions) {
 			yUtils.storage.set(yasgui.persistencyPrefix, yasgui.persistentOptions);
