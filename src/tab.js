@@ -23,11 +23,10 @@ var defaultPersistent = {
 
 module.exports = function(yasgui, id, name) {
 	if (!yasgui.persistentOptions.tabManager.tabs[id]) {
-		yasgui.persistentOptions.tabManager.tabs[id] = {
+		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {
 			id: id,
-			name: name,
-			yasqe: defaultPersistentYasqe
-		}
+			name: name
+		}, defaultPersistent);
 	} else {
 		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {}, defaultPersistent, yasgui.persistentOptions.tabManager.tabs[id]);
 	}
