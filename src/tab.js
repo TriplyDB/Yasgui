@@ -164,9 +164,14 @@ module.exports = function(yasgui, id, name) {
 		if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
 	};
 	tab.destroy = function() {
-		//TODO: fix this!! Don't want this tab.yasr check
+		if (!tab.yasr) {
+			//instantiate yasr (without rendering results, to avoid load)
+			//this way, we can clear the yasr persistent results
+			tab.yasr = YASGUI.YASR(yasrContainer[0], {}, '');
+		}
+		yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
 		
-		if (tab.yasr) yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
+		
 	}
 	
 	
