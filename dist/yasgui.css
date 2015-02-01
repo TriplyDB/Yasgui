@@ -4971,10 +4971,6 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   font-family: monospace;
   height: 300px; }
 
-.yasqe .CodeMirror-scroll {
-  /* Set scrolling behaviour here */
-  overflow: auto; }
-
 .yasqe .CodeMirror-lines {
   padding: 4px 0;
   /* Vertical padding around content */ }
@@ -5136,6 +5132,8 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   color: black; }
 
 .yasqe .CodeMirror-scroll {
+  overflow: scroll !important;
+  /* Things will break if this is overridden */
   /* 30px is the magic margin used to hide the element's real scrollbars */
   /* See overflow: hidden in .CodeMirror */
   margin-bottom: -30px;
@@ -5183,7 +5181,6 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   position: absolute;
   left: 0;
   top: 0;
-  padding-bottom: 30px;
   z-index: 3; }
 
 .yasqe .CodeMirror-gutter {
@@ -5191,9 +5188,8 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   height: 100%;
   -moz-box-sizing: content-box;
   box-sizing: content-box;
-  padding-bottom: 30px;
-  margin-bottom: -32px;
   display: inline-block;
+  margin-bottom: -30px;
   /* Hack to make IE7 behave */
   *zoom: 1;
   *display: inline; }
@@ -5248,9 +5244,6 @@ As a consequence, the 'opening' transition has this perspective applied, where t
   position: relative;
   z-index: 2;
   overflow: auto; }
-
-.yasqe .CodeMirror-wrap .CodeMirror-scroll {
-  overflow-x: hidden; }
 
 .yasqe .CodeMirror-measure {
   position: absolute;

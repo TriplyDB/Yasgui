@@ -46285,8 +46285,8 @@ RegExp.escape= function(s) {
     return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
 
-(function( $ ) {
   'use strict'
+  var $ = require('jquery');
   /**
    * jQuery.csv.defaults
    * Encapsulates the method paramater defaults for the CSV plugin module.
@@ -47099,9 +47099,9 @@ RegExp.escape= function(s) {
   $.csv2Array = $.csv.toArrays;
   $.csv2Dictionary = $.csv.toObjects;
 
-})( jQuery );
 
-},{}],50:[function(require,module,exports){
+
+},{"jquery":63}],50:[function(require,module,exports){
 module.exports=require(17)
 },{"../../lib/codemirror":55,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/edit/matchbrackets.js":17}],51:[function(require,module,exports){
 module.exports=require(18)
@@ -61574,7 +61574,7 @@ module.exports=require(12)
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "main": "src/main.js",
   "licenses": [
     {
@@ -62666,7 +62666,7 @@ var root = module.exports = function(queryResponse) {
 };
 },{"./dlv.js":82,"jquery":63}],82:[function(require,module,exports){
 'use strict';
-var $ = jQuery = require('jquery');
+var $ = require('jquery');
 require("../../lib/jquery.csv-0.71.js");
 var root = module.exports = function(queryResponse, separator) {
 	var json = {};
