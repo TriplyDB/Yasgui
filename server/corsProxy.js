@@ -65,8 +65,13 @@ module.exports = function(req, res) {
 		});
 	});
 	if (postData) proxyReq.write(postData);
+	proxyReq.on('error', function (err) {
+		//If any error is encountered during the request (be that with DNS resolution, TCP level errors, 
+		//or actual HTTP parse errors) an 'error' event is emitted on the returned request object.
+		res.statusCode = 0;
+		res.end();
+	});
 	proxyReq.end();
-	
 	
 	
 	
