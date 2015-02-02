@@ -4507,14 +4507,12 @@ module.exports={
       "url": "http://yasgui.github.io/license.txt"
     }
   ],
-  "author": {
-    "name": "Laurens Rietveld"
-  },
+  "author": "Laurens Rietveld",
   "maintainers": [
     {
       "name": "Laurens Rietveld",
       "email": "laurens.rietveld@gmail.com",
-      "url": "http://laurensrietveld.nl"
+      "web": "http://laurensrietveld.nl"
     }
   ],
   "bugs": {
@@ -4523,15 +4521,7 @@ module.exports={
   "homepage": "https://github.com/YASGUI/Utils",
   "dependencies": {
     "store": "^1.3.14"
-  },
-  "readme": "A simple utils repo for the YASGUI tools\n",
-  "readmeFilename": "README.md",
-  "_id": "yasgui-utils@1.5.0",
-  "dist": {
-    "shasum": "56f463556922fe4f0eb97f650bb8cfe9700061a7"
-  },
-  "_from": "yasgui-utils@1.5.0",
-  "_resolved": "https://registry.npmjs.org/yasgui-utils/-/yasgui-utils-1.5.0.tgz"
+  }
 }
 
 },{}],9:[function(require,module,exports){
@@ -4560,7 +4550,8 @@ var times = {
 
 var root = module.exports = {
 	set : function(key, val, exp) {
-		if (val) {
+    if (!store.enabled) return;//this is probably in private mode. Don't run, as we might get Js errors
+		if (key && val) {
 			if (typeof exp == "string") {
 				exp = times[exp]();
 			}
@@ -4574,17 +4565,23 @@ var root = module.exports = {
 		}
 	},
 	remove: function(key) {
-		store.remove(key)
+    if (!store.enabled) return;//this is probably in private mode. Don't run, as we might get Js errors
+		if (key) store.remove(key)
 	},
 	get : function(key) {
-		var info = store.get(key);
-		if (!info) {
+    if (!store.enabled) return null;//this is probably in private mode. Don't run, as we might get Js errors
+		if (key) {
+			var info = store.get(key);
+			if (!info) {
+				return null;
+			}
+			if (info.exp && new Date().getTime() - info.time > info.exp) {
+				return null;
+			}
+			return info.val;
+		} else {
 			return null;
 		}
-		if (info.exp && new Date().getTime() - info.time > info.exp) {
-			return null;
-		}
-		return info.val;
 	}
 
 };
@@ -10758,90 +10755,12 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 },{"codemirror":undefined}],24:[function(require,module,exports){
 module.exports=require(7)
 },{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/node_modules/store/store.js":7}],25:[function(require,module,exports){
-module.exports={
-  "name": "yasgui-utils",
-  "version": "1.5.0",
-  "description": "Utils for YASGUI libs",
-  "main": "src/main.js",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/YASGUI/Utils.git"
-  },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://yasgui.github.io/license.txt"
-    }
-  ],
-  "author": "Laurens Rietveld",
-  "maintainers": [
-    {
-      "name": "Laurens Rietveld",
-      "email": "laurens.rietveld@gmail.com",
-      "web": "http://laurensrietveld.nl"
-    }
-  ],
-  "bugs": {
-    "url": "https://github.com/YASGUI/Utils/issues"
-  },
-  "homepage": "https://github.com/YASGUI/Utils",
-  "dependencies": {
-    "store": "^1.3.14"
-  }
-}
-
-},{}],26:[function(require,module,exports){
-arguments[4][9][0].apply(exports,arguments)
+module.exports=require(8)
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/package.json":8}],26:[function(require,module,exports){
+module.exports=require(9)
 },{"../package.json":25,"./storage.js":27,"./svg.js":28,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/main.js":9}],27:[function(require,module,exports){
-var store = require("store");
-var times = {
-	day: function() {
-		return 1000 * 3600 * 24;//millis to day
-	},
-	month: function() {
-		times.day() * 30;
-	},
-	year: function() {
-		times.month() * 12;
-	}
-};
-
-var root = module.exports = {
-	set : function(key, val, exp) {
-		if (key && val) {
-			if (typeof exp == "string") {
-				exp = times[exp]();
-			}
-			//try to store string for dom objects (e.g. XML result). Otherwise, we might get a circular reference error when stringifying this
-			if (val.documentElement) val = new XMLSerializer().serializeToString(val.documentElement);
-			store.set(key, {
-				val : val,
-				exp : exp,
-				time : new Date().getTime()
-			});
-		}
-	},
-	remove: function(key) {
-		if (key) store.remove(key)
-	},
-	get : function(key) {
-		if (key) {
-			var info = store.get(key);
-			if (!info) {
-				return null;
-			}
-			if (info.exp && new Date().getTime() - info.time > info.exp) {
-				return null;
-			}
-			return info.val;
-		} else {
-			return null;
-		}
-	}
-
-};
-
-},{"store":24}],28:[function(require,module,exports){
+module.exports=require(10)
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/storage.js":10,"store":24}],28:[function(require,module,exports){
 module.exports=require(11)
 },{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/svg.js":11}],29:[function(require,module,exports){
 module.exports={
@@ -28538,12 +28457,12 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 },{"jquery":undefined}],61:[function(require,module,exports){
 module.exports=require(7)
 },{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/node_modules/store/store.js":7}],62:[function(require,module,exports){
-module.exports=require(25)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/package.json":25}],63:[function(require,module,exports){
-arguments[4][9][0].apply(exports,arguments)
+module.exports=require(8)
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/package.json":8}],63:[function(require,module,exports){
+module.exports=require(9)
 },{"../package.json":62,"./storage.js":64,"./svg.js":65,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/main.js":9}],64:[function(require,module,exports){
-module.exports=require(27)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/yasgui-utils/src/storage.js":27,"store":61}],65:[function(require,module,exports){
+module.exports=require(10)
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/storage.js":10,"store":61}],65:[function(require,module,exports){
 module.exports=require(11)
 },{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/svg.js":11}],66:[function(require,module,exports){
 module.exports={
