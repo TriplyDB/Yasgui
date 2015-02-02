@@ -1,6 +1,7 @@
-'use strict';
+var $ = require('jquery');
+var root = module.exports = require('yasgui-yasqe');
 
-module.exports = {
+root.defaults = $.extend(true, root.defaults, {
 	persistent: null,//handled in YASGUI directly
 	consumeShareLink: null,
 	createShareLink: null,
@@ -9,4 +10,4 @@ module.exports = {
 		acceptHeaderGraph: "text/turtle",
 		acceptHeaderSelect: "application/sparql-results+json"
 	}
-};
+});
