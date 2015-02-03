@@ -6514,6 +6514,14 @@ li.CodeMirror-hint-active {
   border: 1px solid #ccc;
   border-radius: 4px; }
 
+.yasr .errorResult .corsMessage {
+  color: #a94442;
+  background-color: #f2dede;
+  margin-top: 10px;
+  padding: 5px;
+  border: 1px solid #ebccd1;
+  border-radius: 4px; }
+
 .yasr .yasr_results .CodeMirror {
   border: 1px solid #d1d1d1;
   margin-top: 5px;
