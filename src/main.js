@@ -55,6 +55,7 @@ var root = module.exports = function(parent, options) {
 	
 	yasgui.tabManager = require('./tabManager.js')(yasgui);
 	yasgui.tabManager.init();
+	yasgui.tracker = require('./tracker.js')(yasgui);
 	return yasgui;
 };
 

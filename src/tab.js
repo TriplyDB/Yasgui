@@ -133,11 +133,16 @@ module.exports = function(yasgui, id, name) {
 				//this way, the URLs in the results are prettified using the defined prefixes in the query
 				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
 			}, persistentOptions.yasr));
+			var beforeSend = null;
+			tab.yasqe.options.sparql.callbacks.beforeSend = function() {
+				beforeSend = +new Date();
+			}
 			tab.yasqe.options.sparql.callbacks.complete = function() {
+				var end = +new Date();
+				yasgui.tracker.track(persistentOptions.yasqe.sparql.endpoint, tab.yasqe.getValueWithoutComments(), end - beforeSend);
 				tab.yasr.setResponse.apply(this, arguments);
 				storeInHist();
 			}
-			
 			
 			tab.yasqe.query = function() {
 				if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
