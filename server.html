@@ -12,11 +12,9 @@
 	<div id='yasgui'></div>
  <script src="dist/yasgui.bundled.min.js"></script>
 <script type="text/javascript">
-	var yasgui = YASGUI(document.getElementById("yasgui"), {
-		api: {
-			corsProxy: '/proxy/'
-		}
-	});
+  //want to change the config? use the config file in the ./server directory (this gets automatically inserted below)
+  var config = {};
+	var yasgui = YASGUI(document.getElementById("yasgui"), config);
 </script>
   </body>
 </html>

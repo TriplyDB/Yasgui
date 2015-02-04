@@ -1,0 +1,10 @@
+{
+	"server": {
+		"port": 4545
+	},
+	"client": {
+		"api": {
+			"corsProxy": "/proxy/"
+		}
+	}
+}

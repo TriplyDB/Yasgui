@@ -3,7 +3,9 @@ var express = require('express'),
 	serveStatic = require('serve-static'),
 	bodyParser = require('body-parser'),
 	extend = require('deep-extend'),
-	config = require('./serverconfig.json');
+	fs = require('fs'),
+	config = require('./config.json');
+
 
 var app = express();
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
@@ -14,7 +16,14 @@ if (argv.config) {
 	//extend current config with the additional one
 	extend(config, require(argv.config));
 }
-if (argv.port) config.port = argv.port;
+
+/**
+ * update server.html with current config
+ */
+var htmlFile = __dirname + '/../server.html';
+var html = fs.readFileSync(htmlFile).toString();
+html = html.replace(/(var config = )\{.*\};/, '$1' + JSON.stringify(config.client) + ';');
+fs.writeFileSync(htmlFile, html);
 
 
 
@@ -36,6 +45,6 @@ app.use('/', function(req,res) {
 	res.sendFile('server.html', {root: __dirname + '/../'});
 });
 
-http.createServer(app).listen(config.port)
+http.createServer(app).listen(config.server.port)
 
-console.log('Running YASGUI on http://localhost:' + config.port);
+console.log('Running YASGUI on http://localhost:' + config.server.port);
