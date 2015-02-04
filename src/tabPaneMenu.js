@@ -125,18 +125,19 @@ module.exports = function(yasgui, tab) {
 		/**
 		 * Init collections tab
 		 */
-		var li = $("<li>", {role: "presentation"}).appendTo($tabsParent);
-		var collectionsPaneId = 'yasgui_collections_' +tab.persistentOptions.id;
-		li.append(
-			$('<a>', {href: '#' + collectionsPaneId, 'aria-controls': collectionsPaneId,  role: 'tab', 'data-toggle': 'tab'})
-			.text("Collections")
-			.click(function(e) {
-				e.preventDefault()
-				$(this).tab('show')
-			})
-		);
-		var $reqPanel = $('<div>', {id: collectionsPaneId, role: 'tabpanel',class: 'tab-pane collections container-fluid'}).appendTo($tabPanesParent);
-		
+		if (yasgui.options.api.collections) {
+			var li = $("<li>", {role: "presentation"}).appendTo($tabsParent);
+			var collectionsPaneId = 'yasgui_collections_' +tab.persistentOptions.id;
+			li.append(
+				$('<a>', {href: '#' + collectionsPaneId, 'aria-controls': collectionsPaneId,  role: 'tab', 'data-toggle': 'tab'})
+				.text("Collections")
+				.click(function(e) {
+					e.preventDefault()
+					$(this).tab('show')
+				})
+			);
+			var $reqPanel = $('<div>', {id: collectionsPaneId, role: 'tabpanel',class: 'tab-pane collections container-fluid'}).appendTo($tabPanesParent);
+		}
 		
 		return $menu;
 	};

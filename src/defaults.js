@@ -7,6 +7,7 @@ module.exports = {
 	},
 	api: {
 		corsProxy: null,
+		collections: null,
 	},
 	tracker: {
 		googleAnalyticsId: null,
