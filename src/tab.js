@@ -117,7 +117,7 @@ module.exports = function(yasgui, id, name) {
 		if (tab.yasqe) {
 			$.extend(true, tab.yasqe.options, persistentOptions.yasqe);
 			//set value manualy, as this triggers a refresh
-			tab.yasqe.setValue(persistentOptions.yasqe.value);
+			if (persistentOptions.yasqe.value) tab.yasqe.setValue(persistentOptions.yasqe.value);
 		}
 	}
 	$.extend(yasqeOptions, persistentOptions.yasqe);
