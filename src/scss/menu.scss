@@ -48,32 +48,40 @@ $menuWidth: 600px;
 
 		margin-left:auto; margin-right:0;
 	}
+	
+	
+	
+	
 	.requestConfig {
-		input {
+		.reqRow > div {
+			display:inline-block;
+		}
+		.acceptHeader {
+			width: 150px;
+		}
+		.option:hover {
+			/**a selectize dropdown option*/
+			background-color: #e6e6e6;
+		}
+		.item, .option {
+			/**a selectize dropdown option/item*/
+			font-weight: normal;
 		}
 		.textInputsRow:first-child .close {
 			display:none;
 		}
-/* 		.closeBtn { */
-/*          	fill: $gray; */
-/*          	display:none; */
-/*          	cursor:pointer; */
-/* 		} */
 		.close {
 			font-size: 18px;
 		}
 		.textInputsRow * {
 			margin: 5px 3px 0 0;
 		}
-		.row {
-			display: table;
-			margin: 5px 0px;
-		}
 		label {
 			font-size: 80%;
 		}
 		.rowLabel {
 			font-weight: bold;
+			width: 30%;
 		}
 		
 		[class*="col-"] {
@@ -85,16 +93,14 @@ $menuWidth: 600px;
 	}
 }
 
-/**A workaround for now, to only apply perspective when menu is open
-This perspective messes up the full screen capabilities of YASR/YASQE
-The easiest fix is only apply this style when menu is opened.
-As a consequence, the 'opening' transition has this perspective applied, where the closing transition does not
+/**Disable webkit perspective for now (disappointing, because it improves the transition a lot..)
+This perspective messes up the full screen capabilities of YASR/YASQE, and positioning of e.g. selectboxes
 **/
-.tab-pane.menu-open {
-	-webkit-perspective: 1500px;
-	perspective: 1500px;
-	-webkit-perspective-origin: 0% 50%;
-	perspective-origin: 0% 50%;
+.tab-pane {
+/* 	-webkit-perspective: 1500px; */
+/* 	perspective: 1500px; */
+/* 	-webkit-perspective-origin: 0% 50%; */
+/* 	perspective-origin: 0% 50%; */
 }
 
 

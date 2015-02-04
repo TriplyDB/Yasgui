@@ -1,7 +1,10 @@
 'use strict';
 var $ = require('jquery'),
 	imgs = require('./imgs.js'),
+	selectize = require('selectize'),
 	utils = require('yasgui-utils');
+
+
 module.exports = function(yasgui, tab) {
 	var $menu = null;
 	var $tabPanel = null;
@@ -55,8 +58,8 @@ module.exports = function(yasgui, tab) {
 		var $reqPanel = $('<div>', {id: reqPaneId, role: 'tabpanel',class: 'tab-pane requestConfig container-fluid'}).appendTo($tabPanesParent);
 		
 		//request method
-		var $reqRow = $('<div>', {class: 'row'}).appendTo($reqPanel);
-		$('<div>', {class:'col-md-4 rowLabel'}).appendTo($reqRow).append($('<span>').text('Request Method'));
+		var $reqRow = $('<div>', {class: 'reqRow'}).appendTo($reqPanel);
+		$('<div>', {class:'rowLabel'}).appendTo($reqRow).append($('<span>').text('Request Method'));
 		$btnPost = $('<button>', {class:'btn btn-default ','data-toggle':"button"}).text('POST').click(function(){
 			$btnPost.addClass('active');
 			$btnGet.removeClass('active');
@@ -68,37 +71,44 @@ module.exports = function(yasgui, tab) {
 		$('<div>', {class:'btn-group col-md-8', role: 'group'}).append($btnGet).append($btnPost).appendTo($reqRow);
 		
 		//Accept headers
-		var $acceptRow = $('<div>', {class: 'row'}).appendTo($reqPanel);
-		$('<div>', {class:'col-md-4 rowLabel'}).appendTo($acceptRow).text('Accept Headers');
-		$acceptSelect = $('<select>', {class: 'form-control'})
+		var $acceptRow = $('<div>', {class: 'reqRow'}).appendTo($reqPanel);
+		$('<div>', {class:'rowLabel'}).appendTo($acceptRow).text('Accept Headers');
+		
+		
+		
+		$acceptSelect = $('<select>', {class: 'acceptHeader'})
 			.append($("<option>", {value: 'application/sparql-results+json'}).text('JSON'))
 			.append($("<option>", {value: 'application/sparql-results+xml'}).text('XML'))
 			.append($("<option>", {value: 'text/csv'}).text('CSV'))
 			.append($("<option>", {value: 'text/tab-separated-values'}).text('TSV'));
-		$acceptGraph = $('<select>', {class: 'form-control'})
+		$('<div>', {class:'col-md-4', role: 'group'}).append($('<label>').text('SELECT').append($acceptSelect)).appendTo($acceptRow);
+		$acceptSelect.selectize();
+		
+		$acceptGraph = $('<select>', {class: 'acceptHeader'})
 			.append($("<option>", {value: 'text/turtle'}).text('Turtle'))
 			.append($("<option>", {value: 'application/rdf+xml'}).text('RDF-XML'))
 			.append($("<option>", {value: 'text/csv'}).text('CSV'))
 			.append($("<option>", {value: 'text/tab-separated-values'}).text('TSV'));
-		$('<div>', {class:'col-md-4', role: 'group'}).append($('<label>').text('SELECT').append($acceptSelect)).appendTo($acceptRow);
 		$('<div>', {class:'col-md-4', role: 'group'}).append($('<label>').text('Graph').append($acceptGraph)).appendTo($acceptRow);
+		$acceptGraph.selectize();
+		
 		
 		
 		//URL args headers
-		var $urlArgsRow = $('<div>', {class: 'row'}).appendTo($reqPanel);
-		$('<div>', {class:'col-md-4 rowLabel'}).appendTo($urlArgsRow).text('URL Arguments');
+		var $urlArgsRow = $('<div>', {class: 'reqRow'}).appendTo($reqPanel);
+		$('<div>', {class:'rowLabel'}).appendTo($urlArgsRow).text('URL Arguments');
 		$urlArgsDiv = $('<div>', {class:'col-md-8', role: 'group'}).appendTo($urlArgsRow);
 		
 		
 		//Default graphs
-		var $defaultGraphsRow = $('<div>', {class: 'row'}).appendTo($reqPanel);
-		$('<div>', {class:'col-md-4 rowLabel'}).appendTo($defaultGraphsRow).text('Default graphs');
+		var $defaultGraphsRow = $('<div>', {class: 'reqRow'}).appendTo($reqPanel);
+		$('<div>', {class:'rowLabel'}).appendTo($defaultGraphsRow).text('Default graphs');
 		$defaultGraphsDiv = $('<div>', {class:'col-md-8', role: 'group'}).appendTo($defaultGraphsRow);
 		
 		
 		//Named graphs
-		var $namedGraphsRow = $('<div>', {class: 'row'}).appendTo($reqPanel);
-		$('<div>', {class:'col-md-4 rowLabel'}).appendTo($namedGraphsRow).text('Named graphs');
+		var $namedGraphsRow = $('<div>', {class: 'reqRow'}).appendTo($reqPanel);
+		$('<div>', {class:'rowLabel'}).appendTo($namedGraphsRow).text('Named graphs');
 		$namedGraphsDiv = $('<div>', {class:'col-md-8', role: 'group'}).appendTo($namedGraphsRow);
 
 		
@@ -144,7 +154,6 @@ module.exports = function(yasgui, tab) {
 	
 	var addTextInputsTo = function($el, num, animate, vals) {
 		var $inputsAndTogglesContainer = $('<div>', {class:'textInputsRow'});
-//		var $inputsContainer = $('<div>', {class:'textInputs'}).appendTo($inputsAndTogglesContainer);
 		for (var i = 0; i < num; i++) {
 			var val = (vals && vals[i]? vals[i]: "");
 			$('<input>', {type: 'text'})
@@ -197,8 +206,8 @@ module.exports = function(yasgui, tab) {
 			$btnGet.addClass('active');
 		}
 		//Request method
-		$acceptGraph.val(options.sparql.acceptHeaderGraph);
-		$acceptSelect.val(options.sparql.acceptHeaderSelect);
+		$acceptGraph[0].selectize.setValue(options.sparql.acceptHeaderGraph);
+		$acceptSelect[0].selectize.setValue(options.sparql.acceptHeaderSelect);
 		
 		//url args
 		$urlArgsDiv.empty();
@@ -271,8 +280,8 @@ module.exports = function(yasgui, tab) {
 		}
 		
 		//Request method
-		options.acceptHeaderGraph = $acceptGraph.val();
-		options.acceptHeaderSelect = $acceptSelect.val();
+		options.acceptHeaderGraph = $acceptGraph[0].selectize.getValue();
+		options.acceptHeaderSelect = $acceptSelect[0].selectize.getValue();
 		
 		//url args
 		var args = [];
