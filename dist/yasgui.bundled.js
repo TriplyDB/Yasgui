@@ -3,7 +3,7 @@
 //the current browserify version does not support require-ing js files which are used as entry-point
 //this way, we can still require our main.js file
 module.exports = require('./main.js');
-},{"./main.js":97}],2:[function(require,module,exports){
+},{"./main.js":98}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -30237,6 +30237,16 @@ var extendCmInstance = function(yasqe) {
 	};
 	yasqe.removePrefixes = function(prefixes) {
 		return require('./prefixUtils.js').removePrefixes(yasqe, prefixes);
+	};
+	
+	yasqe.getValueWithoutComments = function() {
+		var cleanedQuery = "";
+		root.runMode(yasqe.getValue(), "sparql11", function(stringVal, className) {
+			if (className != "comment") {
+				cleanedQuery += stringVal;
+			}
+		});
+		return cleanedQuery;
 	};
 	/**
 	 * Fetch the query type (e.g., SELECT||DESCRIBE||INSERT||DELETE||ASK||CONSTRUCT)
@@ -61493,7 +61503,7 @@ module.exports=require(12)
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
-  "version": "2.4.4",
+  "version": "2.4.6",
   "main": "src/main.js",
   "licenses": [
     {
@@ -61726,7 +61736,7 @@ root.version = {
 };
 
 
-},{"../package.json":72,"./imgs.js":79,"jquery":63,"yasgui-utils":69}],75:[function(require,module,exports){
+},{"../package.json":72,"./imgs.js":80,"jquery":63,"yasgui-utils":69}],75:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = {
@@ -61902,6 +61912,26 @@ root.defaults = {
 	corsMessage: 'Unable to get response from endpoint'
 };
 },{"jquery":63}],77:[function(require,module,exports){
+module.exports = {
+	GoogleTypeException:  function(foundTypes, varName) {
+	   this.foundTypes = foundTypes;
+	   this.varName = varName;
+	   this.toString = function() {
+		  var string = 'Conflicting data types found for variable ' + this.varName + '. Assuming all values of this variable are "string".';
+		  string += ' To avoid this issue, cast the values in your SPARQL query to the intended xsd datatype';
+		 
+	      return string;
+	   };
+	   this.toHtml = function() {
+		  var string = 'Conflicting data types found for variable <i>' + this.varName + '</i>. Assuming all values of this variable are "string".';
+		  string += ' As a result, several Google Charts will not render values of this particular variable.';
+		  string += ' To avoid this issue, cast the values in your SPARQL query to the intended xsd datatype';
+		 
+	      return string;
+	   };
+	}
+}
+},{}],78:[function(require,module,exports){
 (function (global){
 var EventEmitter = require('events').EventEmitter,
 	$ = require('jquery');
@@ -62013,7 +62043,7 @@ module.exports = new loader();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"events":2,"jquery":63}],78:[function(require,module,exports){
+},{"events":2,"jquery":63}],79:[function(require,module,exports){
 (function (global){
 'use strict';
 /**
@@ -62114,7 +62144,16 @@ var root = module.exports = function(yasr){
 				var jsonResults = yasr.results.getAsJson();
 				
 				jsonResults.head.vars.forEach(function(variable) {
-					var type = utils.getGoogleType(jsonResults.results.bindings[0][variable]);
+					var type = 'string';
+					try {
+						type = utils.getGoogleTypeForBindings(jsonResults.results.bindings, variable);
+					} catch(e) {
+						if (e instanceof require('./exceptions.js').GoogleTypeException) {
+							yasr.warn(e.toHtml())
+						} else {
+							throw e;
+						}
+					}
 					dataTable.addColumn(type, variable);
 				});
 				var usedPrefixes = null;
@@ -62123,8 +62162,8 @@ var root = module.exports = function(yasr){
 				}
 				jsonResults.results.bindings.forEach(function(binding) {
 					var row = [];
-					jsonResults.head.vars.forEach(function(variable) {
-						row.push(utils.castGoogleType(binding[variable], usedPrefixes));
+					jsonResults.head.vars.forEach(function(variable, columnId) {
+						row.push(utils.castGoogleType(binding[variable], usedPrefixes, dataTable.getColumnType(columnId)));
 					})
 					dataTable.addRow(row);
 				});
@@ -62268,7 +62307,7 @@ function deepEq$(x, y, type){
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./gChartLoader.js":77,"./utils.js":90,"jquery":63,"yasgui-utils":69}],79:[function(require,module,exports){
+},{"./exceptions.js":77,"./gChartLoader.js":78,"./utils.js":91,"jquery":63,"yasgui-utils":69}],80:[function(require,module,exports){
 'use strict';
 module.exports = {
 	cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
@@ -62281,7 +62320,7 @@ module.exports = {
 	fullscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="640"     inkscape:window-height="480"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="0"     inkscape:current-layer="Layer_1" /><path     d="m -7.962963,-10 v 38.889 l 16.667,-16.667 16.667,16.667 5.555,-5.555 -16.667,-16.667 16.667,-16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 92.037037,-10 v 38.889 l -16.667,-16.667 -16.666,16.667 -5.556,-5.555 16.666,-16.667 -16.666,-16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M -7.962963,90 V 51.111 l 16.667,16.666 16.667,-16.666 5.555,5.556 -16.667,16.666 16.667,16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M 92.037037,90 V 51.111 l -16.667,16.666 -16.666,-16.666 -5.556,5.556 16.666,16.666 -16.666,16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 	smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 };
-},{}],80:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var utils = require("yasgui-utils");
@@ -62431,6 +62470,114 @@ var root = module.exports = function(parent, options, queryResults) {
 			}
 		}
 	};
+	var $toggableWarning = null;
+	var $toggableWarningClose = null;
+	var $toggableWarningMsg = null;
+	yasr.warn = function(warning) {
+		if (!$toggableWarning) {
+			//first time instantiation
+			$toggableWarning = $('<div>', {class: 'toggableWarning'}).prependTo(yasr.container).hide();
+			$toggableWarningClose = $('<span>', {class: 'toggleWarning'})
+				.html('&times;')
+				.click(function() {
+					$toggableWarning.hide(400);
+				})
+				.appendTo($toggableWarning);
+			$toggableWarningMsg = $('<span>', {class: 'toggableMsg'}).appendTo($toggableWarning);
+		}
+		$toggableWarningMsg.empty();
+		if (warning instanceof $) {
+			$toggableWarningMsg.append(warning);
+		} else {
+			$toggableWarningMsg.html(warning);
+		}
+		$toggableWarning.show(400);
+	};
+	
+
+	var drawHeader = function(yasr) {
+		var drawOutputSelector = function() {
+			var btnGroup = $('<div class="yasr_btnGroup"></div>');
+			$.each(yasr.plugins, function(pluginName, plugin) {
+				if (plugin.hideFromSelection) return;
+				var name = plugin.name || pluginName;
+				var button = $("<button class='yasr_btn'></button>")
+				.text(name)
+				.addClass("select_" + pluginName)
+				.click(function() {
+					//update buttons
+					btnGroup.find("button.selected").removeClass("selected");
+					$(this).addClass("selected");
+					//set and draw output
+					yasr.options.output = pluginName;
+					
+					//store if needed
+					var selectorId = yasr.getPersistencyId(yasr.options.persistency.outputSelector);
+					if (selectorId) {
+						utils.storage.set(selectorId, yasr.options.output, "month");
+					}
+					
+					//close warning if there is any
+					if ($toggableWarning) $toggableWarning.hide(400);
+					
+					yasr.draw();
+					yasr.updateHeader();
+				})
+				.appendTo(btnGroup);
+				if (yasr.options.output == pluginName) button.addClass("selected");
+			});
+			
+			if (btnGroup.children().length > 1) yasr.header.append(btnGroup);
+		};
+		var drawDownloadIcon = function() {
+			var stringToUrl = function(string, contentType) {
+				var url = null;
+				var windowUrl = window.URL || window.webkitURL || window.mozURL || window.msURL;
+				if (windowUrl && Blob) {
+					var blob = new Blob([string], {type: contentType});
+					url = windowUrl.createObjectURL(blob);
+				}
+				return url;
+			};
+			var button = $("<button class='yasr_btn yasr_downloadIcon btn_icon'></button>")
+				.append(require("yasgui-utils").svg.getElement(require('./imgs.js').download))
+				.click(function() {
+					var currentPlugin = yasr.plugins[yasr.options.output];
+					if (currentPlugin && currentPlugin.getDownloadInfo) {
+						var downloadInfo = currentPlugin.getDownloadInfo();
+						var downloadUrl = stringToUrl(downloadInfo.getContent(), (downloadInfo.contentType? downloadInfo.contentType: "text/plain"));
+						var downloadMockLink = $("<a></a>",
+								{
+							href: downloadUrl,
+							download: downloadInfo.filename
+						});
+						require('./utils.js').fireClick(downloadMockLink);
+//						downloadMockLink[0].click();
+					}
+				});
+			yasr.header.append(button);
+		};
+		var drawFullscreenButton = function() {
+			var button = $("<button class='yasr_btn btn_fullscreen btn_icon'></button>")
+				.append(require("yasgui-utils").svg.getElement(require('./imgs.js').fullscreen))
+				.click(function() {
+					yasr.container.addClass('yasr_fullscreen');
+				});
+			yasr.header.append(button);
+		};
+		var drawSmallscreenButton = function() {
+			var button = $("<button class='yasr_btn btn_smallscreen btn_icon'></button>")
+				.append(require("yasgui-utils").svg.getElement(require('./imgs.js').smallscreen))
+				.click(function() {
+					yasr.container.removeClass('yasr_fullscreen');
+				});
+			yasr.header.append(button);
+		};
+		drawFullscreenButton();drawSmallscreenButton();
+		if (yasr.options.drawOutputSelector) drawOutputSelector();
+		if (yasr.options.drawDownloadIcon) drawDownloadIcon();
+	};
+	
 	
 	
 
@@ -62478,86 +62625,6 @@ var root = module.exports = function(parent, options, queryResults) {
 };
 
 
-var drawHeader = function(yasr) {
-	var drawOutputSelector = function() {
-		var btnGroup = $('<div class="yasr_btnGroup"></div>');
-		$.each(yasr.plugins, function(pluginName, plugin) {
-			if (plugin.hideFromSelection) return;
-			var name = plugin.name || pluginName;
-			var button = $("<button class='yasr_btn'></button>")
-			.text(name)
-			.addClass("select_" + pluginName)
-			.click(function() {
-				//update buttons
-				btnGroup.find("button.selected").removeClass("selected");
-				$(this).addClass("selected");
-				//set and draw output
-				yasr.options.output = pluginName;
-				
-				//store if needed
-				var selectorId = yasr.getPersistencyId(yasr.options.persistency.outputSelector);
-				if (selectorId) {
-					utils.storage.set(selectorId, yasr.options.output, "month");
-				}
-				
-				
-				yasr.draw();
-				yasr.updateHeader();
-			})
-			.appendTo(btnGroup);
-			if (yasr.options.output == pluginName) button.addClass("selected");
-		});
-		
-		if (btnGroup.children().length > 1) yasr.header.append(btnGroup);
-	};
-	var drawDownloadIcon = function() {
-		var stringToUrl = function(string, contentType) {
-			var url = null;
-			var windowUrl = window.URL || window.webkitURL || window.mozURL || window.msURL;
-			if (windowUrl && Blob) {
-				var blob = new Blob([string], {type: contentType});
-				url = windowUrl.createObjectURL(blob);
-			}
-			return url;
-		};
-		var button = $("<button class='yasr_btn yasr_downloadIcon btn_icon'></button>")
-			.append(require("yasgui-utils").svg.getElement(require('./imgs.js').download))
-			.click(function() {
-				var currentPlugin = yasr.plugins[yasr.options.output];
-				if (currentPlugin && currentPlugin.getDownloadInfo) {
-					var downloadInfo = currentPlugin.getDownloadInfo();
-					var downloadUrl = stringToUrl(downloadInfo.getContent(), (downloadInfo.contentType? downloadInfo.contentType: "text/plain"));
-					var downloadMockLink = $("<a></a>",
-							{
-						href: downloadUrl,
-						download: downloadInfo.filename
-					});
-					require('./utils.js').fireClick(downloadMockLink);
-//					downloadMockLink[0].click();
-				}
-			});
-		yasr.header.append(button);
-	};
-	var drawFullscreenButton = function() {
-		var button = $("<button class='yasr_btn btn_fullscreen btn_icon'></button>")
-			.append(require("yasgui-utils").svg.getElement(require('./imgs.js').fullscreen))
-			.click(function() {
-				yasr.container.addClass('yasr_fullscreen');
-			});
-		yasr.header.append(button);
-	};
-	var drawSmallscreenButton = function() {
-		var button = $("<button class='yasr_btn btn_smallscreen btn_icon'></button>")
-			.append(require("yasgui-utils").svg.getElement(require('./imgs.js').smallscreen))
-			.click(function() {
-				yasr.container.removeClass('yasr_fullscreen');
-			});
-		yasr.header.append(button);
-	};
-	drawFullscreenButton();drawSmallscreenButton();
-	if (yasr.options.drawOutputSelector) drawOutputSelector();
-	if (yasr.options.drawDownloadIcon) drawDownloadIcon();
-};
 
 root.plugins = {};
 root.registerOutput = function(name, constructor) {
@@ -62590,13 +62657,13 @@ try {root.registerOutput('table', require("./table.js"))} catch(e){};
 try {root.registerOutput('error', require("./error.js"))} catch(e){};
 try {root.registerOutput('pivot', require("./pivot.js"))} catch(e){};
 try {root.registerOutput('gchart', require("./gchart.js"))} catch(e){};
-},{"../package.json":72,"./boolean.js":74,"./defaults.js":75,"./error.js":76,"./gChartLoader.js":77,"./gchart.js":78,"./imgs.js":79,"./parsers/wrapper.js":85,"./pivot.js":87,"./rawResponse.js":88,"./table.js":89,"./utils.js":90,"jquery":63,"yasgui-utils":69}],81:[function(require,module,exports){
+},{"../package.json":72,"./boolean.js":74,"./defaults.js":75,"./error.js":76,"./gChartLoader.js":78,"./gchart.js":79,"./imgs.js":80,"./parsers/wrapper.js":86,"./pivot.js":88,"./rawResponse.js":89,"./table.js":90,"./utils.js":91,"jquery":63,"yasgui-utils":69}],82:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, ",");
 };
-},{"./dlv.js":82,"jquery":63}],82:[function(require,module,exports){
+},{"./dlv.js":83,"jquery":63}],83:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 require("../../lib/jquery.csv-0.71.js");
@@ -62658,7 +62725,7 @@ var root = module.exports = function(queryResponse, separator) {
 	
 	return json;
 };
-},{"../../lib/jquery.csv-0.71.js":49,"jquery":63}],83:[function(require,module,exports){
+},{"../../lib/jquery.csv-0.71.js":49,"jquery":63}],84:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
@@ -62676,13 +62743,13 @@ var root = module.exports = function(queryResponse) {
 	return false;
 	
 };
-},{"jquery":63}],84:[function(require,module,exports){
+},{"jquery":63}],85:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, "\t");
 };
-},{"./dlv.js":82,"jquery":63}],85:[function(require,module,exports){
+},{"./dlv.js":83,"jquery":63}],86:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 
@@ -62916,7 +62983,7 @@ var root = module.exports = function(dataOrJqXhr, textStatus, jqXhrOrErrorString
 
 
 
-},{"./csv.js":81,"./json.js":83,"./tsv.js":84,"./xml.js":86,"jquery":63}],86:[function(require,module,exports){
+},{"./csv.js":82,"./json.js":84,"./tsv.js":85,"./xml.js":87,"jquery":63}],87:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(xml) {
@@ -63002,7 +63069,7 @@ var root = module.exports = function(xml) {
 	return json;
 };
 
-},{"jquery":63}],87:[function(require,module,exports){
+},{"jquery":63}],88:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	utils = require('./utils.js'),
@@ -63224,7 +63291,7 @@ root.version = {
 	"YASR-rawResponse" : require("../package.json").version,
 	"jquery": $.fn.jquery,
 };
-},{"../node_modules/pivottable/dist/d3_renderers.js":64,"../node_modules/pivottable/dist/gchart_renderers.js":65,"../package.json":72,"./gChartLoader.js":77,"./imgs.js":79,"./utils.js":90,"d3":58,"jquery":63,"jquery-ui/sortable":61,"pivottable":66,"yasgui-utils":69}],88:[function(require,module,exports){
+},{"../node_modules/pivottable/dist/d3_renderers.js":64,"../node_modules/pivottable/dist/gchart_renderers.js":65,"../package.json":72,"./gChartLoader.js":78,"./imgs.js":80,"./utils.js":91,"d3":58,"jquery":63,"jquery-ui/sortable":61,"pivottable":66,"yasgui-utils":69}],89:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	CodeMirror = require("codemirror");
@@ -63313,10 +63380,11 @@ root.version = {
 	"jquery": $.fn.jquery,
 	"CodeMirror" : CodeMirror.version
 };
-},{"../package.json":72,"codemirror":55,"codemirror/addon/edit/matchbrackets.js":50,"codemirror/addon/fold/brace-fold.js":51,"codemirror/addon/fold/foldcode.js":52,"codemirror/addon/fold/foldgutter.js":53,"codemirror/addon/fold/xml-fold.js":54,"codemirror/mode/javascript/javascript.js":56,"codemirror/mode/xml/xml.js":57,"jquery":63}],89:[function(require,module,exports){
+},{"../package.json":72,"codemirror":55,"codemirror/addon/edit/matchbrackets.js":50,"codemirror/addon/fold/brace-fold.js":51,"codemirror/addon/fold/foldcode.js":52,"codemirror/addon/fold/foldgutter.js":53,"codemirror/addon/fold/xml-fold.js":54,"codemirror/mode/javascript/javascript.js":56,"codemirror/mode/xml/xml.js":57,"jquery":63}],90:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	yutils = require("yasgui-utils"),
+	utils = require('./utils.js'),
 	imgs = require('./imgs.js');
 require("../lib/DataTables/media/js/jquery.dataTables.js");
 require("../lib/colResizable-1.4.js");
@@ -63514,19 +63582,19 @@ var root = module.exports = function(yasr) {
 
 
 var formatLiteral = function(yasr, plugin, literalBinding) {
-	var stringRepresentation = literalBinding.value;
+	var stringRepresentation = utils.escapeHtmlEntities(literalBinding.value);
 	if (literalBinding["xml:lang"]) {
-		stringRepresentation = '"' + literalBinding.value + '"@' + literalBinding["xml:lang"];
+		stringRepresentation = '"' + stringRepresentation + '"@' + literalBinding["xml:lang"];
 	} else if (literalBinding.datatype) {
 		var xmlSchemaNs = "http://www.w3.org/2001/XMLSchema#";
 		var dataType = literalBinding.datatype;
-		if (dataType.indexOf(xmlSchemaNs) == 0) {
+		if (dataType.indexOf(xmlSchemaNs) === 0) {
 			dataType = "xsd:" + dataType.substring(xmlSchemaNs.length);
 		} else {
-			dataType = "<" + dataType + ">";
+			dataType = "&lt;" + dataType + "&gt;";
 		}
 		
-		stringRepresentation = '"' + stringRepresentation + '"^^' + dataType;
+		stringRepresentation = '"' + stringRepresentation + '"<sup>^^' + dataType + '</sup>';
 	}
 	return stringRepresentation;
 };
@@ -63722,10 +63790,16 @@ root.version = {
 	"jquery-datatables": $.fn.DataTable.version
 };
 
-},{"../lib/DataTables/media/js/jquery.dataTables.js":47,"../lib/colResizable-1.4.js":48,"../package.json":72,"./bindingsToCsv.js":73,"./imgs.js":79,"jquery":63,"yasgui-utils":69}],90:[function(require,module,exports){
+},{"../lib/DataTables/media/js/jquery.dataTables.js":47,"../lib/colResizable-1.4.js":48,"../package.json":72,"./bindingsToCsv.js":73,"./imgs.js":80,"./utils.js":91,"jquery":63,"yasgui-utils":69}],91:[function(require,module,exports){
 'use strict';
-var $ = require('jquery');
+var $ = require('jquery'),
+	GoogleTypeException = require('./exceptions.js').GoogleTypeException;
+
 module.exports = {
+	escapeHtmlEntities: function(unescaped) {
+		//taken from http://stackoverflow.com/questions/5499078/fastest-method-to-escape-html-tags-as-html-entities
+		return unescaped.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') ;
+	},
 	uriToPrefixed: function(prefixes, uri) {
 		if (prefixes) {
 			for (var prefix in prefixes) {
@@ -63737,56 +63811,85 @@ module.exports = {
 		}
 		return uri;
 	},
-	getGoogleType: function(binding) {
+	getGoogleTypeForBinding: function(binding) {
 		if (binding.type != null && (binding.type === 'typed-literal' || binding.type === 'literal')) {
 			switch (binding.datatype) {
-			case 'http://www.w3.org/2001/XMLSchema#float':
-			case 'http://www.w3.org/2001/XMLSchema#decimal':
-			case 'http://www.w3.org/2001/XMLSchema#int':
-			case 'http://www.w3.org/2001/XMLSchema#integer':
-			case 'http://www.w3.org/2001/XMLSchema#long':
-			case 'http://www.w3.org/2001/XMLSchema#gYearMonth':
-			case 'http://www.w3.org/2001/XMLSchema#gYear':
-			case 'http://www.w3.org/2001/XMLSchema#gMonthDay':
-			case 'http://www.w3.org/2001/XMLSchema#gDay':
-			case 'http://www.w3.org/2001/XMLSchema#gMonth':
-				return "number";
-			case 'http://www.w3.org/2001/XMLSchema#date':
-				return "date";
-			case 'http://www.w3.org/2001/XMLSchema#dateTime':
-				return "datetime";
-			case 'http://www.w3.org/2001/XMLSchema#time':
-				return "timeofday";
-			default:
-				return "string";
+				case 'http://www.w3.org/2001/XMLSchema#float':
+				case 'http://www.w3.org/2001/XMLSchema#decimal':
+				case 'http://www.w3.org/2001/XMLSchema#int':
+				case 'http://www.w3.org/2001/XMLSchema#integer':
+				case 'http://www.w3.org/2001/XMLSchema#long':
+				case 'http://www.w3.org/2001/XMLSchema#gYearMonth':
+				case 'http://www.w3.org/2001/XMLSchema#gYear':
+				case 'http://www.w3.org/2001/XMLSchema#gMonthDay':
+				case 'http://www.w3.org/2001/XMLSchema#gDay':
+				case 'http://www.w3.org/2001/XMLSchema#gMonth':
+					return "number";
+				case 'http://www.w3.org/2001/XMLSchema#date':
+					return "date";
+				case 'http://www.w3.org/2001/XMLSchema#dateTime':
+					return "datetime";
+				case 'http://www.w3.org/2001/XMLSchema#time':
+					return "timeofday";
+				default:
+					return "string";
 			}
 		} else {
 			return "string";
 		}
 	},
-	castGoogleType: function(binding, prefixes){
+	getGoogleTypeForBindings: function(bindings, varName) {
+		var types = {};
+		var typeCount = 0;
+		bindings.forEach(function(binding){
+			var type = module.exports.getGoogleTypeForBinding(binding[varName]);
+			if (!(type in types)) {
+				types[type] = 0;
+				typeCount++;
+			}
+			types[type]++;
+		});
+		if (typeCount == 0) {
+			return 'string';
+		} else if (typeCount == 1) {
+			for (var type in types) {
+				return type;//just return this one
+			}
+		} else {
+			//we have conflicting types. Throw error
+			throw new GoogleTypeException(types, varName);
+		}
+	},
+	
+	castGoogleType: function(binding, prefixes, googleType) {
 		if (binding == null) {
 			return null;
 		}
-		if (binding.type != null && (binding.type === 'typed-literal' || binding.type === 'literal')) {
+		
+		if (googleType != 'string' && binding.type != null && (binding.type === 'typed-literal' || binding.type === 'literal')) {
 			switch (binding.datatype) {
-			case 'http://www.w3.org/2001/XMLSchema#float':
-			case 'http://www.w3.org/2001/XMLSchema#decimal':
-			case 'http://www.w3.org/2001/XMLSchema#int':
-			case 'http://www.w3.org/2001/XMLSchema#integer':
-			case 'http://www.w3.org/2001/XMLSchema#long':
-			case 'http://www.w3.org/2001/XMLSchema#gYearMonth':
-			case 'http://www.w3.org/2001/XMLSchema#gYear':
-			case 'http://www.w3.org/2001/XMLSchema#gMonthDay':
-			case 'http://www.w3.org/2001/XMLSchema#gDay':
-			case 'http://www.w3.org/2001/XMLSchema#gMonth':
-				return Number(binding.value);
-			case 'http://www.w3.org/2001/XMLSchema#date':
-			case 'http://www.w3.org/2001/XMLSchema#dateTime':
-			case 'http://www.w3.org/2001/XMLSchema#time':
-				return new Date(binding.value);
-			default:
-				return binding.value;
+				case 'http://www.w3.org/2001/XMLSchema#float':
+				case 'http://www.w3.org/2001/XMLSchema#decimal':
+				case 'http://www.w3.org/2001/XMLSchema#int':
+				case 'http://www.w3.org/2001/XMLSchema#integer':
+				case 'http://www.w3.org/2001/XMLSchema#long':
+				case 'http://www.w3.org/2001/XMLSchema#gYearMonth':
+				case 'http://www.w3.org/2001/XMLSchema#gYear':
+				case 'http://www.w3.org/2001/XMLSchema#gMonthDay':
+				case 'http://www.w3.org/2001/XMLSchema#gDay':
+				case 'http://www.w3.org/2001/XMLSchema#gMonth':
+					return Number(binding.value);
+				case 'http://www.w3.org/2001/XMLSchema#date':
+					//grrr, the date function does not parse -any- date (including most xsd dates!)
+					//datetime and time seem to be fine though.
+					//so, first try our custom parser. if that does not work, try the regular date parser anyway
+					var date = parseXmlSchemaDate(binding.value);
+					if (date) return date;
+				case 'http://www.w3.org/2001/XMLSchema#dateTime':
+				case 'http://www.w3.org/2001/XMLSchema#time':
+					return new Date(binding.value);
+				default:
+					return binding.value;
 			}
 		} else {
 			if (binding.type = 'uri') {
@@ -63812,7 +63915,18 @@ module.exports = {
 		});
 	}
 };
-},{"jquery":63}],91:[function(require,module,exports){
+//There are no PROPER xml schema to js date parsers
+//A few libraries exist: moment, jsdate, Xdate, but none of them parse valid xml schema dates (e.g. 1999-11-05+02:00).
+//And: I'm not going to write one myself
+//There are other hacky solutions (regular expressions based on trial/error) such as http://stackoverflow.com/questions/2731579/convert-an-xml-schema-date-string-to-a-javascript-date
+//But if we're doing hacky stuff, I at least want to do it MYSELF!
+var parseXmlSchemaDate = function(dateString) {
+	//change +02:00 to Z+02:00 (something which is parseable by js date)
+	var date = new Date(dateString.replace(/(\d)([\+-]\d{2}:\d{2})/, '$1Z$2'));
+	if (isNaN(date)) return null;
+	return date;
+};
+},{"./exceptions.js":77,"jquery":63}],92:[function(require,module,exports){
 'use strict';
 
 var $ = require('jquery');
@@ -63822,17 +63936,25 @@ module.exports = {
 	},
 	api: {
 		corsProxy: null,
+		collections: null,
+	},
+	tracker: {
+		googleAnalyticsId: null,
+		askConsent: true,
 	}
 };
-},{"jquery":4}],92:[function(require,module,exports){
+},{"jquery":4}],93:[function(require,module,exports){
 'use strict';
 module.exports = {
 //	yasgui: '<svg   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" viewBox="0 0 603.99 522.51"  width="100%"   height="100%"   id="svg2"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="yasgui (copy).svg">  <defs     id="defs4">    <linearGradient       id="linearGradient5249"       osb:paint="solid">      <stop         style="stop-color:#3b3b3b;stop-opacity:1;"         offset="0"         id="stop5251" />    </linearGradient>    <inkscape:path-effect       effect="skeletal"       id="path-effect2997"       is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"       id="path-effect2995"       is_visible="true" />    <inkscape:path-effect       effect="skeletal"       id="path-effect2991"       is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"       id="path-effect2989"       is_visible="true" />  </defs>  <sodipodi:namedview     id="base"     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1.0"     inkscape:pageopacity="0.0"     inkscape:pageshadow="2"     inkscape:zoom="0.35"     inkscape:cx="-469.55507"     inkscape:cy="840.5292"     inkscape:document-units="px"     inkscape:current-layer="layer1"     showgrid="false"     inkscape:window-width="1855"     inkscape:window-height="1056"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0" />  <metadata     id="metadata7">    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />        <dc:title />      </cc:Work>    </rdf:RDF>  </metadata>  <g     inkscape:label="Layer 1"     inkscape:groupmode="layer"     id="layer1"     transform="translate(-50.966817,-280.33262)">    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"       id="rect5293-6-8"       width="40.000004"       height="478.57324"       x="-374.48849"       y="103.99496"       transform="matrix(-2.679181e-4,-0.99999996,0.99999993,-3.6684387e-4,0,0)" />    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"       id="rect5293-5-7"       width="40.000004"       height="560"       x="651.37634"       y="-132.06581"       transform="matrix(0.74639582,0.66550228,-0.66550228,0.74639582,0,0)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-9-7"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,92.132758,620.67568)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-3-0"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,457.84706,214.96137)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-1-2"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,-30.152972,219.81853)" />    <text       xml:space="preserve"       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#3b3b3b;fill-opacity:1;stroke:none;font-family:Sans"       x="-387.96655"       y="630.61871"       id="text5479-9-0-6-4"       sodipodi:linespacing="125%"       transform="matrix(0.68747304,-0.7262099,0.7262099,0.68747304,0,0)"       inkscape:transform-center-x="239.86342"       inkscape:transform-center-y="-26.958107"><tspan         sodipodi:role="line"         id="tspan5481-8-8-9-7"         x="-387.96655"         y="630.61871"         style="font-size:200px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;fill-opacity:1;font-family:RR Beaver;-inkscape-font-specification:RR Beaver">YAS</tspan></text>    <text       xml:space="preserve"       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Theorem NBP;-inkscape-font-specification:Theorem NBP"       x="349.24683"       y="750.29126"       id="text5483-4-3-2"       sodipodi:linespacing="125%"><tspan         sodipodi:role="line"         id="tspan5485-6-5-7"         x="349.24683"         y="750.29126"         style="font-size:170px;font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;letter-spacing:20px;fill:#c80000;fill-opacity:1;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic">GUI</tspan></text>    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-7-4-1-4"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.4331683,0,0,0.38716814,381.83246,155.72497)" />  </g></svg>',
 	yasgui: '<svg   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="0 0 603.99 522.51"   width="100%"   height="100%"      version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="test.svg">  <defs     >    <linearGradient              osb:paint="solid">      <stop         style="stop-color:#3b3b3b;stop-opacity:1;"         offset="0"          />    </linearGradient>    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />  </defs>  <sodipodi:namedview          pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1.0"     inkscape:pageopacity="0.0"     inkscape:pageshadow="2"     inkscape:zoom="0.35"     inkscape:cx="-469.55507"     inkscape:cy="840.5292"     inkscape:document-units="px"     inkscape:current-layer="layer1"     showgrid="false"     inkscape:window-width="1855"     inkscape:window-height="1056"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0" />  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />        <dc:title />      </cc:Work>    </rdf:RDF>  </metadata>  <g     inkscape:label="Layer 1"     inkscape:groupmode="layer"          transform="translate(-50.966817,-280.33262)">    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="478.57324"       x="-374.48849"       y="103.99496"       transform="matrix(-2.679181e-4,-0.99999996,0.99999993,-3.6684387e-4,0,0)" />    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="560"       x="651.37634"       y="-132.06581"       transform="matrix(0.74639582,0.66550228,-0.66550228,0.74639582,0,0)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,92.132758,620.67568)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,457.84706,214.96137)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,-30.152972,219.81853)" />    <g       transform="matrix(0.68747304,-0.7262099,0.7262099,0.68747304,0,0)"       inkscape:transform-center-x="239.86342"       inkscape:transform-center-y="-26.958107"       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#3b3b3b;fill-opacity:1;stroke:none;font-family:Sans"       >      <path         d="m -320.16655,490.61871 33.2,0 -32.4,75.4 0,64.6 -32.2,0 0,-64.6 -32.4,-75.4 33.2,0 15.2,43 15.4,-43 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -177.4603,630.61871 -32.2,0 -21.6,-80.4 -21.6,80.4 -32.2,0 37.4,-140 0.4,0 32,0 0.4,0 37.4,140 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -84.835303,544.41871 c 5.999926,9e-5 11.59992,1.13342 16.8,3.4 5.19991,2.26675 9.733238,5.40008 13.6,9.4 3.866564,3.86674 6.933228,8.40007 9.2,13.6 2.266556,5.20006 3.399889,10.80005 3.4,16.8 -1.11e-4,6.00004 -1.133444,11.60003 -3.4,16.8 -2.266772,5.20002 -5.333436,9.73335 -9.2,13.6 -3.866762,3.86668 -8.40009,6.93334 -13.6,9.2 -5.20008,2.26667 -10.800074,3.4 -16.8,3.4 l -64.599997,0 0,-32.2 64.599997,0 c 3.066595,-0.1333 5.599926,-1.19996 7.6,-3.2 2.133255,-2.13329 3.199921,-4.66662 3.2,-7.6 -7.9e-5,-3.06662 -1.066745,-5.59995 -3.2,-7.6 -2.000074,-2.13328 -4.533405,-3.19994 -7.6,-3.2 l -21.599997,0 c -6.00004,6e-5 -11.60004,-1.13328 -16.8,-3.4 -5.20003,-2.2666 -9.73336,-5.33327 -13.6,-9.2 -3.86668,-3.99993 -6.93335,-8.59992 -9.2,-13.8 -2.26667,-5.19991 -3.40001,-10.79991 -3.4,-16.8 -10e-6,-5.99989 1.13333,-11.59989 3.4,-16.8 2.26665,-5.19988 5.33332,-9.73321 9.2,-13.6 3.86664,-3.86653 8.39997,-6.9332 13.6,-9.2 5.19996,-2.26652 10.79996,-3.39986 16.8,-3.4 l 42.999997,0 0,32.4 -42.999997,0 c -3.06671,1.1e-4 -5.66671,1.06678 -7.8,3.2 -2.00004,2.00011 -3.00004,4.46677 -3,7.4 -4e-5,3.06676 0.99996,5.66676 3,7.8 2.13329,2.00009 4.73329,3.00009 7.8,3 l 21.599997,0 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />    </g>    <g       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Theorem NBP;-inkscape-font-specification:Theorem NBP"       >      <path         d="m 422.17683,677.02126 36.55,0 -5.44,27.54 -1.87,9.18 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 9.18,-45.9 c 1.01998,-5.09991 2.94664,-9.85991 5.78,-14.28 2.8333,-4.4199 6.17663,-8.27323 10.03,-11.56 3.96662,-3.28656 8.32995,-5.89322 13.09,-7.82 4.87328,-1.92655 9.85994,-2.88988 14.96,-2.89 l 18.36,0 c 5.09991,1.2e-4 9.63324,0.96345 13.6,2.89 4.0799,1.92678 7.42323,4.53344 10.03,7.82 2.71989,3.28677 4.58989,7.1401 5.61,11.56 1.01988,4.42009 1.01988,9.18009 0,14.28 l -27.37,0 c 0.45325,-2.49325 -9e-5,-4.58991 -1.36,-6.29 -1.36009,-1.81324 -3.34342,-2.71991 -5.95,-2.72 l -18.36,0 c -2.60673,9e-5 -4.98672,0.90676 -7.14,2.72 -2.15339,1.70009 -3.45672,3.79675 -3.91,6.29 l -9.18,45.9 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 1.87,-9.18 -9.18,0 5.44,-27.54"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 569.69808,713.74126 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 16.49,-82.45 27.37,0 -16.49,82.45 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 16.49,-82.45 27.37,0 -16.49,82.45"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 613.00933,631.29126 27.37,0 -23.8,119 -27.37,0 23.8,-119 0,0"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />    </g>    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.4331683,0,0,0.38716814,381.83246,155.72497)" />  </g></svg>',//svg with letters as paths (solves font issues)
 	cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
 	plus: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   viewBox="5 -10 59.259258 79.999999"   enable-background="new 0 0 100 100"   xml:space="preserve"   height="100%"   width="100%"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_79066_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="6.675088"     inkscape:cx="46.670641"     inkscape:cy="16.037704"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Your_Icon" /><g          transform="translate(-23.47037,-20)"><g       ><g         ><g            /></g><g          /></g></g><path     d="M 67.12963,22.5 H 42.129629 v -25 c 0,-4.142 -3.357,-7.5 -7.5,-7.5 -4.141999,0 -7.5,3.358 -7.5,7.5 v 25 H 2.1296295 c -4.142,0 -7.5,3.358 -7.5,7.5 0,4.143 3.358,7.5 7.5,7.5 H 27.129629 v 25 c 0,4.143 3.358001,7.5 7.5,7.5 4.143,0 7.5,-3.357 7.5,-7.5 v -25 H 67.12963 c 4.143,0 7.5,-3.357 7.5,-7.5 0,-4.142 -3.357,-7.5 -7.5,-7.5 z"          inkscape:connector-curvature="0"     style="fill:#000000" /></svg>',
+	crossMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"  viewBox="3.75 -7.5 43.041089 57.023436"   version="1.1"      inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96505_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="37.14799"     inkscape:cy="24.652776"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2" />  <g          transform="translate(-13.01266,-18.5625)">    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 67.335938,21.40625 60.320312,11.0625 C 50.757812,17.542969 43.875,22.636719 38.28125,27.542969 32.691406,22.636719 25.808594,17.546875 16.242188,11.0625 L 9.230469,21.40625 C 18.03125,27.375 24.3125,31.953125 29.398438,36.351562 23.574219,42.90625 18.523438,50.332031 11.339844,61.183594 l 10.421875,6.902344 C 28.515625,57.886719 33.144531,51.046875 38.28125,45.160156 c 5.140625,5.886719 9.765625,12.726563 16.523438,22.925782 L 65.226562,61.183594 C 58.039062,50.335938 52.988281,42.90625 47.167969,36.351562 52.25,31.953125 58.53125,27.375 67.335938,21.40625 z m 0,0"              inkscape:connector-curvature="0" />  </g></svg>',
+	checkMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 48.269674 56.308594"   version="1.1"      inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="40.78518"     inkscape:cy="24.259259"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2" />  <g          transform="translate(-9.3300051,-18.878906)">    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"              inkscape:connector-curvature="0" />  </g></svg>',
+	checkCrossMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 49.752653 49.990111"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"     showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="41.024355"     inkscape:cy="53.698163"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2"      />  <g     transform="matrix(0.59034297,0,0,0.59034297,12.298561,2.5312719)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"       inkscape:connector-curvature="0"        />  </g>  <g     transform="matrix(0.46036177,0,0,0.46036177,-0.49935505,-12.592753)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 67.335938,21.40625 60.320312,11.0625 C 50.757812,17.542969 43.875,22.636719 38.28125,27.542969 32.691406,22.636719 25.808594,17.546875 16.242188,11.0625 L 9.230469,21.40625 C 18.03125,27.375 24.3125,31.953125 29.398438,36.351562 23.574219,42.90625 18.523438,50.332031 11.339844,61.183594 l 10.421875,6.902344 C 28.515625,57.886719 33.144531,51.046875 38.28125,45.160156 c 5.140625,5.886719 9.765625,12.726563 16.523438,22.925782 L 65.226562,61.183594 C 58.039062,50.335938 52.988281,42.90625 47.167969,36.351562 52.25,31.953125 58.53125,27.375 67.335938,21.40625 z m 0,0"       inkscape:connector-curvature="0"        />  </g></svg>',
 };
-},{}],93:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	selectize = require('selectize'),
@@ -64366,14 +64488,14 @@ var getCkanEndpoints = function() {
 };
 
 
-},{"jquery":4,"selectize":6,"yasgui-utils":10}],94:[function(require,module,exports){
+},{"jquery":4,"selectize":6,"yasgui-utils":10}],95:[function(require,module,exports){
 //extend jquery
 
 require('./outsideclick.js');
 require('./tab.js');
 require('./endpointCombi.js');
 
-},{"./endpointCombi.js":93,"./outsideclick.js":95,"./tab.js":96}],95:[function(require,module,exports){
+},{"./endpointCombi.js":94,"./outsideclick.js":96,"./tab.js":97}],96:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 
@@ -64405,7 +64527,7 @@ $.fn.onOutsideClick = function(onOutsideClick, config) {
 }
 
 
-},{"jquery":4}],96:[function(require,module,exports){
+},{"jquery":4}],97:[function(require,module,exports){
 //Based on Bootstrap: tab.js v3.3.1
 var $ = require('jquery');
   'use strict';
@@ -64551,7 +64673,7 @@ var $ = require('jquery');
     .on('click.bs.tab.data-api', '[data-toggle="pill"]', clickHandler)
 
 
-},{"jquery":4}],97:[function(require,module,exports){
+},{"jquery":4}],98:[function(require,module,exports){
 "use strict";
 var $ = require('jquery'),
 	yUtils = require('yasgui-utils');
@@ -64609,6 +64731,7 @@ var root = module.exports = function(parent, options) {
 	
 	yasgui.tabManager = require('./tabManager.js')(yasgui);
 	yasgui.tabManager.init();
+	yasgui.tracker = require('./tracker.js')(yasgui);
 	return yasgui;
 };
 
@@ -64619,7 +64742,7 @@ root.YASQE = require('./yasqe.js');
 root.YASR = require('./yasr.js');
 root.$ = $;
 root.defaults = require('./defaults.js');
-},{"./defaults.js":91,"./jquery/extendJquery.js":94,"./tabManager.js":100,"./yasqe.js":103,"./yasr.js":104,"jquery":4,"yasgui-utils":10}],98:[function(require,module,exports){
+},{"./defaults.js":92,"./jquery/extendJquery.js":95,"./tabManager.js":101,"./tracker.js":103,"./yasqe.js":105,"./yasr.js":106,"jquery":4,"yasgui-utils":10}],99:[function(require,module,exports){
 var getUrlParams = function(queryString) {
 	var params = [];
 	if (!queryString) queryString = window.location.search.substring(1);
@@ -64721,7 +64844,7 @@ module.exports = {
 		}
 	}
 }
-},{}],99:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('./utils.js'),
@@ -64841,7 +64964,7 @@ module.exports = function(yasgui, id, name) {
 		if (tab.yasqe) {
 			$.extend(true, tab.yasqe.options, persistentOptions.yasqe);
 			//set value manualy, as this triggers a refresh
-			tab.yasqe.setValue(persistentOptions.yasqe.value);
+			if (persistentOptions.yasqe.value) tab.yasqe.setValue(persistentOptions.yasqe.value);
 		}
 	}
 	$.extend(yasqeOptions, persistentOptions.yasqe);
@@ -64857,11 +64980,16 @@ module.exports = function(yasgui, id, name) {
 				//this way, the URLs in the results are prettified using the defined prefixes in the query
 				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
 			}, persistentOptions.yasr));
+			var beforeSend = null;
+			tab.yasqe.options.sparql.callbacks.beforeSend = function() {
+				beforeSend = +new Date();
+			}
 			tab.yasqe.options.sparql.callbacks.complete = function() {
+				var end = +new Date();
+				yasgui.tracker.track(persistentOptions.yasqe.sparql.endpoint, tab.yasqe.getValueWithoutComments(), end - beforeSend);
 				tab.yasr.setResponse.apply(this, arguments);
 				storeInHist();
 			}
-			
 			
 			tab.yasqe.query = function() {
 				if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
@@ -64905,7 +65033,7 @@ module.exports = function(yasgui, id, name) {
 
 
 
-},{"./main.js":97,"./shareLink":98,"./tabPaneMenu.js":101,"./utils.js":102,"jquery":4,"yasgui-utils":10}],100:[function(require,module,exports){
+},{"./main.js":98,"./shareLink":99,"./tabPaneMenu.js":102,"./utils.js":104,"jquery":4,"yasgui-utils":10}],101:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('yasgui-utils'),
@@ -65185,11 +65313,14 @@ module.exports = function(yasgui) {
 };
 
 
-},{"./imgs.js":92,"./shareLink.js":98,"./tab.js":99,"jquery":4,"jquery-ui/position":3,"yasgui-utils":10}],101:[function(require,module,exports){
+},{"./imgs.js":93,"./shareLink.js":99,"./tab.js":100,"jquery":4,"jquery-ui/position":3,"yasgui-utils":10}],102:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	imgs = require('./imgs.js'),
+	selectize = require('selectize'),
 	utils = require('yasgui-utils');
+
+
 module.exports = function(yasgui, tab) {
 	var $menu = null;
 	var $tabPanel = null;
@@ -65243,8 +65374,8 @@ module.exports = function(yasgui, tab) {
 		var $reqPanel = $('<div>', {id: reqPaneId, role: 'tabpanel',class: 'tab-pane requestConfig container-fluid'}).appendTo($tabPanesParent);
 		
 		//request method
-		var $reqRow = $('<div>', {class: 'row'}).appendTo($reqPanel);
-		$('<div>', {class:'col-md-4 rowLabel'}).appendTo($reqRow).append($('<span>').text('Request Method'));
+		var $reqRow = $('<div>', {class: 'reqRow'}).appendTo($reqPanel);
+		$('<div>', {class:'rowLabel'}).appendTo($reqRow).append($('<span>').text('Request Method'));
 		$btnPost = $('<button>', {class:'btn btn-default ','data-toggle':"button"}).text('POST').click(function(){
 			$btnPost.addClass('active');
 			$btnGet.removeClass('active');
@@ -65256,37 +65387,44 @@ module.exports = function(yasgui, tab) {
 		$('<div>', {class:'btn-group col-md-8', role: 'group'}).append($btnGet).append($btnPost).appendTo($reqRow);
 		
 		//Accept headers
-		var $acceptRow = $('<div>', {class: 'row'}).appendTo($reqPanel);
-		$('<div>', {class:'col-md-4 rowLabel'}).appendTo($acceptRow).text('Accept Headers');
-		$acceptSelect = $('<select>', {class: 'form-control'})
+		var $acceptRow = $('<div>', {class: 'reqRow'}).appendTo($reqPanel);
+		$('<div>', {class:'rowLabel'}).appendTo($acceptRow).text('Accept Headers');
+		
+		
+		
+		$acceptSelect = $('<select>', {class: 'acceptHeader'})
 			.append($("<option>", {value: 'application/sparql-results+json'}).text('JSON'))
 			.append($("<option>", {value: 'application/sparql-results+xml'}).text('XML'))
 			.append($("<option>", {value: 'text/csv'}).text('CSV'))
 			.append($("<option>", {value: 'text/tab-separated-values'}).text('TSV'));
-		$acceptGraph = $('<select>', {class: 'form-control'})
+		$('<div>', {class:'col-md-4', role: 'group'}).append($('<label>').text('SELECT').append($acceptSelect)).appendTo($acceptRow);
+		$acceptSelect.selectize();
+		
+		$acceptGraph = $('<select>', {class: 'acceptHeader'})
 			.append($("<option>", {value: 'text/turtle'}).text('Turtle'))
 			.append($("<option>", {value: 'application/rdf+xml'}).text('RDF-XML'))
 			.append($("<option>", {value: 'text/csv'}).text('CSV'))
 			.append($("<option>", {value: 'text/tab-separated-values'}).text('TSV'));
-		$('<div>', {class:'col-md-4', role: 'group'}).append($('<label>').text('SELECT').append($acceptSelect)).appendTo($acceptRow);
 		$('<div>', {class:'col-md-4', role: 'group'}).append($('<label>').text('Graph').append($acceptGraph)).appendTo($acceptRow);
+		$acceptGraph.selectize();
+		
 		
 		
 		//URL args headers
-		var $urlArgsRow = $('<div>', {class: 'row'}).appendTo($reqPanel);
-		$('<div>', {class:'col-md-4 rowLabel'}).appendTo($urlArgsRow).text('URL Arguments');
+		var $urlArgsRow = $('<div>', {class: 'reqRow'}).appendTo($reqPanel);
+		$('<div>', {class:'rowLabel'}).appendTo($urlArgsRow).text('URL Arguments');
 		$urlArgsDiv = $('<div>', {class:'col-md-8', role: 'group'}).appendTo($urlArgsRow);
 		
 		
 		//Default graphs
-		var $defaultGraphsRow = $('<div>', {class: 'row'}).appendTo($reqPanel);
-		$('<div>', {class:'col-md-4 rowLabel'}).appendTo($defaultGraphsRow).text('Default graphs');
+		var $defaultGraphsRow = $('<div>', {class: 'reqRow'}).appendTo($reqPanel);
+		$('<div>', {class:'rowLabel'}).appendTo($defaultGraphsRow).text('Default graphs');
 		$defaultGraphsDiv = $('<div>', {class:'col-md-8', role: 'group'}).appendTo($defaultGraphsRow);
 		
 		
 		//Named graphs
-		var $namedGraphsRow = $('<div>', {class: 'row'}).appendTo($reqPanel);
-		$('<div>', {class:'col-md-4 rowLabel'}).appendTo($namedGraphsRow).text('Named graphs');
+		var $namedGraphsRow = $('<div>', {class: 'reqRow'}).appendTo($reqPanel);
+		$('<div>', {class:'rowLabel'}).appendTo($namedGraphsRow).text('Named graphs');
 		$namedGraphsDiv = $('<div>', {class:'col-md-8', role: 'group'}).appendTo($namedGraphsRow);
 
 		
@@ -65313,25 +65451,25 @@ module.exports = function(yasgui, tab) {
 		/**
 		 * Init collections tab
 		 */
-		var li = $("<li>", {role: "presentation"}).appendTo($tabsParent);
-		var collectionsPaneId = 'yasgui_collections_' +tab.persistentOptions.id;
-		li.append(
-			$('<a>', {href: '#' + collectionsPaneId, 'aria-controls': collectionsPaneId,  role: 'tab', 'data-toggle': 'tab'})
-			.text("Collections")
-			.click(function(e) {
-				e.preventDefault()
-				$(this).tab('show')
-			})
-		);
-		var $reqPanel = $('<div>', {id: collectionsPaneId, role: 'tabpanel',class: 'tab-pane collections container-fluid'}).appendTo($tabPanesParent);
-		
+		if (yasgui.options.api.collections) {
+			var li = $("<li>", {role: "presentation"}).appendTo($tabsParent);
+			var collectionsPaneId = 'yasgui_collections_' +tab.persistentOptions.id;
+			li.append(
+				$('<a>', {href: '#' + collectionsPaneId, 'aria-controls': collectionsPaneId,  role: 'tab', 'data-toggle': 'tab'})
+				.text("Collections")
+				.click(function(e) {
+					e.preventDefault()
+					$(this).tab('show')
+				})
+			);
+			var $reqPanel = $('<div>', {id: collectionsPaneId, role: 'tabpanel',class: 'tab-pane collections container-fluid'}).appendTo($tabPanesParent);
+		}
 		
 		return $menu;
 	};
 	
 	var addTextInputsTo = function($el, num, animate, vals) {
 		var $inputsAndTogglesContainer = $('<div>', {class:'textInputsRow'});
-//		var $inputsContainer = $('<div>', {class:'textInputs'}).appendTo($inputsAndTogglesContainer);
 		for (var i = 0; i < num; i++) {
 			var val = (vals && vals[i]? vals[i]: "");
 			$('<input>', {type: 'text'})
@@ -65384,8 +65522,8 @@ module.exports = function(yasgui, tab) {
 			$btnGet.addClass('active');
 		}
 		//Request method
-		$acceptGraph.val(options.sparql.acceptHeaderGraph);
-		$acceptSelect.val(options.sparql.acceptHeaderSelect);
+		$acceptGraph[0].selectize.setValue(options.sparql.acceptHeaderGraph);
+		$acceptSelect[0].selectize.setValue(options.sparql.acceptHeaderSelect);
 		
 		//url args
 		$urlArgsDiv.empty();
@@ -65458,8 +65596,8 @@ module.exports = function(yasgui, tab) {
 		}
 		
 		//Request method
-		options.acceptHeaderGraph = $acceptGraph.val();
-		options.acceptHeaderSelect = $acceptSelect.val();
+		options.acceptHeaderGraph = $acceptGraph[0].selectize.getValue();
+		options.acceptHeaderSelect = $acceptSelect[0].selectize.getValue();
 		
 		//url args
 		var args = [];
@@ -65510,7 +65648,138 @@ module.exports = function(yasgui, tab) {
 };
 
 
-},{"./imgs.js":92,"jquery":4,"yasgui-utils":10}],102:[function(require,module,exports){
+},{"./imgs.js":93,"jquery":4,"selectize":6,"yasgui-utils":10}],103:[function(require,module,exports){
+var yUtils = require('yasgui-utils'),
+	imgs = require('./imgs.js'),
+	$ = require('jquery');
+module.exports = function(yasgui) {
+	
+	var enabled = !!(yasgui.options.tracker.googleAnalyticsId);
+	var trackEvents = true;
+	var cookieId = "yasgui_" + $(yasgui.wrapperElement).closest('[id]').attr('id') + '_trackerId';
+	
+	var updateStatus = function() {
+		/*
+		 * Load settings. What can we track?
+		 */
+		var trackId = yUtils.storage.get(cookieId);
+		if (trackId === '0') {// don't track
+			enabled = false;
+			trackEvents = false;
+		} else if (trackId === '1') {// track visits
+			enabled = true;
+			trackEvents = false;
+		} else if (trackId == '2') {//track everything
+			enabled = true;
+			trackEvents = true;
+		} else if (yasgui.options.tracker.askConsent){
+			//don't know! show consent window
+			drawConsentWindow();
+		}
+	}
+	var init = function() {
+		if (yasgui.options.tracker.googleAnalyticsId) {
+			
+			updateStatus();
+		
+			//load script
+			 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+			 
+			  window._gaq = window._gaq || [];//needs to be in global scope...
+			  ga('create', yasgui.options.tracker.googleAnalyticsId, 'auto');
+			  ga('send', 'pageview');
+			  
+		}
+	};
+	
+	
+	
+	var drawConsentWindow = function() {
+		var consentDiv = $('<div>', {class: 'consentWindow'}).appendTo(yasgui.wrapperElement);
+		var hide = function() {
+			consentDiv.hide(400);
+		};
+		var storeConsent = function(id) {
+			var action = 'no';
+			if (id == 1) {
+				action = 'yes/no';
+			} else if (id == 2) {
+				action = 'yes';
+			}
+			track('consent', action);
+			yUtils.storage.set(cookieId, id);
+			updateStatus();
+			
+		}
+		consentDiv.append(
+				$('<div>', {class:'consentMsg'}).html('We track user actions (including used endpoints and queries). This data is solely used for research purposes and to get insight into how users use the site. <i>We would appreciate your consent!</i>')	
+		);
+			
+		var buttonDiv = $('<div>', {class: 'buttons'})
+			.appendTo(consentDiv)
+			.append(
+				$('<button>', {type: 'button', class: 'btn btn-default'})
+					.append(
+						$(yUtils.svg.getElement(imgs.checkMark))
+							.height(11)
+							.width(11)
+					)
+					.append($('<span>').text(' Yes, allow'))
+					.click(function() {
+						storeConsent(2)
+						hide();
+					})
+			)
+			.append(
+				$('<button>', {type: 'button', class: 'btn btn-default'})
+					.append(
+						$(yUtils.svg.getElement(imgs.checkCrossMark))
+							.height(13)
+							.width(13)
+					)
+					.append($('<span>').html(' Yes, track site usage, but not<br>the queries/endpoints I use'))
+					.click(function() {
+						storeConsent(1);
+						hide();
+					})
+			)
+			.append(
+				$('<button>', {type: 'button', class: 'btn btn-default'})
+					.append(
+						$(yUtils.svg.getElement(imgs.crossMark))
+							.height(9)
+							.width(9)
+					)
+					.append($('<span>').text(' No, disable tracking'))
+					.click(function() {
+						storeConsent(0);
+						hide();
+					})
+			)
+			.append(
+				$('<button>', {type: 'button', class: 'btn btn-default'})
+					.text('Ask me later')
+				.click(function() {
+					hide();
+				})
+			);
+	};
+	
+	var track = function(category, action, label, value, nonInteraction) {
+		if (enabled) _gaq.push(['_trackEvent', category, action, label, value, nonInteraction]);
+	};
+	init();
+	return {
+		enabled: enabled,
+		track: track,
+		drawConsentWindow: drawConsentWindow,
+	}
+};
+
+},{"./imgs.js":93,"jquery":4,"yasgui-utils":10}],104:[function(require,module,exports){
 var $ = require('jquery');
 module.exports = {
 	escapeHtmlEntities : function(unescapedString) {
@@ -65528,7 +65797,7 @@ module.exports = {
 	},
 
 }
-},{"jquery":4}],103:[function(require,module,exports){
+},{"jquery":4}],105:[function(require,module,exports){
 var $ = require('jquery');
 var root = module.exports = require('yasgui-yasqe');
 
@@ -65542,12 +65811,12 @@ root.defaults = $.extend(true, root.defaults, {
 		acceptHeaderSelect: "application/sparql-results+json"
 	}
 });
-},{"jquery":4,"yasgui-yasqe":41}],104:[function(require,module,exports){
+},{"jquery":4,"yasgui-yasqe":41}],106:[function(require,module,exports){
 var $ = require('jquery'),
 	YASGUI = require('./main.js');
 var root = module.exports = require('yasgui-yasr');
 
-},{"./main.js":97,"jquery":4,"yasgui-yasr":80}]},{},[1])(1)
+},{"./main.js":98,"jquery":4,"yasgui-yasr":81}]},{},[1])(1)
 });
 
 
