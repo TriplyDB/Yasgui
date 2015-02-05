@@ -11549,170 +11549,167 @@ module.exports = function(yasqe) {
  * keys). Either change the default options by setting YASQE.defaults, or by
  * passing your own options as second argument to the YASQE constructor
  */
-var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
-module.exports = {
-	use: function(YASQE) {
-		YASQE.defaults = $.extend(true, {}, YASQE.defaults, {
-				mode : "sparql11",
-				/**
-				 * Query string
-				 */
-				value : "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT * WHERE {\n  ?sub ?pred ?obj .\n} \nLIMIT 10",
-				highlightSelectionMatches : {
-					showToken : /\w/
-				},
-				tabMode : "indent",
-				lineNumbers : true,
-			    lineWrapping: true,
-			    
-			    foldGutter: {rangeFinder:YASQE.fold.brace },
-			    gutters: [ "gutterErrorBar", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
+	YASQE = require('./main.js');
+YASQE.defaults = $.extend(true, {}, YASQE.defaults, {
+		mode : "sparql11",
+		/**
+		 * Query string
+		 */
+		value : "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT * WHERE {\n  ?sub ?pred ?obj .\n} \nLIMIT 10",
+		highlightSelectionMatches : {
+			showToken : /\w/
+		},
+		tabMode : "indent",
+		lineNumbers : true,
+	    lineWrapping: true,
+	    
+	    foldGutter: {rangeFinder:YASQE.fold.brace },
+	    gutters: [ "gutterErrorBar", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
 //			    cell.code_mirror.setOption('foldGutter',{rangeFinder: new CodeMirror.fold.combine(CodeMirror.fold.firstline, CodeMirror.fold.brace) }); 
-				matchBrackets : true,
-				fixedGutter : true,
-				syntaxErrorCheck: true,
-				/**
-				 * Extra shortcut keys. Check the CodeMirror manual on how to add your own
-				 * 
-				 * @property extraKeys
-				 * @type object
-				 */
-				extraKeys : {
+		matchBrackets : true,
+		fixedGutter : true,
+		syntaxErrorCheck: true,
+		/**
+		 * Extra shortcut keys. Check the CodeMirror manual on how to add your own
+		 * 
+		 * @property extraKeys
+		 * @type object
+		 */
+		extraKeys : {
 //					"Ctrl-Space" : function(yasqe) {
 //						YASQE.autoComplete(yasqe);
 //					},
-					"Ctrl-Space" : YASQE.autoComplete,
-					
-					"Cmd-Space" : YASQE.autoComplete,
-					"Ctrl-D" : YASQE.deleteLine,
-					"Ctrl-K" : YASQE.deleteLine,
-					"Cmd-D" : YASQE.deleteLine,
-					"Cmd-K" : YASQE.deleteLine,
-					"Ctrl-/" : YASQE.commentLines,
-					"Cmd-/" : YASQE.commentLines,
-					"Ctrl-Alt-Down" : YASQE.copyLineDown,
-					"Ctrl-Alt-Up" : YASQE.copyLineUp,
-					"Cmd-Alt-Down" : YASQE.copyLineDown,
-					"Cmd-Alt-Up" : YASQE.copyLineUp,
-					"Shift-Ctrl-F" : YASQE.doAutoFormat,
-					"Shift-Cmd-F" : YASQE.doAutoFormat,
-					"Ctrl-]" : YASQE.indentMore,
-					"Cmd-]" : YASQE.indentMore,
-					"Ctrl-[" : YASQE.indentLess,
-					"Cmd-[" : YASQE.indentLess,
-					"Ctrl-S" : YASQE.storeQuery,
-					"Cmd-S" : YASQE.storeQuery,
-					"Ctrl-Enter" : YASQE.executeQuery,
-					"Cmd-Enter" : YASQE.executeQuery,
-					"F11": function(yasqe) {
-				          yasqe.setOption("fullScreen", !yasqe.getOption("fullScreen"));
-			        },
-			        "Esc": function(yasqe) {
-			          if (yasqe.getOption("fullScreen")) yasqe.setOption("fullScreen", false);
-			        }
-				},
-				cursorHeight : 0.9,
+			"Ctrl-Space" : YASQE.autoComplete,
+			
+			"Cmd-Space" : YASQE.autoComplete,
+			"Ctrl-D" : YASQE.deleteLine,
+			"Ctrl-K" : YASQE.deleteLine,
+			"Cmd-D" : YASQE.deleteLine,
+			"Cmd-K" : YASQE.deleteLine,
+			"Ctrl-/" : YASQE.commentLines,
+			"Cmd-/" : YASQE.commentLines,
+			"Ctrl-Alt-Down" : YASQE.copyLineDown,
+			"Ctrl-Alt-Up" : YASQE.copyLineUp,
+			"Cmd-Alt-Down" : YASQE.copyLineDown,
+			"Cmd-Alt-Up" : YASQE.copyLineUp,
+			"Shift-Ctrl-F" : YASQE.doAutoFormat,
+			"Shift-Cmd-F" : YASQE.doAutoFormat,
+			"Ctrl-]" : YASQE.indentMore,
+			"Cmd-]" : YASQE.indentMore,
+			"Ctrl-[" : YASQE.indentLess,
+			"Cmd-[" : YASQE.indentLess,
+			"Ctrl-S" : YASQE.storeQuery,
+			"Cmd-S" : YASQE.storeQuery,
+			"Ctrl-Enter" : YASQE.executeQuery,
+			"Cmd-Enter" : YASQE.executeQuery,
+			"F11": function(yasqe) {
+		          yasqe.setOption("fullScreen", !yasqe.getOption("fullScreen"));
+	        },
+	        "Esc": function(yasqe) {
+	          if (yasqe.getOption("fullScreen")) yasqe.setOption("fullScreen", false);
+	        }
+		},
+		cursorHeight : 0.9,
 
-				
-				/**
-				 * Show a button with which users can create a link to this query. Set this value to null to disable this functionality.
-				 * By default, this feature is enabled, and the only the query value is appended to the link.
-				 * ps. This function should return an object which is parseable by jQuery.param (http://api.jquery.com/jQuery.param/)
-				 */
-				createShareLink: YASQE.createShareLink,
-				
-				/**
-				 * Consume links shared by others, by checking the url for arguments coming from a query link. Defaults by only checking the 'query=' argument in the url
-				 */
-				consumeShareLink: YASQE.consumeShareLink,
-				
-				
-				
-				
-				/**
-				 * Change persistency settings for the YASQE query value. Setting the values
-				 * to null, will disable persistancy: nothing is stored between browser
-				 * sessions Setting the values to a string (or a function which returns a
-				 * string), will store the query in localstorage using the specified string.
-				 * By default, the ID is dynamically generated using the closest dom ID, to avoid collissions when using multiple YASQE items on one
-				 * page
-				 * 
-				 * @type function|string
-				 */
-				persistent : function(yasqe) {
-					return "yasqe_" + $(yasqe.getWrapperElement()).closest('[id]').attr('id') + "_queryVal";
-				},
+		
+		/**
+		 * Show a button with which users can create a link to this query. Set this value to null to disable this functionality.
+		 * By default, this feature is enabled, and the only the query value is appended to the link.
+		 * ps. This function should return an object which is parseable by jQuery.param (http://api.jquery.com/jQuery.param/)
+		 */
+		createShareLink: YASQE.createShareLink,
+		
+		/**
+		 * Consume links shared by others, by checking the url for arguments coming from a query link. Defaults by only checking the 'query=' argument in the url
+		 */
+		consumeShareLink: YASQE.consumeShareLink,
+		
+		
+		
+		
+		/**
+		 * Change persistency settings for the YASQE query value. Setting the values
+		 * to null, will disable persistancy: nothing is stored between browser
+		 * sessions Setting the values to a string (or a function which returns a
+		 * string), will store the query in localstorage using the specified string.
+		 * By default, the ID is dynamically generated using the closest dom ID, to avoid collissions when using multiple YASQE items on one
+		 * page
+		 * 
+		 * @type function|string
+		 */
+		persistent : function(yasqe) {
+			return "yasqe_" + $(yasqe.getWrapperElement()).closest('[id]').attr('id') + "_queryVal";
+		},
 
-				
-				/**
-				 * Settings for querying sparql endpoints
-				 */
-				sparql : {
-					showQueryButton: false,
-					
-					/**f
-					 * Endpoint to query
-					 * 
-					 * @property sparql.endpoint
-					 * @type String|function
-					 */
-					endpoint : "http://dbpedia.org/sparql",
-					/**
-					 * Request method via which to access SPARQL endpoint
-					 * 
-					 * @property sparql.requestMethod
-					 * @type String|function
-					 */
-					requestMethod : "POST",
-					
-					/**
-					 * @type String|function
-					 */
-					acceptHeaderGraph: "text/turtle,*/*;q=0.9",
-					/**
-					 * @type String|function
-					 */
-					acceptHeaderSelect: "application/sparql-results+json,*/*;q=0.9",
-					/**
-					 * @type String|function
-					 */
-					acceptHeaderUpdate: "text/plain,*/*;q=0.9",
-					
-					/**
-					 * Named graphs to query.
-					 */
-					namedGraphs : [],
-					/**
-					 * Default graphs to query.
-					 */
-					defaultGraphs : [],
+		
+		/**
+		 * Settings for querying sparql endpoints
+		 */
+		sparql : {
+			showQueryButton: false,
+			
+			/**f
+			 * Endpoint to query
+			 * 
+			 * @property sparql.endpoint
+			 * @type String|function
+			 */
+			endpoint : "http://dbpedia.org/sparql",
+			/**
+			 * Request method via which to access SPARQL endpoint
+			 * 
+			 * @property sparql.requestMethod
+			 * @type String|function
+			 */
+			requestMethod : "POST",
+			
+			/**
+			 * @type String|function
+			 */
+			acceptHeaderGraph: "text/turtle,*/*;q=0.9",
+			/**
+			 * @type String|function
+			 */
+			acceptHeaderSelect: "application/sparql-results+json,*/*;q=0.9",
+			/**
+			 * @type String|function
+			 */
+			acceptHeaderUpdate: "text/plain,*/*;q=0.9",
+			
+			/**
+			 * Named graphs to query.
+			 */
+			namedGraphs : [],
+			/**
+			 * Default graphs to query.
+			 */
+			defaultGraphs : [],
 
-					/**
-					 * Additional request arguments. Add them in the form: {name: "name", value: "value"}
-					 */
-					args : [],
+			/**
+			 * Additional request arguments. Add them in the form: {name: "name", value: "value"}
+			 */
+			args : [],
 
-					/**
-					 * Additional request headers
-					 */
-					headers : {},
-					
-					/**
-					 * Set of ajax callbacks
-					 */
-					callbacks : {
-						beforeSend : null,
-						complete : null,
-						error : null,
-						success : null
-					},
-					handlers: {}//keep here for backwards compatability
-				},
-			});
-	}
-};
+			/**
+			 * Additional request headers
+			 */
+			headers : {},
+			
+			/**
+			 * Set of ajax callbacks
+			 */
+			callbacks : {
+				beforeSend : null,
+				complete : null,
+				error : null,
+				success : null
+			},
+			handlers: {}//keep here for backwards compatability
+		},
+	});
 
-},{"jquery":undefined}],37:[function(require,module,exports){
+},{"./main.js":38,"jquery":undefined}],37:[function(require,module,exports){
 'use strict';
 module.exports = {
 	loader: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="100%" height="100%" fill="black">  <circle cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(45 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.125s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(90 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.25s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(135 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.375s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(180 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(225 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.625s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(270 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.75s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(315 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.875s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle>  <circle transform="rotate(180 16 16)" cx="16" cy="3" r="0">    <animate attributeName="r" values="0;3;0;0" dur="1s" repeatCount="indefinite" begin="0.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" calcMode="spline" />  </circle></svg>',
@@ -11734,7 +11731,6 @@ window.console = window.console || {"log":function(){}};
  */
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	CodeMirror = (function(){try{return require('codemirror')}catch(e){return window.CodeMirror}})(),
-	sparql = require('./sparql.js'),
 	utils = require('./utils.js'),
 	yutils = require('yasgui-utils'),
 	imgs = require('./imgs.js');
@@ -11823,6 +11819,10 @@ var extendCmInstance = function(yasqe) {
 	 */
 	yasqe.query = function(callbackOrConfig) {
 		root.executeQuery(yasqe, callbackOrConfig);
+	};
+	
+	yasqe.getUrlArguments = function(config) {
+		return root.getUrlArguments(yasqe, config);
 	};
 	
 	/**
@@ -12399,8 +12399,9 @@ var autoFormatLineBreaks = function(text, start, end) {
 	});
 	return $.trim(formattedQuery.replace(/\n\s*\n/g, '\n'));
 };
-require('./sparql.js').use(root);
-require('./defaults.js').use(root);
+
+require('./sparql.js'),
+require('./defaults.js');
 
 root.version = {
 	"CodeMirror" : CodeMirror.version,
@@ -12549,106 +12550,114 @@ module.exports = {
 
 },{}],40:[function(require,module,exports){
 'use strict';
-var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
-module.exports = {
-	use: function(YASQE) {
-		YASQE.executeQuery = function(yasqe, callbackOrConfig) {
-			var callback = (typeof callbackOrConfig == "function" ? callbackOrConfig: null);
-			var config = (typeof callbackOrConfig == "object" ? callbackOrConfig : {});
-			var queryMode = yasqe.getQueryMode();
-			if (yasqe.options.sparql)
-				config = $.extend({}, yasqe.options.sparql, config);
-			
-			//for backwards compatability, make sure we copy sparql handlers to sparql callbacks
-			if (config.handlers) 
-				$.extend(true, config.callbacks, config.handlers);
-			
-			
-			if (!config.endpoint || config.endpoint.length == 0)
-				return;// nothing to query!
+var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
+	YASQE = require('./main.js');
+YASQE.executeQuery = function(yasqe, callbackOrConfig) {
+	var callback = (typeof callbackOrConfig == "function" ? callbackOrConfig: null);
+	var config = (typeof callbackOrConfig == "object" ? callbackOrConfig : {});
+	
+	if (yasqe.options.sparql)
+		config = $.extend({}, yasqe.options.sparql, config);
+	
+	//for backwards compatability, make sure we copy sparql handlers to sparql callbacks
+	if (config.handlers) 
+		$.extend(true, config.callbacks, config.handlers);
+	
+	
+	if (!config.endpoint || config.endpoint.length == 0)
+		return;// nothing to query!
 
-			/**
-			 * initialize ajax config
-			 */
-			var ajaxConfig = {
-				url : (typeof config.endpoint == "function"? config.endpoint(yasqe): config.endpoint),
-				type : (typeof config.requestMethod == "function"? config.requestMethod(yasqe): config.requestMethod),
-				data : [{
-					name : queryMode,
-					value : yasqe.getValue()
-				}],
-				headers : {
-					Accept : getAcceptHeader(yasqe, config),
-				}
-			};
+	/**
+	 * initialize ajax config
+	 */
+	var ajaxConfig = {
+		url : (typeof config.endpoint == "function"? config.endpoint(yasqe): config.endpoint),
+		type : (typeof config.requestMethod == "function"? config.requestMethod(yasqe): config.requestMethod),
+		headers : {
+			Accept : getAcceptHeader(yasqe, config),
+		}
+	};
 
-			/**
-			 * add complete, beforesend, etc callbacks (if specified)
-			 */
-			var handlerDefined = false;
-			if (config.callbacks) {
-				for ( var handler in config.callbacks) {
-					if (config.callbacks[handler]) {
-						handlerDefined = true;
-						ajaxConfig[handler] = config.callbacks[handler];
-					}
-				}
+	/**
+	 * add complete, beforesend, etc callbacks (if specified)
+	 */
+	var handlerDefined = false;
+	if (config.callbacks) {
+		for ( var handler in config.callbacks) {
+			if (config.callbacks[handler]) {
+				handlerDefined = true;
+				ajaxConfig[handler] = config.callbacks[handler];
 			}
-			if (!handlerDefined && !callback)
-				return; // ok, we can query, but have no callbacks. just stop now
-			
-			// if only callback is passed as arg, add that on as 'onComplete' callback
-			if (callback)
-				ajaxConfig.complete = callback;
-
-			/**
-			 * add named graphs to ajax config
-			 */
-			if (config.namedGraphs && config.namedGraphs.length > 0) {
-				var argName = (queryMode == "query" ? "named-graph-uri": "using-named-graph-uri ");
-				for (var i = 0; i < config.namedGraphs.length; i++)
-					ajaxConfig.data.push({
-						name : argName,
-						value : config.namedGraphs[i]
-					});
-			}
-			/**
-			 * add default graphs to ajax config
-			 */
-			if (config.defaultGraphs && config.defaultGraphs.length > 0) {
-				var argName = (queryMode == "query" ? "default-graph-uri": "using-graph-uri ");
-				for (var i = 0; i < config.defaultGraphs.length; i++)
-					ajaxConfig.data.push({
-						name : argName,
-						value : config.defaultGraphs[i]
-					});
-			}
-
-			/**
-			 * merge additional request headers
-			 */
-			if (config.headers && !$.isEmptyObject(config.headers))
-				$.extend(ajaxConfig.headers, config.headers);
-			/**
-			 * add additional request args
-			 */
-			if (config.args && config.args.length > 0) $.merge(ajaxConfig.data, config.args);
-			YASQE.updateQueryButton(yasqe, "busy");
-			
-			var updateQueryButton = function() {
-				YASQE.updateQueryButton(yasqe);
-			};
-			//Make sure the query button is updated again on complete
-			if (ajaxConfig.complete) {
-				ajaxConfig.complete = [updateQueryButton, ajaxConfig.complete];
-			} else {
-				ajaxConfig.complete = updateQueryButton;
-			}
-			yasqe.xhr = $.ajax(ajaxConfig);
-		};
+		}
 	}
+	ajaxConfig.data = yasqe.getUrlArguments(yasqe, config);
+	if (!handlerDefined && !callback)
+		return; // ok, we can query, but have no callbacks. just stop now
+	
+	// if only callback is passed as arg, add that on as 'onComplete' callback
+	if (callback)
+		ajaxConfig.complete = callback;
+
+	
+
+	/**
+	 * merge additional request headers
+	 */
+	if (config.headers && !$.isEmptyObject(config.headers))
+		$.extend(ajaxConfig.headers, config.headers);
+	
+	YASQE.updateQueryButton(yasqe, "busy");
+	
+	var updateQueryButton = function() {
+		YASQE.updateQueryButton(yasqe);
+	};
+	//Make sure the query button is updated again on complete
+	if (ajaxConfig.complete) {
+		ajaxConfig.complete = [updateQueryButton, ajaxConfig.complete];
+	} else {
+		ajaxConfig.complete = updateQueryButton;
+	}
+	yasqe.xhr = $.ajax(ajaxConfig);
 };
 
+
+YASQE.getUrlArguments = function(yasqe, config) {
+	var queryMode = yasqe.getQueryMode();
+	var data = [{
+		name : 'query',
+		value : yasqe.getValue()
+	}];
+	
+	/**
+	 * add named graphs to ajax config
+	 */
+	if (config.namedGraphs && config.namedGraphs.length > 0) {
+		var argName = (queryMode == "query" ? "named-graph-uri": "using-named-graph-uri ");
+		for (var i = 0; i < config.namedGraphs.length; i++)
+			data.push({
+				name : argName,
+				value : config.namedGraphs[i]
+			});
+	}
+	/**
+	 * add default graphs to ajax config
+	 */
+	if (config.defaultGraphs && config.defaultGraphs.length > 0) {
+		var argName = (queryMode == "query" ? "default-graph-uri": "using-graph-uri ");
+		for (var i = 0; i < config.defaultGraphs.length; i++)
+			data.push({
+				name : argName,
+				value : config.defaultGraphs[i]
+			});
+	}
+	
+	/**
+	 * add additional request args
+	 */
+	if (config.args && config.args.length > 0) $.merge(data, config.args);
+	
+	return data;
+}
 var getAcceptHeader = function(yasqe, config) {
 	var acceptHeader = null;
 	if (config.acceptHeader && !config.acceptHeaderGraph && !config.acceptHeaderSelect && !config.acceptHeaderUpdate) {
@@ -12673,7 +12682,7 @@ var getAcceptHeader = function(yasqe, config) {
 	return acceptHeader;
 };
 
-},{"jquery":undefined}],41:[function(require,module,exports){
+},{"./main.js":38,"jquery":undefined}],41:[function(require,module,exports){
 'use strict';
 /**
  * When typing a query, this query is sometimes syntactically invalid, causing
@@ -31964,6 +31973,11 @@ module.exports = function(yasgui, id, name) {
 	
 	tab.onShow = function() {
 		if (!tab.yasqe || !tab.yasr) {
+			var getQueryString = function() {
+				return persistentOptions.yasqe.sparql.endpoint + "?" +
+					$.param(tab.yasqe.getUrlArguments(persistentOptions.yasqe.sparql));
+			};
+			YASGUI.YASR.plugins.error.defaults.tryQueryLink = getQueryString;
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.on('blur', function(yasqe) {
 				persistentOptions.yasqe.value = yasqe.getValue();
