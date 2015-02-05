@@ -4997,10 +4997,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   font-family: monospace;
   height: 300px; }
 
-.yasqe .CodeMirror-scroll {
-  /* Set scrolling behaviour here */
-  overflow: auto; }
-
 .yasqe .CodeMirror-lines {
   padding: 4px 0;
   /* Vertical padding around content */ }
@@ -5162,6 +5158,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   color: black; }
 
 .yasqe .CodeMirror-scroll {
+  overflow: scroll !important;
+  /* Things will break if this is overridden */
   /* 30px is the magic margin used to hide the element's real scrollbars */
   /* See overflow: hidden in .CodeMirror */
   margin-bottom: -30px;
@@ -5209,7 +5207,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   position: absolute;
   left: 0;
   top: 0;
-  padding-bottom: 30px;
   z-index: 3; }
 
 .yasqe .CodeMirror-gutter {
@@ -5217,9 +5214,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   height: 100%;
   -moz-box-sizing: content-box;
   box-sizing: content-box;
-  padding-bottom: 30px;
-  margin-bottom: -32px;
   display: inline-block;
+  margin-bottom: -30px;
   /* Hack to make IE7 behave */
   *zoom: 1;
   *display: inline; }
@@ -5274,9 +5270,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   position: relative;
   z-index: 2;
   overflow: auto; }
-
-.yasqe .CodeMirror-wrap .CodeMirror-scroll {
-  overflow-x: hidden; }
 
 .yasqe .CodeMirror-measure {
   position: absolute;
@@ -6550,7 +6543,15 @@ li.CodeMirror-hint-active {
 .yasr .errorResult {
   padding: 10px; }
 
-.yasr .errorResult span.exception {
+.yasr .errorResult .errorHeader {
+  overflow: hidden; }
+
+.yasr .errorResult .errorHeader .yasr_tryQuery {
+  float: right;
+  padding-top: 3px;
+  padding-bottom: 3px; }
+
+.yasr .errorResult .errorHeader span.exception {
   display: inline;
   padding: 0.2em 0.6em 0.3em;
   font-size: 75%;
