@@ -124,6 +124,11 @@ module.exports = function(yasgui, id, name) {
 	
 	tab.onShow = function() {
 		if (!tab.yasqe || !tab.yasr) {
+			var getQueryString = function() {
+				return persistentOptions.yasqe.sparql.endpoint + "?" +
+					$.param(tab.yasqe.getUrlArguments(persistentOptions.yasqe.sparql));
+			};
+			YASGUI.YASR.plugins.error.defaults.tryQueryLink = getQueryString;
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.on('blur', function(yasqe) {
 				persistentOptions.yasqe.value = yasqe.getValue();
