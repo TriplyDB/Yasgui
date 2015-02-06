@@ -65695,13 +65695,13 @@ module.exports = function(yasgui) {
 		 * Load settings. What can we track?
 		 */
 		var trackId = yUtils.storage.get(cookieId);
-		if (trackId === '0') {// don't track
+		if (trackId === 0) {// don't track
 			enabled = false;
 			trackEvents = false;
-		} else if (trackId === '1') {// track visits
+		} else if (trackId === 1) {// track visits
 			enabled = true;
 			trackEvents = false;
-		} else if (trackId == '2') {//track everything
+		} else if (trackId == 2) {//track everything
 			enabled = true;
 			trackEvents = true;
 		} else if (yasgui.options.tracker.askConsent){
