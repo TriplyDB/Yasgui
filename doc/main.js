@@ -46,11 +46,12 @@ $(document).ready(function() {
 	if (gistContainer.length > 0) {
 		$.get("https://api.github.com/users/LaurensRietveld/gists", function(data) {
 			var processLabel = function(origLabel) {
-				var label = origLabel.replace("#YASQE", "YASQE");
+				var label = origLabel.replace("#YASQE", "YASQE" );
 				label = label.replace("#YASR", "YASR");
+				label = label.replace("#YASGUI", "YASGUI");
 				var splitted = label.split(" ");
 				if (splitted.length > 0) {
-					if ((splitted[0].indexOf("YASQE") == 0 || splitted[0].indexOf("YASR") == 0) && splitted[0].slice(-1) == ":") {
+					if ((splitted[0].indexOf("YASGUI") || splitted[0].indexOf("YASQE") == 0 || splitted[0].indexOf("YASR") == 0) && splitted[0].slice(-1) == ":") {
 						//we want to change "#YASQE: some gist" into "some gist". So, remove the first item
 						return splitted.splice(1).join(" ");
 					} else {
@@ -61,7 +62,8 @@ $(document).ready(function() {
 				}
 			};
 			data.forEach(function(gist) {
-				if (gist.description.indexOf("#YASQE") >= 0) {
+				if (gist.description.indexOf("#YASGUI") >= 0) {
+					$('#gists').show();$('#gistsUl').show();
 					var gistDiv = $("<div>").addClass("gist").addClass("well").appendTo(gistContainer);
 					$("<h4>").text(processLabel(gist.description)).appendTo(gistDiv);
 					if (gist.files["README.md"]) {
