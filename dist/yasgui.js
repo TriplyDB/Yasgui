@@ -11930,6 +11930,12 @@ var postProcessCmElement = function(yasqe) {
 		root.updateQueryButton(yasqe);
 		root.positionButtons(yasqe);
 	});
+	yasqe.on('changes', function() {
+		//e.g. on paste
+		checkSyntax(yasqe);
+		root.updateQueryButton(yasqe);
+		root.positionButtons(yasqe);
+	});
 	
 	yasqe.on('cursorActivity', function(yasqe, eventInfo) {
 		updateButtonsTransparency(yasqe);
@@ -32185,6 +32191,7 @@ module.exports = function(yasgui) {
 	};
 	var selectTab = function(id) {
 		$tabsParent.find('a[aria-controls="' + id + '"]').tab('show');
+		return manager.current();
 	}
 	var closeTab = function(id) {
 		/**
@@ -32219,6 +32226,7 @@ module.exports = function(yasgui) {
         
         
         yasgui.store();
+        return manager.current();
 	};
 	var addTab = function(tabId) {
 		var newItem = !tabId;
@@ -32311,6 +32319,7 @@ module.exports = function(yasgui) {
 		if (newItem || persistentOptions.selected == tabId) {
 			$tabToggle.tab('show');
 		}
+		return manager.tabs[tabId];
 	};
 	
 	manager.current = function() {
