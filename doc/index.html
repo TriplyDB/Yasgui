@@ -50,7 +50,7 @@
      		
      	</div>
      	<h2 id="api">API</h2>
-     	<h3>YASGUI API</h3>
+     	<h3 id="yasguiApi">YASGUI API</h3>
 	     	API methods accessible via the <code>yasgui</code> instance
 			<div class="doc">
 				<code>yasgui.store()</code>
@@ -80,7 +80,7 @@
 				<code>current() -> tab</code>
 				<p>Return the tab currently selected</p>
 			</div>
-		<h3>Tab API</h3>
+		<h3 id="tabApi">Tab API</h3>
 		API methods accessible via a <code>tab</code> instance. Access a tab instance via a <code>yasgui</code> instance (e.g. by running <code>yasgui.tabManager.current()</code>) 
 			<div class="doc">
 				<code>tab.yasqe</code>
@@ -90,35 +90,57 @@
 				<code>tab.yasr</code>
 				<p>Access to the YASR api. For more information, see the <a href="http://yasr.yasgui.org/doc" target="_blank">YASR documentation</a></p>
 			</div>
-		<h2 id="statics">Statics</h2>
-     	Static functions of YASGUI
-
+		
    		
    		
      	<h2 id="config">Configuration</h2>
-     	This configuration object is accessible/changeable via <code>YASGUI.defaults</code> and <code>yasgui.options</code>, and you can pass these along when initializing YASGUI as well.
-     	<h3 id="defaults">Defaults</h3> 
-		<div class="doc">
-			<code>value: String (default: "SELECT * WHERE {\n  ?sub ?pred ?obj .\n} \nLIMIT 10")</code>
-			<p>Query string</p>
-		</div>
-		<div class="doc">
-			<code>autocompleters: array (default: ["prefixes", "properties", "classes", "variables"])</code>
-			<p>The list of enabled autocompletion plugins (See <a href="#autocompletions">this section</a> on how to write your own)</p>
-		</div>
-		
-		<div id="sparql" class="doc">
-			<code>sparql: object</code>
-			<p>Settings for querying sparql endpoints</p>
-		</div>
-		<div class="doc" style="margin-left: 30px;">
-			<code>showQueryButton: boolean (default: false)</code>
-			<p>Show a query button. You don't like it? Then disable this setting, and create your button which calls the query() function of the yasqe document</p>
-		</div>
-		
      	
      	
+<!-- 	tracker: { -->
+<!-- 		googleAnalyticsId: null, -->
+<!-- 		askConsent: true, -->
+<!-- 	} -->
+	
+	
+     	<h3 id="clientConfig">Client</h3>
+	     	<p>This configuration object is accessible/changeable via <code>YASGUI.defaults</code> and <code>yasgui.options</code>, 
+	     	and you can pass these along when initializing YASGUI as well.</p>
+			<div class="doc">
+				<code>persistencyPrefix: function  → string</code>
+				<p>YASGUI stores several options in HTML5 local storage, for persistency between browser sessions. To keep the local storage keys unique, set this prefix.
+				By default the prefix is defined using the ID of the nearest parent (containing an ID, that is). To disable persistency alltogether, set this value to false.</p>
+			</div>
+			<div class="doc">
+				<code>api: object</code>
+				<p>YASGUI works completely client-side. However, to increase the functionality you can choose to run the YASGUI below.
+				These settings specify the URLs of the backend YASGUI API. Setting these values to null, will disable its functionality.
+			</div>
+			
+			<div id="sparql" class="doc" style="margin-left: 30px">
+				<code>corsProxy: string (default: null)</code>
+				<p>The URL of the proxy, used to access <a href="http://enable-cors.org/" target="_blank">CORS disabled</a> endpoints</p>
+			</div>
+			<div id="sparql" class="doc" style="margin-left: 30px">
+				<code>collections: string (default: null)</code>
+				<p>The URL of the collections API, used to manage query collections</p>
+			</div>
+			<div class="doc">
+				<code>tracker: object</code>
+				<p>Object to which enables logging functionality. It currently supports <a href="http://www.google.com/analytics/" target="_blank">Google Analytics</a> as logging API.</p>
+			</div>
+			<div id="sparql" class="doc" style="margin-left: 30px">
+				<code>googleAnalyticsId: string (default: null)</code>
+				<p>The Google Analytics ID. Set to <code>null</code> to disable logging</p>
+			</div>
+			<div id="sparql" class="doc" style="margin-left: 30px">
+				<code>askConsent: boolean (default: true)</code>
+				<p>If tracking is enabled, present the user with a popup asking for consent. 
+				Options are: enable tracking, enable only for visits and disable tracking of queries/endpoints, and disable tracking altogether.
+			</div>
+		<h3 id="serverConfig">Server</h3>
      	
+     	
+     	<h2 id="static">Statics</h2>
 		
 </div><!-- col -->
 <div class="col-md-3" id="sidebarmenu">
@@ -129,9 +151,15 @@
 					<li><a href="#gists">Examples</a>
 				</ul>
 			</li>
-			<li><a href="#api">API</a></li>
-			<li><a href="#statics">Statics</a></li>
+			<li><a href="#api">API</a>
+				<ul class="nav">
+					<li><a href="#yasguiApi">YASGUI API</a>
+					<li><a href="#tabApi">Tab API</a>
+				</ul>
+			
+			</li>
 			<li><a href="#config">Configuration</a></li>
+			<li><a href="statics">Statics</a></li>
 		</ul>
 	</div>
 </div><!-- col -->
