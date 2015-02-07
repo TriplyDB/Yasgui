@@ -56,7 +56,7 @@ module.exports = function(req, res) {
 	
 	var proxyReq = http.request(endpointReqOptions, function(proxyRes) {
 		res.setHeader('content-type', proxyRes.headers['content-type']);
-		
+		res.statusCode = proxyRes.statusCode;
 		proxyRes.on('data', function(chunk) {
 			res.write(chunk);
 		});
