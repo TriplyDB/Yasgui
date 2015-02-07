@@ -12596,7 +12596,7 @@ YASQE.executeQuery = function(yasqe, callbackOrConfig) {
 			}
 		}
 	}
-	ajaxConfig.data = yasqe.getUrlArguments(yasqe, config);
+	ajaxConfig.data = yasqe.getUrlArguments(config);
 	if (!handlerDefined && !callback)
 		return; // ok, we can query, but have no callbacks. just stop now
 	
