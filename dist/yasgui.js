@@ -12655,7 +12655,7 @@ YASQE.executeQuery = function(yasqe, callbackOrConfig) {
 YASQE.getUrlArguments = function(yasqe, config) {
 	var queryMode = yasqe.getQueryMode();
 	var data = [{
-		name : 'query',
+		name : yasqe.getQueryMode(),//either 'update' or 'query'
 		value : yasqe.getValue()
 	}];
 	
@@ -32448,13 +32448,13 @@ module.exports = function(yasgui) {
 						$contextMenu.hide();
 					}, {allowedElements: $(this).closest('li')})
 		    		.addClass('open')
+		    		.attr('target-tab', $tabItem.find('a[role="tab"]').attr('aria-controls'))
 		    		.position({
 		    			my: "left top-3",
 		    	        at: "left bottom",
 		    	        of: $(this),
-		    	        collision: "fit",
-		    		})
-		    		.attr('target-tab', $tabItem.find('a[role="tab"]').attr('aria-controls'))
+		    		});
+		    		
 		    });
 		
 		
