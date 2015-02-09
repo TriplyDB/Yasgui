@@ -21,7 +21,7 @@ var defaultPersistent = {
 
 
 
-module.exports = function(yasgui, id, name) {
+module.exports = function(yasgui, id, name, endpoint) {
 	if (!yasgui.persistentOptions.tabManager.tabs[id]) {
 		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {
 			id: id,
@@ -31,6 +31,7 @@ module.exports = function(yasgui, id, name) {
 		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {}, defaultPersistent, yasgui.persistentOptions.tabManager.tabs[id]);
 	}
 	var persistentOptions = yasgui.persistentOptions.tabManager.tabs[id];
+	if (endpoint) persistentOptions.yasqe.sparql.endpoint = endpoint;
 	var tab = {
 		persistentOptions: persistentOptions
 	};
@@ -183,7 +184,13 @@ module.exports = function(yasgui, id, name) {
 		
 		
 	}
-	
+	tab.getEndpoint = function() {
+		var endpoint = null;
+		if (yUtils.nestedExists(tab.persistentOptions, 'yasqe', 'sparql', 'endpoint')) {
+			endpoint = tab.persistentOptions.yasqe.sparql.endpoint;
+		}
+		return endpoint;
+	}
 	
 	return tab;
 }

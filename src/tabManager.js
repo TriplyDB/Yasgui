@@ -184,14 +184,14 @@ module.exports = function(yasgui) {
 		if (!tabId) tabId = getRandomId();
 		if (!('tabs' in persistentOptions)) persistentOptions.tabs = {};
 		var name = (persistentOptions.tabs[tabId]? persistentOptions.tabs[tabId].name: getName());
-//		if (!persistentOptions.tabs[tabId]) {
-//			//initialize
-//			persistentOptions.tabs[tabId] = {
-//				name: getName(),
-//				id: tabId
-//			}
-//		}
-//		var persistentTabOptions = persistentOptions.tabs[tabId]; 
+		
+		
+		//Initialize new tab with endpoint from currently selected tab (if there is one)
+		var endpoint = null;
+		if (manager.current && manager.current() && manager.current().getEndpoint()) {
+			endpoint = manager.current().getEndpoint();
+		}
+		
 		//first add tab
 		var $tabToggle = $('<a>', {href: '#' + tabId, 'aria-controls': tabId,  role: 'tab', 'data-toggle': 'tab'})
 			.click(function (e) {
@@ -266,7 +266,7 @@ module.exports = function(yasgui) {
 		$tabsParent.find('li:has(a[role="addTab"])').before($tabItem);
 		
 		if (newItem) persistentOptions.tabOrder.push(tabId);
-		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId, name);
+		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId, name, endpoint);
 		if (newItem || persistentOptions.selected == tabId) {
 			$tabToggle.tab('show');
 		}
