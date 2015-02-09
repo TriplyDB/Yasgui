@@ -12,18 +12,21 @@ module.exports = function(yasgui) {
 		 * Load settings. What can we track?
 		 */
 		var trackId = yUtils.storage.get(cookieId);
-		if (trackId === 0) {// don't track
-			enabled = false;
-			trackEvents = false;
-		} else if (trackId === 1) {// track visits
-			enabled = true;
-			trackEvents = false;
-		} else if (trackId == 2) {//track everything
-			enabled = true;
-			trackEvents = true;
-		} else if (yasgui.options.tracker.askConsent){
+		if (trackId === null) {
 			//don't know! show consent window
 			drawConsentWindow();
+		} else {
+			trackId = +trackId;
+			if (trackId === 0) {// don't track
+				enabled = false;
+				trackEvents = false;
+			} else if (trackId === 1) {// track visits
+				enabled = true;
+				trackEvents = false;
+			} else if (trackId == 2) {//track everything
+				enabled = true;
+				trackEvents = true;
+			}
 		}
 	}
 	var init = function() {
@@ -53,10 +56,10 @@ module.exports = function(yasgui) {
 		};
 		var storeConsent = function(id) {
 			var action = 'no';
-			if (id == 1) {
-				action = 'yes/no';
-			} else if (id == 2) {
+			if (id == 2) {
 				action = 'yes';
+			} else if (id == 1) {
+				action = 'yes/no';
 			}
 			track('consent', action);
 			yUtils.storage.set(cookieId, id);
