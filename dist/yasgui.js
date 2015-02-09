@@ -29149,7 +29149,14 @@ var root = module.exports = function(yasr){
 			if (svgEl.length == 0) return null;
 			
 			return {
-				getContent: function(){return svgEl[0].outerHTML;},
+				getContent: function(){
+					if (svgEl[0].outerHTML) {
+						return svgEl[0].outerHTML;
+					} else {
+						//outerHTML not supported. use workaround
+						return $('<div>').append(svgEl.clone()).html();
+					}
+				},
 				filename: "queryResults.svg",
 				contentType: "image/svg+xml",
 				buttonTitle: "Download SVG Image"
@@ -29164,9 +29171,14 @@ var root = module.exports = function(yasr){
 				.css('height', '').css('width','');
 			if (svgEl.length == 0) return null;
 			
+			var htmlString = svgEl[0].outerHTML;
+			if (!htmlString) {
+				//outerHTML not supported. use workaround
+				htmlString = $('<div>').append(svgEl.clone()).html();
+			}
 			//wrap in div, so users can more easily tune width/height
 			//don't use jquery, so we can easily influence indentation
-			return '<div style="width: 800px; height: 600px;">\n' + svgEl[0].outerHTML + '\n</div>';
+			return '<div style="width: 800px; height: 600px;">\n' + htmlString + '\n</div>';
 		},
 		draw: function(){
 			var doDraw = function () {
@@ -29549,6 +29561,14 @@ var root = module.exports = function(parent, options, queryResults) {
 		$toggableWarning.show(400);
 	};
 	
+	var blobDownloadSupported = null;
+	var checkBlobDownloadSupported = function() {
+		if (blobDownloadSupported === null) {
+			var windowUrl = window.URL || window.webkitURL || window.mozURL || window.msURL;
+			blobDownloadSupported = windowUrl && Blob;
+		}
+		return blobDownloadSupported;
+	};
 	var embedBtn = null;
 	var drawHeader = function(yasr) {
 		var drawOutputSelector = function() {
@@ -29672,7 +29692,7 @@ var root = module.exports = function(parent, options, queryResults) {
 		};
 		drawFullscreenButton();drawSmallscreenButton();
 		if (yasr.options.drawOutputSelector) drawOutputSelector();
-		if (yasr.options.drawDownloadIcon) drawDownloadIcon();
+		if (yasr.options.drawDownloadIcon && checkBlobDownloadSupported()) drawDownloadIcon();//only draw when it's supported
 		drawEmbedButton();
 	};
 	
@@ -30358,7 +30378,15 @@ var root = module.exports = function(yasr) {
 		if (svgEl.length == 0) return null;
 		
 		return {
-			getContent: function(){return svgEl[0].outerHTML;},
+			getContent: function(){
+				if (svgEl[0].outerHTML) {
+					return svgEl[0].outerHTML;
+				} else {
+					//outerHTML not supported. use workaround
+					return $('<div>').append(svgEl.clone()).html();
+				}
+			},
+			
 			filename: "queryResults.svg",
 			contentType: "image/svg+xml",
 			buttonTitle: "Download SVG Image"
@@ -30373,9 +30401,14 @@ var root = module.exports = function(yasr) {
 			.css('height', '').css('width','');
 		if (svgEl.length == 0) return null;
 		
+		var htmlString = svgEl[0].outerHTML;
+		if (!htmlString) {
+			//outerHTML not supported. use workaround
+			htmlString = $('<div>').append(svgEl.clone()).html();
+		}
 		//wrap in div, so users can more easily tune width/height
 		//don't use jquery, so we can easily influence indentation
-		return '<div style="width: 800px; height: 600px;">\n' + svgEl[0].outerHTML + '\n</div>';
+		return '<div style="width: 800px; height: 600px;">\n' + htmlString + '\n</div>';
 	};
 	return {
 		getDownloadInfo: getDownloadInfo,
@@ -32792,18 +32825,21 @@ module.exports = function(yasgui) {
 		 * Load settings. What can we track?
 		 */
 		var trackId = yUtils.storage.get(cookieId);
-		if (trackId === 0) {// don't track
-			enabled = false;
-			trackEvents = false;
-		} else if (trackId === 1) {// track visits
-			enabled = true;
-			trackEvents = false;
-		} else if (trackId == 2) {//track everything
-			enabled = true;
-			trackEvents = true;
-		} else if (yasgui.options.tracker.askConsent){
+		if (trackId === null) {
 			//don't know! show consent window
 			drawConsentWindow();
+		} else {
+			trackId = +trackId;
+			if (trackId === 0) {// don't track
+				enabled = false;
+				trackEvents = false;
+			} else if (trackId === 1) {// track visits
+				enabled = true;
+				trackEvents = false;
+			} else if (trackId == 2) {//track everything
+				enabled = true;
+				trackEvents = true;
+			}
 		}
 	}
 	var init = function() {
@@ -32833,10 +32869,10 @@ module.exports = function(yasgui) {
 		};
 		var storeConsent = function(id) {
 			var action = 'no';
-			if (id == 1) {
-				action = 'yes/no';
-			} else if (id == 2) {
+			if (id == 2) {
 				action = 'yes';
+			} else if (id == 1) {
+				action = 'yes/no';
 			}
 			track('consent', action);
 			yUtils.storage.set(cookieId, id);
