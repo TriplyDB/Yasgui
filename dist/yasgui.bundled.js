@@ -14877,6 +14877,31 @@ window.console = window.console || {"log":function(){}};//make sure any console 
 module.exports = {
 	storage: require("./storage.js"),
 	svg: require("./svg.js"),
+	escapeHtmlEntities : function(unescapedString) {
+		var tagsToReplace = {
+			'&' : '&amp;',
+			'<' : '&lt;',
+			'>' : '&gt;'
+		};
+
+		var replaceTag = function(tag) {
+			return tagsToReplace[tag] || tag;
+		}
+
+		return unescapedString.replace(/[&<>]/g, replaceTag);
+	},
+	nestedExists: function(obj /*, level1, level2, ... levelN*/) {
+		//taken from http://stackoverflow.com/a/2631198/1052020
+	  var args = Array.prototype.slice.call(arguments, 1);
+
+	  for (var i = 0; i < args.length; i++) {
+	    if (!obj || !obj.hasOwnProperty(args[i])) {
+	      return false;
+	    }
+	    obj = obj[args[i]];
+	  }
+	  return true;
+	},
 	version: {
 		"yasgui-utils" : require("../package.json").version,
 	}
@@ -29163,7 +29188,7 @@ module.exports=require(12)
 module.exports={
   "name": "yasgui-yasqe",
   "description": "Yet Another SPARQL Query Editor",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "main": "src/main.js",
   "licenses": [
     {
@@ -61979,7 +62004,7 @@ var loader = function() {
 			 * Existing libraries either ignore several browsers (e.g. jquery 2.x), or use ugly hacks (timeouts or something)
 			 * So, we use our own custom ugly hack (yes, timeouts)
 			 */
-			loadScript('//google.com/jsapi', function(){
+			loadScript('http://google.com/jsapi', function(){
 				loadingMain = false;
 				mod.emit('initDone');
 			});
@@ -62130,6 +62155,7 @@ var root = module.exports = function(yasr){
 				yUtils.storage.set(persistencyIdChartConfig, yasr.options.gchart.chartConfig);
 				chartWrapper.setDataTable(tmp);
 				chartWrapper.draw();
+				yasr.updateHeader();
 			});
 			if (callback) callback();
 	};
@@ -62153,6 +62179,19 @@ var root = module.exports = function(yasr){
 				contentType: "image/svg+xml",
 				buttonTitle: "Download SVG Image"
 			};
+		},
+		getEmbedHtml: function() {
+			if (!yasr.results) return null;
+			
+			var svgEl = yasr.resultsContainer.find('svg')
+				.clone()//create clone, as we'd like to remove height/width attributes
+				.removeAttr('height').removeAttr('width')
+				.css('height', '').css('width','');
+			if (svgEl.length == 0) return null;
+			
+			//wrap in div, so users can more easily tune width/height
+			//don't use jquery, so we can easily influence indentation
+			return '<div style="width: 800px; height: 600px;">\n' + svgEl[0].outerHTML + '\n</div>';
 		},
 		draw: function(){
 			var doDraw = function () {
@@ -62414,9 +62453,11 @@ var root = module.exports = function(parent, options, queryResults) {
 	yasr.updateHeader = function() {
 		var downloadIcon = yasr.header.find(".yasr_downloadIcon")
 				.removeAttr("title");//and remove previous titles
-		
+		var embedButton = yasr.header.find(".yasr_embedBtn");
 		var outputPlugin = yasr.plugins[yasr.options.output];
 		if (outputPlugin) {
+			
+			//Manage download link
 			var info = (outputPlugin.getDownloadInfo? outputPlugin.getDownloadInfo(): null);
 			if (info) {
 				if (info.buttonTitle) downloadIcon.attr('title', info.buttonTitle);
@@ -62429,6 +62470,15 @@ var root = module.exports = function(parent, options, queryResults) {
 				downloadIcon.find("path").each(function(){
 					this.style.fill = "gray";
 				});
+			}
+			
+			//Manage embed button
+			var link = null;
+			if (outputPlugin.getEmbedHtml) link = outputPlugin.getEmbedHtml();
+			if (link && link.length > 0) {
+				embedButton.show();
+			} else {
+				embedButton.hide();
 			}
 		}
 	};
@@ -62524,7 +62574,7 @@ var root = module.exports = function(parent, options, queryResults) {
 		$toggableWarning.show(400);
 	};
 	
-
+	var embedBtn = null;
 	var drawHeader = function(yasr) {
 		var drawOutputSelector = function() {
 			var btnGroup = $('<div class="yasr_btnGroup"></div>');
@@ -62603,9 +62653,52 @@ var root = module.exports = function(parent, options, queryResults) {
 				});
 			yasr.header.append(button);
 		};
+		var drawEmbedButton = function() {
+			embedBtn = $("<button>", {class:'yasr_btn yasr_embedBtn', title: 'Get HTML snippet to embed results on a web page'})
+			.text('</>')
+			.click(function(event) {
+				var currentPlugin = yasr.plugins[yasr.options.output];
+				if (currentPlugin && currentPlugin.getEmbedHtml) {
+					var embedLink = currentPlugin.getEmbedHtml();
+					
+					event.stopPropagation();
+					var popup = $("<div class='yasr_embedPopup'></div>").appendTo(yasr.header);
+					$('html').click(function() {
+						if (popup) popup.remove();
+					});
+
+					popup.click(function(event) {
+						event.stopPropagation();
+						//dont close when clicking on popup
+					});
+					var prePopup = $("<textarea>").val(embedLink);
+					prePopup.focus(function() {
+					    var $this = $(this);
+					    $this.select();
+
+					    // Work around Chrome's little problem
+					    $this.mouseup(function() {
+					        // Prevent further mouseup intervention
+					        $this.unbind("mouseup");
+					        return false;
+					    });
+					});
+					
+					popup.empty().append(prePopup);
+					var positions = embedBtn.position();
+					var top = (positions.top + embedBtn.outerHeight()) + 'px';
+					var left = Math.max(((positions.left + embedBtn.outerWidth()) - popup.outerWidth()), 0) + 'px';
+					
+					popup.css("top",top).css("left", left);
+					
+				}
+			})
+			yasr.header.append(embedBtn);
+		};
 		drawFullscreenButton();drawSmallscreenButton();
 		if (yasr.options.drawOutputSelector) drawOutputSelector();
 		if (yasr.options.drawDownloadIcon) drawDownloadIcon();
+		drawEmbedButton();
 	};
 	
 	
@@ -63296,9 +63389,22 @@ var root = module.exports = function(yasr) {
 			buttonTitle: "Download SVG Image"
 		};
 	};
-	
+	var getEmbedHtml = function() {
+		if (!yasr.results) return null;
+		
+		var svgEl = yasr.resultsContainer.find('.pvtRendererArea svg')
+			.clone()//create clone, as we'd like to remove height/width attributes
+			.removeAttr('height').removeAttr('width')
+			.css('height', '').css('width','');
+		if (svgEl.length == 0) return null;
+		
+		//wrap in div, so users can more easily tune width/height
+		//don't use jquery, so we can easily influence indentation
+		return '<div style="width: 800px; height: 600px;">\n' + svgEl[0].outerHTML + '\n</div>';
+	};
 	return {
 		getDownloadInfo: getDownloadInfo,
+		getEmbedHtml: getEmbedHtml,
 		options: options,
 		draw: draw,
 		name: "Pivot Table",
@@ -64901,7 +65007,7 @@ var defaultPersistent = {
 
 
 
-module.exports = function(yasgui, id, name) {
+module.exports = function(yasgui, id, name, endpoint) {
 	if (!yasgui.persistentOptions.tabManager.tabs[id]) {
 		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {
 			id: id,
@@ -64911,6 +65017,7 @@ module.exports = function(yasgui, id, name) {
 		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {}, defaultPersistent, yasgui.persistentOptions.tabManager.tabs[id]);
 	}
 	var persistentOptions = yasgui.persistentOptions.tabManager.tabs[id];
+	if (endpoint) persistentOptions.yasqe.sparql.endpoint = endpoint;
 	var tab = {
 		persistentOptions: persistentOptions
 	};
@@ -65063,7 +65170,13 @@ module.exports = function(yasgui, id, name) {
 		
 		
 	}
-	
+	tab.getEndpoint = function() {
+		var endpoint = null;
+		if (yUtils.nestedExists(tab.persistentOptions, 'yasqe', 'sparql', 'endpoint')) {
+			endpoint = tab.persistentOptions.yasqe.sparql.endpoint;
+		}
+		return endpoint;
+	}
 	
 	return tab;
 }
@@ -65258,14 +65371,14 @@ module.exports = function(yasgui) {
 		if (!tabId) tabId = getRandomId();
 		if (!('tabs' in persistentOptions)) persistentOptions.tabs = {};
 		var name = (persistentOptions.tabs[tabId]? persistentOptions.tabs[tabId].name: getName());
-//		if (!persistentOptions.tabs[tabId]) {
-//			//initialize
-//			persistentOptions.tabs[tabId] = {
-//				name: getName(),
-//				id: tabId
-//			}
-//		}
-//		var persistentTabOptions = persistentOptions.tabs[tabId]; 
+		
+		
+		//Initialize new tab with endpoint from currently selected tab (if there is one)
+		var endpoint = null;
+		if (manager.current && manager.current() && manager.current().getEndpoint()) {
+			endpoint = manager.current().getEndpoint();
+		}
+		
 		//first add tab
 		var $tabToggle = $('<a>', {href: '#' + tabId, 'aria-controls': tabId,  role: 'tab', 'data-toggle': 'tab'})
 			.click(function (e) {
@@ -65340,7 +65453,7 @@ module.exports = function(yasgui) {
 		$tabsParent.find('li:has(a[role="addTab"])').before($tabItem);
 		
 		if (newItem) persistentOptions.tabOrder.push(tabId);
-		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId, name);
+		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId, name, endpoint);
 		if (newItem || persistentOptions.selected == tabId) {
 			$tabToggle.tab('show');
 		}
