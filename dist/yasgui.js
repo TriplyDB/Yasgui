@@ -3,7 +3,7 @@
 //the current browserify version does not support require-ing js files which are used as entry-point
 //this way, we can still require our main.js file
 module.exports = require('./main.js');
-},{"./main.js":92}],2:[function(require,module,exports){
+},{"./main.js":94}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -813,144 +813,8 @@ $.ui.position = {
 
 },{"jquery":undefined}],4:[function(require,module,exports){
 /**
- * microplugin.js
- * Copyright (c) 2013 Brian Reavis & contributors
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at:
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- *
- * @author Brian Reavis <brian@thirdroute.com>
- */
-
-(function(root, factory) {
-	if (typeof define === 'function' && define.amd) {
-		define(factory);
-	} else if (typeof exports === 'object') {
-		module.exports = factory();
-	} else {
-		root.MicroPlugin = factory();
-	}
-}(this, function() {
-	var MicroPlugin = {};
-
-	MicroPlugin.mixin = function(Interface) {
-		Interface.plugins = {};
-
-		/**
-		 * Initializes the listed plugins (with options).
-		 * Acceptable formats:
-		 *
-		 * List (without options):
-		 *   ['a', 'b', 'c']
-		 *
-		 * List (with options):
-		 *   [{'name': 'a', options: {}}, {'name': 'b', options: {}}]
-		 *
-		 * Hash (with options):
-		 *   {'a': { ... }, 'b': { ... }, 'c': { ... }}
-		 *
-		 * @param {mixed} plugins
-		 */
-		Interface.prototype.initializePlugins = function(plugins) {
-			var i, n, key;
-			var self  = this;
-			var queue = [];
-
-			self.plugins = {
-				names     : [],
-				settings  : {},
-				requested : {},
-				loaded    : {}
-			};
-
-			if (utils.isArray(plugins)) {
-				for (i = 0, n = plugins.length; i < n; i++) {
-					if (typeof plugins[i] === 'string') {
-						queue.push(plugins[i]);
-					} else {
-						self.plugins.settings[plugins[i].name] = plugins[i].options;
-						queue.push(plugins[i].name);
-					}
-				}
-			} else if (plugins) {
-				for (key in plugins) {
-					if (plugins.hasOwnProperty(key)) {
-						self.plugins.settings[key] = plugins[key];
-						queue.push(key);
-					}
-				}
-			}
-
-			while (queue.length) {
-				self.require(queue.shift());
-			}
-		};
-
-		Interface.prototype.loadPlugin = function(name) {
-			var self    = this;
-			var plugins = self.plugins;
-			var plugin  = Interface.plugins[name];
-
-			if (!Interface.plugins.hasOwnProperty(name)) {
-				throw new Error('Unable to find "' +  name + '" plugin');
-			}
-
-			plugins.requested[name] = true;
-			plugins.loaded[name] = plugin.fn.apply(self, [self.plugins.settings[name] || {}]);
-			plugins.names.push(name);
-		};
-
-		/**
-		 * Initializes a plugin.
-		 *
-		 * @param {string} name
-		 */
-		Interface.prototype.require = function(name) {
-			var self = this;
-			var plugins = self.plugins;
-
-			if (!self.plugins.loaded.hasOwnProperty(name)) {
-				if (plugins.requested[name]) {
-					throw new Error('Plugin has circular dependency ("' + name + '")');
-				}
-				self.loadPlugin(name);
-			}
-
-			return plugins.loaded[name];
-		};
-
-		/**
-		 * Registers a plugin.
-		 *
-		 * @param {string} name
-		 * @param {function} fn
-		 */
-		Interface.define = function(name, fn) {
-			Interface.plugins[name] = {
-				'name' : name,
-				'fn'   : fn
-			};
-		};
-	};
-
-	var utils = {
-		isArray: Array.isArray || function(vArg) {
-			return Object.prototype.toString.call(vArg) === '[object Array]';
-		}
-	};
-
-	return MicroPlugin;
-}));
-},{}],5:[function(require,module,exports){
-/**
- * selectize.js (v0.11.2)
- * Copyright (c) 2013 Brian Reavis & contributors
+ * selectize.js (v0.12.0)
+ * Copyright (c) 2013–2015 Brian Reavis & contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at:
@@ -1071,6 +935,8 @@ $.ui.position = {
 	var TAG_SELECT    = 1;
 	var TAG_INPUT     = 2;
 	
+	// for now, android support in general is too spotty to support validity
+	var SUPPORTS_VALIDITY_API = !/android/i.test(window.navigator.userAgent) && !!document.createElement('form').validity;
 	
 	var isset = function(object) {
 		return typeof object !== 'undefined';
@@ -1155,25 +1021,6 @@ $.ui.position = {
 			fn.apply(self, arguments);
 			return result;
 		};
-	};
-	
-	/**
-	 * Builds a hash table out of an array of
-	 * objects, using the specified `key` within
-	 * each object.
-	 *
-	 * @param {string} key
-	 * @param {mixed} objects
-	 */
-	var build_hash_table = function(key, objects) {
-		if (!$.isArray(objects)) return objects;
-		var i, n, table = {};
-		for (i = 0, n = objects.length; i < n; i++) {
-			if (objects[i].hasOwnProperty(key)) {
-				table[objects[i][key]] = objects[i];
-			}
-		}
-		return table;
 	};
 	
 	/**
@@ -1423,8 +1270,10 @@ $.ui.position = {
 	
 		// setup default state
 		$.extend(self, {
+			order            : 0,
 			settings         : settings,
 			$input           : $input,
+			tabIndex         : $input.attr('tabindex') || '',
 			tagType          : input.tagName.toLowerCase() === 'select' ? TAG_SELECT : TAG_INPUT,
 			rtl              : /rtl/i.test(dir),
 	
@@ -1466,12 +1315,20 @@ $.ui.position = {
 		self.sifter = new Sifter(this.options, {diacritics: settings.diacritics});
 	
 		// build options table
-		$.extend(self.options, build_hash_table(settings.valueField, settings.options));
-		delete self.settings.options;
+		if (self.settings.options) {
+			for (i = 0, n = self.settings.options.length; i < n; i++) {
+				self.registerOption(self.settings.options[i]);
+			}
+			delete self.settings.options;
+		}
 	
 		// build optgroup table
-		$.extend(self.optgroups, build_hash_table(settings.optgroupValueField, settings.optgroups));
-		delete self.settings.optgroups;
+		if (self.settings.optgroups) {
+			for (i = 0, n = self.settings.optgroups.length; i < n; i++) {
+				self.registerOptionGroup(self.settings.optgroups[i]);
+			}
+			delete self.settings.optgroups;
+		}
 	
 		// option-dependent defaults
 		self.settings.mode = self.settings.mode || (self.settings.maxItems === 1 ? 'single' : 'multi');
@@ -1516,17 +1373,15 @@ $.ui.position = {
 			var inputMode;
 			var timeout_blur;
 			var timeout_focus;
-			var tab_index;
 			var classes;
 			var classes_plugins;
 	
 			inputMode         = self.settings.mode;
-			tab_index         = $input.attr('tabindex') || '';
 			classes           = $input.attr('class') || '';
 	
 			$wrapper          = $('<div>').addClass(settings.wrapperClass).addClass(classes).addClass(inputMode);
 			$control          = $('<div>').addClass(settings.inputClass).addClass('items').appendTo($wrapper);
-			$control_input    = $('<input type="text" autocomplete="off" />').appendTo($control).attr('tabindex', tab_index);
+			$control_input    = $('<input type="text" autocomplete="off" />').appendTo($control).attr('tabindex', $input.is(':disabled') ? '-1' : self.tabIndex);
 			$dropdown_parent  = $(settings.dropdownParent || $wrapper);
 			$dropdown         = $('<div>').addClass(settings.dropdownClass).addClass(inputMode).hide().appendTo($dropdown_parent);
 			$dropdown_content = $('<div>').addClass(settings.dropdownContentClass).appendTo($dropdown);
@@ -1553,6 +1408,12 @@ $.ui.position = {
 				$control_input.attr('placeholder', settings.placeholder);
 			}
 	
+			// if splitOn was not passed in, construct it from the delimiter to allow pasting universally
+			if (!self.settings.splitOn && self.settings.delimiter) {
+				var delimiterEscaped = self.settings.delimiter.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+				self.settings.splitOn = new RegExp('\\s*' + delimiterEscaped + '+\\s*');
+			}
+	
 			if ($input.attr('autocorrect')) {
 				$control_input.attr('autocorrect', $input.attr('autocorrect'));
 			}
@@ -1568,7 +1429,7 @@ $.ui.position = {
 			self.$dropdown_content = $dropdown_content;
 	
 			$dropdown.on('mouseenter', '[data-selectable]', function() { return self.onOptionHover.apply(self, arguments); });
-			$dropdown.on('mousedown', '[data-selectable]', function() { return self.onOptionSelect.apply(self, arguments); });
+			$dropdown.on('mousedown click', '[data-selectable]', function() { return self.onOptionSelect.apply(self, arguments); });
 			watchChildEvent($control, 'mousedown', '*:not(input)', function() { return self.onItemSelect.apply(self, arguments); });
 			autoGrow($control_input);
 	
@@ -1608,7 +1469,7 @@ $.ui.position = {
 					}
 					// blur on click outside
 					if (!self.$control.has(e.target).length && e.target !== self.$control[0]) {
-						self.blur();
+						self.blur(e.target);
 					}
 				}
 			});
@@ -1637,7 +1498,7 @@ $.ui.position = {
 			}
 	
 			// feature detect for the validation API
-			if ($input[0].validity) {
+			if (SUPPORTS_VALIDITY_API) {
 				$input.on('invalid' + eventNS, function(e) {
 					e.preventDefault();
 					self.isInvalid = true;
@@ -1703,18 +1564,23 @@ $.ui.position = {
 		 */
 		setupCallbacks: function() {
 			var key, fn, callbacks = {
-				'initialize'     : 'onInitialize',
-				'change'         : 'onChange',
-				'item_add'       : 'onItemAdd',
-				'item_remove'    : 'onItemRemove',
-				'clear'          : 'onClear',
-				'option_add'     : 'onOptionAdd',
-				'option_remove'  : 'onOptionRemove',
-				'option_clear'   : 'onOptionClear',
-				'dropdown_open'  : 'onDropdownOpen',
-				'dropdown_close' : 'onDropdownClose',
-				'type'           : 'onType',
-				'load'           : 'onLoad'
+				'initialize'      : 'onInitialize',
+				'change'          : 'onChange',
+				'item_add'        : 'onItemAdd',
+				'item_remove'     : 'onItemRemove',
+				'clear'           : 'onClear',
+				'option_add'      : 'onOptionAdd',
+				'option_remove'   : 'onOptionRemove',
+				'option_clear'    : 'onOptionClear',
+				'optgroup_add'    : 'onOptionGroupAdd',
+				'optgroup_remove' : 'onOptionGroupRemove',
+				'optgroup_clear'  : 'onOptionGroupClear',
+				'dropdown_open'   : 'onDropdownOpen',
+				'dropdown_close'  : 'onDropdownClose',
+				'type'            : 'onType',
+				'load'            : 'onLoad',
+				'focus'           : 'onFocus',
+				'blur'            : 'onBlur'
 			};
 	
 			for (key in callbacks) {
@@ -1787,7 +1653,6 @@ $.ui.position = {
 			this.$input.trigger('change');
 		},
 	
-	
 		/**
 		 * Triggered on <input> paste.
 		 *
@@ -1798,6 +1663,17 @@ $.ui.position = {
 			var self = this;
 			if (self.isFull() || self.isInputHidden || self.isLocked) {
 				e.preventDefault();
+			} else {
+				// If a regex or string is included, this will split the pasted
+				// input and create Items for each separate value
+				if (self.settings.splitOn) {
+					setTimeout(function() {
+						var splitInput = $.trim(self.$control_input.val() || '').split(self.settings.splitOn);
+						for (var i = 0, n = splitInput.length; i < n; i++) {
+							self.createItem(splitInput[i]);
+						}
+					}, 0);
+				}
 			}
 		},
 	
@@ -1810,7 +1686,7 @@ $.ui.position = {
 		onKeyPress: function(e) {
 			if (this.isLocked) return e && e.preventDefault();
 			var character = String.fromCharCode(e.keyCode || e.which);
-			if (this.settings.create && character === this.settings.delimiter) {
+			if (this.settings.create && this.settings.mode === 'multi' && character === this.settings.delimiter) {
 				this.createItem();
 				e.preventDefault();
 				return false;
@@ -1842,7 +1718,11 @@ $.ui.position = {
 					}
 					break;
 				case KEY_ESC:
-					self.close();
+					if (self.isOpen) {
+						e.preventDefault();
+						e.stopPropagation();
+						self.close();
+					}
 					return;
 				case KEY_N:
 					if (!e.ctrlKey || e.altKey) break;
@@ -1869,8 +1749,8 @@ $.ui.position = {
 				case KEY_RETURN:
 					if (self.isOpen && self.$activeOption) {
 						self.onOptionSelect({currentTarget: self.$activeOption});
+						e.preventDefault();
 					}
-					e.preventDefault();
 					return;
 				case KEY_LEFT:
 					self.advanceSelection(-1, e);
@@ -1881,7 +1761,12 @@ $.ui.position = {
 				case KEY_TAB:
 					if (self.settings.selectOnTab && self.isOpen && self.$activeOption) {
 						self.onOptionSelect({currentTarget: self.$activeOption});
-						e.preventDefault();
+	
+						// Default behaviour is to jump to the next field, we only want this
+						// if the current field doesn't accept any more entries
+						if (!self.isFull()) {
+							e.preventDefault();
+						}
 					}
 					if (self.settings.create && self.createItem()) {
 						e.preventDefault();
@@ -1945,8 +1830,8 @@ $.ui.position = {
 		 */
 		onFocus: function(e) {
 			var self = this;
+			var wasFocused = self.isFocused;
 	
-			self.isFocused = true;
 			if (self.isDisabled) {
 				self.blur();
 				e && e.preventDefault();
@@ -1954,7 +1839,10 @@ $.ui.position = {
 			}
 	
 			if (self.ignoreFocus) return;
+			self.isFocused = true;
 			if (self.settings.preload === 'focus') self.onSearchChange('');
+	
+			if (!wasFocused) self.trigger('focus');
 	
 			if (!self.$activeItems.length) {
 				self.showInput();
@@ -1969,31 +1857,43 @@ $.ui.position = {
 		 * Triggered on <input> blur.
 		 *
 		 * @param {object} e
-		 * @returns {boolean}
+		 * @param {Element} dest
 		 */
-		onBlur: function(e) {
+		onBlur: function(e, dest) {
 			var self = this;
+			if (!self.isFocused) return;
 			self.isFocused = false;
-			if (self.ignoreFocus) return;
 	
-			// necessary to prevent IE closing the dropdown when the scrollbar is clicked
-			if (!self.ignoreBlur && document.activeElement === self.$dropdown_content[0]) {
+			if (self.ignoreFocus) {
+				return;
+			} else if (!self.ignoreBlur && document.activeElement === self.$dropdown_content[0]) {
+				// necessary to prevent IE closing the dropdown when the scrollbar is clicked
 				self.ignoreBlur = true;
 				self.onFocus(e);
-	
 				return;
 			}
 	
-			if (self.settings.create && self.settings.createOnBlur) {
-				self.createItem(false);
-			}
+			var deactivate = function() {
+				self.close();
+				self.setTextboxValue('');
+				self.setActiveItem(null);
+				self.setActiveOption(null);
+				self.setCaret(self.items.length);
+				self.refreshState();
 	
-			self.close();
-			self.setTextboxValue('');
-			self.setActiveItem(null);
-			self.setActiveOption(null);
-			self.setCaret(self.items.length);
-			self.refreshState();
+				// IE11 bug: element still marked as active
+				(dest || document.body).focus();
+	
+				self.ignoreFocus = false;
+				self.trigger('blur');
+			};
+	
+			self.ignoreFocus = true;
+			if (self.settings.create && self.settings.createOnBlur) {
+				self.createItem(null, false, deactivate);
+			} else {
+				deactivate();
+			}
 		},
 	
 		/**
@@ -2025,14 +1925,20 @@ $.ui.position = {
 	
 			$target = $(e.currentTarget);
 			if ($target.hasClass('create')) {
-				self.createItem();
+				self.createItem(null, function() {
+					if (self.settings.closeAfterSelect) {
+						self.close();
+					}
+				});
 			} else {
 				value = $target.attr('data-value');
 				if (typeof value !== 'undefined') {
 					self.lastQuery = null;
 					self.setTextboxValue('');
 					self.addItem(value);
-					if (!self.settings.hideSelected && e.type && /mouse/.test(e.type)) {
+					if (self.settings.closeAfterSelect) {
+						self.close();
+					} else if (!self.settings.hideSelected && e.type && /mouse/.test(e.type)) {
 						self.setActiveOption(self.getOption(value));
 					}
 				}
@@ -2065,7 +1971,7 @@ $.ui.position = {
 		 */
 		load: function(fn) {
 			var self = this;
-			var $wrapper = self.$wrapper.addClass('loading');
+			var $wrapper = self.$wrapper.addClass(self.settings.loadingClass);
 	
 			self.loading++;
 			fn.apply(self, [function(results) {
@@ -2075,7 +1981,7 @@ $.ui.position = {
 					self.refreshOptions(self.isFocused && !self.isInputHidden);
 				}
 				if (!self.loading) {
-					$wrapper.removeClass('loading');
+					$wrapper.removeClass(self.settings.loadingClass);
 				}
 				self.trigger('load', results);
 			}]);
@@ -2116,10 +2022,12 @@ $.ui.position = {
 		 *
 		 * @param {mixed} value
 		 */
-		setValue: function(value) {
-			debounce_events(this, ['change'], function() {
+		setValue: function(value, silent) {
+			var events = silent ? [] : ['change'];
+	
+			debounce_events(this, events, function() {
 				this.clear();
-				this.addItems(value);
+				this.addItems(value, silent);
 			});
 		},
 	
@@ -2263,11 +2171,7 @@ $.ui.position = {
 		},
 	
 		/**
-		 * Gives the control focus. If "trigger" is falsy,
-		 * focus handlers won't be fired--causing the focus
-		 * to happen silently in the background.
-		 *
-		 * @param {boolean} trigger
+		 * Gives the control focus.
 		 */
 		focus: function() {
 			var self = this;
@@ -2283,9 +2187,12 @@ $.ui.position = {
 	
 		/**
 		 * Forces the control out of focus.
+		 *
+		 * @param {Element} dest
 		 */
-		blur: function() {
-			this.$control_input.trigger('blur');
+		blur: function(dest) {
+			this.$control_input[0].blur();
+			this.onBlur(null, dest);
 		},
 	
 		/**
@@ -2312,7 +2219,7 @@ $.ui.position = {
 			var settings = this.settings;
 			var sort = settings.sortField;
 			if (typeof sort === 'string') {
-				sort = {field: sort};
+				sort = [{field: sort}];
 			}
 	
 			return {
@@ -2399,15 +2306,7 @@ $.ui.position = {
 	
 			// render and group available options individually
 			groups = {};
-	
-			if (self.settings.optgroupOrder) {
-				groups_order = self.settings.optgroupOrder;
-				for (i = 0; i < groups_order.length; i++) {
-					groups[groups_order[i]] = [];
-				}
-			} else {
-				groups_order = [];
-			}
+			groups_order = [];
 	
 			for (i = 0; i < n; i++) {
 				option      = self.options[results.items[i].id];
@@ -2426,6 +2325,15 @@ $.ui.position = {
 					}
 					groups[optgroup].push(option_html);
 				}
+			}
+	
+			// sort optgroups
+			if (this.settings.lockOptgroupOrder) {
+				groups_order.sort(function(a, b) {
+					var a_order = self.optgroups[a].$order || 0;
+					var b_order = self.optgroups[b].$order || 0;
+					return a_order - b_order;
+				});
 			}
 	
 			// render optgroup headers & join groups
@@ -2506,10 +2414,10 @@ $.ui.position = {
 		 *
 		 *   this.addOption(data)
 		 *
-		 * @param {object} data
+		 * @param {object|array} data
 		 */
 		addOption: function(data) {
-			var i, n, optgroup, value, self = this;
+			var i, n, value, self = this;
 	
 			if ($.isArray(data)) {
 				for (i = 0, n = data.length; i < n; i++) {
@@ -2518,13 +2426,40 @@ $.ui.position = {
 				return;
 			}
 	
-			value = hash_key(data[self.settings.valueField]);
-			if (typeof value !== 'string' || self.options.hasOwnProperty(value)) return;
+			if (value = self.registerOption(data)) {
+				self.userOptions[value] = true;
+				self.lastQuery = null;
+				self.trigger('option_add', value, data);
+			}
+		},
 	
-			self.userOptions[value] = true;
-			self.options[value] = data;
-			self.lastQuery = null;
-			self.trigger('option_add', value, data);
+		/**
+		 * Registers an option to the pool of options.
+		 *
+		 * @param {object} data
+		 * @return {boolean|string}
+		 */
+		registerOption: function(data) {
+			var key = hash_key(data[this.settings.valueField]);
+			if (!key || this.options.hasOwnProperty(key)) return false;
+			data.$order = data.$order || ++this.order;
+			this.options[key] = data;
+			return key;
+		},
+	
+		/**
+		 * Registers an option group to the pool of option groups.
+		 *
+		 * @param {object} data
+		 * @return {boolean|string}
+		 */
+		registerOptionGroup: function(data) {
+			var key = hash_key(data[this.settings.optgroupValueField]);
+			if (!key) return false;
+	
+			data.$order = data.$order || ++this.order;
+			this.optgroups[key] = data;
+			return key;
 		},
 	
 		/**
@@ -2535,8 +2470,32 @@ $.ui.position = {
 		 * @param {object} data
 		 */
 		addOptionGroup: function(id, data) {
-			this.optgroups[id] = data;
-			this.trigger('optgroup_add', id, data);
+			data[this.settings.optgroupValueField] = id;
+			if (id = this.registerOptionGroup(data)) {
+				this.trigger('optgroup_add', id, data);
+			}
+		},
+	
+		/**
+		 * Removes an existing option group.
+		 *
+		 * @param {string} id
+		 */
+		removeOptionGroup: function(id) {
+			if (this.optgroups.hasOwnProperty(id)) {
+				delete this.optgroups[id];
+				this.renderCache = {};
+				this.trigger('optgroup_remove', id);
+			}
+		},
+	
+		/**
+		 * Clears all existing option groups.
+		 */
+		clearOptionGroups: function() {
+			this.optgroups = {};
+			this.renderCache = {};
+			this.trigger('optgroup_clear');
 		},
 	
 		/**
@@ -2550,7 +2509,7 @@ $.ui.position = {
 		updateOption: function(value, data) {
 			var self = this;
 			var $item, $item_new;
-			var value_new, index_item, cache_items, cache_options;
+			var value_new, index_item, cache_items, cache_options, order_old;
 	
 			value     = hash_key(value);
 			value_new = hash_key(data[self.settings.valueField]);
@@ -2560,6 +2519,8 @@ $.ui.position = {
 			if (!self.options.hasOwnProperty(value)) return;
 			if (typeof value_new !== 'string') throw new Error('Value must be set in option data');
 	
+			order_old = self.options[value].$order;
+	
 			// update references
 			if (value_new !== value) {
 				delete self.options[value];
@@ -2568,6 +2529,7 @@ $.ui.position = {
 					self.items.splice(index_item, 1, value_new);
 				}
 			}
+			data.$order = data.$order || order_old;
 			self.options[value_new] = data;
 	
 			// invalidate render cache
@@ -2591,7 +2553,7 @@ $.ui.position = {
 				$item.replaceWith($item_new);
 			}
 	
-			//invalidate last query because we might have updated the sortField
+			// invalidate last query because we might have updated the sortField
 			self.lastQuery = null;
 	
 			// update dropdown contents
@@ -2604,8 +2566,9 @@ $.ui.position = {
 		 * Removes a single option.
 		 *
 		 * @param {string} value
+		 * @param {boolean} silent
 		 */
-		removeOption: function(value) {
+		removeOption: function(value, silent) {
 			var self = this;
 			value = hash_key(value);
 	
@@ -2618,7 +2581,7 @@ $.ui.position = {
 			delete self.options[value];
 			self.lastQuery = null;
 			self.trigger('option_remove', value);
-			self.removeItem(value);
+			self.removeItem(value, silent);
 		},
 	
 		/**
@@ -2700,12 +2663,13 @@ $.ui.position = {
 		 * at the current caret position.
 		 *
 		 * @param {string} value
+		 * @param {boolean} silent
 		 */
-		addItems: function(values) {
+		addItems: function(values, silent) {
 			var items = $.isArray(values) ? values : [values];
 			for (var i = 0, n = items.length; i < n; i++) {
 				this.isPending = (i < n - 1);
-				this.addItem(items[i]);
+				this.addItem(items[i], silent);
 			}
 		},
 	
@@ -2714,9 +2678,12 @@ $.ui.position = {
 		 * at the current caret position.
 		 *
 		 * @param {string} value
+		 * @param {boolean} silent
 		 */
-		addItem: function(value) {
-			debounce_events(this, ['change'], function() {
+		addItem: function(value, silent) {
+			var events = silent ? [] : ['change'];
+	
+			debounce_events(this, events, function() {
 				var $item, $option, $options;
 				var self = this;
 				var inputMode = self.settings.mode;
@@ -2762,7 +2729,7 @@ $.ui.position = {
 	
 					self.updatePlaceholder();
 					self.trigger('item_add', value, $item);
-					self.updateOriginalInput();
+					self.updateOriginalInput({silent: silent});
 				}
 			});
 		},
@@ -2773,7 +2740,7 @@ $.ui.position = {
 		 *
 		 * @param {string} value
 		 */
-		removeItem: function(value) {
+		removeItem: function(value, silent) {
 			var self = this;
 			var $item, i, idx;
 	
@@ -2791,7 +2758,7 @@ $.ui.position = {
 				self.items.splice(i, 1);
 				self.lastQuery = null;
 				if (!self.settings.persist && self.userOptions.hasOwnProperty(value)) {
-					self.removeOption(value);
+					self.removeOption(value, silent);
 				}
 	
 				if (i < self.caretPos) {
@@ -2800,9 +2767,9 @@ $.ui.position = {
 	
 				self.refreshState();
 				self.updatePlaceholder();
-				self.updateOriginalInput();
+				self.updateOriginalInput({silent: silent});
 				self.positionDropdown();
-				self.trigger('item_remove', value);
+				self.trigger('item_remove', value, $item);
 			}
 		},
 	
@@ -2814,18 +2781,29 @@ $.ui.position = {
 		 * Once this completes, it will be added
 		 * to the item list.
 		 *
+		 * @param {string} value
+		 * @param {boolean} [triggerDropdown]
+		 * @param {function} [callback]
 		 * @return {boolean}
 		 */
-		createItem: function(triggerDropdown) {
+		createItem: function(input, triggerDropdown) {
 			var self  = this;
-			var input = $.trim(self.$control_input.val() || '');
 			var caret = self.caretPos;
-			if (!self.canCreate(input)) return false;
-			self.lock();
+			input = input || $.trim(self.$control_input.val() || '');
 	
-			if (typeof triggerDropdown === 'undefined') {
+			var callback = arguments[arguments.length - 1];
+			if (typeof callback !== 'function') callback = function() {};
+	
+			if (typeof triggerDropdown !== 'boolean') {
 				triggerDropdown = true;
 			}
+	
+			if (!self.canCreate(input)) {
+				callback();
+				return false;
+			}
+	
+			self.lock();
 	
 			var setup = (typeof self.settings.create === 'function') ? this.settings.create : function(input) {
 				var data = {};
@@ -2837,15 +2815,16 @@ $.ui.position = {
 			var create = once(function(data) {
 				self.unlock();
 	
-				if (!data || typeof data !== 'object') return;
+				if (!data || typeof data !== 'object') return callback();
 				var value = hash_key(data[self.settings.valueField]);
-				if (typeof value !== 'string') return;
+				if (typeof value !== 'string') return callback();
 	
 				self.setTextboxValue('');
 				self.addOption(data);
 				self.setCaret(caret);
 				self.addItem(value);
 				self.refreshOptions(triggerDropdown && self.settings.mode !== 'single');
+				callback(data);
 			});
 	
 			var output = setup.apply(this, [input, create]);
@@ -2863,9 +2842,7 @@ $.ui.position = {
 			this.lastQuery = null;
 	
 			if (this.isSetup) {
-				for (var i = 0; i < this.items.length; i++) {
-					this.addItem(this.items);
-				}
+				this.addItem(this.items);
 			}
 	
 			this.refreshState();
@@ -2925,13 +2902,15 @@ $.ui.position = {
 		 * Refreshes the original <select> or <input>
 		 * element to reflect the current state.
 		 */
-		updateOriginalInput: function() {
-			var i, n, options, self = this;
+		updateOriginalInput: function(opts) {
+			var i, n, options, label, self = this;
+			opts = opts || {};
 	
 			if (self.tagType === TAG_SELECT) {
 				options = [];
 				for (i = 0, n = self.items.length; i < n; i++) {
-					options.push('<option value="' + escape_html(self.items[i]) + '" selected="selected"></option>');
+					label = self.options[self.items[i]][self.settings.labelField] || '';
+					options.push('<option value="' + escape_html(self.items[i]) + '" selected="selected">' + escape_html(label) + '</option>');
 				}
 				if (!options.length && !this.$input.attr('multiple')) {
 					options.push('<option value="" selected="selected"></option>');
@@ -2943,7 +2922,9 @@ $.ui.position = {
 			}
 	
 			if (self.isSetup) {
-				self.trigger('change', self.$input.val());
+				if (!opts.silent) {
+					self.trigger('change', self.$input.val());
+				}
 			}
 		},
 	
@@ -3018,8 +2999,10 @@ $.ui.position = {
 		/**
 		 * Resets / clears all selected items
 		 * from the control.
+		 *
+		 * @param {boolean} silent
 		 */
-		clear: function() {
+		clear: function(silent) {
 			var self = this;
 	
 			if (!self.items.length) return;
@@ -3029,7 +3012,7 @@ $.ui.position = {
 			self.setCaret(0);
 			self.setActiveItem(null);
 			self.updatePlaceholder();
-			self.updateOriginalInput();
+			self.updateOriginalInput({silent: silent});
 			self.refreshState();
 			self.showInput();
 			self.trigger('clear');
@@ -3240,6 +3223,7 @@ $.ui.position = {
 		disable: function() {
 			var self = this;
 			self.$input.prop('disabled', true);
+			self.$control_input.prop('disabled', true).prop('tabindex', -1);
 			self.isDisabled = true;
 			self.lock();
 		},
@@ -3251,6 +3235,7 @@ $.ui.position = {
 		enable: function() {
 			var self = this;
 			self.$input.prop('disabled', false);
+			self.$control_input.prop('disabled', false).prop('tabindex', self.tabIndex);
 			self.isDisabled = false;
 			self.unlock();
 		},
@@ -3301,7 +3286,7 @@ $.ui.position = {
 			var html = '';
 			var cache = false;
 			var self = this;
-			var regex_tag = /^[\t ]*<([a-z][a-z0-9\-_]*(?:\:[a-z][a-z0-9\-_]*)?)/i;
+			var regex_tag = /^[\t \r\n]*<([a-z][a-z0-9\-_]*(?:\:[a-z][a-z0-9\-_]*)?)/i;
 	
 			if (templateName === 'option' || templateName === 'item') {
 				value = hash_key(data[self.settings.valueField]);
@@ -3379,8 +3364,12 @@ $.ui.position = {
 	
 	Selectize.count = 0;
 	Selectize.defaults = {
+		options: [],
+		optgroups: [],
+	
 		plugins: [],
 		delimiter: ',',
+		splitOn: null, // regexp or string for splitting up values from a paste command
 		persist: true,
 		diacritics: true,
 		create: false,
@@ -3395,9 +3384,11 @@ $.ui.position = {
 		selectOnTab: false,
 		preload: false,
 		allowEmptyOption: false,
+		closeAfterSelect: false,
 	
 		scrollDuration: 60,
 		loadThrottle: 300,
+		loadingClass: 'loading',
 	
 		dataAttr: 'data-data',
 		optgroupField: 'optgroup',
@@ -3405,7 +3396,7 @@ $.ui.position = {
 		labelField: 'text',
 		optgroupLabelField: 'label',
 		optgroupValueField: 'value',
-		optgroupOrder: null,
+		lockOptgroupOrder: false,
 	
 		sortField: '$order',
 		searchField: ['text'],
@@ -3422,20 +3413,23 @@ $.ui.position = {
 		copyClassesToDropdown: true,
 	
 		/*
-		load            : null, // function(query, callback) { ... }
-		score           : null, // function(search) { ... }
-		onInitialize    : null, // function() { ... }
-		onChange        : null, // function(value) { ... }
-		onItemAdd       : null, // function(value, $item) { ... }
-		onItemRemove    : null, // function(value) { ... }
-		onClear         : null, // function() { ... }
-		onOptionAdd     : null, // function(value, data) { ... }
-		onOptionRemove  : null, // function(value) { ... }
-		onOptionClear   : null, // function() { ... }
-		onDropdownOpen  : null, // function($dropdown) { ... }
-		onDropdownClose : null, // function($dropdown) { ... }
-		onType          : null, // function(str) { ... }
-		onDelete        : null, // function(values) { ... }
+		load                 : null, // function(query, callback) { ... }
+		score                : null, // function(search) { ... }
+		onInitialize         : null, // function() { ... }
+		onChange             : null, // function(value) { ... }
+		onItemAdd            : null, // function(value, $item) { ... }
+		onItemRemove         : null, // function(value) { ... }
+		onClear              : null, // function() { ... }
+		onOptionAdd          : null, // function(value, data) { ... }
+		onOptionRemove       : null, // function(value) { ... }
+		onOptionClear        : null, // function() { ... }
+		onOptionGroupAdd     : null, // function(id, data) { ... }
+		onOptionGroupRemove  : null, // function(id) { ... }
+		onOptionGroupClear   : null, // function() { ... }
+		onDropdownOpen       : null, // function($dropdown) { ... }
+		onDropdownClose      : null, // function($dropdown) { ... }
+		onType               : null, // function(str) { ... }
+		onDelete             : null, // function(values) { ... }
 		*/
 	
 		render: {
@@ -3460,6 +3454,8 @@ $.ui.position = {
 		var field_optgroup_label = settings.optgroupLabelField;
 		var field_optgroup_value = settings.optgroupValueField;
 	
+		var optionsMap = {};
+	
 		/**
 		 * Initializes selectize from a <input type="text"> element.
 		 *
@@ -3467,19 +3463,27 @@ $.ui.position = {
 		 * @param {object} settings_element
 		 */
 		var init_textbox = function($input, settings_element) {
-			var i, n, values, option, value = $.trim($input.val() || '');
-			if (!settings.allowEmptyOption && !value.length) return;
+			var i, n, values, option;
 	
-			values = value.split(settings.delimiter);
-			for (i = 0, n = values.length; i < n; i++) {
-				option = {};
-				option[field_label] = values[i];
-				option[field_value] = values[i];
+			var data_raw = $input.attr(attr_data);
 	
-				settings_element.options[values[i]] = option;
+			if (!data_raw) {
+				var value = $.trim($input.val() || '');
+				if (!settings.allowEmptyOption && !value.length) return;
+				values = value.split(settings.delimiter);
+				for (i = 0, n = values.length; i < n; i++) {
+					option = {};
+					option[field_label] = values[i];
+					option[field_value] = values[i];
+					settings_element.options.push(option);
+				}
+				settings_element.items = values;
+			} else {
+				settings_element.options = JSON.parse(data_raw);
+				for (i = 0, n = settings_element.options.length; i < n; i++) {
+					settings_element.items.push(settings_element.options[i][field_value]);
+				}
 			}
-	
-			settings_element.items = values;
 		};
 	
 		/**
@@ -3501,37 +3505,36 @@ $.ui.position = {
 			};
 	
 			var addOption = function($option, group) {
-				var value, option;
-	
 				$option = $($option);
 	
-				value = $option.attr('value') || '';
-				if (!value.length && !settings.allowEmptyOption) return;
+				var value = hash_key($option.attr('value'));
+				if (!value && !settings.allowEmptyOption) return;
 	
 				// if the option already exists, it's probably been
 				// duplicated in another optgroup. in this case, push
 				// the current group to the "optgroup" property on the
 				// existing option so that it's rendered in both places.
-				if (options.hasOwnProperty(value)) {
+				if (optionsMap.hasOwnProperty(value)) {
 					if (group) {
-						if (!options[value].optgroup) {
-							options[value].optgroup = group;
-						} else if (!$.isArray(options[value].optgroup)) {
-							options[value].optgroup = [options[value].optgroup, group];
+						var arr = optionsMap[value][field_optgroup];
+						if (!arr) {
+							optionsMap[value][field_optgroup] = group;
+						} else if (!$.isArray(arr)) {
+							optionsMap[value][field_optgroup] = [arr, group];
 						} else {
-							options[value].optgroup.push(group);
+							arr.push(group);
 						}
 					}
 					return;
 				}
 	
-				option                 = readData($option) || {};
+				var option             = readData($option) || {};
 				option[field_label]    = option[field_label] || $option.text();
 				option[field_value]    = option[field_value] || value;
 				option[field_optgroup] = option[field_optgroup] || group;
 	
-				option.$order = ++order;
-				options[value] = option;
+				optionsMap[value] = option;
+				options.push(option);
 	
 				if ($option.is(':selected')) {
 					settings_element.items.push(value);
@@ -3548,7 +3551,7 @@ $.ui.position = {
 					optgroup = readData($optgroup) || {};
 					optgroup[field_optgroup_label] = id;
 					optgroup[field_optgroup_value] = id;
-					settings_element.optgroups[id] = optgroup;
+					settings_element.optgroups.push(optgroup);
 				}
 	
 				$options = $('option', $optgroup);
@@ -3583,8 +3586,8 @@ $.ui.position = {
 	
 			var settings_element = {
 				'placeholder' : placeholder,
-				'options'     : {},
-				'optgroups'   : {},
+				'options'     : [],
+				'optgroups'   : [],
 				'items'       : []
 			};
 	
@@ -3599,6 +3602,9 @@ $.ui.position = {
 	};
 	
 	$.fn.selectize.defaults = Selectize.defaults;
+	$.fn.selectize.support = {
+		validity: SUPPORTS_VALIDITY_API
+	};
 	
 	
 	Selectize.define('drag_drop', function(options) {
@@ -3841,7 +3847,7 @@ $.ui.position = {
 			return option[this.settings.labelField];
 		};
 	
-		this.onKeyDown = (function(e) {
+		this.onKeyDown = (function() {
 			var original = self.onKeyDown;
 			return function(e) {
 				var index, option;
@@ -3861,10 +3867,147 @@ $.ui.position = {
 			};
 		})();
 	});
+	
 
 	return Selectize;
 }));
-},{"jquery":undefined,"microplugin":4,"sifter":6}],6:[function(require,module,exports){
+},{"jquery":undefined,"microplugin":5,"sifter":6}],5:[function(require,module,exports){
+/**
+ * microplugin.js
+ * Copyright (c) 2013 Brian Reavis & contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ *
+ * @author Brian Reavis <brian@thirdroute.com>
+ */
+
+(function(root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		define(factory);
+	} else if (typeof exports === 'object') {
+		module.exports = factory();
+	} else {
+		root.MicroPlugin = factory();
+	}
+}(this, function() {
+	var MicroPlugin = {};
+
+	MicroPlugin.mixin = function(Interface) {
+		Interface.plugins = {};
+
+		/**
+		 * Initializes the listed plugins (with options).
+		 * Acceptable formats:
+		 *
+		 * List (without options):
+		 *   ['a', 'b', 'c']
+		 *
+		 * List (with options):
+		 *   [{'name': 'a', options: {}}, {'name': 'b', options: {}}]
+		 *
+		 * Hash (with options):
+		 *   {'a': { ... }, 'b': { ... }, 'c': { ... }}
+		 *
+		 * @param {mixed} plugins
+		 */
+		Interface.prototype.initializePlugins = function(plugins) {
+			var i, n, key;
+			var self  = this;
+			var queue = [];
+
+			self.plugins = {
+				names     : [],
+				settings  : {},
+				requested : {},
+				loaded    : {}
+			};
+
+			if (utils.isArray(plugins)) {
+				for (i = 0, n = plugins.length; i < n; i++) {
+					if (typeof plugins[i] === 'string') {
+						queue.push(plugins[i]);
+					} else {
+						self.plugins.settings[plugins[i].name] = plugins[i].options;
+						queue.push(plugins[i].name);
+					}
+				}
+			} else if (plugins) {
+				for (key in plugins) {
+					if (plugins.hasOwnProperty(key)) {
+						self.plugins.settings[key] = plugins[key];
+						queue.push(key);
+					}
+				}
+			}
+
+			while (queue.length) {
+				self.require(queue.shift());
+			}
+		};
+
+		Interface.prototype.loadPlugin = function(name) {
+			var self    = this;
+			var plugins = self.plugins;
+			var plugin  = Interface.plugins[name];
+
+			if (!Interface.plugins.hasOwnProperty(name)) {
+				throw new Error('Unable to find "' +  name + '" plugin');
+			}
+
+			plugins.requested[name] = true;
+			plugins.loaded[name] = plugin.fn.apply(self, [self.plugins.settings[name] || {}]);
+			plugins.names.push(name);
+		};
+
+		/**
+		 * Initializes a plugin.
+		 *
+		 * @param {string} name
+		 */
+		Interface.prototype.require = function(name) {
+			var self = this;
+			var plugins = self.plugins;
+
+			if (!self.plugins.loaded.hasOwnProperty(name)) {
+				if (plugins.requested[name]) {
+					throw new Error('Plugin has circular dependency ("' + name + '")');
+				}
+				self.loadPlugin(name);
+			}
+
+			return plugins.loaded[name];
+		};
+
+		/**
+		 * Registers a plugin.
+		 *
+		 * @param {string} name
+		 * @param {function} fn
+		 */
+		Interface.define = function(name, fn) {
+			Interface.plugins[name] = {
+				'name' : name,
+				'fn'   : fn
+			};
+		};
+	};
+
+	var utils = {
+		isArray: Array.isArray || function(vArg) {
+			return Object.prototype.toString.call(vArg) === '[object Array]';
+		}
+	};
+
+	return MicroPlugin;
+}));
+},{}],6:[function(require,module,exports){
 /**
  * sifter.js
  * Copyright (c) 2013 Brian Reavis & contributors
@@ -4088,7 +4231,7 @@ $.ui.position = {
 		 * @param  {object} result
 		 * @return {mixed}
 		 */
-		get_field  = function(name, result) {
+		get_field = function(name, result) {
 			if (name === '$score') return result.score;
 			return self.items[result.id][name];
 		};
@@ -4258,8 +4401,8 @@ $.ui.position = {
 		if (typeof a === 'number' && typeof b === 'number') {
 			return a > b ? 1 : (a < b ? -1 : 0);
 		}
-		a = String(a || '').toLowerCase();
-		b = String(b || '').toLowerCase();
+		a = asciifold(String(a || ''));
+		b = asciifold(String(b || ''));
 		if (a > b) return 1;
 		if (b > a) return -1;
 		return 0;
@@ -4292,20 +4435,43 @@ $.ui.position = {
 	};
 
 	var DIACRITICS = {
-		'a': '[aÀÁÂÃÄÅàáâãäåĀā]',
+		'a': '[aÀÁÂÃÄÅàáâãäåĀāąĄ]',
 		'c': '[cÇçćĆčČ]',
 		'd': '[dđĐďĎ]',
-		'e': '[eÈÉÊËèéêëěĚĒē]',
+		'e': '[eÈÉÊËèéêëěĚĒēęĘ]',
 		'i': '[iÌÍÎÏìíîïĪī]',
-		'n': '[nÑñňŇ]',
+		'l': '[lłŁ]',
+		'n': '[nÑñňŇńŃ]',
 		'o': '[oÒÓÔÕÕÖØòóôõöøŌō]',
 		'r': '[rřŘ]',
-		's': '[sŠš]',
+		's': '[sŠšśŚ]',
 		't': '[tťŤ]',
 		'u': '[uÙÚÛÜùúûüůŮŪū]',
 		'y': '[yŸÿýÝ]',
-		'z': '[zŽž]'
+		'z': '[zŽžżŻźŹ]'
 	};
+
+	var asciifold = (function() {
+		var i, n, k, chunk;
+		var foreignletters = '';
+		var lookup = {};
+		for (k in DIACRITICS) {
+			if (DIACRITICS.hasOwnProperty(k)) {
+				chunk = DIACRITICS[k].substring(2, DIACRITICS[k].length - 1);
+				foreignletters += chunk;
+				for (i = 0, n = chunk.length; i < n; i++) {
+					lookup[chunk.charAt(i)] = k;
+				}
+			}
+		}
+		var regexp = new RegExp('[' +  foreignletters + ']', 'g');
+		return function(str) {
+			return str.replace(regexp, function(foreignletter) {
+				return lookup[foreignletter];
+			}).toLowerCase();
+		};
+	})();
+
 
 	// export
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -4529,31 +4695,6 @@ window.console = window.console || {"log":function(){}};//make sure any console 
 module.exports = {
 	storage: require("./storage.js"),
 	svg: require("./svg.js"),
-	escapeHtmlEntities : function(unescapedString) {
-		var tagsToReplace = {
-			'&' : '&amp;',
-			'<' : '&lt;',
-			'>' : '&gt;'
-		};
-
-		var replaceTag = function(tag) {
-			return tagsToReplace[tag] || tag;
-		}
-
-		return unescapedString.replace(/[&<>]/g, replaceTag);
-	},
-	nestedExists: function(obj /*, level1, level2, ... levelN*/) {
-		//taken from http://stackoverflow.com/a/2631198/1052020
-	  var args = Array.prototype.slice.call(arguments, 1);
-
-	  for (var i = 0; i < args.length; i++) {
-	    if (!obj || !obj.hasOwnProperty(args[i])) {
-	      return false;
-	    }
-	    obj = obj[args[i]];
-	  }
-	  return true;
-	},
 	version: {
 		"yasgui-utils" : require("../package.json").version,
 	}
@@ -8708,8 +8849,13 @@ return obj;
 			var DECIMAL_NEGATIVE = '-' + DECIMAL;
 			var DOUBLE_NEGATIVE  = '-' + DOUBLE;
 	
-			// var ECHAR = '\\\\[tbnrf\\"\\\']';
-			var ECHAR = '\\\\[tbnrf\\\\"\']';
+			//var ECHAR = '\\\\[tbnrf\\"\\\']';
+      //IMPORTANT: this rule deviates from the official grammar.
+      //Reason: https://github.com/YASGUI/YASQE/issues/49
+      //unicode escape sequences (which the sparql spec considers part of the pre-processing of sparql queries)
+      //are marked as invalid. We have little choice (other than adding a layer of complixity) than to modify the grammar accordingly
+      //however, for now only allow these escape sequences in literals (where actually, this should be allows in e.g. prefixes as well)
+			var ECHAR = '\\\\[tbnrfu\\\\"\']';
 	
 			var STRING_LITERAL1 = "'(([^\\x27\\x5C\\x0A\\x0D])|"+ECHAR+")*'";
 			var STRING_LITERAL2 = '"(([^\\x22\\x5C\\x0A\\x0D])|'+ECHAR+')*"';
@@ -10791,7 +10937,7 @@ module.exports=require(11)
 module.exports={
   "name": "yasgui-yasqe",
   "description": "Yet Another SPARQL Query Editor",
-  "version": "2.3.2",
+  "version": "2.3.4",
   "main": "src/main.js",
   "licenses": [
     {
@@ -10812,7 +10958,7 @@ module.exports={
     "gulp-git": "^0.5.2",
     "gulp-jsvalidate": "^0.2.0",
     "gulp-livereload": "^1.3.1",
-    "gulp-minify-css": "^0.3.11",
+    "gulp-minify-css": "0.3.11",
     "gulp-notify": "^2.0.1",
     "gulp-rename": "^1.2.0",
     "gulp-streamify": "0.0.5",
@@ -15142,37 +15288,47 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
 },{"codemirror":undefined}],53:[function(require,module,exports){
 !function() {
   var d3 = {
-    version: "3.5.3"
-  };
-  if (!Date.now) Date.now = function() {
-    return +new Date();
+    version: "3.5.5"
   };
   var d3_arraySlice = [].slice, d3_array = function(list) {
     return d3_arraySlice.call(list);
   };
-  var d3_document = document, d3_documentElement = d3_document.documentElement, d3_window = window;
-  try {
-    d3_array(d3_documentElement.childNodes)[0].nodeType;
-  } catch (e) {
-    d3_array = function(list) {
-      var i = list.length, array = new Array(i);
-      while (i--) array[i] = list[i];
-      return array;
-    };
+  var d3_document = this.document;
+  function d3_documentElement(node) {
+    return node && (node.ownerDocument || node.document || node).documentElement;
   }
-  try {
-    d3_document.createElement("div").style.setProperty("opacity", 0, "");
-  } catch (error) {
-    var d3_element_prototype = d3_window.Element.prototype, d3_element_setAttribute = d3_element_prototype.setAttribute, d3_element_setAttributeNS = d3_element_prototype.setAttributeNS, d3_style_prototype = d3_window.CSSStyleDeclaration.prototype, d3_style_setProperty = d3_style_prototype.setProperty;
-    d3_element_prototype.setAttribute = function(name, value) {
-      d3_element_setAttribute.call(this, name, value + "");
-    };
-    d3_element_prototype.setAttributeNS = function(space, local, value) {
-      d3_element_setAttributeNS.call(this, space, local, value + "");
-    };
-    d3_style_prototype.setProperty = function(name, value, priority) {
-      d3_style_setProperty.call(this, name, value + "", priority);
-    };
+  function d3_window(node) {
+    return node && (node.ownerDocument && node.ownerDocument.defaultView || node.document && node || node.defaultView);
+  }
+  if (d3_document) {
+    try {
+      d3_array(d3_document.documentElement.childNodes)[0].nodeType;
+    } catch (e) {
+      d3_array = function(list) {
+        var i = list.length, array = new Array(i);
+        while (i--) array[i] = list[i];
+        return array;
+      };
+    }
+  }
+  if (!Date.now) Date.now = function() {
+    return +new Date();
+  };
+  if (d3_document) {
+    try {
+      d3_document.createElement("DIV").style.setProperty("opacity", 0, "");
+    } catch (error) {
+      var d3_element_prototype = this.Element.prototype, d3_element_setAttribute = d3_element_prototype.setAttribute, d3_element_setAttributeNS = d3_element_prototype.setAttributeNS, d3_style_prototype = this.CSSStyleDeclaration.prototype, d3_style_setProperty = d3_style_prototype.setProperty;
+      d3_element_prototype.setAttribute = function(name, value) {
+        d3_element_setAttribute.call(this, name, value + "");
+      };
+      d3_element_prototype.setAttributeNS = function(space, local, value) {
+        d3_element_setAttributeNS.call(this, space, local, value + "");
+      };
+      d3_style_prototype.setProperty = function(name, value, priority) {
+        d3_style_setProperty.call(this, name, value + "", priority);
+      };
+    }
   }
   d3.ascending = d3_ascending;
   function d3_ascending(a, b) {
@@ -15585,6 +15741,9 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     }
   });
   d3.behavior = {};
+  function d3_identity(d) {
+    return d;
+  }
   d3.rebind = function(target, source) {
     var i = 1, n = arguments.length, method;
     while (++i < n) target[method = arguments[i]] = d3_rebind(target, source, source[method]);
@@ -15691,8 +15850,12 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     return n.querySelector(s);
   }, d3_selectAll = function(s, n) {
     return n.querySelectorAll(s);
-  }, d3_selectMatcher = d3_documentElement.matches || d3_documentElement[d3_vendorSymbol(d3_documentElement, "matchesSelector")], d3_selectMatches = function(n, s) {
-    return d3_selectMatcher.call(n, s);
+  }, d3_selectMatches = function(n, s) {
+    var d3_selectMatcher = n.matches || n[d3_vendorSymbol(n, "matchesSelector")];
+    d3_selectMatches = function(n, s) {
+      return d3_selectMatcher.call(n, s);
+    };
+    return d3_selectMatches(n, s);
   };
   if (typeof Sizzle === "function") {
     d3_select = function(s, n) {
@@ -15702,7 +15865,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     d3_selectMatches = Sizzle.matchesSelector;
   }
   d3.selection = function() {
-    return d3_selectionRoot;
+    return d3.select(d3_document.documentElement);
   };
   var d3_selectionPrototype = d3.selection.prototype = [];
   d3_selectionPrototype.select = function(selector) {
@@ -15862,7 +16025,10 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
         for (priority in name) this.each(d3_selection_style(priority, name[priority], value));
         return this;
       }
-      if (n < 2) return d3_window.getComputedStyle(this.node(), null).getPropertyValue(name);
+      if (n < 2) {
+        var node = this.node();
+        return d3_window(node).getComputedStyle(node, null).getPropertyValue(name);
+      }
       priority = "";
     }
     return this.each(d3_selection_style(name, value, priority));
@@ -15928,11 +16094,14 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     });
   };
   function d3_selection_creator(name) {
-    return typeof name === "function" ? name : (name = d3.ns.qualify(name)).local ? function() {
+    function create() {
+      var document = this.ownerDocument, namespace = this.namespaceURI;
+      return namespace ? document.createElementNS(namespace, name) : document.createElement(name);
+    }
+    function createNS() {
       return this.ownerDocument.createElementNS(name.space, name.local);
-    } : function() {
-      return this.ownerDocument.createElementNS(this.namespaceURI, name);
-    };
+    }
+    return typeof name === "function" ? name : (name = d3.ns.qualify(name)).local ? createNS : create;
   }
   d3_selectionPrototype.insert = function(name, before) {
     name = d3_selection_creator(name);
@@ -16157,16 +16326,27 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     };
   }
   d3.select = function(node) {
-    var group = [ typeof node === "string" ? d3_select(node, d3_document) : node ];
-    group.parentNode = d3_documentElement;
+    var group;
+    if (typeof node === "string") {
+      group = [ d3_select(node, d3_document) ];
+      group.parentNode = d3_document.documentElement;
+    } else {
+      group = [ node ];
+      group.parentNode = d3_documentElement(node);
+    }
     return d3_selection([ group ]);
   };
   d3.selectAll = function(nodes) {
-    var group = d3_array(typeof nodes === "string" ? d3_selectAll(nodes, d3_document) : nodes);
-    group.parentNode = d3_documentElement;
+    var group;
+    if (typeof nodes === "string") {
+      group = d3_array(d3_selectAll(nodes, d3_document));
+      group.parentNode = d3_document.documentElement;
+    } else {
+      group = nodes;
+      group.parentNode = null;
+    }
     return d3_selection([ group ]);
   };
-  var d3_selectionRoot = d3.select(d3_documentElement);
   d3_selectionPrototype.on = function(type, listener, capture) {
     var n = arguments.length;
     if (n < 3) {
@@ -16214,9 +16394,11 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     mouseenter: "mouseover",
     mouseleave: "mouseout"
   });
-  d3_selection_onFilters.forEach(function(k) {
-    if ("on" + k in d3_document) d3_selection_onFilters.remove(k);
-  });
+  if (d3_document) {
+    d3_selection_onFilters.forEach(function(k) {
+      if ("on" + k in d3_document) d3_selection_onFilters.remove(k);
+    });
+  }
   function d3_selection_onListener(listener, argumentz) {
     return function(e) {
       var o = d3.event;
@@ -16238,11 +16420,14 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
       }
     };
   }
-  var d3_event_dragSelect = "onselectstart" in d3_document ? null : d3_vendorSymbol(d3_documentElement.style, "userSelect"), d3_event_dragId = 0;
-  function d3_event_dragSuppress() {
-    var name = ".dragsuppress-" + ++d3_event_dragId, click = "click" + name, w = d3.select(d3_window).on("touchmove" + name, d3_eventPreventDefault).on("dragstart" + name, d3_eventPreventDefault).on("selectstart" + name, d3_eventPreventDefault);
+  var d3_event_dragSelect, d3_event_dragId = 0;
+  function d3_event_dragSuppress(node) {
+    var name = ".dragsuppress-" + ++d3_event_dragId, click = "click" + name, w = d3.select(d3_window(node)).on("touchmove" + name, d3_eventPreventDefault).on("dragstart" + name, d3_eventPreventDefault).on("selectstart" + name, d3_eventPreventDefault);
+    if (d3_event_dragSelect == null) {
+      d3_event_dragSelect = "onselectstart" in node ? false : d3_vendorSymbol(node.style, "userSelect");
+    }
     if (d3_event_dragSelect) {
-      var style = d3_documentElement.style, select = style[d3_event_dragSelect];
+      var style = d3_documentElement(node).style, select = style[d3_event_dragSelect];
       style[d3_event_dragSelect] = "none";
     }
     return function(suppressClick) {
@@ -16263,24 +16448,27 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
   d3.mouse = function(container) {
     return d3_mousePoint(container, d3_eventSource());
   };
-  var d3_mouse_bug44083 = /WebKit/.test(d3_window.navigator.userAgent) ? -1 : 0;
+  var d3_mouse_bug44083 = this.navigator && /WebKit/.test(this.navigator.userAgent) ? -1 : 0;
   function d3_mousePoint(container, e) {
     if (e.changedTouches) e = e.changedTouches[0];
     var svg = container.ownerSVGElement || container;
     if (svg.createSVGPoint) {
       var point = svg.createSVGPoint();
-      if (d3_mouse_bug44083 < 0 && (d3_window.scrollX || d3_window.scrollY)) {
-        svg = d3.select("body").append("svg").style({
-          position: "absolute",
-          top: 0,
-          left: 0,
-          margin: 0,
-          padding: 0,
-          border: "none"
-        }, "important");
-        var ctm = svg[0][0].getScreenCTM();
-        d3_mouse_bug44083 = !(ctm.f || ctm.e);
-        svg.remove();
+      if (d3_mouse_bug44083 < 0) {
+        var window = d3_window(container);
+        if (window.scrollX || window.scrollY) {
+          svg = d3.select("body").append("svg").style({
+            position: "absolute",
+            top: 0,
+            left: 0,
+            margin: 0,
+            padding: 0,
+            border: "none"
+          }, "important");
+          var ctm = svg[0][0].getScreenCTM();
+          d3_mouse_bug44083 = !(ctm.f || ctm.e);
+          svg.remove();
+        }
       }
       if (d3_mouse_bug44083) point.x = e.pageX, point.y = e.pageY; else point.x = e.clientX, 
       point.y = e.clientY;
@@ -16299,13 +16487,13 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     }
   };
   d3.behavior.drag = function() {
-    var event = d3_eventDispatch(drag, "drag", "dragstart", "dragend"), origin = null, mousedown = dragstart(d3_noop, d3.mouse, d3_behavior_dragMouseSubject, "mousemove", "mouseup"), touchstart = dragstart(d3_behavior_dragTouchId, d3.touch, d3_behavior_dragTouchSubject, "touchmove", "touchend");
+    var event = d3_eventDispatch(drag, "drag", "dragstart", "dragend"), origin = null, mousedown = dragstart(d3_noop, d3.mouse, d3_window, "mousemove", "mouseup"), touchstart = dragstart(d3_behavior_dragTouchId, d3.touch, d3_identity, "touchmove", "touchend");
     function drag() {
       this.on("mousedown.drag", mousedown).on("touchstart.drag", touchstart);
     }
     function dragstart(id, position, subject, move, end) {
       return function() {
-        var that = this, target = d3.event.target, parent = that.parentNode, dispatch = event.of(that, arguments), dragged = 0, dragId = id(), dragName = ".drag" + (dragId == null ? "" : "-" + dragId), dragOffset, dragSubject = d3.select(subject()).on(move + dragName, moved).on(end + dragName, ended), dragRestore = d3_event_dragSuppress(), position0 = position(parent, dragId);
+        var that = this, target = d3.event.target, parent = that.parentNode, dispatch = event.of(that, arguments), dragged = 0, dragId = id(), dragName = ".drag" + (dragId == null ? "" : "-" + dragId), dragOffset, dragSubject = d3.select(subject(target)).on(move + dragName, moved).on(end + dragName, ended), dragRestore = d3_event_dragSuppress(target), position0 = position(parent, dragId);
         if (origin) {
           dragOffset = origin.apply(that, arguments);
           dragOffset = [ dragOffset.x - position0[0], dragOffset.y - position0[1] ];
@@ -16349,12 +16537,6 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
   };
   function d3_behavior_dragTouchId() {
     return d3.event.changedTouches[0].identifier;
-  }
-  function d3_behavior_dragTouchSubject() {
-    return d3.event.target;
-  }
-  function d3_behavior_dragMouseSubject() {
-    return d3_window;
   }
   d3.touches = function(container, touches) {
     if (arguments.length < 2) touches = d3_eventSource().touches;
@@ -16410,6 +16592,15 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
       y: 0,
       k: 1
     }, translate0, center0, center, size = [ 960, 500 ], scaleExtent = d3_behavior_zoomInfinity, duration = 250, zooming = 0, mousedown = "mousedown.zoom", mousemove = "mousemove.zoom", mouseup = "mouseup.zoom", mousewheelTimer, touchstart = "touchstart.zoom", touchtime, event = d3_eventDispatch(zoom, "zoomstart", "zoom", "zoomend"), x0, x1, y0, y1;
+    if (!d3_behavior_zoomWheel) {
+      d3_behavior_zoomWheel = "onwheel" in d3_document ? (d3_behavior_zoomDelta = function() {
+        return -d3.event.deltaY * (d3.event.deltaMode ? 120 : 1);
+      }, "wheel") : "onmousewheel" in d3_document ? (d3_behavior_zoomDelta = function() {
+        return d3.event.wheelDelta;
+      }, "mousewheel") : (d3_behavior_zoomDelta = function() {
+        return -d3.event.detail;
+      }, "MozMousePixelScroll");
+    }
     function zoom(g) {
       g.on(mousedown, mousedowned).on(d3_behavior_zoomWheel + ".zoom", mousewheeled).on("dblclick.zoom", dblclicked).on(touchstart, touchstarted);
     }
@@ -16564,7 +16755,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
       center0 = null;
     }
     function mousedowned() {
-      var that = this, target = d3.event.target, dispatch = event.of(that, arguments), dragged = 0, subject = d3.select(d3_window).on(mousemove, moved).on(mouseup, ended), location0 = location(d3.mouse(that)), dragRestore = d3_event_dragSuppress();
+      var that = this, target = d3.event.target, dispatch = event.of(that, arguments), dragged = 0, subject = d3.select(d3_window(that)).on(mousemove, moved).on(mouseup, ended), location0 = location(d3.mouse(that)), dragRestore = d3_event_dragSuppress(that);
       d3_selection_interrupt.call(that);
       zoomstarted(dispatch);
       function moved() {
@@ -16579,7 +16770,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
       }
     }
     function touchstarted() {
-      var that = this, dispatch = event.of(that, arguments), locations0 = {}, distance0 = 0, scale0, zoomName = ".zoom-" + d3.event.changedTouches[0].identifier, touchmove = "touchmove" + zoomName, touchend = "touchend" + zoomName, targets = [], subject = d3.select(that), dragRestore = d3_event_dragSuppress();
+      var that = this, dispatch = event.of(that, arguments), locations0 = {}, distance0 = 0, scale0, zoomName = ".zoom-" + d3.event.changedTouches[0].identifier, touchmove = "touchmove" + zoomName, touchend = "touchend" + zoomName, targets = [], subject = d3.select(that), dragRestore = d3_event_dragSuppress(that);
       started();
       zoomstarted(dispatch);
       subject.on(mousedown, null).on(touchstart, started);
@@ -16667,14 +16858,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     }
     return d3.rebind(zoom, event, "on");
   };
-  var d3_behavior_zoomInfinity = [ 0, Infinity ];
-  var d3_behavior_zoomDelta, d3_behavior_zoomWheel = "onwheel" in d3_document ? (d3_behavior_zoomDelta = function() {
-    return -d3.event.deltaY * (d3.event.deltaMode ? 120 : 1);
-  }, "wheel") : "onmousewheel" in d3_document ? (d3_behavior_zoomDelta = function() {
-    return d3.event.wheelDelta;
-  }, "mousewheel") : (d3_behavior_zoomDelta = function() {
-    return -d3.event.detail;
-  }, "MozMousePixelScroll");
+  var d3_behavior_zoomInfinity = [ 0, Infinity ], d3_behavior_zoomDelta, d3_behavior_zoomWheel;
   d3.color = d3_color;
   function d3_color() {}
   d3_color.prototype.toString = function() {
@@ -16819,7 +17003,9 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
         }
       }
     }
-    if (color = d3_rgb_names.get(format)) return rgb(color.r, color.g, color.b);
+    if (color = d3_rgb_names.get(format.toLowerCase())) {
+      return rgb(color.r, color.g, color.b);
+    }
     if (format != null && format.charAt(0) === "#" && !isNaN(color = parseInt(format.slice(1), 16))) {
       if (format.length === 4) {
         r = (color & 3840) >> 4;
@@ -16982,6 +17168,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     plum: 14524637,
     powderblue: 11591910,
     purple: 8388736,
+    rebeccapurple: 6697881,
     red: 16711680,
     rosybrown: 12357519,
     royalblue: 4286945,
@@ -17020,9 +17207,6 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     };
   }
   d3.functor = d3_functor;
-  function d3_identity(d) {
-    return d;
-  }
   d3.xhr = d3_xhrType(d3_identity);
   function d3_xhrType(response) {
     return function(url, mimeType, callback) {
@@ -17033,7 +17217,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
   }
   function d3_xhr(url, mimeType, response, callback) {
     var xhr = {}, dispatch = d3.dispatch("beforesend", "progress", "load", "error"), headers = {}, request = new XMLHttpRequest(), responseType = null;
-    if (d3_window.XDomainRequest && !("withCredentials" in request) && /^(http(s)?:)?\/\//.test(url)) request = new XDomainRequest();
+    if (this.XDomainRequest && !("withCredentials" in request) && /^(http(s)?:)?\/\//.test(url)) request = new XDomainRequest();
     "onload" in request ? request.onload = request.onerror = respond : request.onreadystatechange = function() {
       request.readyState > 3 && respond();
     };
@@ -17219,7 +17403,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
   };
   d3.csv = d3.dsv(",", "text/csv");
   d3.tsv = d3.dsv("	", "text/tab-separated-values");
-  var d3_timer_queueHead, d3_timer_queueTail, d3_timer_interval, d3_timer_timeout, d3_timer_active, d3_timer_frame = d3_window[d3_vendorSymbol(d3_window, "requestAnimationFrame")] || function(callback) {
+  var d3_timer_queueHead, d3_timer_queueTail, d3_timer_interval, d3_timer_timeout, d3_timer_active, d3_timer_frame = this[d3_vendorSymbol(this, "requestAnimationFrame")] || function(callback) {
     setTimeout(callback, 17);
   };
   d3.timer = function(callback, delay, then) {
@@ -20780,7 +20964,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     (function find(node, x1, y1, x2, y2) {
       if (x1 > x3 || y1 > y3 || x2 < x0 || y2 < y0) return;
       if (point = node.point) {
-        var point, dx = x - point[0], dy = y - point[1], distance2 = dx * dx + dy * dy;
+        var point, dx = x - node.x, dy = y - node.y, distance2 = dx * dx + dy * dy;
         if (distance2 < minDistance2) {
           var distance = Math.sqrt(minDistance2 = distance2);
           x0 = x - distance, y0 = y - distance;
@@ -21494,8 +21678,8 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
             neighbors[o.target.index].push(o.source);
           }
         }
-        var candidates = neighbors[i], j = -1, m = candidates.length, x;
-        while (++j < m) if (!isNaN(x = candidates[j][dimension])) return x;
+        var candidates = neighbors[i], j = -1, l = candidates.length, x;
+        while (++j < l) if (!isNaN(x = candidates[j][dimension])) return x;
         return Math.random() * size;
       }
       return force.resume();
@@ -23735,7 +23919,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
   d3_transitionPrototype.node = d3_selectionPrototype.node;
   d3_transitionPrototype.size = d3_selectionPrototype.size;
   d3.transition = function(selection, name) {
-    return selection && selection.transition ? d3_transitionInheritId ? selection.transition(name) : selection : d3_selectionRoot.transition(selection);
+    return selection && selection.transition ? d3_transitionInheritId ? selection.transition(name) : selection : d3.selection().transition(selection);
   };
   d3.transition.prototype = d3_transitionPrototype;
   d3_transitionPrototype.select = function(selector) {
@@ -23864,7 +24048,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
     }
     function styleString(b) {
       return b == null ? styleNull : (b += "", function() {
-        var a = d3_window.getComputedStyle(this, null).getPropertyValue(name), i;
+        var a = d3_window(this).getComputedStyle(this, null).getPropertyValue(name), i;
         return a !== b && (i = d3_interpolate(a, b), function(t) {
           this.style.setProperty(name, i(t), priority);
         });
@@ -23875,7 +24059,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
   d3_transitionPrototype.styleTween = function(name, tween, priority) {
     if (arguments.length < 3) priority = "";
     function styleTween(d, i) {
-      var f = tween.call(this, d, i, d3_window.getComputedStyle(this, null).getPropertyValue(name));
+      var f = tween.call(this, d, i, d3_window(this).getComputedStyle(this, null).getPropertyValue(name));
       return f && function(t) {
         this.style.setProperty(name, f(t), priority);
       };
@@ -24241,8 +24425,8 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
       g.selectAll(".extent,.e>rect,.w>rect").attr("height", yExtent[1] - yExtent[0]);
     }
     function brushstart() {
-      var target = this, eventTarget = d3.select(d3.event.target), event_ = event.of(target, arguments), g = d3.select(target), resizing = eventTarget.datum(), resizingX = !/^(n|s)$/.test(resizing) && x, resizingY = !/^(e|w)$/.test(resizing) && y, dragging = eventTarget.classed("extent"), dragRestore = d3_event_dragSuppress(), center, origin = d3.mouse(target), offset;
-      var w = d3.select(d3_window).on("keydown.brush", keydown).on("keyup.brush", keyup);
+      var target = this, eventTarget = d3.select(d3.event.target), event_ = event.of(target, arguments), g = d3.select(target), resizing = eventTarget.datum(), resizingX = !/^(n|s)$/.test(resizing) && x, resizingY = !/^(e|w)$/.test(resizing) && y, dragging = eventTarget.classed("extent"), dragRestore = d3_event_dragSuppress(target), center, origin = d3.mouse(target), offset;
+      var w = d3.select(d3_window(target)).on("keydown.brush", keydown).on("keyup.brush", keyup);
       if (d3.event.changedTouches) {
         w.on("touchmove.brush", brushmove).on("touchend.brush", brushend);
       } else {
@@ -28518,7 +28702,7 @@ module.exports=require(11)
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
-  "version": "2.4.8",
+  "version": "2.4.11",
   "main": "src/main.js",
   "licenses": [
     {
@@ -28539,7 +28723,7 @@ module.exports={
     "gulp-git": "^0.5.2",
     "gulp-jsvalidate": "^0.2.0",
     "gulp-livereload": "^1.3.1",
-    "gulp-minify-css": "^0.3.11",
+    "gulp-minify-css": "0.3.11",
     "gulp-notify": "^2.0.1",
     "gulp-rename": "^1.2.0",
     "gulp-streamify": "0.0.5",
@@ -29146,21 +29330,34 @@ var root = module.exports = function(yasr){
 		getDownloadInfo: function() {
 			if (!yasr.results) return null;
 			var svgEl = yasr.resultsContainer.find('svg');
-			if (svgEl.length == 0) return null;
+			if (svgEl.length > 0) {
 			
-			return {
-				getContent: function(){
-					if (svgEl[0].outerHTML) {
-						return svgEl[0].outerHTML;
-					} else {
-						//outerHTML not supported. use workaround
-						return $('<div>').append(svgEl.clone()).html();
-					}
-				},
-				filename: "queryResults.svg",
-				contentType: "image/svg+xml",
-				buttonTitle: "Download SVG Image"
-			};
+				return {
+					getContent: function(){
+						if (svgEl[0].outerHTML) {
+							return svgEl[0].outerHTML;
+						} else {
+							//outerHTML not supported. use workaround
+							return $('<div>').append(svgEl.clone()).html();
+						}
+					},
+					filename: "queryResults.svg",
+					contentType: "image/svg+xml",
+					buttonTitle: "Download SVG Image"
+				};
+			}
+			//ok, not a svg. is it a table?
+			var $table = yasr.resultsContainer.find('.google-visualization-table-table');
+			if ($table.length > 0) {
+				return {
+					getContent: function(){
+						return $table.tableToCsv();
+					},
+					filename: "queryResults.csv",
+					contentType: "text/csv",
+					buttonTitle: "Download as CSV"
+				};
+			} 
 		},
 		getEmbedHtml: function() {
 			if (!yasr.results) return null;
@@ -29363,7 +29560,7 @@ function deepEq$(x, y, type){
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./exceptions.js":71,"./gChartLoader.js":72,"./utils.js":85,"jquery":undefined,"yasgui-utils":63}],74:[function(require,module,exports){
+},{"./exceptions.js":71,"./gChartLoader.js":72,"./utils.js":87,"jquery":undefined,"yasgui-utils":63}],74:[function(require,module,exports){
 'use strict';
 module.exports = {
 	cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
@@ -29377,12 +29574,114 @@ module.exports = {
 	smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 };
 },{}],75:[function(require,module,exports){
+require('./tableToCsv.js');
+},{"./tableToCsv.js":76}],76:[function(require,module,exports){
+'use strict';
+var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
+
+
+$.fn.tableToCsv = function(config) {
+	var csvString = "";
+	config = $.extend({
+		quote: "\"",
+		delimiter: ",",
+		lineBreak: "\n",
+	}, config)
+	
+	
+	
+	
+	var needToQuoteString = function(value) {
+		//quote when it contains whitespace or the delimiter
+		var needQuoting = false;
+		if (value.match("[\\w|"+ config.delimiter + "|" + config.quote + "]")) {
+			needQuoting = true;
+		}
+		return needQuoting;
+	};
+	var addValueToString = function(value) {
+		//Quotes in the string need to be escaped
+		value.replace(config.quote, config.quote + config.quote);
+		if (needToQuoteString(value)) {
+			value = config.quote + value + config.quote;
+		}
+		csvString += " " + value + " " + config.delimiter;
+	};
+	
+	var addRowToString = function(rowArray) {
+		rowArray.forEach(function(val) {
+			addValueToString(val);
+		});
+		csvString += config.lineBreak;
+	}
+
+	var tableArrays = [];
+	var $el = $(this);
+	var rowSpans = {};
+	
+	
+	
+    var colCount = 0;
+    $el.find('tr:first *').each(function () {
+        if ($(this).attr('colspan')) {
+            colCount += +$(this).attr('colspan');
+        } else {
+            colCount++;
+        }
+    });
+	
+	$el.find('tr').each(function(rowId, tr) {
+		var $tr = $(tr);
+		var rowArray = []
+		
+		var skippedCols = 0;
+		for (var colId = 0; (colId + skippedCols) < colCount; colId++) {
+			
+			//for col Id, do we have a rowspan attr left? Then first add this one to rowArray
+			if (rowSpans[colId]) {
+				rowArray.push(rowSpans[colId].text);
+				rowSpans[colId].rowSpan--;
+				if (!rowSpans[colId].rowSpan) delete rowSpans[colId];
+				continue;
+			}
+			
+			var $cell = $tr.find(':nth-child(' + (colId+1) + ')');
+			console.log($cell);
+			
+			var colspan = $cell.attr('colspan');
+			var rowspan = $cell.attr('rowspan');
+			if (colspan && !isNaN(colspan)) {
+				for (var i = 0; i < colspan; i++) {
+					rowArray.push($cell.text());
+				}
+				skippedCols += (colspan -1);
+			} else if (rowspan && !isNaN(rowspan)) {
+				rowSpans[colId + skippedCols] = {
+					rowSpan: rowspan -1,
+					text: $cell.text()
+				}
+				rowArray.push($cell.text());
+				skippedCols++;
+			} else {
+				rowArray.push($cell.text());
+			}
+		}
+		addRowToString(rowArray);
+		
+		
+	})
+	
+	return csvString;
+}
+
+
+},{"jquery":undefined}],77:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 var utils = require("yasgui-utils");
 console = console || {"log":function(){}};//make sure any console statements don't break in IE
 
-
+require('./jquery/extendJquery.js');
 
 
 /**
@@ -29775,13 +30074,13 @@ try {root.registerOutput('table', require("./table.js"))} catch(e){};
 try {root.registerOutput('error', require("./error.js"))} catch(e){};
 try {root.registerOutput('pivot', require("./pivot.js"))} catch(e){};
 try {root.registerOutput('gchart', require("./gchart.js"))} catch(e){};
-},{"../package.json":66,"./boolean.js":68,"./defaults.js":69,"./error.js":70,"./gChartLoader.js":72,"./gchart.js":73,"./imgs.js":74,"./parsers/wrapper.js":80,"./pivot.js":82,"./rawResponse.js":83,"./table.js":84,"./utils.js":85,"jquery":undefined,"yasgui-utils":63}],76:[function(require,module,exports){
+},{"../package.json":66,"./boolean.js":68,"./defaults.js":69,"./error.js":70,"./gChartLoader.js":72,"./gchart.js":73,"./imgs.js":74,"./jquery/extendJquery.js":75,"./parsers/wrapper.js":82,"./pivot.js":84,"./rawResponse.js":85,"./table.js":86,"./utils.js":87,"jquery":undefined,"yasgui-utils":63}],78:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, ",");
 };
-},{"./dlv.js":77,"jquery":undefined}],77:[function(require,module,exports){
+},{"./dlv.js":79,"jquery":undefined}],79:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 require("../../lib/jquery.csv-0.71.js");
@@ -29843,7 +30142,7 @@ var root = module.exports = function(queryResponse, separator) {
 	
 	return json;
 };
-},{"../../lib/jquery.csv-0.71.js":45,"jquery":undefined}],78:[function(require,module,exports){
+},{"../../lib/jquery.csv-0.71.js":45,"jquery":undefined}],80:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 var root = module.exports = function(queryResponse) {
@@ -29861,13 +30160,13 @@ var root = module.exports = function(queryResponse) {
 	return false;
 	
 };
-},{"jquery":undefined}],79:[function(require,module,exports){
+},{"jquery":undefined}],81:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, "\t");
 };
-},{"./dlv.js":77,"jquery":undefined}],80:[function(require,module,exports){
+},{"./dlv.js":79,"jquery":undefined}],82:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 
@@ -30101,7 +30400,7 @@ var root = module.exports = function(dataOrJqXhr, textStatus, jqXhrOrErrorString
 
 
 
-},{"./csv.js":76,"./json.js":78,"./tsv.js":79,"./xml.js":81,"jquery":undefined}],81:[function(require,module,exports){
+},{"./csv.js":78,"./json.js":80,"./tsv.js":81,"./xml.js":83,"jquery":undefined}],83:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 var root = module.exports = function(xml) {
@@ -30187,7 +30486,7 @@ var root = module.exports = function(xml) {
 	return json;
 };
 
-},{"jquery":undefined}],82:[function(require,module,exports){
+},{"jquery":undefined}],84:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	utils = require('./utils.js'),
@@ -30375,22 +30674,37 @@ var root = module.exports = function(yasr) {
 	var getDownloadInfo =  function() {
 		if (!yasr.results) return null;
 		var svgEl = yasr.resultsContainer.find('.pvtRendererArea svg');
-		if (svgEl.length == 0) return null;
+		if (svgEl.length > 0) {
 		
-		return {
-			getContent: function(){
-				if (svgEl[0].outerHTML) {
-					return svgEl[0].outerHTML;
-				} else {
-					//outerHTML not supported. use workaround
-					return $('<div>').append(svgEl.clone()).html();
-				}
-			},
-			
-			filename: "queryResults.svg",
-			contentType: "image/svg+xml",
-			buttonTitle: "Download SVG Image"
-		};
+			return {
+				getContent: function(){
+					if (svgEl[0].outerHTML) {
+						return svgEl[0].outerHTML;
+					} else {
+						//outerHTML not supported. use workaround
+						return $('<div>').append(svgEl.clone()).html();
+					}
+				},
+				
+				filename: "queryResults.svg",
+				contentType: "image/svg+xml",
+				buttonTitle: "Download SVG Image"
+			};
+		} 
+		
+		//ok, not a svg. is it a table?
+		var $table = yasr.resultsContainer.find('.pvtRendererArea table');
+		if ($table.length > 0) {
+			return {
+				getContent: function(){
+					return $table.tableToCsv();
+				},
+				filename: "queryResults.csv",
+				contentType: "text/csv",
+				buttonTitle: "Download as CSV"
+			};
+		} 
+		
 	};
 	var getEmbedHtml = function() {
 		if (!yasr.results) return null;
@@ -30435,7 +30749,7 @@ root.version = {
 	"YASR-rawResponse" : require("../package.json").version,
 	"jquery": $.fn.jquery,
 };
-},{"../node_modules/pivottable/dist/d3_renderers.js":58,"../node_modules/pivottable/dist/gchart_renderers.js":59,"../package.json":66,"./gChartLoader.js":72,"./imgs.js":74,"./utils.js":85,"d3":53,"jquery":undefined,"jquery-ui/sortable":56,"pivottable":60,"yasgui-utils":63}],83:[function(require,module,exports){
+},{"../node_modules/pivottable/dist/d3_renderers.js":58,"../node_modules/pivottable/dist/gchart_renderers.js":59,"../package.json":66,"./gChartLoader.js":72,"./imgs.js":74,"./utils.js":87,"d3":53,"jquery":undefined,"jquery-ui/sortable":56,"pivottable":60,"yasgui-utils":63}],85:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	CodeMirror = (function(){try{return require('codemirror')}catch(e){return window.CodeMirror}})();
@@ -30524,7 +30838,7 @@ root.version = {
 	"jquery": $.fn.jquery,
 	"CodeMirror" : CodeMirror.version
 };
-},{"../package.json":66,"codemirror":undefined,"codemirror/addon/edit/matchbrackets.js":46,"codemirror/addon/fold/brace-fold.js":47,"codemirror/addon/fold/foldcode.js":48,"codemirror/addon/fold/foldgutter.js":49,"codemirror/addon/fold/xml-fold.js":50,"codemirror/mode/javascript/javascript.js":51,"codemirror/mode/xml/xml.js":52,"jquery":undefined}],84:[function(require,module,exports){
+},{"../package.json":66,"codemirror":undefined,"codemirror/addon/edit/matchbrackets.js":46,"codemirror/addon/fold/brace-fold.js":47,"codemirror/addon/fold/foldcode.js":48,"codemirror/addon/fold/foldgutter.js":49,"codemirror/addon/fold/xml-fold.js":50,"codemirror/mode/javascript/javascript.js":51,"codemirror/mode/xml/xml.js":52,"jquery":undefined}],86:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	yutils = require("yasgui-utils"),
@@ -30934,7 +31248,7 @@ root.version = {
 	"jquery-datatables": $.fn.DataTable.version
 };
 
-},{"../lib/colResizable-1.4.js":44,"../package.json":66,"./bindingsToCsv.js":67,"./imgs.js":74,"./utils.js":85,"datatables":undefined,"jquery":undefined,"yasgui-utils":63}],85:[function(require,module,exports){
+},{"../lib/colResizable-1.4.js":44,"../package.json":66,"./bindingsToCsv.js":67,"./imgs.js":74,"./utils.js":87,"datatables":undefined,"jquery":undefined,"yasgui-utils":63}],87:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	GoogleTypeException = require('./exceptions.js').GoogleTypeException;
@@ -31073,7 +31387,7 @@ var parseXmlSchemaDate = function(dateString) {
 	if (isNaN(date)) return null;
 	return date;
 };
-},{"./exceptions.js":71,"jquery":undefined}],86:[function(require,module,exports){
+},{"./exceptions.js":71,"jquery":undefined}],88:[function(require,module,exports){
 'use strict';
 
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
@@ -31090,7 +31404,7 @@ module.exports = {
 		askConsent: true,
 	}
 };
-},{"jquery":undefined}],87:[function(require,module,exports){
+},{"jquery":undefined}],89:[function(require,module,exports){
 'use strict';
 module.exports = {
 //	yasgui: '<svg   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" viewBox="0 0 603.99 522.51"  width="100%"   height="100%"   id="svg2"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="yasgui (copy).svg">  <defs     id="defs4">    <linearGradient       id="linearGradient5249"       osb:paint="solid">      <stop         style="stop-color:#3b3b3b;stop-opacity:1;"         offset="0"         id="stop5251" />    </linearGradient>    <inkscape:path-effect       effect="skeletal"       id="path-effect2997"       is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"       id="path-effect2995"       is_visible="true" />    <inkscape:path-effect       effect="skeletal"       id="path-effect2991"       is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"       id="path-effect2989"       is_visible="true" />  </defs>  <sodipodi:namedview     id="base"     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1.0"     inkscape:pageopacity="0.0"     inkscape:pageshadow="2"     inkscape:zoom="0.35"     inkscape:cx="-469.55507"     inkscape:cy="840.5292"     inkscape:document-units="px"     inkscape:current-layer="layer1"     showgrid="false"     inkscape:window-width="1855"     inkscape:window-height="1056"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0" />  <metadata     id="metadata7">    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />        <dc:title />      </cc:Work>    </rdf:RDF>  </metadata>  <g     inkscape:label="Layer 1"     inkscape:groupmode="layer"     id="layer1"     transform="translate(-50.966817,-280.33262)">    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"       id="rect5293-6-8"       width="40.000004"       height="478.57324"       x="-374.48849"       y="103.99496"       transform="matrix(-2.679181e-4,-0.99999996,0.99999993,-3.6684387e-4,0,0)" />    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"       id="rect5293-5-7"       width="40.000004"       height="560"       x="651.37634"       y="-132.06581"       transform="matrix(0.74639582,0.66550228,-0.66550228,0.74639582,0,0)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-9-7"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,92.132758,620.67568)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-3-0"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,457.84706,214.96137)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-1-2"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,-30.152972,219.81853)" />    <text       xml:space="preserve"       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#3b3b3b;fill-opacity:1;stroke:none;font-family:Sans"       x="-387.96655"       y="630.61871"       id="text5479-9-0-6-4"       sodipodi:linespacing="125%"       transform="matrix(0.68747304,-0.7262099,0.7262099,0.68747304,0,0)"       inkscape:transform-center-x="239.86342"       inkscape:transform-center-y="-26.958107"><tspan         sodipodi:role="line"         id="tspan5481-8-8-9-7"         x="-387.96655"         y="630.61871"         style="font-size:200px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;fill-opacity:1;font-family:RR Beaver;-inkscape-font-specification:RR Beaver">YAS</tspan></text>    <text       xml:space="preserve"       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Theorem NBP;-inkscape-font-specification:Theorem NBP"       x="349.24683"       y="750.29126"       id="text5483-4-3-2"       sodipodi:linespacing="125%"><tspan         sodipodi:role="line"         id="tspan5485-6-5-7"         x="349.24683"         y="750.29126"         style="font-size:170px;font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;letter-spacing:20px;fill:#c80000;fill-opacity:1;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic">GUI</tspan></text>    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-7-4-1-4"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.4331683,0,0,0.38716814,381.83246,155.72497)" />  </g></svg>',
@@ -31101,7 +31415,7 @@ module.exports = {
 	checkMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 48.269674 56.308594"   version="1.1"      inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="40.78518"     inkscape:cy="24.259259"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2" />  <g          transform="translate(-9.3300051,-18.878906)">    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"              inkscape:connector-curvature="0" />  </g></svg>',
 	checkCrossMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 49.752653 49.990111"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"     showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="41.024355"     inkscape:cy="53.698163"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2"      />  <g     transform="matrix(0.59034297,0,0,0.59034297,12.298561,2.5312719)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"       inkscape:connector-curvature="0"        />  </g>  <g     transform="matrix(0.46036177,0,0,0.46036177,-0.49935505,-12.592753)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 67.335938,21.40625 60.320312,11.0625 C 50.757812,17.542969 43.875,22.636719 38.28125,27.542969 32.691406,22.636719 25.808594,17.546875 16.242188,11.0625 L 9.230469,21.40625 C 18.03125,27.375 24.3125,31.953125 29.398438,36.351562 23.574219,42.90625 18.523438,50.332031 11.339844,61.183594 l 10.421875,6.902344 C 28.515625,57.886719 33.144531,51.046875 38.28125,45.160156 c 5.140625,5.886719 9.765625,12.726563 16.523438,22.925782 L 65.226562,61.183594 C 58.039062,50.335938 52.988281,42.90625 47.167969,36.351562 52.25,31.953125 58.53125,27.375 67.335938,21.40625 z m 0,0"       inkscape:connector-curvature="0"        />  </g></svg>',
 };
-},{}],88:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	selectize = require('selectize'),
@@ -31635,14 +31949,14 @@ var getCkanEndpoints = function() {
 };
 
 
-},{"jquery":undefined,"selectize":5,"yasgui-utils":9}],89:[function(require,module,exports){
+},{"jquery":undefined,"selectize":4,"yasgui-utils":9}],91:[function(require,module,exports){
 //extend jquery
 
 require('./outsideclick.js');
 require('./tab.js');
 require('./endpointCombi.js');
 
-},{"./endpointCombi.js":88,"./outsideclick.js":90,"./tab.js":91}],90:[function(require,module,exports){
+},{"./endpointCombi.js":90,"./outsideclick.js":92,"./tab.js":93}],92:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 
@@ -31674,7 +31988,7 @@ $.fn.onOutsideClick = function(onOutsideClick, config) {
 }
 
 
-},{"jquery":undefined}],91:[function(require,module,exports){
+},{"jquery":undefined}],93:[function(require,module,exports){
 //Based on Bootstrap: tab.js v3.3.1
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
   'use strict';
@@ -31820,7 +32134,7 @@ var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}}
     .on('click.bs.tab.data-api', '[data-toggle="pill"]', clickHandler)
 
 
-},{"jquery":undefined}],92:[function(require,module,exports){
+},{"jquery":undefined}],94:[function(require,module,exports){
 "use strict";
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	yUtils = require('yasgui-utils');
@@ -31889,7 +32203,7 @@ root.YASQE = require('./yasqe.js');
 root.YASR = require('./yasr.js');
 root.$ = $;
 root.defaults = require('./defaults.js');
-},{"./defaults.js":86,"./jquery/extendJquery.js":89,"./tabManager.js":95,"./tracker.js":97,"./yasqe.js":99,"./yasr.js":100,"jquery":undefined,"yasgui-utils":9}],93:[function(require,module,exports){
+},{"./defaults.js":88,"./jquery/extendJquery.js":91,"./tabManager.js":97,"./tracker.js":99,"./yasqe.js":101,"./yasr.js":102,"jquery":undefined,"yasgui-utils":9}],95:[function(require,module,exports){
 var getUrlParams = function(queryString) {
 	var params = [];
 	if (!queryString) queryString = window.location.search.substring(1);
@@ -31991,7 +32305,7 @@ module.exports = {
 		}
 	}
 }
-},{}],94:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	utils = require('./utils.js'),
@@ -32192,7 +32506,7 @@ module.exports = function(yasgui, id, name, endpoint) {
 
 
 
-},{"./main.js":92,"./shareLink":93,"./tabPaneMenu.js":96,"./utils.js":98,"jquery":undefined,"yasgui-utils":9}],95:[function(require,module,exports){
+},{"./main.js":94,"./shareLink":95,"./tabPaneMenu.js":98,"./utils.js":100,"jquery":undefined,"yasgui-utils":9}],97:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	utils = require('yasgui-utils'),
@@ -32475,7 +32789,7 @@ module.exports = function(yasgui) {
 };
 
 
-},{"./imgs.js":87,"./shareLink.js":93,"./tab.js":94,"jquery":undefined,"jquery-ui/position":3,"yasgui-utils":9}],96:[function(require,module,exports){
+},{"./imgs.js":89,"./shareLink.js":95,"./tab.js":96,"jquery":undefined,"jquery-ui/position":3,"yasgui-utils":9}],98:[function(require,module,exports){
 'use strict';
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	imgs = require('./imgs.js'),
@@ -32810,7 +33124,7 @@ module.exports = function(yasgui, tab) {
 };
 
 
-},{"./imgs.js":87,"jquery":undefined,"selectize":5,"yasgui-utils":9}],97:[function(require,module,exports){
+},{"./imgs.js":89,"jquery":undefined,"selectize":4,"yasgui-utils":9}],99:[function(require,module,exports){
 var yUtils = require('yasgui-utils'),
 	imgs = require('./imgs.js'),
 	$ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
@@ -32944,7 +33258,7 @@ module.exports = function(yasgui) {
 	}
 };
 
-},{"./imgs.js":87,"jquery":undefined,"yasgui-utils":9}],98:[function(require,module,exports){
+},{"./imgs.js":89,"jquery":undefined,"yasgui-utils":9}],100:[function(require,module,exports){
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 module.exports = {
 	escapeHtmlEntities : function(unescapedString) {
@@ -32962,7 +33276,7 @@ module.exports = {
 	},
 
 }
-},{"jquery":undefined}],99:[function(require,module,exports){
+},{"jquery":undefined}],101:[function(require,module,exports){
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})();
 var root = module.exports = require('yasgui-yasqe');
 
@@ -32976,12 +33290,12 @@ root.defaults = $.extend(true, root.defaults, {
 		acceptHeaderSelect: "application/sparql-results+json"
 	}
 });
-},{"jquery":undefined,"yasgui-yasqe":38}],100:[function(require,module,exports){
+},{"jquery":undefined,"yasgui-yasqe":38}],102:[function(require,module,exports){
 var $ = (function(){try{return require('jquery')}catch(e){return window.jQuery}})(),
 	YASGUI = require('./main.js');
 var root = module.exports = require('yasgui-yasr');
 
-},{"./main.js":92,"jquery":undefined,"yasgui-yasr":75}]},{},[1])(1)
+},{"./main.js":94,"jquery":undefined,"yasgui-yasr":77}]},{},[1])(1)
 });
 
 
