@@ -191,7 +191,11 @@ module.exports = function(yasgui) {
 		var newItem = !tabId;
 		if (!tabId) tabId = getRandomId();
 		if (!('tabs' in persistentOptions)) persistentOptions.tabs = {};
-		var name = (persistentOptions.tabs[tabId]? persistentOptions.tabs[tabId].name: getName());
+		var name = null;
+		if (persistentOptions.tabs[tabId] && persistentOptions.tabs[tabId].name) {
+			name = persistentOptions.tabs[tabId].name
+		}
+		if (!name) name = getName();
 		
 		
 		//Initialize new tab with endpoint from currently selected tab (if there is one)
