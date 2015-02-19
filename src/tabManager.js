@@ -120,11 +120,19 @@ module.exports = function(yasgui) {
 				$listItem.addClass('divider');
 			}
 		};
+		addMenuItem('Add new Tab', function(tabId) {
+			addTab();
+		});
 		addMenuItem('Rename', function(tabId) {
 			$tabsParent.find('a[href="#' +tabId+ '"]').dblclick();
 		});
 		addMenuItem('Copy', function(tabId){
-			console.log('todo');
+			var newTabId = getRandomId();
+			var copiedSettings = $.extend(true, {}, persistentOptions.tabs[tabId]);
+			copiedSettings.id = newTabId;
+			persistentOptions.tabs[newTabId] = copiedSettings;
+			addTab(newTabId);
+			selectTab(newTabId);
 		});
 		addMenuItem();
 		addMenuItem('Close', closeTab);
