@@ -67910,23 +67910,31 @@ module.exports = function(yasgui, id, name, endpoint) {
 	}
 	$.extend(yasqeOptions, persistentOptions.yasqe);
 	
-	var initYasqeAndYasr = function() {
-		if (!tab.yasqe || !tab.yasr) {
+	var initYasr = function() {
+		if (!tab.yasr) {
+			if (!tab.yasqe) initYasqe();//we need this one to initialize yasr
 			var getQueryString = function() {
 				return persistentOptions.yasqe.sparql.endpoint + "?" +
 					$.param(tab.yasqe.getUrlArguments(persistentOptions.yasqe.sparql));
 			};
 			YASGUI.YASR.plugins.error.defaults.tryQueryLink = getQueryString;
+			tab.yasr = YASGUI.YASR(yasrContainer[0], $.extend({
+				//this way, the URLs in the results are prettified using the defined prefixes in the query
+				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
+			}, persistentOptions.yasr));
+			
+		}
+	};
+	
+	
+	var initYasqe = function() {
+		if (!tab.yasqe) {
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.setSize("100%", persistentOptions.yasqe.height);
 			tab.yasqe.on('blur', function(yasqe) {
 				persistentOptions.yasqe.value = yasqe.getValue();
 				yasgui.store();
 			});
-			tab.yasr = YASGUI.YASR(yasrContainer[0], $.extend({
-				//this way, the URLs in the results are prettified using the defined prefixes in the query
-				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
-			}, persistentOptions.yasr));
 			var beforeSend = null;
 			tab.yasqe.options.sparql.callbacks.beforeSend = function() {
 				beforeSend = +new Date();
@@ -67958,18 +67966,19 @@ module.exports = function(yasgui, id, name, endpoint) {
 			
 
 			
-			addControlBar();
+			
 		}
 	};
 	tab.onShow = function() {
-		initYasqeAndYasr();
+		initYasqe();
 		tab.yasqe.refresh();
+		initYasr();
+		addControlBar();
+		
 		$(tab.yasqe.getWrapperElement()).resizable({
 			minHeight: 200,
 			handles: 's',
-//			ghost:true,
 			resize : function() {
-				
 				_.debounce(function() {
 					tab.yasqe.setSize("100%", $(this).height());
 					tab.yasqe.refresh()
@@ -67984,7 +67993,7 @@ module.exports = function(yasgui, id, name, endpoint) {
 	};
 	
 	tab.beforeShow = function() {
-		initYasqeAndYasr();
+		initYasqe();
 	}
 	tab.refreshYasqe = function() {
 		$.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
