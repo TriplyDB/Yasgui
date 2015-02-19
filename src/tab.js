@@ -123,7 +123,7 @@ module.exports = function(yasgui, id, name, endpoint) {
 	}
 	$.extend(yasqeOptions, persistentOptions.yasqe);
 	
-	tab.onShow = function() {
+	var initYasqeAndYasr = function() {
 		if (!tab.yasqe || !tab.yasr) {
 			var getQueryString = function() {
 				return persistentOptions.yasqe.sparql.endpoint + "?" +
@@ -170,6 +170,14 @@ module.exports = function(yasgui, id, name, endpoint) {
 			addControlBar();
 		}
 	};
+	tab.onShow = function() {
+		initYasqeAndYasr();
+		tab.yasqe.refresh();
+	};
+	
+	tab.beforeShow = function() {
+		initYasqeAndYasr();
+	}
 	tab.refreshYasqe = function() {
 		$.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
 		if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);

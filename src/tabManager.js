@@ -55,7 +55,9 @@ module.exports = function(yasgui) {
 		
 		//init add button
 		var $addTab= $('<a>', {role: 'addTab'})
-			.click(function(){addTab()})
+			.click(function(e){ 
+				addTab();
+			})
 			.text('+');
 		$tabsParent.append(
 				$("<li>", {role: "presentation"})
@@ -280,6 +282,7 @@ module.exports = function(yasgui) {
 		if (newItem) persistentOptions.tabOrder.push(tabId);
 		manager.tabs[tabId] = require('./tab.js')(yasgui, tabId, name, endpoint);
 		if (newItem || persistentOptions.selected == tabId) {
+			manager.tabs[tabId].beforeShow();
 			$tabToggle.tab('show');
 		}
 		return manager.tabs[tabId];
@@ -288,6 +291,7 @@ module.exports = function(yasgui) {
 	manager.current = function() {
 		return manager.tabs[persistentOptions.selected];
 	}
+	manager.addTab = addTab;
 	return manager;
 };
 
