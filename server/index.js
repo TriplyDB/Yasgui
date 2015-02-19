@@ -35,13 +35,12 @@ app.use('/doc/', serveStatic(__dirname + '/../doc/'))
 //the URLs for the API
 app.use('/proxy/', urlencodedParser, require('./corsProxy.js'));
 
-//Use this catch-all: always render YASGUI
 app.use('/server.html.manifest', function(req,res) {
 	res.sendFile('server.html.manifest', {root: __dirname + '/../'});
 });
 
-//Use this catch-all: always render YASGUI
-app.use('/', function(req,res) {
+//Finally, just render yasgui
+app.use(/^\/$/, function(req,res, next) {
 	res.sendFile('server.html', {root: __dirname + '/../'});
 });
 
