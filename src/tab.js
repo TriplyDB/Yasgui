@@ -2,11 +2,13 @@
 var $ = require('jquery'),
 	utils = require('./utils.js'),
 	yUtils = require('yasgui-utils'),
+	_ = require('underscore'),
 	YASGUI = require('./main.js');
 //we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 //We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
 var defaultPersistent = {
 	yasqe: {
+		height: 300,
 		sparql: {
 			endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
 			acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
@@ -131,6 +133,7 @@ module.exports = function(yasgui, id, name, endpoint) {
 			};
 			YASGUI.YASR.plugins.error.defaults.tryQueryLink = getQueryString;
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
+			tab.yasqe.setSize("100%", persistentOptions.yasqe.height);
 			tab.yasqe.on('blur', function(yasqe) {
 				persistentOptions.yasqe.value = yasqe.getValue();
 				yasgui.store();
@@ -167,12 +170,32 @@ module.exports = function(yasgui, id, name, endpoint) {
 					YASGUI.YASQE.executeQuery(tab.yasqe);
 				}
 			};
+			
+
+			
 			addControlBar();
 		}
 	};
 	tab.onShow = function() {
 		initYasqeAndYasr();
 		tab.yasqe.refresh();
+		$(tab.yasqe.getWrapperElement()).resizable({
+			minHeight: 200,
+			handles: 's',
+//			ghost:true,
+			resize : function() {
+				
+				_.debounce(function() {
+					tab.yasqe.setSize("100%", $(this).height());
+					tab.yasqe.refresh()
+				}, 500);
+			},
+			stop: function() {
+				persistentOptions.yasqe.height = $(this).height();
+				tab.yasqe.refresh()
+				yasgui.store();
+			}
+		});
 	};
 	
 	tab.beforeShow = function() {
