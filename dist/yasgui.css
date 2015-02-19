@@ -31,6 +31,14 @@
   @-ms-viewport {
     width: device-width; }
 
+  /*!
+ * jQuery UI Resizable 1.10.4
+ * http://jqueryui.com
+ *
+ * Copyright 2014 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
   /**Disable webkit perspective for now (disappointing, because it improves the transition a lot..)
 This perspective messes up the full screen capabilities of YASR/YASQE, and positioning of e.g. selectboxes
 **/
@@ -4183,8 +4191,66 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   @media print {
     .yasgui .hidden-print {
       display: none !important; } }
+  .yasgui .ui-resizable {
+    position: relative; }
+  .yasgui .ui-resizable-handle {
+    position: absolute;
+    font-size: 0.1px;
+    display: block; }
+  .yasgui .ui-resizable-disabled .ui-resizable-handle, .yasgui .ui-resizable-autohide .ui-resizable-handle {
+    display: none; }
+  .yasgui .ui-resizable-n {
+    cursor: n-resize;
+    height: 7px;
+    width: 100%;
+    top: -5px;
+    left: 0; }
+  .yasgui .ui-resizable-s {
+    cursor: s-resize;
+    height: 7px;
+    width: 100%;
+    bottom: -5px;
+    left: 0; }
+  .yasgui .ui-resizable-e {
+    cursor: e-resize;
+    width: 7px;
+    right: -5px;
+    top: 0;
+    height: 100%; }
+  .yasgui .ui-resizable-w {
+    cursor: w-resize;
+    width: 7px;
+    left: -5px;
+    top: 0;
+    height: 100%; }
+  .yasgui .ui-resizable-se {
+    cursor: se-resize;
+    width: 12px;
+    height: 12px;
+    right: 1px;
+    bottom: 1px; }
+  .yasgui .ui-resizable-sw {
+    cursor: sw-resize;
+    width: 9px;
+    height: 9px;
+    left: -5px;
+    bottom: -5px; }
+  .yasgui .ui-resizable-nw {
+    cursor: nw-resize;
+    width: 9px;
+    height: 9px;
+    left: -5px;
+    top: -5px; }
+  .yasgui .ui-resizable-ne {
+    cursor: ne-resize;
+    width: 9px;
+    height: 9px;
+    right: -5px;
+    top: -5px; }
   .yasgui .yasqe .CodeMirror {
-    border-color: #ddd; }
+    border-color: #ddd;
+    border-bottom-width: 4px;
+    border-bottom-color: #B6B6B6; }
   .yasgui .yasr .CodeMirror {
     border-color: #ddd; }
   .yasgui .nav-tabs li.tab-sortable-highlight {
@@ -4349,6 +4415,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       vertical-align: middle;
       padding-left: 10px;
       padding-right: 10px;
+      margin-bottom: 5px;
       height: 34px; }
       .yasgui .controlbar .menuButton:focus {
         outline: none;
@@ -4944,6 +5011,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     border-radius: 0; }
 
 .yasqe {
+  position: relative;
   /* BASICS */
   /* PADDING */
   /* GUTTER */
@@ -5353,6 +5421,17 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 
 .yasqe .CodeMirror-foldgutter-folded:after {
   content: "\25B8"; }
+
+.yasqe .backdrop {
+  background-color: #000;
+  opacity: 0.5;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  z-index: 5;
+  display: none; }
 
 .yasqe .svgImg {
   display: inline-block; }
