@@ -2,6 +2,8 @@ CACHE MANIFEST
 
 
 CACHE:
+dist/yasgui.min.css
+./dist/yasgui/bundled.min.js
 yasgui.min.css
 yasgui.bundled.min.js
 
@@ -9,4 +11,4 @@ yasgui.bundled.min.js
 NETWORK:
 *
 
-# hash: 2080821d476168ea0e4c84edab0a173f1be7642e0ab279a9bb76b4871fd9ccf2
+# hash: 73afb0dff68d934bec935d0df7da2fab3c00bae92fc58b6b16c4c8608a3652b5

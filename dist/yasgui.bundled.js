@@ -67929,6 +67929,7 @@ module.exports = function(yasgui, id, name, endpoint) {
 	
 	var initYasqe = function() {
 		if (!tab.yasqe) {
+      addControlBar();
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.setSize("100%", persistentOptions.yasqe.height);
 			tab.yasqe.on('blur', function(yasqe) {
@@ -67973,7 +67974,6 @@ module.exports = function(yasgui, id, name, endpoint) {
 		initYasqe();
 		tab.yasqe.refresh();
 		initYasr();
-		addControlBar();
 		
 		$(tab.yasqe.getWrapperElement()).resizable({
 			minHeight: 200,
@@ -67996,8 +67996,10 @@ module.exports = function(yasgui, id, name, endpoint) {
 		initYasqe();
 	}
 	tab.refreshYasqe = function() {
-		$.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
-		if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
+    if (tab.yasqe) {
+      $.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
+      if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
+    }
 	};
 	tab.destroy = function() {
 		if (!tab.yasr) {
