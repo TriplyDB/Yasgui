@@ -145,6 +145,8 @@ module.exports = function(yasgui, id, name, endpoint) {
 	var initYasqe = function() {
 		if (!tab.yasqe) {
       addControlBar();
+      		YASGUI.YASQE.defaults.extraKeys['Ctrl-Space'] = function(){tab.yasqe.query.apply(this, arguments)};
+      		YASGUI.YASQE.defaults.extraKeys['Cmd-Space'] = function(){tab.yasqe.query.apply(this, arguments)};
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.setSize("100%", persistentOptions.yasqe.height);
 			tab.yasqe.on('blur', function(yasqe) {
