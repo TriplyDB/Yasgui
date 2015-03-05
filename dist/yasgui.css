@@ -6809,6 +6809,9 @@ li.CodeMirror-hint-active {
   width: auto;
   margin: inherit; }
 
+.modal-dialog.google-visualization-charteditor-dialog .charts-flat-menu-button {
+  box-sizing: content-box; }
+
 div.modal-dialog.google-visualization-charteditor-dialog {
   z-index: 100; }
 
