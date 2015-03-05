@@ -23,8 +23,10 @@ var getUrlParams = function(queryString) {
 module.exports = {
 	getCreateLinkHandler: function(tab) {
 		return function() {
+			/**
+			 * First set YASQE settings
+			 */
 			var params = [
-				{name: 'outputFormat', value: tab.yasr.options.output},
 				{name: 'query', value: tab.yasqe.getValue()},
 				{name: 'contentTypeConstruct', value: tab.persistentOptions.yasqe.sparql.acceptHeaderGraph},
 				{name: 'contentTypeSelect', value: tab.persistentOptions.yasqe.sparql.acceptHeaderSelect},
@@ -42,6 +44,18 @@ module.exports = {
 			tab.persistentOptions.yasqe.sparql.defaultGraphs.forEach(function(dg){
 				params.push({name: 'defaultGraph', value: dg});
 			});
+			
+			/**
+			 * Now set YASR settings
+			 */
+			params.push({name: 'outputFormat', value: tab.yasr.options.output});
+			if (tab.yasr.plugins[tab.yasr.options.output].getPersistentSettings) {
+				var persistentPluginSettings = tab.yasr.plugins[tab.yasr.options.output].getPersistentSettings();
+				if (typeof persistentPluginSettings == "object") {
+					persistentPluginSettings = JSON.stringify(persistentPluginSettings);
+				}
+				params.push({name: 'outputSettings', value: persistentPluginSettings});
+			}
 			
 			//extend existing link, so first fetch current arguments. But: make sure we don't include items already used in share link
 			var keys = [];
