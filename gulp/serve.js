@@ -13,12 +13,11 @@ gulp.task('watch', function() {
 	, function(files) {
 		gulp.src(files.path).pipe(connect.reload());
 	});
-//	gulp.watch(["./server/*"], [server.run])
 });
 
 gulp.task('connect', function() {
 	connect.server({
-		root: ["./", './server'],
+		root: [__dirname + '/../', __dirname + '/../server'],
 		port : 4000,
 		livereload: true
 	});

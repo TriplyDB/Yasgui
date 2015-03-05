@@ -25,7 +25,7 @@ gulp.task('publish', function (done) {
 });
 
 gulp.task('push', function (done) {
-  git.push('origin', 'gh-pages', function (err) {
+  git.push('origin', 'gh-pages', {args: " --tags"}, function (err) {
     if (err) throw err;
   });
 });
@@ -47,6 +47,8 @@ gulp.task('buildManifest', function(){
   gulp.src(['./dist/yasgui.min.css', './dist/yasgui.bundled.min.js'])
     .pipe(manifest({
       hash: true,
+      cache: ['dist/yasgui.min.css','./dist/yasgui/bundled.min.js'],
+      
       filename: manifestFile,
      }))
     .pipe(gulp.dest('./'));
