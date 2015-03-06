@@ -39,7 +39,8 @@ $(document).ready(function() {
 			}
 		}).fail(function() {
 			console.log("failed accessing jsdelivr api");
-			$("#cdnDownload").hide();
+			$("#cdnDownloads").hide();
+			$("#releases").hide();
 		});
 	}
 	var gistContainer = $("#gistContainer");
