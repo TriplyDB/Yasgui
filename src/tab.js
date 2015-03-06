@@ -1,5 +1,12 @@
 'use strict';
+
+//		mod.emit('initError')
+//		mod.once('initDone', load);
+
+
+
 var $ = require('jquery'),
+	EventEmitter = require('events').EventEmitter,
 	utils = require('./utils.js'),
 	yUtils = require('yasgui-utils'),
 	_ = require('underscore'),
@@ -24,6 +31,11 @@ var defaultPersistent = {
 
 
 module.exports = function(yasgui, id, name, endpoint) {
+	return new Tab(yasgui, id, name, endpoint);
+}
+var Tab = function(yasgui, id, name, endpoint) {
+	EventEmitter.call(this);
+	
 	if (!yasgui.persistentOptions.tabs[id]) {
 		yasgui.persistentOptions.tabs[id] = $.extend(true, {
 			id: id,
@@ -34,9 +46,8 @@ module.exports = function(yasgui, id, name, endpoint) {
 	}
 	var persistentOptions = yasgui.persistentOptions.tabs[id];
 	if (endpoint) persistentOptions.yasqe.sparql.endpoint = endpoint;
-	var tab = {
-		persistentOptions: persistentOptions
-	};
+	var tab = this;
+	tab.persistentOptions = persistentOptions;
 	
 	var menu = require('./tabPaneMenu.js')(yasgui, tab);
 	var $pane = $('<div>', {id:persistentOptions.id, style: 'position:relative', class: 'tab-pane', role: 'tabpanel'}).appendTo(yasgui.$tabPanesParent);
@@ -137,14 +148,14 @@ module.exports = function(yasgui, id, name, endpoint) {
 				//this way, the URLs in the results are prettified using the defined prefixes in the query
 				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
 			}, persistentOptions.yasr));
-			
 		}
+		
 	};
 	
 	
 	var initYasqe = function() {
 		if (!tab.yasqe) {
-      addControlBar();
+			addControlBar();
       		YASGUI.YASQE.defaults.extraKeys['Ctrl-Space'] = function(){tab.yasqe.query.apply(this, arguments)};
       		YASGUI.YASQE.defaults.extraKeys['Cmd-Space'] = function(){tab.yasqe.query.apply(this, arguments)};
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
@@ -183,7 +194,6 @@ module.exports = function(yasgui, id, name, endpoint) {
 			};
 			
 
-			
 			
 		}
 	};
@@ -239,5 +249,5 @@ module.exports = function(yasgui, id, name, endpoint) {
 	return tab;
 }
 
-
+Tab.prototype = new EventEmitter;
 
