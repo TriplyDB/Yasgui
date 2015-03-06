@@ -2,10 +2,8 @@ CACHE MANIFEST
 
 
 CACHE:
-./dist/yasgui.min.css
-./dist/yasgui.min.js
-yasgui.min.css
-yasgui.min.js
+dist/yasgui.min.css
+dist/yasgui.min.js
 
 
 NETWORK:

@@ -43,7 +43,7 @@
     "brfs": "^1.2.0",
     "connect": "^3.3.4",
     "gulp-nodemon": "^1.0.5",
-    "gulp-manifest": "0.0.6"
+    "gulp-manifest": "git://github.com/scrollback/gulp-manifest#basePath"
   },
   "bugs": "https://github.com/YASGUI/YASGUI/issues/",
   "keywords": [

@@ -44,12 +44,13 @@ gulp.task('tag', function() {
 	.pipe(tag_version());
 });
 gulp.task('buildManifest', function(){
-  gulp.src(['./dist/yasgui.min.css', './dist/yasgui.min.js'])
+  gulp.src(['./dist/yasgui.min.css', './dist/yasgui.min.js'], {cwd: __dirname + '/../'})
     .pipe(manifest({
       hash: true,
-      cache: ['./dist/yasgui.min.css','./dist/yasgui.min.js'],
-      
+      timestamp: false,
+//      cache: ['./dist/yasgui.min.css','./dist/yasgui.min.js'],
       filename: manifestFile,
+      basePath: './dist'
      }))
     .pipe(gulp.dest('./'));
 });
