@@ -132,6 +132,9 @@ var YASGUI = function(parent, options) {
 			persistentOptions.tabs[tabId] = optionsFromUrl;
 			persistentOptions.tabOrder.push(tabId);
 			persistentOptions.selected = tabId;
+			yasgui.once('ready', function() {
+				yasgui.current().query();
+			})
 		}
 		
 		if (persistentOptions.tabOrder.length > 0) {

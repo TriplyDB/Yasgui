@@ -151,7 +151,9 @@ var Tab = function(yasgui, id, name, endpoint) {
 		}
 		
 	};
-	
+	tab.query = function() {
+		tab.yasqe.query();
+	};
 	
 	var initYasqe = function() {
 		if (!tab.yasqe) {
