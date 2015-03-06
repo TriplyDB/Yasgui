@@ -1,5 +1,6 @@
 "use strict";
 var $ = require('jquery'),
+	EventEmitter = require('events').EventEmitter,
 	imgs = require('./imgs.js'),
 	utils = require('yasgui-utils');
 require('./jquery/extendJquery.js');//extend some own jquery plugins
@@ -14,7 +15,7 @@ var setYasrOptions = function(options) {
 		//We have a proxy. only possible reason CORS is still an issue, is when endpoints runs on localhost, different port, and cors enabled
 		corsLiHtml = 'Endpoint is not accessible from the YASGUI server and website, and the endpoint is not <a href="http://enable-cors.org/" target="_blank">CORS-enabled</a>';
 	}	
-	YASGUI.YASR.plugins.error.defaults.corsMessage =  $('<div>')
+	module.exports.YASR.plugins.error.defaults.corsMessage =  $('<div>')
 		.append($('<p>').append('Unable to get response from endpoint. Possible reasons:'))
 		.append($('<ul>')
 			.append($('<li>').text('Incorrect endpoint URL'))
@@ -23,11 +24,11 @@ var setYasrOptions = function(options) {
 		);
 
 }
-
-var root = module.exports = function(parent, options) {
-	var yasgui = {};
+var YASGUI = function(parent, options) {
+	EventEmitter.call(this);
+	var yasgui = this;
 	yasgui.wrapperElement = $('<div class="yasgui"></div>').appendTo($(parent));
-	yasgui.options = $.extend(true, {}, root.defaults, options);
+	yasgui.options = $.extend(true, {}, module.exports.defaults, options);
 	setYasrOptions(yasgui.options);
 	yasgui.history = [];
 	
@@ -336,6 +337,7 @@ var root = module.exports = function(parent, options) {
 		}
 		return yasgui.tabs[tabId];
 	};
+
 	
 	yasgui.current = function() {
 		return yasgui.tabs[persistentOptions.selected];
@@ -345,13 +347,17 @@ var root = module.exports = function(parent, options) {
 	yasgui.init();
 	
 	yasgui.tracker = require('./tracker.js')(yasgui);
+	
+	yasgui.emit('ready');
 	return yasgui;
 };
+YASGUI.prototype = new EventEmitter;
 
+module.exports = function(parent, options) {
+	return new YASGUI(parent, options);
+}
 
-
-
-root.YASQE = require('./yasqe.js');
-root.YASR = require('./yasr.js');
-root.$ = $;
-root.defaults = require('./defaults.js');
+module.exports.YASQE = require('./yasqe.js');
+module.exports.YASR = require('./yasr.js');
+module.exports.$ = $;
+module.exports.defaults = require('./defaults.js');
