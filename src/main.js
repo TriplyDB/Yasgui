@@ -133,6 +133,14 @@ var YASGUI = function(parent, options) {
 			persistentOptions.tabOrder.push(tabId);
 			persistentOptions.selected = tabId;
 			yasgui.once('ready', function() {
+				if (persistentOptions.tabs[tabId].yasr.outputSettings) {
+					var plugin = yasgui.current().yasr.plugins[persistentOptions.tabs[tabId].yasr.output];
+					if (plugin.options) {
+						$.extend(plugin.options, persistentOptions.tabs[tabId].yasr.outputSettings);
+					}
+					delete persistentOptions.tabs[tabId]['yasr']['outputSettings'];
+				}
+
 				yasgui.current().query();
 			})
 		}
