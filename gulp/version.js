@@ -44,10 +44,10 @@ gulp.task('tag', function() {
 	.pipe(tag_version());
 });
 gulp.task('buildManifest', function(){
-  gulp.src(['./dist/yasgui.min.css', './dist/yasgui.bundled.min.js'])
+  gulp.src(['./dist/yasgui.min.css', './dist/yasgui.min.js'])
     .pipe(manifest({
       hash: true,
-      cache: ['dist/yasgui.min.css','./dist/yasgui/bundled.min.js'],
+      cache: ['./dist/yasgui.min.css','./dist/yasgui.min.js'],
       
       filename: manifestFile,
      }))
