@@ -234,11 +234,11 @@ var Tab = function(yasgui, id, name, endpoint) {
 		if (!tab.yasr) {
 			//instantiate yasr (without rendering results, to avoid load)
 			//this way, we can clear the yasr persistent results
-			tab.yasr = YASGUI.YASR(yasrContainer[0], {}, '');
+			tab.yasr = YASGUI.YASR(yasrContainer[0], {outputPlugins: []}, '');
 		}
-		yUtils.storage.remove(tab.yasr.getPersistencyId(tab.yasr.options.persistency.results.key));
-		
-		
+		yUtils.storage.removeAll(function(key, val) {
+			return key.indexOf(tab.yasr.getPersistencyId('')) == 0;
+		})
 	}
 	tab.getEndpoint = function() {
 		var endpoint = null;
