@@ -24,22 +24,22 @@ var defaultPersistent = {
 
 
 module.exports = function(yasgui, id, name, endpoint) {
-	if (!yasgui.persistentOptions.tabManager.tabs[id]) {
-		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {
+	if (!yasgui.persistentOptions.tabs[id]) {
+		yasgui.persistentOptions.tabs[id] = $.extend(true, {
 			id: id,
 			name: name
 		}, defaultPersistent);
 	} else {
-		yasgui.persistentOptions.tabManager.tabs[id] = $.extend(true, {}, defaultPersistent, yasgui.persistentOptions.tabManager.tabs[id]);
+		yasgui.persistentOptions.tabs[id] = $.extend(true, {}, defaultPersistent, yasgui.persistentOptions.tabs[id]);
 	}
-	var persistentOptions = yasgui.persistentOptions.tabManager.tabs[id];
+	var persistentOptions = yasgui.persistentOptions.tabs[id];
 	if (endpoint) persistentOptions.yasqe.sparql.endpoint = endpoint;
 	var tab = {
 		persistentOptions: persistentOptions
 	};
 	
 	var menu = require('./tabPaneMenu.js')(yasgui, tab);
-	var $pane = $('<div>', {id:persistentOptions.id, style: 'position:relative', class: 'tab-pane', role: 'tabpanel'}).appendTo(yasgui.tabManager.$tabPanesParent);
+	var $pane = $('<div>', {id:persistentOptions.id, style: 'position:relative', class: 'tab-pane', role: 'tabpanel'}).appendTo(yasgui.$tabPanesParent);
 	
 	var $paneContent = $('<div>', {class:'wrapper'}).appendTo($pane);
 	var $controlBar = $('<div>', {class: 'controlbar'}).appendTo($paneContent);

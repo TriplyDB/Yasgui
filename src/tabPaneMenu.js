@@ -256,7 +256,7 @@ module.exports = function(yasgui, tab) {
 						.text(text)
 						.click(function(e) {
 							//update tab
-							var tab = yasgui.tabManager.tabs[histObject.options.id];
+							var tab = yasgui.tabs[histObject.options.id];
 							$.extend(true, tab.persistentOptions, histObject.options);
 							tab.refreshYasqe();
 							
