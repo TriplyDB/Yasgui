@@ -42,9 +42,6 @@ $.fn.endpointCombi = function(yasgui, options) {
 			$.ajax({
 				url: endpoint, 
 				data: {query: 'ASK {?x ?y ?z}'}, 
-        xhrFields: {
-            withCredentials: true
-        },
 				complete: function(jqXHR){
 					yasgui.corsEnabled[endpoint] = jqXHR.status > 0;
 				}
