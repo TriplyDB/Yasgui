@@ -66963,9 +66963,6 @@ $.fn.endpointCombi = function(yasgui, options) {
 			$.ajax({
 				url: endpoint, 
 				data: {query: 'ASK {?x ?y ?z}'}, 
-        xhrFields: {
-            withCredentials: true
-        },
 				complete: function(jqXHR){
 					yasgui.corsEnabled[endpoint] = jqXHR.status > 0;
 				}
@@ -68329,27 +68326,20 @@ var Tab = function(yasgui, id, name, endpoint) {
 			}
 			
 			tab.yasqe.query = function() {
-        var options = {
-          xhrFields: {
-            withCredentials: true
-          }
-        }
-        options = $.extend(true, options, tab.yasqe.options.sparql);
-        
 				if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
 					if (!yasgui.corsEnabled[persistentOptions.yasqe.sparql.endpoint]) {
 						//use the proxy //name value
-						
+						var options = $.extend(true, {}, tab.yasqe.options.sparql);
 						options.args.push({name: 'endpoint', value: options.endpoint});
 						options.args.push({name: 'requestMethod', value: options.requestMethod});
 						options.requestMethod = "POST";
 						options.endpoint = yasgui.options.api.corsProxy;
 						YASGUI.YASQE.executeQuery(tab.yasqe, options);
 					} else {
-						YASGUI.YASQE.executeQuery(tab.yasqe, options);
+						YASGUI.YASQE.executeQuery(tab.yasqe);
 					}
 				} else {
-					YASGUI.YASQE.executeQuery(tab.yasqe, options);
+					YASGUI.YASQE.executeQuery(tab.yasqe);
 				}
 			};
 			
