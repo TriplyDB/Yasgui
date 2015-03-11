@@ -112,13 +112,13 @@ module.exports = {
 			} else if (paramPair.name == 'tabTitle') {
 				options.name = paramPair.value;
 			} else if (paramPair.name == 'namedGraph') {
-				if (!options.yasqe.namedGraphs) options.yasqe.namedGraphs = [];
+				if (!options.yasqe.sparql.namedGraphs) options.yasqe.sparql.namedGraphs = [];
 				options.yasqe.sparql.namedGraphs.push(paramPair);
 			} else if (paramPair.name == 'defaultGraph') {
-				if (!options.yasqe.defaultGraphs) options.yasqe.defaultGraphs = [];
+				if (!options.yasqe.sparql.defaultGraphs) options.yasqe.sparql.defaultGraphs = [];
 				options.yasqe.sparql.defaultGraphs.push(paramPair);
 			} else {
-				if (!options.yasqe.args) options.yasqe.args = [];
+				if (!options.yasqe.sparql.args) options.yasqe.sparql.args = [];
 				//regular arguments. So store them as regular arguments
 				options.yasqe.sparql.args.push(paramPair);
 			}
