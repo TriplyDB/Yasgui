@@ -113,10 +113,10 @@ module.exports = {
 				options.name = paramPair.value;
 			} else if (paramPair.name == 'namedGraph') {
 				if (!options.yasqe.sparql.namedGraphs) options.yasqe.sparql.namedGraphs = [];
-				options.yasqe.sparql.namedGraphs.push(paramPair);
+				options.yasqe.sparql.namedGraphs.push(paramPair.value);
 			} else if (paramPair.name == 'defaultGraph') {
 				if (!options.yasqe.sparql.defaultGraphs) options.yasqe.sparql.defaultGraphs = [];
-				options.yasqe.sparql.defaultGraphs.push(paramPair);
+				options.yasqe.sparql.defaultGraphs.push(paramPair.value);
 			} else {
 				if (!options.yasqe.sparql.args) options.yasqe.sparql.args = [];
 				//regular arguments. So store them as regular arguments
