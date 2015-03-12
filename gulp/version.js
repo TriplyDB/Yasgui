@@ -48,7 +48,6 @@ gulp.task('buildManifest', function(){
     .pipe(manifest({
       hash: true,
       timestamp: false,
-//      cache: ['./dist/yasgui.min.css','./dist/yasgui.min.js'],
       filename: manifestFile,
       basePath: './dist'
      }))
