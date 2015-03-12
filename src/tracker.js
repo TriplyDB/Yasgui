@@ -40,7 +40,6 @@ module.exports = function(yasgui) {
 			  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 			  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 			 
-			  window._gaq = window._gaq || [];//needs to be in global scope...
 			  ga('create', yasgui.options.tracker.googleAnalyticsId, 'auto');
 			  ga('send', 'pageview');
 			  
@@ -121,7 +120,7 @@ module.exports = function(yasgui) {
 	};
 	
 	var track = function(category, action, label, value, nonInteraction) {
-		if (enabled) _gaq.push(['_trackEvent', category, action, label, value, nonInteraction]);
+		if (enabled && ga) ga('send', 'event',  category, action, label, value, {'nonInteraction': !!nonInteraction});
 	};
 	init();
 	return {
