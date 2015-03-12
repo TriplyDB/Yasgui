@@ -178,11 +178,7 @@ var Tab = function(yasgui, id, name, endpoint) {
 			}
 			
 			tab.yasqe.query = function() {
-        var options = {
-          xhrFields: {
-            withCredentials: true
-          }
-        }
+        var options = {}
         options = $.extend(true, options, tab.yasqe.options.sparql);
         
 				if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
