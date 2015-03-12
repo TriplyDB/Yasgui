@@ -64177,7 +64177,7 @@ module.exports=require(17)
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "main": "src/main.js",
   "licenses": [
     {
@@ -68127,13 +68127,13 @@ module.exports = {
 			} else if (paramPair.name == 'tabTitle') {
 				options.name = paramPair.value;
 			} else if (paramPair.name == 'namedGraph') {
-				if (!options.yasqe.namedGraphs) options.yasqe.namedGraphs = [];
-				options.yasqe.sparql.namedGraphs.push(paramPair);
+				if (!options.yasqe.sparql.namedGraphs) options.yasqe.sparql.namedGraphs = [];
+				options.yasqe.sparql.namedGraphs.push(paramPair.value);
 			} else if (paramPair.name == 'defaultGraph') {
-				if (!options.yasqe.defaultGraphs) options.yasqe.defaultGraphs = [];
-				options.yasqe.sparql.defaultGraphs.push(paramPair);
+				if (!options.yasqe.sparql.defaultGraphs) options.yasqe.sparql.defaultGraphs = [];
+				options.yasqe.sparql.defaultGraphs.push(paramPair.value);
 			} else {
-				if (!options.yasqe.args) options.yasqe.args = [];
+				if (!options.yasqe.sparql.args) options.yasqe.sparql.args = [];
 				//regular arguments. So store them as regular arguments
 				options.yasqe.sparql.args.push(paramPair);
 			}
@@ -68326,20 +68326,23 @@ var Tab = function(yasgui, id, name, endpoint) {
 			}
 			
 			tab.yasqe.query = function() {
+        var options = {}
+        options = $.extend(true, options, tab.yasqe.options.sparql);
+        
 				if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
 					if (!yasgui.corsEnabled[persistentOptions.yasqe.sparql.endpoint]) {
 						//use the proxy //name value
-						var options = $.extend(true, {}, tab.yasqe.options.sparql);
+						
 						options.args.push({name: 'endpoint', value: options.endpoint});
 						options.args.push({name: 'requestMethod', value: options.requestMethod});
 						options.requestMethod = "POST";
 						options.endpoint = yasgui.options.api.corsProxy;
 						YASGUI.YASQE.executeQuery(tab.yasqe, options);
 					} else {
-						YASGUI.YASQE.executeQuery(tab.yasqe);
+						YASGUI.YASQE.executeQuery(tab.yasqe, options);
 					}
 				} else {
-					YASGUI.YASQE.executeQuery(tab.yasqe);
+					YASGUI.YASQE.executeQuery(tab.yasqe, options);
 				}
 			};
 			
@@ -68780,7 +68783,6 @@ module.exports = function(yasgui) {
 			  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 			  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 			 
-			  window._gaq = window._gaq || [];//needs to be in global scope...
 			  ga('create', yasgui.options.tracker.googleAnalyticsId, 'auto');
 			  ga('send', 'pageview');
 			  
@@ -68861,7 +68863,7 @@ module.exports = function(yasgui) {
 	};
 	
 	var track = function(category, action, label, value, nonInteraction) {
-		if (enabled) _gaq.push(['_trackEvent', category, action, label, value, nonInteraction]);
+		if (enabled && ga) ga('send', 'event',  category, action, label, value, {'nonInteraction': !!nonInteraction});
 	};
 	init();
 	return {
