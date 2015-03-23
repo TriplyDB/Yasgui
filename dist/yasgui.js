@@ -64177,7 +64177,7 @@ module.exports=require(17)
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "main": "src/main.js",
   "licenses": [
     {
@@ -64748,13 +64748,14 @@ var root = module.exports = function(yasr){
 	var options = $.extend(true, {}, root.defaults);
 	var id = yasr.container.closest('[id]').attr('id');
 	
+	var chartWrapper = null;
 	var editor = null;
 	
 	var initEditor = function(callback) {
 		var google = (typeof window !== "undefined" ? window.google : typeof global !== "undefined" ? global.google : null);
 		editor = new google.visualization.ChartEditor();
 		google.visualization.events.addListener(editor, 'ok', function(){
-				var chartWrapper, tmp;
+				var tmp;
 				chartWrapper = editor.getChartWrapper();
 				tmp = chartWrapper.getDataTable();
 				chartWrapper.setDataTable(null);
@@ -64845,13 +64846,12 @@ var root = module.exports = function(yasr){
 				//clear previous results (if any)
 				yasr.resultsContainer.empty();
 				var wrapperId = id + '_gchartWrapper';
-				var wrapper = null;
 
 				yasr.resultsContainer.append(
 					$('<button>', {class: 'openGchartBtn yasr_btn'})
 						.text('Chart Config')
 						.click(function() {
-							editor.openDialog(wrapper);
+							editor.openDialog(chartWrapper);
 						})
 				).append(
 					$('<div>', {id: wrapperId, class: 'gchartWrapper'})
@@ -64886,30 +64886,30 @@ var root = module.exports = function(yasr){
 
 				if (options.chartConfig && options.chartConfig.chartType) {
 					options.chartConfig.containerId = wrapperId;
-					wrapper = new google.visualization.ChartWrapper(options.chartConfig);
-					if (wrapper.getChartType() === "MotionChart" && options.motionChartState) {
-						wrapper.setOption("state", options.motionChartState);
-						google.visualization.events.addListener(wrapper, 'ready', function(){
+					chartWrapper = new google.visualization.ChartWrapper(options.chartConfig);
+					if (chartWrapper.getChartType() === "MotionChart" && options.motionChartState) {
+						chartWrapper.setOption("state", options.motionChartState);
+						google.visualization.events.addListener(chartWrapper, 'ready', function(){
 							var motionChart;
-							motionChart = wrapper.getChart();
+							motionChart = chartWrapper.getChart();
 							google.visualization.events.addListener(motionChart, 'statechange', function(){
 								options.motionChartState = motionChart.getState();
 								yasr.store();
 							});
 						});
 					}
-					wrapper.setDataTable(dataTable);
+					chartWrapper.setDataTable(dataTable);
 				} else {
-					wrapper = new google.visualization.ChartWrapper({
+					chartWrapper = new google.visualization.ChartWrapper({
 						chartType: 'Table',
 						dataTable: dataTable,
 						containerId: wrapperId
 					});
 				}
-				wrapper.setOption("width", options.width);
-				wrapper.setOption("height", options.height);
-				wrapper.draw();
-				google.visualization.events.addListener(wrapper, 'ready', yasr.updateHeader);
+				chartWrapper.setOption("width", options.width);
+				chartWrapper.setOption("height", options.height);
+				chartWrapper.draw();
+				google.visualization.events.addListener(chartWrapper, 'ready', yasr.updateHeader);
 			}
 			
 			if (!(typeof window !== "undefined" ? window.google : typeof global !== "undefined" ? global.google : null) || !(typeof window !== "undefined" ? window.google : typeof global !== "undefined" ? global.google : null).visualization || !editor) {
@@ -65021,6 +65021,7 @@ function deepEq$(x, y, type){
     return result;
   }
 }
+
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
 },{"./exceptions.js":83,"./gChartLoader.js":84,"./utils.js":99,"jquery":69,"yasgui-utils":75}],86:[function(require,module,exports){
