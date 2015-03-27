@@ -26,6 +26,9 @@ gulp.task('browserifyWithDeps', function() {
 		.pipe(exorcist(paths.bundleDir + '/' + paths.bundleName + '.js.map'))
 		.pipe(source(paths.bundleName + '.js'))
 		.pipe(gulp.dest(paths.bundleDir))
+    //keep copy with 'bundled' in name as well (for backwards compatability)
+    .pipe(rename(paths.bundleName + '.bundled.js'))
+    .pipe(gulp.dest(paths.bundleDir))
 		.pipe(rename(paths.bundleName + '.min.js'))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({
@@ -40,6 +43,9 @@ gulp.task('browserifyWithDeps', function() {
 	            sequences: false
 	        }
 		}))
+    //keep copy with 'bundled' in name as well (for backwards compatability)
+    .pipe(rename(paths.bundleName + '.bundled.min.js'))
+    .pipe(gulp.dest(paths.bundleDir))
 		.pipe(sourcemaps.write('./'))
 		.pipe(gulp.dest(paths.bundleDir));
 });
