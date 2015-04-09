@@ -158,8 +158,12 @@ var Tab = function(yasgui, id, name, endpoint) {
 	var initYasqe = function() {
 		if (!tab.yasqe) {
 			addControlBar();
-      		YASGUI.YASQE.defaults.extraKeys['Ctrl-Space'] = function(){tab.yasqe.query.apply(this, arguments)};
-      		YASGUI.YASQE.defaults.extraKeys['Cmd-Space'] = function(){tab.yasqe.query.apply(this, arguments)};
+      		YASGUI.YASQE.defaults.extraKeys['Ctrl-Enter'] = function(){
+      			tab.yasqe.query.apply(this, arguments)
+  			};
+      		YASGUI.YASQE.defaults.extraKeys['Cmd-Enter'] = function(){
+      			tab.yasqe.query.apply(this, arguments)
+  			};
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.setSize("100%", persistentOptions.yasqe.height);
 			tab.yasqe.on('blur', function(yasqe) {
@@ -178,8 +182,8 @@ var Tab = function(yasgui, id, name, endpoint) {
 			}
 			
 			tab.yasqe.query = function() {
-        var options = {}
-        options = $.extend(true, options, tab.yasqe.options.sparql);
+		        var options = {}
+		        options = $.extend(true, options, tab.yasqe.options.sparql);
         
 				if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
 					if (!yasgui.corsEnabled[persistentOptions.yasqe.sparql.endpoint]) {
