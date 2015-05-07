@@ -11,6 +11,9 @@
   ],
   "author": "Laurens Rietveld",
   "homepage": "http://yasgui.org",
+  "scripts" : {
+  	"server" : "node server/index.js"
+  },
   "devDependencies": {
     "browserify": "^6.1.0",
     "gulp": "~3.6.0",
