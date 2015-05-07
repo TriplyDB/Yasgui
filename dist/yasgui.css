@@ -4248,9 +4248,12 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     right: -5px;
     top: -5px; }
   .yasgui .yasqe .CodeMirror {
-    border-color: #ddd;
-    border-bottom-width: 4px;
-    border-bottom-color: #B6B6B6; }
+    border-color: #ddd; }
+    .yasgui .yasqe .CodeMirror.ui-resizable {
+      border-bottom-width: 4px;
+      border-bottom-color: #B6B6B6; }
+      .yasgui .yasqe .CodeMirror.ui-resizable .ui-resizable-s {
+        cursor: ns-resize; }
   .yasgui .yasr .CodeMirror {
     border-color: #ddd; }
   .yasgui .nav-tabs li.tab-sortable-highlight {
@@ -5545,6 +5548,11 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   width: 18px;
   height: 18px;
   vertical-align: middle; }
+
+.yasqe .CodeMirror-foldmarker {
+  color: #6E2500;
+  text-shadow: #FF935E 1px 1px 2px, #FF935E -1px -1px 2px, #FF935E 1px -1px 2px, #FF935E -1px 1px 2px;
+  font-size: 19px; }
 
 .CodeMirror-hints {
   position: absolute;

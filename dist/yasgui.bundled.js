@@ -3,7 +3,7 @@
 //the current browserify version does not support require-ing js files which are used as entry-point
 //this way, we can still require our main.js file
 module.exports = require('./main.js');
-},{"./main.js":106}],2:[function(require,module,exports){
+},{"./main.js":107}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -22566,210 +22566,307 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
 	var grammar = require('./_tokenizer-table.js');
 	var ll1_table = grammar.table;
 
-	function getTerminals()
-	{
-		var IRI_REF = '<[^<>\"\'\|\{\}\^\\\x00-\x20]*>';
-		/*
-		 * PN_CHARS_BASE =
-		 * '[A-Z]|[a-z]|[\\u00C0-\\u00D6]|[\\u00D8-\\u00F6]|[\\u00F8-\\u02FF]|[\\u0370-\\u037D]|[\\u037F-\\u1FFF]|[\\u200C-\\u200D]|[\\u2070-\\u218F]|[\\u2C00-\\u2FEF]|[\\u3001-\\uD7FF]|[\\uF900-\\uFDCF]|[\\uFDF0-\\uFFFD]|[\\u10000-\\uEFFFF]';
-		 */
+	var IRI_REF = '<[^<>\"\'\|\{\}\^\\\x00-\x20]*>';
+	/*
+	 * PN_CHARS_BASE =
+	 * '[A-Z]|[a-z]|[\\u00C0-\\u00D6]|[\\u00D8-\\u00F6]|[\\u00F8-\\u02FF]|[\\u0370-\\u037D]|[\\u037F-\\u1FFF]|[\\u200C-\\u200D]|[\\u2070-\\u218F]|[\\u2C00-\\u2FEF]|[\\u3001-\\uD7FF]|[\\uF900-\\uFDCF]|[\\uFDF0-\\uFFFD]|[\\u10000-\\uEFFFF]';
+	 */
 
-		var PN_CHARS_BASE =
-			'[A-Za-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD]';
-		var PN_CHARS_U = PN_CHARS_BASE+'|_';
+	var PN_CHARS_BASE =
+		'[A-Za-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD]';
+	var PN_CHARS_U = PN_CHARS_BASE+'|_';
 
-		var PN_CHARS= '('+PN_CHARS_U+'|-|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])';
-		var VARNAME = '('+PN_CHARS_U+'|[0-9])'+
-			'('+PN_CHARS_U+'|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])*';
-		var VAR1 = '\\?'+VARNAME;
-		var VAR2 = '\\$'+VARNAME;
+	var PN_CHARS= '('+PN_CHARS_U+'|-|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])';
+	var VARNAME = '('+PN_CHARS_U+'|[0-9])'+
+		'('+PN_CHARS_U+'|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])*';
+	var VAR1 = '\\?'+VARNAME;
+	var VAR2 = '\\$'+VARNAME;
 
-		var PN_PREFIX= '('+PN_CHARS_BASE+')((('+PN_CHARS+')|\\.)*('+PN_CHARS+'))?';
+	var PN_PREFIX= '('+PN_CHARS_BASE+')((('+PN_CHARS+')|\\.)*('+PN_CHARS+'))?';
 
-		var HEX= '[0-9A-Fa-f]';
-		var PERCENT='(%'+HEX+HEX+')';
-		var PN_LOCAL_ESC='(\\\\[_~\\.\\-!\\$&\'\\(\\)\\*\\+,;=/\\?#@%])';
-		var PLX= '('+PERCENT+'|'+PN_LOCAL_ESC+')';
-		var PN_LOCAL= '('+PN_CHARS_U+'|:|[0-9]|'+PLX+')(('+PN_CHARS+'|\\.|:|'+PLX+')*('+PN_CHARS+'|:|'+PLX+'))?';
-		var BLANK_NODE_LABEL = '_:('+PN_CHARS_U+'|[0-9])(('+PN_CHARS+'|\\.)*'+PN_CHARS+')?';
-		var PNAME_NS = '('+PN_PREFIX+')?:';
-		var PNAME_LN = PNAME_NS+PN_LOCAL;
-		var LANGTAG = '@[a-zA-Z]+(-[a-zA-Z0-9]+)*';
+	var HEX= '[0-9A-Fa-f]';
+	var PERCENT='(%'+HEX+HEX+')';
+	var PN_LOCAL_ESC='(\\\\[_~\\.\\-!\\$&\'\\(\\)\\*\\+,;=/\\?#@%])';
+	var PLX= '('+PERCENT+'|'+PN_LOCAL_ESC+')';
+	var PN_LOCAL= '('+PN_CHARS_U+'|:|[0-9]|'+PLX+')(('+PN_CHARS+'|\\.|:|'+PLX+')*('+PN_CHARS+'|:|'+PLX+'))?';
+	var BLANK_NODE_LABEL = '_:('+PN_CHARS_U+'|[0-9])(('+PN_CHARS+'|\\.)*'+PN_CHARS+')?';
+	var PNAME_NS = '('+PN_PREFIX+')?:';
+	var PNAME_LN = PNAME_NS+PN_LOCAL;
+	var LANGTAG = '@[a-zA-Z]+(-[a-zA-Z0-9]+)*';
 
-		var EXPONENT = '[eE][\\+-]?[0-9]+';
-		var INTEGER = '[0-9]+';
-		var DECIMAL = '(([0-9]+\\.[0-9]*)|(\\.[0-9]+))';
-		var DOUBLE =
-			'(([0-9]+\\.[0-9]*'+EXPONENT+')|'+
-			'(\\.[0-9]+'+EXPONENT+')|'+
-			'([0-9]+'+EXPONENT+'))';
+	var EXPONENT = '[eE][\\+-]?[0-9]+';
+	var INTEGER = '[0-9]+';
+	var DECIMAL = '(([0-9]+\\.[0-9]*)|(\\.[0-9]+))';
+	var DOUBLE =
+		'(([0-9]+\\.[0-9]*'+EXPONENT+')|'+
+		'(\\.[0-9]+'+EXPONENT+')|'+
+		'([0-9]+'+EXPONENT+'))';
 
-		var INTEGER_POSITIVE = '\\+' + INTEGER;
-		var DECIMAL_POSITIVE = '\\+' + DECIMAL;
-		var DOUBLE_POSITIVE  = '\\+' + DOUBLE;
-		var INTEGER_NEGATIVE = '-' + INTEGER;
-		var DECIMAL_NEGATIVE = '-' + DECIMAL;
-		var DOUBLE_NEGATIVE  = '-' + DOUBLE;
+	var INTEGER_POSITIVE = '\\+' + INTEGER;
+	var DECIMAL_POSITIVE = '\\+' + DECIMAL;
+	var DOUBLE_POSITIVE  = '\\+' + DOUBLE;
+	var INTEGER_NEGATIVE = '-' + INTEGER;
+	var DECIMAL_NEGATIVE = '-' + DECIMAL;
+	var DOUBLE_NEGATIVE  = '-' + DOUBLE;
 
-		var ECHAR = '\\\\[tbnrf\\\\"\']';
-		
-		
-		 //IMPORTANT: this unicode rule is not in the official grammar.
-	      //Reason: https://github.com/YASGUI/YASQE/issues/49
-	      //unicode escape sequences (which the sparql spec considers part of the pre-processing of sparql queries)
-	      //are marked as invalid. We have little choice (other than adding a layer of complixity) than to modify the grammar accordingly
-	      //however, for now only allow these escape sequences in literals (where actually, this should be allows in e.g. prefixes as well)
-		var hex4 = HEX + '{4}'
-		var unicode = '(\\\\u' + hex4 +'|\\\\U00(10|0' + HEX + ')'+ hex4 + ')';
-
-		var STRING_LITERAL1 = "'(([^\\x27\\x5C\\x0A\\x0D])|"+ECHAR+"|" + unicode + ")*'";
-		var STRING_LITERAL2 = '"(([^\\x22\\x5C\\x0A\\x0D])|'+ECHAR+'|' + unicode + ')*"';
-
-		var STRING_LITERAL_LONG1 = "'''(('|'')?([^'\\\\]|"+ECHAR+"|"+unicode+"))*'''";
-		var STRING_LITERAL_LONG2 = '"""(("|"")?([^"\\\\]|'+ECHAR+'|'+unicode+'))*"""';
-
-		var WS    =        '[\\x20\\x09\\x0D\\x0A]';
-		// Careful! Code mirror feeds one line at a time with no \n
-		// ... but otherwise comment is terminated by \n
-		var COMMENT = '#([^\\n\\r]*[\\n\\r]|[^\\n\\r]*$)';
-		var WS_OR_COMMENT_STAR = '('+WS+'|('+COMMENT+'))*';
-		var NIL   = '\\('+WS_OR_COMMENT_STAR+'\\)';
-		var ANON  = '\\['+WS_OR_COMMENT_STAR+'\\]';
-
-		var terminals=
-			{
-				terminal: [
-
-					{ name: "WS",
-						regex:new RegExp("^"+WS+"+"),
-						style:"ws" },
-
-					{ name: "COMMENT",
-						regex:new RegExp("^"+COMMENT),
-						style:"comment" },
-
-					{ name: "IRI_REF",
-						regex:new RegExp("^"+IRI_REF),
-						style:"variable-3" },
-
-					{ name: "VAR1",
-						regex:new RegExp("^"+VAR1),
-						style:"atom"},
-
-					{ name: "VAR2",
-						regex:new RegExp("^"+VAR2),
-						style:"atom"},
-
-					{ name: "LANGTAG",
-						regex:new RegExp("^"+LANGTAG),
-						style:"meta"},
-
-					{ name: "DOUBLE",
-						regex:new RegExp("^"+DOUBLE),
-						style:"number" },
-
-					{ name: "DECIMAL",
-						regex:new RegExp("^"+DECIMAL),
-						style:"number" },
-
-					{ name: "INTEGER",
-						regex:new RegExp("^"+INTEGER),
-						style:"number" },
-
-					{ name: "DOUBLE_POSITIVE",
-						regex:new RegExp("^"+DOUBLE_POSITIVE),
-						style:"number" },
-
-					{ name: "DECIMAL_POSITIVE",
-						regex:new RegExp("^"+DECIMAL_POSITIVE),
-						style:"number" },
-
-					{ name: "INTEGER_POSITIVE",
-						regex:new RegExp("^"+INTEGER_POSITIVE),
-						style:"number" },
-
-					{ name: "DOUBLE_NEGATIVE",
-						regex:new RegExp("^"+DOUBLE_NEGATIVE),
-						style:"number" },
-
-					{ name: "DECIMAL_NEGATIVE",
-						regex:new RegExp("^"+DECIMAL_NEGATIVE),
-						style:"number" },
-
-					{ name: "INTEGER_NEGATIVE",
-						regex:new RegExp("^"+INTEGER_NEGATIVE),
-						style:"number" },
-
-					{ name: "STRING_LITERAL_LONG1",
-						regex:new RegExp("^"+STRING_LITERAL_LONG1),
-						style:"string" },
-
-					{ name: "STRING_LITERAL_LONG2",
-						regex:new RegExp("^"+STRING_LITERAL_LONG2),
-						style:"string" },
-
-					{ name: "STRING_LITERAL1",
-						regex:new RegExp("^"+STRING_LITERAL1),
-						style:"string" },
-
-					{ name: "STRING_LITERAL2",
-						regex:new RegExp("^"+STRING_LITERAL2),
-						style:"string" },
-
-					// Enclosed comments won't be highlighted
-					{ name: "NIL",
-						regex:new RegExp("^"+NIL),
-						style:"punc" },
-
-					// Enclosed comments won't be highlighted
-					{ name: "ANON",
-						regex:new RegExp("^"+ANON),
-						style:"punc" },
-
-					{ name: "PNAME_LN",
-						regex:new RegExp("^"+PNAME_LN),
-						style:"string-2" },
-
-					{ name: "PNAME_NS",
-						regex:new RegExp("^"+PNAME_NS),
-						style:"string-2" },
-
-					{ name: "BLANK_NODE_LABEL",
-						regex:new RegExp("^"+BLANK_NODE_LABEL),
-						style:"string-2" }
-				],
-
-			};
-		return terminals;
+	var ECHAR = '\\\\[tbnrf\\\\"\']';
+	
+	
+	 //IMPORTANT: this unicode rule is not in the official grammar.
+      //Reason: https://github.com/YASGUI/YASQE/issues/49
+      //unicode escape sequences (which the sparql spec considers part of the pre-processing of sparql queries)
+      //are marked as invalid. We have little choice (other than adding a layer of complixity) than to modify the grammar accordingly
+      //however, for now only allow these escape sequences in literals (where actually, this should be allows in e.g. prefixes as well)
+	var hex4 = HEX + '{4}'
+	var unicode = '(\\\\u' + hex4 +'|\\\\U00(10|0' + HEX + ')'+ hex4 + ')';
+	var LINE_BREAK = "\n";
+	var STRING_LITERAL1 = "'(([^\\x27\\x5C\\x0A\\x0D])|"+ECHAR+"|" + unicode + ")*'";
+	var STRING_LITERAL2 = '"(([^\\x22\\x5C\\x0A\\x0D])|'+ECHAR+'|' + unicode + ')*"';
+	
+	var STRING_LITERAL_LONG = {
+		SINGLE: {
+			CAT: "STRING_LITERAL_LONG1",
+			QUOTES: "'''",
+			CONTENTS: "(('|'')?([^'\\\\]|"+ECHAR+"|"+unicode+"))*",
+			
+		},
+		DOUBLE: {
+			CAT: "STRING_LITERAL_LONG2",
+			QUOTES: '"""',
+			CONTENTS: '(("|"")?([^"\\\\]|'+ECHAR+'|'+unicode+'))*',
+		}
+	};
+	for (var key in STRING_LITERAL_LONG) {
+		STRING_LITERAL_LONG[key].COMPLETE = STRING_LITERAL_LONG[key].QUOTES + STRING_LITERAL_LONG[key].CONTENTS + STRING_LITERAL_LONG[key].QUOTES;
 	}
+//	var STRING_LITERAL_LONG_QUOTES = {
+//		"STRING_LITERAL_LONG_QUOTES1": "'''",
+//		"STRING_LITERAL_LONG_QUOTES2": '"""',
+//	}
+//	var STRING_LITERAL_LONG_CONTENTS = {
+//		"STRING_LITERAL_LONG_QUOTES1": "(('|'')?([^'\\\\]|"+ECHAR+"|"+unicode+"))*",
+//		"STRING_LITERAL_LONG_QUOTES2": '(("|"")?([^"\\\\]|'+ECHAR+'|'+unicode+'))*'
+//	};
+//	var STRING_LITERAL_LONG1 = STRING_LITERAL_LONG['SINGLE'].QUOTES + STRING_LITERAL_LONG['SINGLE'].CONTENTS + STRING_LITERAL_LONG['SINGLE'].QUOTES;
+//	var STRING_LITERAL_LONG2 = STRING_LITERAL_LONG['DOUBLE'].QUOTES + STRING_LITERAL_LONG['DOUBLE'].CONTENTS + STRING_LITERAL_LONG['DOUBLE'].QUOTES;
+	
+//	var stringLiteralLongContentTerminals = {};
+//	for (var key in STRING_LITERAL_LONG) {
+//		stringLiteralLongContentTerminals[key] = {
+//			name: key,
+//			regex:new RegExp("^"+STRING_LITERAL_LONG_CONTENTS[key]),
+//			style:"string"
+//		};
+//	}
+	//some regular expressions not used in regular terminals, because this is used accross lines
+	var stringLiteralLongRegex = {};
+	for (var key in STRING_LITERAL_LONG) {
+		stringLiteralLongRegex[key] = {
+			complete: {
+				name: "STRING_LITERAL_LONG_" + key,
+				regex:new RegExp("^"+STRING_LITERAL_LONG[key].COMPLETE),
+				style:"string"
+			},
+			contents: {
+				name: "STRING_LITERAL_LONG_" + key,
+				regex:new RegExp("^"+STRING_LITERAL_LONG[key].CONTENTS),
+				style:"string"
+			},
+			closing: {
+				name: "STRING_LITERAL_LONG_" + key,
+				regex:new RegExp("^"+STRING_LITERAL_LONG[key].CONTENTS + STRING_LITERAL_LONG[key].QUOTES),
+				style:"string"
+			},
+			quotes: {
+				name: "STRING_LITERAL_LONG_QUOTES_" + key,
+				regex:new RegExp("^"+STRING_LITERAL_LONG[key].QUOTES),
+				style:"string"
+			},
+		
+		}
+	}
+	
+	var WS    =        '[\\x20\\x09\\x0D\\x0A]';
+	// Careful! Code mirror feeds one line at a time with no \n
+	// ... but otherwise comment is terminated by \n
+	var COMMENT = '#([^\\n\\r]*[\\n\\r]|[^\\n\\r]*$)';
+	var WS_OR_COMMENT_STAR = '('+WS+'|('+COMMENT+'))*';
+	var NIL   = '\\('+WS_OR_COMMENT_STAR+'\\)';
+	var ANON  = '\\['+WS_OR_COMMENT_STAR+'\\]';
+	var terminals= [
+		{ name: "WS",
+			regex:new RegExp("^"+WS+"+"),
+			style:"ws" },
 
-	function getPossibles(symbol)
-	{
+		{ name: "COMMENT",
+			regex:new RegExp("^"+COMMENT),
+			style:"comment" },
+
+		{ name: "IRI_REF",
+			regex:new RegExp("^"+IRI_REF),
+			style:"variable-3" },
+
+		{ name: "VAR1",
+			regex:new RegExp("^"+VAR1),
+			style:"atom"},
+
+		{ name: "VAR2",
+			regex:new RegExp("^"+VAR2),
+			style:"atom"},
+
+		{ name: "LANGTAG",
+			regex:new RegExp("^"+LANGTAG),
+			style:"meta"},
+
+		{ name: "DOUBLE",
+			regex:new RegExp("^"+DOUBLE),
+			style:"number" },
+
+		{ name: "DECIMAL",
+			regex:new RegExp("^"+DECIMAL),
+			style:"number" },
+
+		{ name: "INTEGER",
+			regex:new RegExp("^"+INTEGER),
+			style:"number" },
+
+		{ name: "DOUBLE_POSITIVE",
+			regex:new RegExp("^"+DOUBLE_POSITIVE),
+			style:"number" },
+
+		{ name: "DECIMAL_POSITIVE",
+			regex:new RegExp("^"+DECIMAL_POSITIVE),
+			style:"number" },
+
+		{ name: "INTEGER_POSITIVE",
+			regex:new RegExp("^"+INTEGER_POSITIVE),
+			style:"number" },
+
+		{ name: "DOUBLE_NEGATIVE",
+			regex:new RegExp("^"+DOUBLE_NEGATIVE),
+			style:"number" },
+
+		{ name: "DECIMAL_NEGATIVE",
+			regex:new RegExp("^"+DECIMAL_NEGATIVE),
+			style:"number" },
+
+		{ name: "INTEGER_NEGATIVE",
+			regex:new RegExp("^"+INTEGER_NEGATIVE),
+			style:"number" },
+//		stringLiteralLongRegex.SINGLE.complete,
+//		stringLiteralLongRegex.DOUBLE.complete,
+//		stringLiteralLongRegex.SINGLE.quotes,
+//		stringLiteralLongRegex.DOUBLE.quotes,
+		
+		{ name: "STRING_LITERAL1",
+			regex:new RegExp("^"+STRING_LITERAL1),
+			style:"string" },
+
+		{ name: "STRING_LITERAL2",
+			regex:new RegExp("^"+STRING_LITERAL2),
+			style:"string" },
+
+		// Enclosed comments won't be highlighted
+		{ name: "NIL",
+			regex:new RegExp("^"+NIL),
+			style:"punc" },
+
+		// Enclosed comments won't be highlighted
+		{ name: "ANON",
+			regex:new RegExp("^"+ANON),
+			style:"punc" },
+
+		{ name: "PNAME_LN",
+			regex:new RegExp("^"+PNAME_LN),
+			style:"string-2" },
+
+		{ name: "PNAME_NS",
+			regex:new RegExp("^"+PNAME_NS),
+			style:"string-2" },
+
+		{ name: "BLANK_NODE_LABEL",
+			regex:new RegExp("^"+BLANK_NODE_LABEL),
+			style:"string-2" }
+	];
+
+	function getPossibles(symbol) {
 		var possibles=[], possiblesOb=ll1_table[symbol];
-		if (possiblesOb!=undefined)
-			for (var property in possiblesOb)
+		if (possiblesOb!=undefined) {
+			for (var property in possiblesOb) {
 				possibles.push(property.toString());
-		else
+			}
+		} else {
 			possibles.push(symbol);
+		}
 		return possibles;
 	}
 
-	var tms= getTerminals();
-	var terminal=tms.terminal;
 
 	function tokenBase(stream, state) {
 
 		function nextToken() {
-
 			var consumed=null;
+			if (state.inLiteral) {
+				
+				var closingQuotes = false;
+				//multi-line literal. try to parse contents.
+				consumed = stream.match(stringLiteralLongRegex[state.inLiteral].contents.regex, true, false);
+				if (consumed && consumed[0].length == 0) {
+					//try seeing whether we can consume closing quotes, to avoid stopping
+					consumed = stream.match(stringLiteralLongRegex[state.inLiteral].closing.regex, true, false);
+					closingQuotes = true;
+				}
+				
+				if (consumed && consumed[0].length > 0) {
+					//some string content here. 
+					 var returnObj = {
+						quotePos: (closingQuotes? 'end': 'content'),
+						cat: STRING_LITERAL_LONG[state.inLiteral].CAT,
+						style: stringLiteralLongRegex[state.inLiteral].complete.style,
+						text: consumed[0],
+						start: stream.start
+					};
+					 if (closingQuotes) state.inLiteral = false;
+					 return returnObj;
+				}
+			}
+			
+			//Multiline literals
+			for (var quoteType in stringLiteralLongRegex) {
+				consumed= stream.match(stringLiteralLongRegex[quoteType].quotes.regex,true,false);
+				if (consumed) {
+					var quotePos;
+					if (state.inLiteral) {
+						//end of literal. everything is fine
+						state.inLiteral = false;
+						quotePos = 'end';
+					} else {
+						state.inLiteral = quoteType;
+						quotePos = 'start';
+					}
+					return {
+						cat: STRING_LITERAL_LONG[quoteType].CAT,
+						style: stringLiteralLongRegex[quoteType].quotes.style,
+						text: consumed[0],
+						quotePos: quotePos,
+						start: stream.start
+					};
+				}
+			}
+			
+			
+			
 			// Tokens defined by individual regular expressions
-			for (var i=0; i<terminal.length; ++i) {
-				consumed= stream.match(terminal[i].regex,true,false);
-				if (consumed)
-					return { cat: terminal[i].name,
-									 style: terminal[i].style,
-									 text: consumed[0]
-								 };
+			for (var i=0; i<terminals.length; ++i) {
+				consumed= stream.match(terminals[i].regex,true,false);
+				if (consumed) {
+					return {
+						cat: terminals[i].name,
+						style: terminals[i].style,
+						text: consumed[0],
+						start: stream.start
+					};
+				}
 			}
 
 			// Keywords
@@ -22777,7 +22874,8 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
 			if (consumed)
 				return { cat: stream.current().toUpperCase(),
 								 style: "keyword",
-								 text: consumed[0]
+								 text: consumed[0],
+								 start: stream.start
 							 };
 
 			// Punctuation
@@ -22785,7 +22883,8 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
 			if (consumed)
 				return { cat: stream.current(),
 								 style: "punc",
-								 text: consumed[0]
+								 text: consumed[0],
+								 start: stream.start
 							 };
 
 			// Token is invalid
@@ -22793,7 +22892,8 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
 			consumed= stream.match(/^.[A-Za-z0-9]*/,true,false);
 			return { cat:"<invalid_token>",
 							 style: "error",
-							 text: consumed[0]
+							 text: consumed[0],
+							 start: stream.start
 						 };
 		}
 
@@ -22851,9 +22951,8 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
 			return tokenOb.style;
 		}
 
-		if (tokenOb.cat == "WS" ||
-				tokenOb.cat == "COMMENT") {
-			state.possibleCurrent= state.possibleNext;
+		if (tokenOb.cat == "WS" || tokenOb.cat == "COMMENT" || (tokenOb.quotePos && tokenOb.quotePos != 'end')) {
+			state.possibleCurrent = state.possibleNext;
 			return(tokenOb.style);
 		}
 		// Otherwise, run the parser until the token is digested
@@ -22861,67 +22960,70 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
 		var finished= false;
 		var topSymbol;
 		var token= tokenOb.cat;
-
+		
+		if (!tokenOb.quotePos || tokenOb.quotePos == 'end') {
 		// Incremental LL1 parse
-		while(state.stack.length>0 && token && state.OK && !finished ) {
-			topSymbol= state.stack.pop();
-
-			if (!ll1_table[topSymbol]) {
-				// Top symbol is a terminal
-				if (topSymbol==token) {
-					// Matching terminals
-					// - consume token from input stream
-					finished=true;
-					setQueryType(topSymbol);
-					// Check whether $ (end of input token) is poss next
-					// for everything on stack
-					var allNillable=true;
-					for(var sp=state.stack.length;sp>0;--sp) {
-						var item=ll1_table[state.stack[sp-1]];
-						if (!item || !item["$"])
-							allNillable=false;
-					}
-					state.complete= allNillable;
-					if (state.storeProperty && token.cat!="punc") {
-							state.lastProperty= tokenOb.text;
-							state.storeProperty= false;
+			while(state.stack.length>0 && token && state.OK && !finished ) {
+				topSymbol= state.stack.pop();
+	
+				if (!ll1_table[topSymbol]) {
+					// Top symbol is a terminal
+					if (topSymbol == token) {
+						// Matching terminals
+						// - consume token from input stream
+						finished=true;
+						setQueryType(topSymbol);
+						// Check whether $ (end of input token) is poss next
+						// for everything on stack
+						var allNillable=true;
+						for(var sp=state.stack.length;sp>0;--sp) {
+							var item=ll1_table[state.stack[sp-1]];
+							if (!item || !item["$"])
+								allNillable=false;
 						}
+						state.complete= allNillable;
+						if (state.storeProperty && token.cat != "punc") {
+							state.lastProperty = tokenOb.text;
+							state.storeProperty = false;
+						}
+					} else {
+						state.OK=false;
+						state.complete=false;
+						recordFailurePos();
+					}
 				} else {
-					state.OK=false;
-					state.complete=false;
-					recordFailurePos();
-				}
-			} else {
-				// topSymbol is nonterminal
-				// - see if there is an entry for topSymbol
-				// and nextToken in table
-				var nextSymbols= ll1_table[topSymbol][token];
-				if (nextSymbols!=undefined
-						&& checkSideConditions(topSymbol)
-					 )
-				{
-					// Match - copy RHS of rule to stack
-					for (var i=nextSymbols.length-1; i>=0; --i)
-						state.stack.push(nextSymbols[i]);
-					// Peform any non-grammatical side-effects
-					setSideConditions(topSymbol);
-				} else {
-					// No match in table - fail
-					state.OK=false;
-					state.complete=false;
-					recordFailurePos();
-					state.stack.push(topSymbol);  // Shove topSymbol back on stack
+					// topSymbol is nonterminal
+					// - see if there is an entry for topSymbol
+					// and nextToken in table
+					var nextSymbols= ll1_table[topSymbol][token];
+					if (nextSymbols!=undefined && checkSideConditions(topSymbol)) {
+						// Match - copy RHS of rule to stack
+						for (var i=nextSymbols.length-1; i>=0; --i) {
+							state.stack.push(nextSymbols[i]);
+						}
+						// Peform any non-grammatical side-effects
+						setSideConditions(topSymbol);
+					} else {
+						// No match in table - fail
+						state.OK=false;
+						state.complete=false;
+						recordFailurePos();
+						state.stack.push(topSymbol);  // Shove topSymbol back on stack
+					}
 				}
 			}
 		}
 		if (!finished && state.OK) { 
 			state.OK=false; state.complete=false; recordFailurePos(); 
-    }
+		}
+		
+		if (state.possibleCurrent.indexOf('a') >= 0){
+			state.lastPredicateOffset = tokenOb.start;
+		}
+		state.possibleCurrent = state.possibleNext;
+		
+		state.possibleNext = getPossibles(state.stack[state.stack.length-1]);
 
-		state.possibleCurrent= state.possibleNext;
-		state.possibleNext= getPossibles(state.stack[state.stack.length-1]);
-
-		// alert(token+"="+tokenOb.style+'\n'+state.stack);
 		return tokenOb.style;
 	}
 
@@ -22942,7 +23044,7 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
 		"propertyListPath": 1,
 		"propertyListPathNotEmpty": 1,
 		"?[verb,objectList]": 1,
-		"?[or([verbPath, verbSimple]),objectList]": 1,
+//		"?[or([verbPath, verbSimple]),objectList]": 1,
 	};
 
 	var indentTable={
@@ -22951,37 +23053,44 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
 		")":1,
 		"{":-1,
 		"(":-1,
-		"*[;,?[or([verbPath,verbSimple]),objectList]]": 1,
+//		"*[;,?[or([verbPath,verbSimple]),objectList]]": 1,
 	};
 	
 
 	function indent(state, textAfter) {
-		var n = 0; // indent level
-		var i=state.stack.length-1;
-
-		if (/^[\}\]\)]/.test(textAfter)) {
-			// Skip stack items until after matching bracket
-			var closeBracket=textAfter.substr(0,1);
-			for( ;i>=0;--i)
-			{
-				if (state.stack[i]==closeBracket)
-				{--i; break;};
-			}
+		//just avoid we don't indent multi-line  literals
+		if (state.inLiteral) return 0;
+		if (state.stack.length && state.stack[state.stack.length-1] == "?[or([verbPath,verbSimple]),objectList]") {
+			//we are after a semi-colon. I.e., nicely align this line with predicate position of previous line
+			return state.lastPredicateOffset;
 		} else {
-			// Consider nullable non-terminals if at top of stack
-			var dn=indentTop[state.stack[i]];
-			if (dn) { 
-				n+=dn; --i;
+			var n = 0; // indent level
+			var i = state.stack.length-1;
+			if (/^[\}\]\)]/.test(textAfter)) {
+				// Skip stack items until after matching bracket
+				var closeBracket=textAfter.substr(0,1);
+				for( ;i>=0;--i)	{
+					if (state.stack[i]==closeBracket) {
+						--i; 
+						break;
+					};
+				}
+			} else {
+				// Consider nullable non-terminals if at top of stack
+				var dn = indentTop[state.stack[i]];
+				if (dn) { 
+					n += dn; 
+					--i;
+				}
 			}
-		}
-		for( ;i>=0;--i)
-		{
-			var dn=indentTable[state.stack[i]];
-			if (dn) {
-				n+=dn;
+			for( ;i>=0;--i)	{
+				var dn = indentTable[state.stack[i]];
+				if (dn) {
+					n+=dn;
+				}
 			}
+			return n * config.indentUnit;
 		}
-		return n * config.indentUnit;
 	};
 
 	return {
@@ -23000,7 +23109,9 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
 				allowBnodes : true,
 				storeProperty : false,
 				lastProperty : "",
-				stack: [grammar.startSymbol]
+				inLiteral: false,
+				stack: [grammar.startSymbol],
+				lastPredicateOffset: config.indentUnit,
 			}; 
 		},
 		indent: indent,
@@ -32750,7 +32861,7 @@ module.exports=require(17)
 module.exports={
   "name": "yasgui-yasqe",
   "description": "Yet Another SPARQL Query Editor",
-  "version": "2.3.9",
+  "version": "2.5.0",
   "main": "src/main.js",
   "licenses": [
     {
@@ -32835,7 +32946,8 @@ module.exports={
 var $ = require('jquery'),
 	utils = require('../utils.js'),
 	yutils = require('yasgui-utils'),
-	Trie = require('../../lib/trie.js');
+	Trie = require('../../lib/trie.js'),
+	YASQE = require('../main.js');
 
 module.exports = function(YASQE, yasqe) {
 	var completionNotifications = {};
@@ -33047,8 +33159,9 @@ module.exports = function(YASQE, yasqe) {
 		//if we have some autocompletion handlers specified, add these these to the object. Codemirror will take care of firing these
 		if (completer.callbacks) {
 			for ( var callbackName in completer.callbacks) {
-				if (completer.callbacks[callbackName]) 
-					yasqe.on(returnObj, callbackName, completer.callbacks[callbackName]);
+				if (completer.callbacks[callbackName]) {
+					YASQE.on(returnObj, callbackName, completer.callbacks[callbackName]);
+				}
 			}
 		}
 		return returnObj;
@@ -33123,7 +33236,7 @@ var selectHint = function(yasqe, data, completion) {
 //	loadBulkCompletions: loadBulkCompletions,
 //};
 
-},{"../../lib/trie.js":21,"../utils.js":52,"jquery":32,"yasgui-utils":35}],40:[function(require,module,exports){
+},{"../../lib/trie.js":21,"../main.js":47,"../utils.js":53,"jquery":32,"yasgui-utils":35}],40:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = function(yasqe, name) {
@@ -33204,6 +33317,11 @@ module.exports = function(yasqe, completerName) {
 		bulk : true,
 		autoShow: true,
 		persistent : completerName,
+		callbacks: {
+			pick: function() {
+				yasqe.collapsePrefixes(false);
+			}
+		}
 	};
 };
 module.exports.isValidCompletionPosition = function(yasqe) {
@@ -33548,9 +33666,9 @@ YASQE.defaults = $.extend(true, {}, YASQE.defaults, {
 		lineNumbers : true,
 	    lineWrapping: true,
 	    backdrop: false,
-	    foldGutter: {rangeFinder:YASQE.fold.brace },
+	    foldGutter: {rangeFinder:new YASQE.fold.combine(YASQE.fold.brace, YASQE.fold.prefix) },
+	    collapsePrefixesOnLoad: false,
 	    gutters: [ "gutterErrorBar", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-//			    cell.code_mirror.setOption('foldGutter',{rangeFinder: new CodeMirror.fold.combine(CodeMirror.fold.firstline, CodeMirror.fold.brace) }); 
 		matchBrackets : true,
 		fixedGutter : true,
 		syntaxErrorCheck: true,
@@ -33724,6 +33842,7 @@ require('codemirror/addon/fold/foldcode.js');
 require('codemirror/addon/fold/foldgutter.js');
 require('codemirror/addon/fold/xml-fold.js');
 require('codemirror/addon/fold/brace-fold.js');
+require('./prefixFold.js');
 require('codemirror/addon/hint/show-hint.js');
 require('codemirror/addon/search/searchcursor.js');
 require('codemirror/addon/edit/matchbrackets.js');
@@ -33791,7 +33910,9 @@ var extendCmInstance = function(yasqe) {
 	yasqe.getNextNonWsToken = function(lineNumber, charNumber) {
 		return require('./tokenUtils.js').getNextNonWsToken(yasqe, lineNumber, charNumber);
 	};
-	
+	yasqe.collapsePrefixes = function(collapse) {
+		yasqe.foldCode(require('./prefixFold.js').findFirstPrefixLine(yasqe), YASQE.fold.prefix, (collapse? "fold": "unfold"));
+	};
 	var backdrop = null;
 	var animateSpeed = null;
 	yasqe.setBackdrop = function(show) {
@@ -33966,7 +34087,7 @@ var postProcessCmElement = function(yasqe) {
 			yasqe.options.consumeShareLink(yasqe, getUrlParams());
 		});
 	}
-	
+	if (yasqe.options.collapsePrefixesOnLoad) yasqe.collapsePrefixes(true);
 };
 
 /**
@@ -34137,7 +34258,7 @@ root.createShareLink = function(yasqe) {
  * @param {doc} YASQE document
  */
 root.consumeShareLink = function(yasqe, urlParams) {
-	if (urlParams.query) {
+	if (urlParams && urlParams.query) {
 		yasqe.setValue(urlParams.query);
 	}
 };
@@ -34449,7 +34570,133 @@ root.version = {
 	"yasgui-utils": yutils.version
 };
 
-},{"../lib/deparam.js":18,"../lib/grammar/tokenizer.js":20,"../package.json":38,"./autocompleters/autocompleterBase.js":39,"./autocompleters/classes.js":40,"./autocompleters/prefixes.js":41,"./autocompleters/properties.js":42,"./autocompleters/variables.js":44,"./defaults.js":45,"./imgs.js":46,"./prefixUtils.js":48,"./sparql.js":49,"./tokenUtils.js":50,"./tooltip":51,"./utils.js":52,"codemirror":31,"codemirror/addon/display/fullscreen.js":22,"codemirror/addon/edit/matchbrackets.js":23,"codemirror/addon/fold/brace-fold.js":24,"codemirror/addon/fold/foldcode.js":25,"codemirror/addon/fold/foldgutter.js":26,"codemirror/addon/fold/xml-fold.js":27,"codemirror/addon/hint/show-hint.js":28,"codemirror/addon/runmode/runmode.js":29,"codemirror/addon/search/searchcursor.js":30,"jquery":32,"yasgui-utils":35}],48:[function(require,module,exports){
+},{"../lib/deparam.js":18,"../lib/grammar/tokenizer.js":20,"../package.json":38,"./autocompleters/autocompleterBase.js":39,"./autocompleters/classes.js":40,"./autocompleters/prefixes.js":41,"./autocompleters/properties.js":42,"./autocompleters/variables.js":44,"./defaults.js":45,"./imgs.js":46,"./prefixFold.js":48,"./prefixUtils.js":49,"./sparql.js":50,"./tokenUtils.js":51,"./tooltip":52,"./utils.js":53,"codemirror":31,"codemirror/addon/display/fullscreen.js":22,"codemirror/addon/edit/matchbrackets.js":23,"codemirror/addon/fold/brace-fold.js":24,"codemirror/addon/fold/foldcode.js":25,"codemirror/addon/fold/foldgutter.js":26,"codemirror/addon/fold/xml-fold.js":27,"codemirror/addon/hint/show-hint.js":28,"codemirror/addon/runmode/runmode.js":29,"codemirror/addon/search/searchcursor.js":30,"jquery":32,"yasgui-utils":35}],48:[function(require,module,exports){
+var CodeMirror = require('codemirror'),
+	tokenUtils = require('./tokenUtils.js');
+
+"use strict";
+var lookFor = "PREFIX";
+module.exports = {
+	findFirstPrefixLine: function(cm) {
+		var lastLine = cm.lastLine();
+		for (var i = 0; i <= lastLine; ++i) {
+			if (findFirstPrefix(cm, i) >= 0) {
+				return i;
+			}
+		}
+	}
+}
+function findFirstPrefix(cm, line, ch, lineText) {
+	if (!ch) ch = 0;
+	if (!lineText) lineText = cm.getLine(line);
+	lineText = lineText.toUpperCase();
+	for (var at = ch, pass = 0;;) {
+		var found = lineText.indexOf(lookFor, at);
+		if (found == -1) {
+			if (pass == 1)
+				break;
+			pass = 1;
+			at = lineText.length;
+			continue;
+		}
+		if (pass == 1 && found < ch)
+			break;
+		tokenType = cm.getTokenTypeAt(CodeMirror.Pos(line, found + 1));
+		if (!/^(comment|string)/.test(tokenType))
+			return found + 1;
+		at = found - 1;
+	}
+}
+
+CodeMirror.registerHelper("fold", "prefix", function(cm, start) {
+	var line = start.line, lineText = cm.getLine(line);
+	
+	var startCh, tokenType;
+
+	function hasPreviousPrefix() {
+		var hasPreviousPrefix = false;
+		for (var i = line - 1; i >= 0; i--) {
+			if (cm.getLine(i).toUpperCase().indexOf(lookFor) >= 0) {
+				hasPreviousPrefix = true;
+				break;
+			}
+		}
+		return hasPreviousPrefix;
+	}
+	
+	
+	function findOpening(openCh) {
+		for (var at = start.ch, pass = 0;;) {
+			var found = at <= 0 ? -1 : lineText.lastIndexOf(openCh, at - 1);
+			if (found == -1) {
+				if (pass == 1)
+					break;
+				pass = 1;
+				at = lineText.length;
+				continue;
+			}
+			if (pass == 1 && found < start.ch)
+				break;
+			tokenType = cm.getTokenTypeAt(CodeMirror.Pos(line, found + 1));
+			if (!/^(comment|string)/.test(tokenType))
+				return found + 1;
+			at = found - 1;
+		}
+	}
+	var getLastPrefixPos = function(line, ch) {
+		var prefixKeywordToken = cm.getTokenAt(CodeMirror.Pos(line, ch + 1));
+		if (!prefixKeywordToken || prefixKeywordToken.type != "keyword") return -1;
+		var prefixShortname = tokenUtils.getNextNonWsToken(cm, line, prefixKeywordToken.end + 1);
+		if (!prefixShortname || prefixShortname.type != "string-2")	return -1;//missing prefix keyword shortname
+		var prefixUri = tokenUtils.getNextNonWsToken(cm, line, prefixShortname.end + 1);
+		if (!prefixUri || prefixUri.type != "variable-3") return -1;//missing prefix uri
+		return prefixUri.end;
+	}
+
+	//only use opening prefix declaration
+	if (hasPreviousPrefix())
+		return;
+	var prefixStart = findFirstPrefix(cm, line, start.ch, lineText);
+
+	if (prefixStart == null)
+		return;
+	var stopAt = '{'; //if this char is there, we won't have a chance of finding more prefixes
+	var stopAtNextLine = false;
+	var count = 1, lastLine = cm.lastLine(), end, endCh;
+	var prefixEndChar = getLastPrefixPos(line, prefixStart);
+	var prefixEndLine = line;
+
+	outer: for (var i = line; i <= lastLine; ++i) {
+		if (stopAtNextLine)
+			break;
+		var text = cm.getLine(i), pos = i == line ? prefixStart + 1 : 0;
+
+		for (;;) {
+			if (!stopAtNextLine && text.indexOf(stopAt) >= 0)
+				stopAtNextLine = true;
+
+			var nextPrefixDeclaration = text.toUpperCase()
+					.indexOf(lookFor, pos);
+
+			if (nextPrefixDeclaration >= 0) {
+				if ((endCh = getLastPrefixPos(i, nextPrefixDeclaration)) > 0) {
+					prefixEndChar = endCh;
+					prefixEndLine = i;
+					pos = prefixEndChar;
+				}
+				pos++;
+			} else {
+				break;
+			}
+		}
+	}
+	return {
+		from : CodeMirror.Pos(line, prefixStart + lookFor.length),
+		to : CodeMirror.Pos(prefixEndLine, prefixEndChar)
+	};
+});
+
+},{"./tokenUtils.js":51,"codemirror":31}],49:[function(require,module,exports){
 'use strict';
 /**
  * Append prefix declaration to list of prefixes in query window.
@@ -34468,6 +34715,7 @@ var addPrefixes = function(yasqe, prefixes) {
 			addPrefixAsString(yasqe, pref + ": <" + prefixes[pref] + ">");
 		}
 	}
+	yasqe.collapsePrefixes(false);
 };
 
 var addPrefixAsString = function(yasqe, prefixString) {
@@ -34494,6 +34742,7 @@ var addPrefixAsString = function(yasqe, prefixString) {
 			line : lastPrefixLine
 		});
 	}
+	yasqe.collapsePrefixes(false);
 };
 var removePrefixes = function(yasqe, prefixes) {
 	var escapeRegex = function(string) {
@@ -34503,6 +34752,7 @@ var removePrefixes = function(yasqe, prefixes) {
 	for (var pref in prefixes) {
 		yasqe.setValue(yasqe.getValue().replace(new RegExp("PREFIX\\s*" + pref + ":\\s*" + escapeRegex("<" + prefixes[pref] + ">") + "\\s*", "ig"), ''));
 	}
+	yasqe.collapsePrefixes(false);
 	
 };
 
@@ -34587,7 +34837,7 @@ module.exports = {
 	removePrefixes: removePrefixes
 };
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	YASQE = require('./main.js');
@@ -34723,7 +34973,7 @@ var getAcceptHeader = function(yasqe, config) {
 	return acceptHeader;
 };
 
-},{"./main.js":47,"jquery":32}],50:[function(require,module,exports){
+},{"./main.js":47,"jquery":32}],51:[function(require,module,exports){
 'use strict';
 /**
  * When typing a query, this query is sometimes syntactically invalid, causing
@@ -34801,7 +35051,7 @@ module.exports = {
 };
 
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('./utils.js');
@@ -34839,7 +35089,7 @@ module.exports = function(yasqe, parent, html) {
 };
 
 
-},{"./utils.js":52,"jquery":32}],52:[function(require,module,exports){
+},{"./utils.js":53,"jquery":32}],53:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 
@@ -34894,7 +35144,7 @@ module.exports = {
 	getPersistencyId: getPersistencyId,
 	elementsOverlap:elementsOverlap,
 };
-},{"jquery":32}],53:[function(require,module,exports){
+},{"jquery":32}],54:[function(require,module,exports){
 /*! DataTables 1.10.2
  * ©2008-2014 SpryMedia Ltd - datatables.net/license
  */
@@ -49518,7 +49768,7 @@ module.exports = {
 }(window, document));
 
 
-},{"jquery":69}],54:[function(require,module,exports){
+},{"jquery":70}],55:[function(require,module,exports){
 /**
                _ _____           _          _     _      
               | |  __ \         (_)        | |   | |     
@@ -49833,7 +50083,7 @@ var $ = require('jquery');
     });
 
 
-},{"jquery":69}],55:[function(require,module,exports){
+},{"jquery":70}],56:[function(require,module,exports){
 /**
  * jQuery-csv (jQuery Plugin)
  * version: 0.71 (2012-11-19)
@@ -50683,19 +50933,19 @@ RegExp.escape= function(s) {
 
 
 
-},{"jquery":69}],56:[function(require,module,exports){
+},{"jquery":70}],57:[function(require,module,exports){
 module.exports=require(23)
-},{"../../lib/codemirror":61,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/edit/matchbrackets.js":23}],57:[function(require,module,exports){
+},{"../../lib/codemirror":62,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/edit/matchbrackets.js":23}],58:[function(require,module,exports){
 module.exports=require(24)
-},{"../../lib/codemirror":61,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/brace-fold.js":24}],58:[function(require,module,exports){
+},{"../../lib/codemirror":62,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/brace-fold.js":24}],59:[function(require,module,exports){
 module.exports=require(25)
-},{"../../lib/codemirror":61,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldcode.js":25}],59:[function(require,module,exports){
+},{"../../lib/codemirror":62,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldcode.js":25}],60:[function(require,module,exports){
 module.exports=require(26)
-},{"../../lib/codemirror":61,"./foldcode":58,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldgutter.js":26}],60:[function(require,module,exports){
+},{"../../lib/codemirror":62,"./foldcode":59,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/foldgutter.js":26}],61:[function(require,module,exports){
 module.exports=require(27)
-},{"../../lib/codemirror":61,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/xml-fold.js":27}],61:[function(require,module,exports){
+},{"../../lib/codemirror":62,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/addon/fold/xml-fold.js":27}],62:[function(require,module,exports){
 module.exports=require(31)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/lib/codemirror.js":31}],62:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-yasqe/node_modules/codemirror/lib/codemirror.js":31}],63:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -51389,7 +51639,7 @@ CodeMirror.defineMIME("application/typescript", { name: "javascript", typescript
 
 });
 
-},{"../../lib/codemirror":61}],63:[function(require,module,exports){
+},{"../../lib/codemirror":62}],64:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -51775,7 +52025,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
 
 });
 
-},{"../../lib/codemirror":61}],64:[function(require,module,exports){
+},{"../../lib/codemirror":62}],65:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.5"
@@ -61280,11 +61530,11 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
   if (typeof define === "function" && define.amd) define(d3); else if (typeof module === "object" && module.exports) module.exports = d3;
   this.d3 = d3;
 }();
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 module.exports=require(3)
-},{"/home/lrd900/yasgui/yasgui/node_modules/jquery-ui/core.js":3,"jquery":69}],66:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/jquery-ui/core.js":3,"jquery":70}],67:[function(require,module,exports){
 module.exports=require(4)
-},{"./widget":68,"/home/lrd900/yasgui/yasgui/node_modules/jquery-ui/mouse.js":4,"jquery":69}],67:[function(require,module,exports){
+},{"./widget":69,"/home/lrd900/yasgui/yasgui/node_modules/jquery-ui/mouse.js":4,"jquery":70}],68:[function(require,module,exports){
 var jQuery = require('jquery');
 require('./core');
 require('./mouse');
@@ -62580,11 +62830,11 @@ $.widget("ui.sortable", $.ui.mouse, {
 
 })(jQuery);
 
-},{"./core":65,"./mouse":66,"./widget":68,"jquery":69}],68:[function(require,module,exports){
+},{"./core":66,"./mouse":67,"./widget":69,"jquery":70}],69:[function(require,module,exports){
 module.exports=require(7)
-},{"/home/lrd900/yasgui/yasgui/node_modules/jquery-ui/widget.js":7,"jquery":69}],69:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/jquery-ui/widget.js":7,"jquery":70}],70:[function(require,module,exports){
 module.exports=require(8)
-},{"/home/lrd900/yasgui/yasgui/node_modules/jquery/dist/jquery.js":8}],70:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/jquery/dist/jquery.js":8}],71:[function(require,module,exports){
 (function() {
   var callWithJQuery;
 
@@ -62680,7 +62930,7 @@ module.exports=require(8)
 }).call(this);
 
 //# sourceMappingURL=d3_renderers.js.map
-},{"jquery":69}],71:[function(require,module,exports){
+},{"jquery":70}],72:[function(require,module,exports){
 (function() {
   var callWithJQuery;
 
@@ -62805,7 +63055,7 @@ module.exports=require(8)
 }).call(this);
 
 //# sourceMappingURL=gchart_renderers.js.map
-},{"jquery":69}],72:[function(require,module,exports){
+},{"jquery":70}],73:[function(require,module,exports){
 (function() {
   var callWithJQuery,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
@@ -64163,17 +64413,17 @@ module.exports=require(8)
 }).call(this);
 
 //# sourceMappingURL=pivot.js.map
-},{"jquery":69}],73:[function(require,module,exports){
+},{"jquery":70}],74:[function(require,module,exports){
 module.exports=require(13)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/node_modules/store/store.js":13}],74:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/node_modules/store/store.js":13}],75:[function(require,module,exports){
 module.exports=require(14)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/package.json":14}],75:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/package.json":14}],76:[function(require,module,exports){
 module.exports=require(15)
-},{"../package.json":74,"./storage.js":76,"./svg.js":77,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/main.js":15}],76:[function(require,module,exports){
+},{"../package.json":75,"./storage.js":77,"./svg.js":78,"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/main.js":15}],77:[function(require,module,exports){
 module.exports=require(16)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/storage.js":16,"store":73}],77:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/storage.js":16,"store":74}],78:[function(require,module,exports){
 module.exports=require(17)
-},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/svg.js":17}],78:[function(require,module,exports){
+},{"/home/lrd900/yasgui/yasgui/node_modules/yasgui-utils/src/svg.js":17}],79:[function(require,module,exports){
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
@@ -64290,7 +64540,7 @@ module.exports={
   }
 }
 
-},{}],79:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 'use strict';
 module.exports = function(result) {
 	var quote = "\"";
@@ -64350,7 +64600,7 @@ module.exports = function(result) {
 	createBody();
 	return csvString;
 };
-},{}],80:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 
@@ -64410,7 +64660,7 @@ root.version = {
 };
 
 
-},{"../package.json":78,"./imgs.js":86,"jquery":69,"yasgui-utils":75}],81:[function(require,module,exports){
+},{"../package.json":79,"./imgs.js":87,"jquery":70,"yasgui-utils":76}],82:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = {
@@ -64506,7 +64756,7 @@ module.exports = {
 	
 	
 };
-},{"jquery":69}],82:[function(require,module,exports){
+},{"jquery":70}],83:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 
@@ -64600,7 +64850,7 @@ root.defaults = {
 	corsMessage: 'Unable to get response from endpoint',
 	tryQueryLink: null,
 };
-},{"jquery":69}],83:[function(require,module,exports){
+},{"jquery":70}],84:[function(require,module,exports){
 module.exports = {
 	GoogleTypeException:  function(foundTypes, varName) {
 	   this.foundTypes = foundTypes;
@@ -64620,7 +64870,7 @@ module.exports = {
 	   };
 	}
 }
-},{}],84:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 (function (global){
 var EventEmitter = require('events').EventEmitter,
 	$ = require('jquery');
@@ -64732,7 +64982,7 @@ module.exports = new loader();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"events":2,"jquery":69}],85:[function(require,module,exports){
+},{"events":2,"jquery":70}],86:[function(require,module,exports){
 (function (global){
 'use strict';
 /**
@@ -65024,7 +65274,7 @@ function deepEq$(x, y, type){
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./exceptions.js":83,"./gChartLoader.js":84,"./utils.js":99,"jquery":69,"yasgui-utils":75}],86:[function(require,module,exports){
+},{"./exceptions.js":84,"./gChartLoader.js":85,"./utils.js":100,"jquery":70,"yasgui-utils":76}],87:[function(require,module,exports){
 'use strict';
 module.exports = {
 	cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
@@ -65037,9 +65287,9 @@ module.exports = {
 	fullscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="640"     inkscape:window-height="480"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="0"     inkscape:current-layer="Layer_1" /><path     d="m -7.962963,-10 v 38.889 l 16.667,-16.667 16.667,16.667 5.555,-5.555 -16.667,-16.667 16.667,-16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 92.037037,-10 v 38.889 l -16.667,-16.667 -16.666,16.667 -5.556,-5.555 16.666,-16.667 -16.666,-16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M -7.962963,90 V 51.111 l 16.667,16.666 16.667,-16.666 5.555,5.556 -16.667,16.666 16.667,16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M 92.037037,90 V 51.111 l -16.667,16.666 -16.666,-16.666 -5.556,5.556 16.666,16.666 -16.666,16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 	smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 };
-},{}],87:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 require('./tableToCsv.js');
-},{"./tableToCsv.js":88}],88:[function(require,module,exports){
+},{"./tableToCsv.js":89}],89:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 
@@ -65139,7 +65389,7 @@ $.fn.tableToCsv = function(config) {
 }
 
 
-},{"jquery":69}],89:[function(require,module,exports){
+},{"jquery":70}],90:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var utils = require("yasgui-utils");
@@ -65574,13 +65824,13 @@ try {root.registerOutput('table', require("./table.js"))} catch(e){};
 try {root.registerOutput('error', require("./error.js"))} catch(e){};
 try {root.registerOutput('pivot', require("./pivot.js"))} catch(e){};
 try {root.registerOutput('gchart', require("./gchart.js"))} catch(e){};
-},{"../package.json":78,"./boolean.js":80,"./defaults.js":81,"./error.js":82,"./gChartLoader.js":84,"./gchart.js":85,"./imgs.js":86,"./jquery/extendJquery.js":87,"./parsers/wrapper.js":94,"./pivot.js":96,"./rawResponse.js":97,"./table.js":98,"./utils.js":99,"jquery":69,"yasgui-utils":75}],90:[function(require,module,exports){
+},{"../package.json":79,"./boolean.js":81,"./defaults.js":82,"./error.js":83,"./gChartLoader.js":85,"./gchart.js":86,"./imgs.js":87,"./jquery/extendJquery.js":88,"./parsers/wrapper.js":95,"./pivot.js":97,"./rawResponse.js":98,"./table.js":99,"./utils.js":100,"jquery":70,"yasgui-utils":76}],91:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, ",");
 };
-},{"./dlv.js":91,"jquery":69}],91:[function(require,module,exports){
+},{"./dlv.js":92,"jquery":70}],92:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 require("../../lib/jquery.csv-0.71.js");
@@ -65642,7 +65892,7 @@ var root = module.exports = function(queryResponse, separator) {
 	
 	return json;
 };
-},{"../../lib/jquery.csv-0.71.js":55,"jquery":69}],92:[function(require,module,exports){
+},{"../../lib/jquery.csv-0.71.js":56,"jquery":70}],93:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
@@ -65660,13 +65910,13 @@ var root = module.exports = function(queryResponse) {
 	return false;
 	
 };
-},{"jquery":69}],93:[function(require,module,exports){
+},{"jquery":70}],94:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, "\t");
 };
-},{"./dlv.js":91,"jquery":69}],94:[function(require,module,exports){
+},{"./dlv.js":92,"jquery":70}],95:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 
@@ -65900,7 +66150,7 @@ var root = module.exports = function(dataOrJqXhr, textStatus, jqXhrOrErrorString
 
 
 
-},{"./csv.js":90,"./json.js":92,"./tsv.js":93,"./xml.js":95,"jquery":69}],95:[function(require,module,exports){
+},{"./csv.js":91,"./json.js":93,"./tsv.js":94,"./xml.js":96,"jquery":70}],96:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(xml) {
@@ -65986,7 +66236,7 @@ var root = module.exports = function(xml) {
 	return json;
 };
 
-},{"jquery":69}],96:[function(require,module,exports){
+},{"jquery":70}],97:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	utils = require('./utils.js'),
@@ -66253,7 +66503,7 @@ root.version = {
 	"YASR-rawResponse" : require("../package.json").version,
 	"jquery": $.fn.jquery,
 };
-},{"../node_modules/pivottable/dist/d3_renderers.js":70,"../node_modules/pivottable/dist/gchart_renderers.js":71,"../package.json":78,"./gChartLoader.js":84,"./imgs.js":86,"./utils.js":99,"d3":64,"jquery":69,"jquery-ui/sortable":67,"pivottable":72,"yasgui-utils":75}],97:[function(require,module,exports){
+},{"../node_modules/pivottable/dist/d3_renderers.js":71,"../node_modules/pivottable/dist/gchart_renderers.js":72,"../package.json":79,"./gChartLoader.js":85,"./imgs.js":87,"./utils.js":100,"d3":65,"jquery":70,"jquery-ui/sortable":68,"pivottable":73,"yasgui-utils":76}],98:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	CodeMirror = require("codemirror");
@@ -66342,7 +66592,7 @@ root.version = {
 	"jquery": $.fn.jquery,
 	"CodeMirror" : CodeMirror.version
 };
-},{"../package.json":78,"codemirror":61,"codemirror/addon/edit/matchbrackets.js":56,"codemirror/addon/fold/brace-fold.js":57,"codemirror/addon/fold/foldcode.js":58,"codemirror/addon/fold/foldgutter.js":59,"codemirror/addon/fold/xml-fold.js":60,"codemirror/mode/javascript/javascript.js":62,"codemirror/mode/xml/xml.js":63,"jquery":69}],98:[function(require,module,exports){
+},{"../package.json":79,"codemirror":62,"codemirror/addon/edit/matchbrackets.js":57,"codemirror/addon/fold/brace-fold.js":58,"codemirror/addon/fold/foldcode.js":59,"codemirror/addon/fold/foldgutter.js":60,"codemirror/addon/fold/xml-fold.js":61,"codemirror/mode/javascript/javascript.js":63,"codemirror/mode/xml/xml.js":64,"jquery":70}],99:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	yutils = require("yasgui-utils"),
@@ -66752,7 +67002,7 @@ root.version = {
 	"jquery-datatables": $.fn.DataTable.version
 };
 
-},{"../lib/DataTables/media/js/jquery.dataTables.js":53,"../lib/colResizable-1.4.js":54,"../package.json":78,"./bindingsToCsv.js":79,"./imgs.js":86,"./utils.js":99,"jquery":69,"yasgui-utils":75}],99:[function(require,module,exports){
+},{"../lib/DataTables/media/js/jquery.dataTables.js":54,"../lib/colResizable-1.4.js":55,"../package.json":79,"./bindingsToCsv.js":80,"./imgs.js":87,"./utils.js":100,"jquery":70,"yasgui-utils":76}],100:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	GoogleTypeException = require('./exceptions.js').GoogleTypeException;
@@ -66891,7 +67141,7 @@ var parseXmlSchemaDate = function(dateString) {
 	if (isNaN(date)) return null;
 	return date;
 };
-},{"./exceptions.js":83,"jquery":69}],100:[function(require,module,exports){
+},{"./exceptions.js":84,"jquery":70}],101:[function(require,module,exports){
 'use strict';
 
 var $ = require('jquery');
@@ -66899,6 +67149,7 @@ module.exports = {
 	persistencyPrefix: function(yasgui) {
 		return "yasgui_" + $(yasgui.wrapperElement).closest('[id]').attr('id') + "_";
 	},
+	allowYasqeResize: true,
 	api: {
 		corsProxy: null,
 		collections: null,
@@ -66908,7 +67159,7 @@ module.exports = {
 		askConsent: true,
 	}
 };
-},{"jquery":8}],101:[function(require,module,exports){
+},{"jquery":8}],102:[function(require,module,exports){
 'use strict';
 module.exports = {
 //	yasgui: '<svg   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" viewBox="0 0 603.99 522.51"  width="100%"   height="100%"   id="svg2"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="yasgui (copy).svg">  <defs     id="defs4">    <linearGradient       id="linearGradient5249"       osb:paint="solid">      <stop         style="stop-color:#3b3b3b;stop-opacity:1;"         offset="0"         id="stop5251" />    </linearGradient>    <inkscape:path-effect       effect="skeletal"       id="path-effect2997"       is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"       id="path-effect2995"       is_visible="true" />    <inkscape:path-effect       effect="skeletal"       id="path-effect2991"       is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"       id="path-effect2989"       is_visible="true" />  </defs>  <sodipodi:namedview     id="base"     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1.0"     inkscape:pageopacity="0.0"     inkscape:pageshadow="2"     inkscape:zoom="0.35"     inkscape:cx="-469.55507"     inkscape:cy="840.5292"     inkscape:document-units="px"     inkscape:current-layer="layer1"     showgrid="false"     inkscape:window-width="1855"     inkscape:window-height="1056"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0" />  <metadata     id="metadata7">    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />        <dc:title />      </cc:Work>    </rdf:RDF>  </metadata>  <g     inkscape:label="Layer 1"     inkscape:groupmode="layer"     id="layer1"     transform="translate(-50.966817,-280.33262)">    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"       id="rect5293-6-8"       width="40.000004"       height="478.57324"       x="-374.48849"       y="103.99496"       transform="matrix(-2.679181e-4,-0.99999996,0.99999993,-3.6684387e-4,0,0)" />    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"       id="rect5293-5-7"       width="40.000004"       height="560"       x="651.37634"       y="-132.06581"       transform="matrix(0.74639582,0.66550228,-0.66550228,0.74639582,0,0)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-9-7"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,92.132758,620.67568)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-3-0"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,457.84706,214.96137)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-0-7-1-1-2"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,-30.152972,219.81853)" />    <text       xml:space="preserve"       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#3b3b3b;fill-opacity:1;stroke:none;font-family:Sans"       x="-387.96655"       y="630.61871"       id="text5479-9-0-6-4"       sodipodi:linespacing="125%"       transform="matrix(0.68747304,-0.7262099,0.7262099,0.68747304,0,0)"       inkscape:transform-center-x="239.86342"       inkscape:transform-center-y="-26.958107"><tspan         sodipodi:role="line"         id="tspan5481-8-8-9-7"         x="-387.96655"         y="630.61871"         style="font-size:200px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;fill-opacity:1;font-family:RR Beaver;-inkscape-font-specification:RR Beaver">YAS</tspan></text>    <text       xml:space="preserve"       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Theorem NBP;-inkscape-font-specification:Theorem NBP"       x="349.24683"       y="750.29126"       id="text5483-4-3-2"       sodipodi:linespacing="125%"><tspan         sodipodi:role="line"         id="tspan5485-6-5-7"         x="349.24683"         y="750.29126"         style="font-size:170px;font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;letter-spacing:20px;fill:#c80000;fill-opacity:1;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic">GUI</tspan></text>    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"       id="path3781-9-7-4-1-4"       sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.4331683,0,0,0.38716814,381.83246,155.72497)" />  </g></svg>',
@@ -66919,7 +67170,7 @@ module.exports = {
 	checkMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 48.269674 56.308594"   version="1.1"      inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="40.78518"     inkscape:cy="24.259259"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2" />  <g          transform="translate(-9.3300051,-18.878906)">    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"              inkscape:connector-curvature="0" />  </g></svg>',
 	checkCrossMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 49.752653 49.990111"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"     showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="41.024355"     inkscape:cy="53.698163"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2"      />  <g     transform="matrix(0.59034297,0,0,0.59034297,12.298561,2.5312719)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"       inkscape:connector-curvature="0"        />  </g>  <g     transform="matrix(0.46036177,0,0,0.46036177,-0.49935505,-12.592753)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 67.335938,21.40625 60.320312,11.0625 C 50.757812,17.542969 43.875,22.636719 38.28125,27.542969 32.691406,22.636719 25.808594,17.546875 16.242188,11.0625 L 9.230469,21.40625 C 18.03125,27.375 24.3125,31.953125 29.398438,36.351562 23.574219,42.90625 18.523438,50.332031 11.339844,61.183594 l 10.421875,6.902344 C 28.515625,57.886719 33.144531,51.046875 38.28125,45.160156 c 5.140625,5.886719 9.765625,12.726563 16.523438,22.925782 L 65.226562,61.183594 C 58.039062,50.335938 52.988281,42.90625 47.167969,36.351562 52.25,31.953125 58.53125,27.375 67.335938,21.40625 z m 0,0"       inkscape:connector-curvature="0"        />  </g></svg>',
 };
-},{}],102:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	selectize = require('selectize'),
@@ -67453,14 +67704,14 @@ var getCkanEndpoints = function() {
 };
 
 
-},{"jquery":8,"selectize":9,"yasgui-utils":15}],103:[function(require,module,exports){
+},{"jquery":8,"selectize":9,"yasgui-utils":15}],104:[function(require,module,exports){
 //extend jquery
 require('../../node_modules/jquery-ui/resizable.js');
 require('./outsideclick.js');
 require('./tab.js');
 require('./endpointCombi.js');
 
-},{"../../node_modules/jquery-ui/resizable.js":6,"./endpointCombi.js":102,"./outsideclick.js":104,"./tab.js":105}],104:[function(require,module,exports){
+},{"../../node_modules/jquery-ui/resizable.js":6,"./endpointCombi.js":103,"./outsideclick.js":105,"./tab.js":106}],105:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 
@@ -67492,7 +67743,7 @@ $.fn.onOutsideClick = function(onOutsideClick, config) {
 }
 
 
-},{"jquery":8}],105:[function(require,module,exports){
+},{"jquery":8}],106:[function(require,module,exports){
 //Based on Bootstrap: tab.js v3.3.1
 var $ = require('jquery');
   'use strict';
@@ -67638,7 +67889,7 @@ var $ = require('jquery');
     .on('click.bs.tab.data-api', '[data-toggle="pill"]', clickHandler)
 
 
-},{"jquery":8}],106:[function(require,module,exports){
+},{"jquery":8}],107:[function(require,module,exports){
 "use strict";
 var $ = require('jquery'),
 	EventEmitter = require('events').EventEmitter,
@@ -68013,7 +68264,7 @@ module.exports.YASQE = require('./yasqe.js');
 module.exports.YASR = require('./yasr.js');
 module.exports.$ = $;
 module.exports.defaults = require('./defaults.js');
-},{"./defaults.js":100,"./imgs.js":101,"./jquery/extendJquery.js":103,"./shareLink.js":107,"./tab.js":108,"./tracker.js":110,"./yasqe.js":112,"./yasr.js":113,"events":2,"jquery":8,"jquery-ui/position":5,"yasgui-utils":15}],107:[function(require,module,exports){
+},{"./defaults.js":101,"./imgs.js":102,"./jquery/extendJquery.js":104,"./shareLink.js":108,"./tab.js":109,"./tracker.js":111,"./yasqe.js":113,"./yasr.js":114,"events":2,"jquery":8,"jquery-ui/position":5,"yasgui-utils":15}],108:[function(require,module,exports){
 var deparam = function(queryString) {
 	var params = [];
 	if (queryString && queryString.length > 0) {
@@ -68146,7 +68397,7 @@ module.exports = {
 		}
 	}
 }
-},{}],108:[function(require,module,exports){
+},{}],109:[function(require,module,exports){
 'use strict';
 
 //		mod.emit('initError')
@@ -68359,22 +68610,28 @@ var Tab = function(yasgui, id, name, endpoint) {
 		initYasqe();
 		tab.yasqe.refresh();
 		initYasr();
-		
-		$(tab.yasqe.getWrapperElement()).resizable({
-			minHeight: 200,
-			handles: 's',
-			resize : function() {
-				_.debounce(function() {
-					tab.yasqe.setSize("100%", $(this).height());
+		if (yasgui.options.allowYasqeResize) {
+			$(tab.yasqe.getWrapperElement()).resizable({
+				minHeight: 150,
+				handles: 's',
+				resize : function() {
+					_.debounce(function() {
+						tab.yasqe.setSize("100%", $(this).height());
+						tab.yasqe.refresh()
+					}, 500);
+				},
+				stop: function() {
+					persistentOptions.yasqe.height = $(this).height();
 					tab.yasqe.refresh()
-				}, 500);
-			},
-			stop: function() {
-				persistentOptions.yasqe.height = $(this).height();
-				tab.yasqe.refresh()
+					yasgui.store();
+				}
+			});
+			$(tab.yasqe.getWrapperElement()).find('.ui-resizable-s').click(function() {
+				$(tab.yasqe.getWrapperElement()).css('height', 'auto');
+				persistentOptions.yasqe.height = 'auto';
 				yasgui.store();
-			}
-		});
+			})
+		}
 	};
 	
 	tab.beforeShow = function() {
@@ -68410,7 +68667,7 @@ var Tab = function(yasgui, id, name, endpoint) {
 Tab.prototype = new EventEmitter;
 
 
-},{"./main.js":106,"./shareLink":107,"./tabPaneMenu.js":109,"./utils.js":111,"events":2,"jquery":8,"underscore":12,"yasgui-utils":15}],109:[function(require,module,exports){
+},{"./main.js":107,"./shareLink":108,"./tabPaneMenu.js":110,"./utils.js":112,"events":2,"jquery":8,"underscore":12,"yasgui-utils":15}],110:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	imgs = require('./imgs.js'),
@@ -68745,7 +69002,7 @@ module.exports = function(yasgui, tab) {
 };
 
 
-},{"./imgs.js":101,"jquery":8,"selectize":9,"yasgui-utils":15}],110:[function(require,module,exports){
+},{"./imgs.js":102,"jquery":8,"selectize":9,"yasgui-utils":15}],111:[function(require,module,exports){
 var yUtils = require('yasgui-utils'),
 	imgs = require('./imgs.js'),
 	$ = require('jquery');
@@ -68878,7 +69135,7 @@ module.exports = function(yasgui) {
 	}
 };
 
-},{"./imgs.js":101,"jquery":8,"yasgui-utils":15}],111:[function(require,module,exports){
+},{"./imgs.js":102,"jquery":8,"yasgui-utils":15}],112:[function(require,module,exports){
 var $ = require('jquery');
 module.exports = {
 	escapeHtmlEntities : function(unescapedString) {
@@ -68896,7 +69153,7 @@ module.exports = {
 	},
 
 }
-},{"jquery":8}],112:[function(require,module,exports){
+},{"jquery":8}],113:[function(require,module,exports){
 var $ = require('jquery');
 var root = module.exports = require('yasgui-yasqe');
 
@@ -68910,12 +69167,12 @@ root.defaults = $.extend(true, root.defaults, {
 		acceptHeaderSelect: "application/sparql-results+json"
 	}
 });
-},{"jquery":8,"yasgui-yasqe":47}],113:[function(require,module,exports){
+},{"jquery":8,"yasgui-yasqe":47}],114:[function(require,module,exports){
 var $ = require('jquery'),
 	YASGUI = require('./main.js');
 var root = module.exports = require('yasgui-yasr');
 
-},{"./main.js":106,"jquery":8,"yasgui-yasr":89}]},{},[1])(1)
+},{"./main.js":107,"jquery":8,"yasgui-yasr":90}]},{},[1])(1)
 });
 
 
