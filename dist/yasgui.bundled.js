@@ -64427,7 +64427,7 @@ module.exports=require(17)
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
-  "version": "2.5.3",
+  "version": "2.5.4",
   "main": "src/main.js",
   "licenses": [
     {
@@ -64672,8 +64672,7 @@ module.exports = {
 	 */
 	output: "table",
 	useGoogleCharts: true, 
-	outputPlugins: ["table", "error", "boolean", "rawResponse"],
-	
+	outputPlugins: ["table", "error", "boolean", "rawResponse", "pivot", "gchart"],
 	
 	/**
 	 * Draw the output selector widget
@@ -65590,7 +65589,10 @@ var root = module.exports = function(parent, options, queryResults) {
 	var drawHeader = function(yasr) {
 		var drawOutputSelector = function() {
 			var btnGroup = $('<div class="yasr_btnGroup"></div>');
-			$.each(yasr.plugins, function(pluginName, plugin) {
+			$.each(yasr.options.outputPlugins, function(i, pluginName) {
+				var plugin = yasr.plugins[pluginName];
+				if (!plugin) return;//plugin not loaded
+				
 				if (plugin.hideFromSelection) return;
 				var name = plugin.name || pluginName;
 				var button = $("<button class='yasr_btn'></button>")
