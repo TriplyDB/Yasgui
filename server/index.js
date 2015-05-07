@@ -6,6 +6,7 @@ var express = require('express'),
 	fs = require('fs'),
 	config = require('./config.json');
 
+var dev = !!process.env.yasguiDev;
 
 var app = express();
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
@@ -23,6 +24,10 @@ if (argv.config) {
 var htmlFile = __dirname + '/../server.html';
 var html = fs.readFileSync(htmlFile).toString();
 html = html.replace(/(var config = )\{.*\};/, '$1' + JSON.stringify(config.client) + ';');
+
+if (dev) {
+	html = html.replace('manifest="server.html.manifest"', '');
+}
 fs.writeFileSync(htmlFile, html);
 
 

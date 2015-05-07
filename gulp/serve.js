@@ -24,5 +24,6 @@ gulp.task('connect', function() {
 });
 
 gulp.task('connectApi', function() {
+	process.env.yasguiDev = 1;
 	nodemon({ script: './server/index.js', watch: './server' })
 });
