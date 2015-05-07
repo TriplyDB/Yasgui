@@ -1,7 +1,12 @@
 .yasqe {
 	.CodeMirror {
 		border-color: $nav-tabs-border-color;
-		border-bottom-width: 4px;
-		border-bottom-color: #B6B6B6;
+		&.ui-resizable {
+			border-bottom-width: 4px;
+			border-bottom-color: #B6B6B6;
+			.ui-resizable-s {
+				cursor: ns-resize;
+			}
+		}
 	}
 }

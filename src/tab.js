@@ -210,22 +210,28 @@ var Tab = function(yasgui, id, name, endpoint) {
 		initYasqe();
 		tab.yasqe.refresh();
 		initYasr();
-		
-		$(tab.yasqe.getWrapperElement()).resizable({
-			minHeight: 200,
-			handles: 's',
-			resize : function() {
-				_.debounce(function() {
-					tab.yasqe.setSize("100%", $(this).height());
+		if (yasgui.options.allowYasqeResize) {
+			$(tab.yasqe.getWrapperElement()).resizable({
+				minHeight: 150,
+				handles: 's',
+				resize : function() {
+					_.debounce(function() {
+						tab.yasqe.setSize("100%", $(this).height());
+						tab.yasqe.refresh()
+					}, 500);
+				},
+				stop: function() {
+					persistentOptions.yasqe.height = $(this).height();
 					tab.yasqe.refresh()
-				}, 500);
-			},
-			stop: function() {
-				persistentOptions.yasqe.height = $(this).height();
-				tab.yasqe.refresh()
+					yasgui.store();
+				}
+			});
+			$(tab.yasqe.getWrapperElement()).find('.ui-resizable-s').click(function() {
+				$(tab.yasqe.getWrapperElement()).css('height', 'auto');
+				persistentOptions.yasqe.height = 'auto';
 				yasgui.store();
-			}
-		});
+			})
+		}
 	};
 	
 	tab.beforeShow = function() {
