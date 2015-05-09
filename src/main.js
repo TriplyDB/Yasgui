@@ -316,6 +316,7 @@ var YASGUI = function(parent, options) {
 				var val = el.find('span').text();
 				el.addClass('rename');
 				el.find('input').val(val);
+				$tabRename.find('input').focus();
 				el.onOutsideClick(function(){
 					storeRename(el);
 				})
