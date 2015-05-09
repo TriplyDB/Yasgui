@@ -6710,6 +6710,9 @@ li.CodeMirror-hint-active {
   margin-top: 5px;
   height: 100%; }
 
+.yasr .dataTables_wrapper {
+  margin-top: 10px; }
+
 .yasr .dataTables_wrapper .dataTables_length {
   float: right;
   margin-left: 10px; }
@@ -6744,6 +6747,10 @@ li.CodeMirror-hint-active {
   width: 8px;
   height: 13px;
   margin-right: 10px; }
+
+.yasr .dtTopHeader .dataTables_info {
+  padding-top: 0px;
+  margin: 0px 10px; }
 
 .yasr .pivotTable {
   margin-top: 5px; }
