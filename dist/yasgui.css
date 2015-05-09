@@ -5555,7 +5555,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   font-size: 19px; }
 
 .yasqe .matchingVar {
-  background-color: #d9d9d9; }
+  background-color: #DBDEED;
+  border-radius: 6px;
+  transition: background 0.5s linear; }
 
 .CodeMirror-hints {
   position: absolute;
