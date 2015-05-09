@@ -1,7 +1,7 @@
 {
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "main": "src/main.js",
   "licenses": [
     {
