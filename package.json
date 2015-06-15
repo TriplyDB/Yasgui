@@ -3,12 +3,7 @@
   "description": "Yet Another SPARQL GUI",
   "version": "1.1.10",
   "main": "src/main.js",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://yasgui.org/license.txt"
-    }
-  ],
+  "license": "MIT",
   "author": "Laurens Rietveld",
   "homepage": "http://yasgui.org",
   "scripts": {
