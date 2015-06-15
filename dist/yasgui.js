@@ -13169,7 +13169,143 @@ return jQuery;
 
 },{}],9:[function(require,module,exports){
 /**
- * selectize.js (v0.12.0)
+ * microplugin.js
+ * Copyright (c) 2013 Brian Reavis & contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ *
+ * @author Brian Reavis <brian@thirdroute.com>
+ */
+
+(function(root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		define(factory);
+	} else if (typeof exports === 'object') {
+		module.exports = factory();
+	} else {
+		root.MicroPlugin = factory();
+	}
+}(this, function() {
+	var MicroPlugin = {};
+
+	MicroPlugin.mixin = function(Interface) {
+		Interface.plugins = {};
+
+		/**
+		 * Initializes the listed plugins (with options).
+		 * Acceptable formats:
+		 *
+		 * List (without options):
+		 *   ['a', 'b', 'c']
+		 *
+		 * List (with options):
+		 *   [{'name': 'a', options: {}}, {'name': 'b', options: {}}]
+		 *
+		 * Hash (with options):
+		 *   {'a': { ... }, 'b': { ... }, 'c': { ... }}
+		 *
+		 * @param {mixed} plugins
+		 */
+		Interface.prototype.initializePlugins = function(plugins) {
+			var i, n, key;
+			var self  = this;
+			var queue = [];
+
+			self.plugins = {
+				names     : [],
+				settings  : {},
+				requested : {},
+				loaded    : {}
+			};
+
+			if (utils.isArray(plugins)) {
+				for (i = 0, n = plugins.length; i < n; i++) {
+					if (typeof plugins[i] === 'string') {
+						queue.push(plugins[i]);
+					} else {
+						self.plugins.settings[plugins[i].name] = plugins[i].options;
+						queue.push(plugins[i].name);
+					}
+				}
+			} else if (plugins) {
+				for (key in plugins) {
+					if (plugins.hasOwnProperty(key)) {
+						self.plugins.settings[key] = plugins[key];
+						queue.push(key);
+					}
+				}
+			}
+
+			while (queue.length) {
+				self.require(queue.shift());
+			}
+		};
+
+		Interface.prototype.loadPlugin = function(name) {
+			var self    = this;
+			var plugins = self.plugins;
+			var plugin  = Interface.plugins[name];
+
+			if (!Interface.plugins.hasOwnProperty(name)) {
+				throw new Error('Unable to find "' +  name + '" plugin');
+			}
+
+			plugins.requested[name] = true;
+			plugins.loaded[name] = plugin.fn.apply(self, [self.plugins.settings[name] || {}]);
+			plugins.names.push(name);
+		};
+
+		/**
+		 * Initializes a plugin.
+		 *
+		 * @param {string} name
+		 */
+		Interface.prototype.require = function(name) {
+			var self = this;
+			var plugins = self.plugins;
+
+			if (!self.plugins.loaded.hasOwnProperty(name)) {
+				if (plugins.requested[name]) {
+					throw new Error('Plugin has circular dependency ("' + name + '")');
+				}
+				self.loadPlugin(name);
+			}
+
+			return plugins.loaded[name];
+		};
+
+		/**
+		 * Registers a plugin.
+		 *
+		 * @param {string} name
+		 * @param {function} fn
+		 */
+		Interface.define = function(name, fn) {
+			Interface.plugins[name] = {
+				'name' : name,
+				'fn'   : fn
+			};
+		};
+	};
+
+	var utils = {
+		isArray: Array.isArray || function(vArg) {
+			return Object.prototype.toString.call(vArg) === '[object Array]';
+		}
+	};
+
+	return MicroPlugin;
+}));
+},{}],10:[function(require,module,exports){
+/**
+ * selectize.js (v0.12.1)
  * Copyright (c) 2013–2015 Brian Reavis & contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
@@ -14382,7 +14518,7 @@ return jQuery;
 			var events = silent ? [] : ['change'];
 	
 			debounce_events(this, events, function() {
-				this.clear();
+				this.clear(silent);
 				this.addItems(value, silent);
 			});
 		},
@@ -15052,7 +15188,7 @@ return jQuery;
 				}
 	
 				if (!self.options.hasOwnProperty(value)) return;
-				if (inputMode === 'single') self.clear();
+				if (inputMode === 'single') self.clear(silent);
 				if (inputMode === 'multi' && self.isFull()) return;
 	
 				$item = $(self.render('item', self.options[value]));
@@ -15810,8 +15946,6 @@ return jQuery;
 		var field_optgroup_label = settings.optgroupLabelField;
 		var field_optgroup_value = settings.optgroupValueField;
 	
-		var optionsMap = {};
-	
 		/**
 		 * Initializes selectize from a <input type="text"> element.
 		 *
@@ -15851,6 +15985,7 @@ return jQuery;
 		var init_select = function($input, settings_element) {
 			var i, n, tagName, $children, order = 0;
 			var options = settings_element.options;
+			var optionsMap = {};
 	
 			var readData = function($el) {
 				var data = attr_data && $el.attr(attr_data);
@@ -16227,143 +16362,7 @@ return jQuery;
 
 	return Selectize;
 }));
-},{"jquery":8,"microplugin":10,"sifter":11}],10:[function(require,module,exports){
-/**
- * microplugin.js
- * Copyright (c) 2013 Brian Reavis & contributors
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at:
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- *
- * @author Brian Reavis <brian@thirdroute.com>
- */
-
-(function(root, factory) {
-	if (typeof define === 'function' && define.amd) {
-		define(factory);
-	} else if (typeof exports === 'object') {
-		module.exports = factory();
-	} else {
-		root.MicroPlugin = factory();
-	}
-}(this, function() {
-	var MicroPlugin = {};
-
-	MicroPlugin.mixin = function(Interface) {
-		Interface.plugins = {};
-
-		/**
-		 * Initializes the listed plugins (with options).
-		 * Acceptable formats:
-		 *
-		 * List (without options):
-		 *   ['a', 'b', 'c']
-		 *
-		 * List (with options):
-		 *   [{'name': 'a', options: {}}, {'name': 'b', options: {}}]
-		 *
-		 * Hash (with options):
-		 *   {'a': { ... }, 'b': { ... }, 'c': { ... }}
-		 *
-		 * @param {mixed} plugins
-		 */
-		Interface.prototype.initializePlugins = function(plugins) {
-			var i, n, key;
-			var self  = this;
-			var queue = [];
-
-			self.plugins = {
-				names     : [],
-				settings  : {},
-				requested : {},
-				loaded    : {}
-			};
-
-			if (utils.isArray(plugins)) {
-				for (i = 0, n = plugins.length; i < n; i++) {
-					if (typeof plugins[i] === 'string') {
-						queue.push(plugins[i]);
-					} else {
-						self.plugins.settings[plugins[i].name] = plugins[i].options;
-						queue.push(plugins[i].name);
-					}
-				}
-			} else if (plugins) {
-				for (key in plugins) {
-					if (plugins.hasOwnProperty(key)) {
-						self.plugins.settings[key] = plugins[key];
-						queue.push(key);
-					}
-				}
-			}
-
-			while (queue.length) {
-				self.require(queue.shift());
-			}
-		};
-
-		Interface.prototype.loadPlugin = function(name) {
-			var self    = this;
-			var plugins = self.plugins;
-			var plugin  = Interface.plugins[name];
-
-			if (!Interface.plugins.hasOwnProperty(name)) {
-				throw new Error('Unable to find "' +  name + '" plugin');
-			}
-
-			plugins.requested[name] = true;
-			plugins.loaded[name] = plugin.fn.apply(self, [self.plugins.settings[name] || {}]);
-			plugins.names.push(name);
-		};
-
-		/**
-		 * Initializes a plugin.
-		 *
-		 * @param {string} name
-		 */
-		Interface.prototype.require = function(name) {
-			var self = this;
-			var plugins = self.plugins;
-
-			if (!self.plugins.loaded.hasOwnProperty(name)) {
-				if (plugins.requested[name]) {
-					throw new Error('Plugin has circular dependency ("' + name + '")');
-				}
-				self.loadPlugin(name);
-			}
-
-			return plugins.loaded[name];
-		};
-
-		/**
-		 * Registers a plugin.
-		 *
-		 * @param {string} name
-		 * @param {function} fn
-		 */
-		Interface.define = function(name, fn) {
-			Interface.plugins[name] = {
-				'name' : name,
-				'fn'   : fn
-			};
-		};
-	};
-
-	var utils = {
-		isArray: Array.isArray || function(vArg) {
-			return Object.prototype.toString.call(vArg) === '[object Array]';
-		}
-	};
-
-	return MicroPlugin;
-}));
-},{}],11:[function(require,module,exports){
+},{"jquery":8,"microplugin":9,"sifter":11}],11:[function(require,module,exports){
 /**
  * sifter.js
  * Copyright (c) 2013 Brian Reavis & contributors
@@ -32863,12 +32862,7 @@ module.exports={
   "description": "Yet Another SPARQL Query Editor",
   "version": "2.5.2",
   "main": "src/main.js",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://yasqe.yasgui.org/license.txt"
-    }
-  ],
+  "license": "MIT",
   "author": "Laurens Rietveld",
   "homepage": "http://yasqe.yasgui.org",
   "devDependencies": {
@@ -32896,7 +32890,7 @@ module.exports={
     "gulp-sourcemaps": "^1.2.8",
     "exorcist": "^0.1.6",
     "vinyl-transform": "0.0.1",
-    "gulp-sass": "^1.2.2",
+    "gulp-sass": "^2.0.1",
     "bootstrap-sass": "^3.3.1",
     "browserify-transform-tools": "^1.2.1",
     "gulp-cssimport": "^1.3.1"
@@ -64435,14 +64429,9 @@ module.exports=require(17)
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
-  "version": "2.5.4",
+  "version": "2.5.5",
   "main": "src/main.js",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://yasr.yasgui.org/license.txt"
-    }
-  ],
+  "license": "MIT",
   "author": "Laurens Rietveld",
   "homepage": "http://yasr.yasgui.org",
   "devDependencies": {
@@ -64470,7 +64459,7 @@ module.exports={
     "gulp-sourcemaps": "^1.2.8",
     "exorcist": "^0.1.6",
     "vinyl-transform": "0.0.1",
-    "gulp-sass": "^1.2.2",
+    "gulp-sass": "^2.0.1",
     "bootstrap-sass": "^3.3.1",
     "browserify-transform-tools": "^1.2.1",
     "gulp-cssimport": "^1.3.1",
@@ -65426,6 +65415,7 @@ var root = module.exports = function(parent, options, queryResults) {
 	yasr.storage = utils.storage;
 	
 	var prefix = null;
+	
 	yasr.getPersistencyId = function(postfix) {
 		if (prefix === null) {
 			//instantiate prefix
@@ -65541,8 +65531,13 @@ var root = module.exports = function(parent, options, queryResults) {
 	yasr.somethingDrawn = function() {
 		return !yasr.resultsContainer.is(":empty");
 	};
-
-	yasr.setResponse = function(dataOrJqXhr, textStatus, jqXhrOrErrorString) {
+	yasr.queryRuntime = null;
+	yasr.getQueryRuntime = function() {
+		return yasr.queryRuntime;
+	};
+	yasr.setResponse = function(dataOrJqXhr, textStatus, jqXhrOrErrorString, responseOptions) {
+		console.log(responseOptions);
+		if (responseOptions && responseOptions.queryRuntime) yasr.queryRuntime = responseOptions.queryRuntime;
 		try {
 			yasr.results = require("./parsers/wrapper.js")(dataOrJqXhr, textStatus, jqXhrOrErrorString);
 		} catch(exception) {
@@ -66693,11 +66688,6 @@ var root = module.exports = function(yasr) {
 				
 			}
 		});
-		
-		
-		$(window).off('resize.' + eventId);//remove previously attached handlers
-		$(window).on('resize.' + eventId, hideOrShowDatatablesControls);
-		hideOrShowDatatablesControls();
 	};
 	
 	plugin.draw = function() {
@@ -66711,8 +66701,12 @@ var root = module.exports = function(yasr) {
 		//fetch stored datatables length value
 		var pLength = yutils.storage.get(tableLengthPersistencyId);
 		if (pLength) dataTableConfig.pageLength = pLength;
-		
-		
+		console.log(options);
+		if (yasr.getQueryRuntime()) {
+			dataTableConfig['infoCallback'] = function( settings, start, end, max, total, pre ) {
+				return pre + " (query time: " + yasr.getQueryRuntime() + " seconds)";
+			  }
+		}
 		
 		table.DataTable($.extend(true, {}, dataTableConfig));//make copy. datatables adds properties for backwards compatability reasons, and don't want this cluttering our own 
 		
@@ -66723,23 +66717,6 @@ var root = module.exports = function(yasr) {
 		
 		//finally, make the columns dragable:
 		table.colResizable();
-		//and: make sure the height of the resize handlers matches the height of the table header
-		var thHeight = table.find('thead').outerHeight();
-		$(yasr.resultsContainer).find('.JCLRgrip').height(table.find('thead').outerHeight());
-		
-		//move the table upward, so the table options nicely aligns with the yasr header
-		var headerHeight = yasr.header.outerHeight() - 5; //add some space of 5 px between table and yasr header
-		if (headerHeight > 0) {
-			yasr.resultsContainer.find(".dataTables_wrapper")
-				.css("position", "relative")
-				.css("top", "-" + headerHeight + "px")
-				.css("margin-bottom", "-" + headerHeight + "px");
-			
-			//and: make sure the height of the resize handlers matches the height of the table header
-			$(yasr.resultsContainer).find('.JCLRgrip').css('marginTop', headerHeight + 'px');
-		}
-		
-		
 	};
 	
 	var drawSvgIcons = function() {
@@ -66777,27 +66754,6 @@ var root = module.exports = function(yasr) {
 		};
 	};
 	
-	var hideOrShowDatatablesControls = function() {
-		var show = true;
-		var downloadIcon = yasr.container.find('.yasr_downloadIcon');
-		var dataTablesFilter = yasr.container.find('.dataTables_filter');
-		var downloadPosLeft = downloadIcon.offset().left;
-		if (downloadPosLeft > 0) {
-			var downloadPosRight = downloadPosLeft + downloadIcon.outerWidth();
-			
-			var filterPosLeft = dataTablesFilter.offset().left;
-			if (filterPosLeft > 0 && filterPosLeft < downloadPosRight) {
-				//overlapping! hide
-				show = false;
-			}
-		}
-		if (show) {
-			dataTablesFilter.css("visibility", "visible");
-		} else {
-			dataTablesFilter.css("visibility", "hidden");
-		}
-		
-	}
 	
 	return plugin;
 };
@@ -66976,6 +66932,7 @@ root.defaults = {
 	 */
 	datatable: {
 		"autoWidth": false,
+		"dom": '<"dtTopHeader"ilf>rtip',
 		"order": [],//disable initial sorting
 		"pageLength": 50,//default page length
     	"lengthMenu": [[10, 50, 100, 1000, -1], [10, 50, 100, 1000, "All"]],//possible page lengths
@@ -67714,7 +67671,7 @@ var getCkanEndpoints = function() {
 };
 
 
-},{"jquery":8,"selectize":9,"yasgui-utils":15}],104:[function(require,module,exports){
+},{"jquery":8,"selectize":10,"yasgui-utils":15}],104:[function(require,module,exports){
 //extend jquery
 require('../../node_modules/jquery-ui/resizable.js');
 require('./outsideclick.js');
@@ -69013,7 +68970,7 @@ module.exports = function(yasgui, tab) {
 };
 
 
-},{"./imgs.js":102,"jquery":8,"selectize":9,"yasgui-utils":15}],111:[function(require,module,exports){
+},{"./imgs.js":102,"jquery":8,"selectize":10,"yasgui-utils":15}],111:[function(require,module,exports){
 var yUtils = require('yasgui-utils'),
 	imgs = require('./imgs.js'),
 	$ = require('jquery');
