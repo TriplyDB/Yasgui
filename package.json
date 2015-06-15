@@ -34,7 +34,7 @@
     "gulp-sourcemaps": "^1.2.8",
     "exorcist": "^0.1.6",
     "vinyl-transform": "0.0.1",
-    "gulp-sass": "^1.2.2",
+    "gulp-sass": "^2.0.1",
     "browserify-transform-tools": "^1.2.1",
     "browserify-shim": "^3.8.0",
     "gulp-cssimport": "^1.3.1",
