@@ -11,7 +11,7 @@ $.fn.onOutsideClick = function(onOutsideClick, config) {
 	var handler = function(e) {
 		var clickOutsideIssued = function(elCheck) {
 			return !elCheck.is(e.target) // if the target of the click isn't the container...
-			&& elCheck.has(e.target).length === 0  // ... nor a descendant of the container
+				&& elCheck.has(e.target).length === 0 // ... nor a descendant of the container
 		};
 
 		if (clickOutsideIssued(el) && clickOutsideIssued(config.allowedElements)) {

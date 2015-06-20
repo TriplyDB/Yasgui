@@ -35,7 +35,7 @@ module.exports = function(yasgui, id, name, endpoint) {
 }
 var Tab = function(yasgui, id, name, endpoint) {
 	EventEmitter.call(this);
-	
+
 	if (!yasgui.persistentOptions.tabs[id]) {
 		yasgui.persistentOptions.tabs[id] = $.extend(true, {
 			id: id,
@@ -48,85 +48,110 @@ var Tab = function(yasgui, id, name, endpoint) {
 	if (endpoint) persistentOptions.yasqe.sparql.endpoint = endpoint;
 	var tab = this;
 	tab.persistentOptions = persistentOptions;
-	
+
 	var menu = require('./tabPaneMenu.js')(yasgui, tab);
-	var $pane = $('<div>', {id:persistentOptions.id, style: 'position:relative', class: 'tab-pane', role: 'tabpanel'}).appendTo(yasgui.$tabPanesParent);
-	
-	var $paneContent = $('<div>', {class:'wrapper'}).appendTo($pane);
-	var $controlBar = $('<div>', {class: 'controlbar'}).appendTo($paneContent);
+	var $pane = $('<div>', {
+		id: persistentOptions.id,
+		style: 'position:relative',
+		class: 'tab-pane',
+		role: 'tabpanel'
+	}).appendTo(yasgui.$tabPanesParent);
+
+	var $paneContent = $('<div>', {
+		class: 'wrapper'
+	}).appendTo($pane);
+	var $controlBar = $('<div>', {
+		class: 'controlbar'
+	}).appendTo($paneContent);
 	var $paneMenu = menu.initWrapper().appendTo($pane);
 	var $endpointInput;
 	var addControlBar = function() {
-		$('<button>', {type:'button', class: 'menuButton btn btn-default'})
-			.on('click', function(e){
+		$('<button>', {
+				type: 'button',
+				class: 'menuButton btn btn-default'
+			})
+			.on('click', function(e) {
 				if ($pane.hasClass('menu-open')) {
 					$pane.removeClass('menu-open');
 					menu.store();
 				} else {
 					menu.updateWrapper();
 					$pane.addClass('menu-open');
-//					utils.onOutsideClick($(".menu-slide,.menuButton"), function() {$pane.removeClass('menu-open'); menu.store();});
-					$(".menu-slide,.menuButton").onOutsideClick(function() {$pane.removeClass('menu-open'); menu.store();});
-					
+					//					utils.onOutsideClick($(".menu-slide,.menuButton"), function() {$pane.removeClass('menu-open'); menu.store();});
+					$(".menu-slide,.menuButton").onOutsideClick(function() {
+						$pane.removeClass('menu-open');
+						menu.store();
+					});
+
 				}
 			})
-			.append($('<span>', {class:'icon-bar'}))
-			.append($('<span>', {class:'icon-bar'}))
-			.append($('<span>', {class:'icon-bar'}))
+			.append($('<span>', {
+				class: 'icon-bar'
+			}))
+			.append($('<span>', {
+				class: 'icon-bar'
+			}))
+			.append($('<span>', {
+				class: 'icon-bar'
+			}))
 			.appendTo($controlBar);
-		
+
 		//add endpoint text input
 		$endpointInput = $('<select>')
 			.appendTo($controlBar)
 			.endpointCombi(yasgui, {
 				value: persistentOptions.yasqe.sparql.endpoint,
-				onChange: function(val){
+				onChange: function(val) {
 					persistentOptions.yasqe.sparql.endpoint = val;
 					tab.refreshYasqe();
 					yasgui.store();
-					
+
 				}
 			});
-		
+
 	};
-	
-	
-	var yasqeContainer = $('<div>', {id: 'yasqe_' + persistentOptions.id}).appendTo($paneContent);
-	var yasrContainer = $('<div>', {id: 'yasq_' + persistentOptions.id}).appendTo($paneContent);
-	
-	
-	
+
+
+	var yasqeContainer = $('<div>', {
+		id: 'yasqe_' + persistentOptions.id
+	}).appendTo($paneContent);
+	var yasrContainer = $('<div>', {
+		id: 'yasq_' + persistentOptions.id
+	}).appendTo($paneContent);
+
+
+
 	var yasqeOptions = {
 		createShareLink: require('./shareLink').getCreateLinkHandler(tab)
 	};
-	
+
 	var storeInHist = function() {
-		persistentOptions.yasqe.value = tab.yasqe.getValue();//in case the onblur hasnt happened yet
+		persistentOptions.yasqe.value = tab.yasqe.getValue(); //in case the onblur hasnt happened yet
 		var resultSize = null;
 		if (tab.yasr.results.getBindings()) {
 			resultSize = tab.yasr.results.getBindings().length;
 		}
 		var histObject = {
-			options: $.extend(true, {}, persistentOptions),//create copy
+			options: $.extend(true, {}, persistentOptions), //create copy
 			resultSize: resultSize
 		};
-		delete histObject.options.name;//don't store this one
+		delete histObject.options.name; //don't store this one
 		yasgui.history.unshift(histObject);
-		
+
 		var maxHistSize = 50;
 		if (yasgui.history.length > maxHistSize) {
 			yasgui.history = yasgui.history.slice(0, maxHistSize);
 		}
-		
-		
+
+
 		//store in localstorage as well
 		if (yasgui.persistencyPrefix) {
 			yUtils.storage.set(yasgui.persistencyPrefix + 'history', yasgui.history);
 		}
-		
-		
+
+
 	};
-	
+
 	tab.setPersistentInYasqe = function() {
 		if (tab.yasqe) {
 			$.extend(tab.yasqe.options.sparql, persistentOptions.yasqe.sparql);
@@ -135,10 +160,10 @@ var Tab = function(yasgui, id, name, endpoint) {
 		}
 	}
 	$.extend(yasqeOptions, persistentOptions.yasqe);
-	
+
 	var initYasr = function() {
 		if (!tab.yasr) {
-			if (!tab.yasqe) initYasqe();//we need this one to initialize yasr
+			if (!tab.yasqe) initYasqe(); //we need this one to initialize yasr
 			var getQueryString = function() {
 				return persistentOptions.yasqe.sparql.endpoint + "?" +
 					$.param(tab.yasqe.getUrlArguments(persistentOptions.yasqe.sparql));
@@ -149,21 +174,21 @@ var Tab = function(yasgui, id, name, endpoint) {
 				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
 			}, persistentOptions.yasr));
 		}
-		
+
 	};
 	tab.query = function() {
 		tab.yasqe.query();
 	};
-	
+
 	var initYasqe = function() {
 		if (!tab.yasqe) {
 			addControlBar();
-      		YASGUI.YASQE.defaults.extraKeys['Ctrl-Enter'] = function(){
-      			tab.yasqe.query.apply(this, arguments)
-  			};
-      		YASGUI.YASQE.defaults.extraKeys['Cmd-Enter'] = function(){
-      			tab.yasqe.query.apply(this, arguments)
-  			};
+			YASGUI.YASQE.defaults.extraKeys['Ctrl-Enter'] = function() {
+				tab.yasqe.query.apply(this, arguments)
+			};
+			YASGUI.YASQE.defaults.extraKeys['Cmd-Enter'] = function() {
+				tab.yasqe.query.apply(this, arguments)
+			};
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.setSize("100%", persistentOptions.yasqe.height);
 			tab.yasqe.on('blur', function(yasqe) {
@@ -180,17 +205,23 @@ var Tab = function(yasgui, id, name, endpoint) {
 				tab.yasr.setResponse.apply(this, arguments);
 				storeInHist();
 			}
-			
+
 			tab.yasqe.query = function() {
-		        var options = {}
-		        options = $.extend(true, options, tab.yasqe.options.sparql);
-        
+				var options = {}
+				options = $.extend(true, options, tab.yasqe.options.sparql);
+
 				if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
 					if (!yasgui.corsEnabled[persistentOptions.yasqe.sparql.endpoint]) {
 						//use the proxy //name value
-						
-						options.args.push({name: 'endpoint', value: options.endpoint});
-						options.args.push({name: 'requestMethod', value: options.requestMethod});
+
+						options.args.push({
+							name: 'endpoint',
+							value: options.endpoint
+						});
+						options.args.push({
+							name: 'requestMethod',
+							value: options.requestMethod
+						});
 						options.requestMethod = "POST";
 						options.endpoint = yasgui.options.api.corsProxy;
 						YASGUI.YASQE.executeQuery(tab.yasqe, options);
@@ -201,9 +232,9 @@ var Tab = function(yasgui, id, name, endpoint) {
 					YASGUI.YASQE.executeQuery(tab.yasqe, options);
 				}
 			};
-			
 
-			
+
+
 		}
 	};
 	tab.onShow = function() {
@@ -214,7 +245,7 @@ var Tab = function(yasgui, id, name, endpoint) {
 			$(tab.yasqe.getWrapperElement()).resizable({
 				minHeight: 150,
 				handles: 's',
-				resize : function() {
+				resize: function() {
 					_.debounce(function() {
 						tab.yasqe.setSize("100%", $(this).height());
 						tab.yasqe.refresh()
@@ -233,21 +264,23 @@ var Tab = function(yasgui, id, name, endpoint) {
 			})
 		}
 	};
-	
+
 	tab.beforeShow = function() {
 		initYasqe();
 	}
 	tab.refreshYasqe = function() {
-    if (tab.yasqe) {
-      $.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
-      if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
-    }
+		if (tab.yasqe) {
+			$.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
+			if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
+		}
 	};
 	tab.destroy = function() {
 		if (!tab.yasr) {
 			//instantiate yasr (without rendering results, to avoid load)
 			//this way, we can clear the yasr persistent results
-			tab.yasr = YASGUI.YASR(yasrContainer[0], {outputPlugins: []}, '');
+			tab.yasr = YASGUI.YASR(yasrContainer[0], {
+				outputPlugins: []
+			}, '');
 		}
 		yUtils.storage.removeAll(function(key, val) {
 			return key.indexOf(tab.yasr.getPersistencyId('')) == 0;
@@ -260,9 +293,8 @@ var Tab = function(yasgui, id, name, endpoint) {
 		}
 		return endpoint;
 	}
-	
+
 	return tab;
 }
 
 Tab.prototype = new EventEmitter;
-

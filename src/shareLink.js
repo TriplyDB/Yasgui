@@ -1,20 +1,23 @@
 var deparam = function(queryString) {
 	var params = [];
 	if (queryString && queryString.length > 0) {
-	    var vars = queryString.split("&");
-	    for (var i = 0; i < vars.length; i++) {
-	        var pair = vars[i].split("=");
-	        var key = pair[0];
-	        var val = pair[1];
-	        if (key.length > 0 && val && val.length > 0) {
-	        	//we at least need a key right
-	        	
-	        	//do the decoding. Do plus sign separately (not done by the native decode function)
-	        	val = val.replace(/\+/g, ' ');
-	        	val = decodeURIComponent(val);
-	        	params.push({name: pair[0], value: val});
-	        }
-	    }
+		var vars = queryString.split("&");
+		for (var i = 0; i < vars.length; i++) {
+			var pair = vars[i].split("=");
+			var key = pair[0];
+			var val = pair[1];
+			if (key.length > 0 && val && val.length > 0) {
+				//we at least need a key right
+
+				//do the decoding. Do plus sign separately (not done by the native decode function)
+				val = val.replace(/\+/g, ' ');
+				val = decodeURIComponent(val);
+				params.push({
+					name: pair[0],
+					value: val
+				});
+			}
+		}
 	}
 	return params;
 };
@@ -25,7 +28,7 @@ var getUrlParams = function() {
 	var urlParams = [];
 	if (window.location.hash.length > 1) {
 		urlParams = deparam(window.location.hash.substring(1))
-		window.location.hash = "";//clear hash
+		window.location.hash = ""; //clear hash
 	} else if (window.location.search.length > 1) {
 		//ok, then just try regular url params
 		urlParams = deparam(window.location.search.substring(1));
@@ -39,41 +42,66 @@ module.exports = {
 			/**
 			 * First set YASQE settings
 			 */
-			var params = [
-				{name: 'query', value: tab.yasqe.getValue()},
-				{name: 'contentTypeConstruct', value: tab.persistentOptions.yasqe.sparql.acceptHeaderGraph},
-				{name: 'contentTypeSelect', value: tab.persistentOptions.yasqe.sparql.acceptHeaderSelect},
-				{name: 'endpoint', value: tab.persistentOptions.yasqe.sparql.endpoint},
-				{name: 'requestMethod', value: tab.persistentOptions.yasqe.sparql.requestMethod},
-				{name: 'tabTitle', value: tab.persistentOptions.name}
-			];
-			
-			tab.persistentOptions.yasqe.sparql.args.forEach(function(paramPair){
+			var params = [{
+				name: 'query',
+				value: tab.yasqe.getValue()
+			}, {
+				name: 'contentTypeConstruct',
+				value: tab.persistentOptions.yasqe.sparql.acceptHeaderGraph
+			}, {
+				name: 'contentTypeSelect',
+				value: tab.persistentOptions.yasqe.sparql.acceptHeaderSelect
+			}, {
+				name: 'endpoint',
+				value: tab.persistentOptions.yasqe.sparql.endpoint
+			}, {
+				name: 'requestMethod',
+				value: tab.persistentOptions.yasqe.sparql.requestMethod
+			}, {
+				name: 'tabTitle',
+				value: tab.persistentOptions.name
+			}];
+
+			tab.persistentOptions.yasqe.sparql.args.forEach(function(paramPair) {
 				params.push(paramPair);
 			});
 			tab.persistentOptions.yasqe.sparql.namedGraphs.forEach(function(ng) {
-				params.push({name: 'namedGraph', value: ng});
+				params.push({
+					name: 'namedGraph',
+					value: ng
+				});
 			});
-			tab.persistentOptions.yasqe.sparql.defaultGraphs.forEach(function(dg){
-				params.push({name: 'defaultGraph', value: dg});
+			tab.persistentOptions.yasqe.sparql.defaultGraphs.forEach(function(dg) {
+				params.push({
+					name: 'defaultGraph',
+					value: dg
+				});
 			});
-			
+
 			/**
 			 * Now set YASR settings
 			 */
-			params.push({name: 'outputFormat', value: tab.yasr.options.output});
+			params.push({
+				name: 'outputFormat',
+				value: tab.yasr.options.output
+			});
 			if (tab.yasr.plugins[tab.yasr.options.output].getPersistentSettings) {
 				var persistentPluginSettings = tab.yasr.plugins[tab.yasr.options.output].getPersistentSettings();
 				if (typeof persistentPluginSettings == "object") {
 					persistentPluginSettings = JSON.stringify(persistentPluginSettings);
 				}
-				params.push({name: 'outputSettings', value: persistentPluginSettings});
+				params.push({
+					name: 'outputSettings',
+					value: persistentPluginSettings
+				});
 			}
-			
+
 			//extend existing link, so first fetch current arguments. But: make sure we don't include items already used in share link
 			if (window.location.hash.length > 1) {
 				var keys = [];
-				params.forEach(function(paramPair){keys.push(paramPair.name)});
+				params.forEach(function(paramPair) {
+					keys.push(paramPair.name)
+				});
 				var currentParams = deparam(window.location.hash.substring(1))
 				currentParams.forEach(function(paramPair) {
 					if (keys.indexOf(paramPair.name) == -1) {
@@ -81,23 +109,28 @@ module.exports = {
 					}
 				});
 			}
-			
+
 			return params;
 		}
 	},
 	getOptionsFromUrl: function() {
-		var options = {yasqe: {sparql: {}}, yasr:{}};
-		
+		var options = {
+			yasqe: {
+				sparql: {}
+			},
+			yasr: {}
+		};
+
 		var params = getUrlParams();
 		var validYasguiOptions = false;
-		
-		params.forEach(function(paramPair){
+
+		params.forEach(function(paramPair) {
 			if (paramPair.name == 'query') {
 				validYasguiOptions = true;
 				options.yasqe.value = paramPair.value;
 			} else if (paramPair.name == 'outputFormat') {
 				var output = paramPair.value;
-				if (output == 'simpleTable') output = 'table';//this query link is from v1. don't have this plugin anymore
+				if (output == 'simpleTable') output = 'table'; //this query link is from v1. don't have this plugin anymore
 				options.yasr.output = output;
 			} else if (paramPair.name == 'outputSettings') {
 				options.yasr.outputSettings = JSON.parse(paramPair.value);

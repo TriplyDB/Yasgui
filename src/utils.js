@@ -1,10 +1,10 @@
 var $ = require('jquery');
 module.exports = {
-	escapeHtmlEntities : function(unescapedString) {
+	escapeHtmlEntities: function(unescapedString) {
 		var tagsToReplace = {
-			'&' : '&amp;',
-			'<' : '&lt;',
-			'>' : '&gt;'
+			'&': '&amp;',
+			'<': '&lt;',
+			'>': '&gt;'
 		};
 
 		var replaceTag = function(tag) {
