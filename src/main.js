@@ -1,8 +1,8 @@
 "use strict";
 var $ = require('jquery'),
 	EventEmitter = require('events').EventEmitter,
-	imgs = require('./imgs.js'),
-	utils = require('yasgui-utils');
+	utils = require('yasgui-utils'),
+	imgs = require('./imgs.js');
 require('./jquery/extendJquery.js'); //extend some own jquery plugins
 require('jquery-ui/position');
 
@@ -106,7 +106,7 @@ var YASGUI = function(parent, options) {
 			class: 'nav nav-tabs mainTabs',
 			role: 'tablist'
 		}).appendTo($tabPanel);
-
+		yasgui.$tabsParent = $tabsParent;
 
 		//init add button
 		var $addTab = $('<a>', {
@@ -305,6 +305,7 @@ var YASGUI = function(parent, options) {
 				yasgui.tabs[tabId].onShow();
 				yasgui.store();
 			})
+			.append($(utils.svg.getElement(imgs.loader)).addClass('loader'))
 			.append($('<span>').text(name))
 			.append(
 				$('<button>', {
@@ -340,8 +341,7 @@ var YASGUI = function(parent, options) {
 				role: "presentation"
 			})
 			.append($tabToggle)
-
-		.append($tabRename)
+			.append($tabRename)
 			.dblclick(function() {
 				var el = $(this);
 				var val = el.find('span').text();

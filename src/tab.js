@@ -195,6 +195,12 @@ var Tab = function(yasgui, id, name, endpoint) {
 				persistentOptions.yasqe.value = yasqe.getValue();
 				yasgui.store();
 			});
+			tab.yasqe.on('query', function() {
+				yasgui.$tabsParent.find('a[href="#' + id + '"]').closest('li').addClass('querying');
+			});
+			tab.yasqe.on('queryFinish', function() {
+				yasgui.$tabsParent.find('a[href="#' + id + '"]').closest('li').removeClass('querying');
+			});
 			var beforeSend = null;
 			tab.yasqe.options.sparql.callbacks.beforeSend = function() {
 				beforeSend = +new Date();
