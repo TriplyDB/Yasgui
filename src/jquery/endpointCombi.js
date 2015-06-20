@@ -92,15 +92,21 @@ $.fn.endpointCombi = function(yasgui, options) {
 	
 	
 	var $select = this;
+
+	var onClose = function() {
+		$select.showAll = true;
+	}
+
 	var defaults = {
 		selectize: {
 			plugins: ['allowRegularTextInput'],
 			create: function(input, callback) {
 				callback({'endpoint': input, optgroup:'own'});
 			},
-			
+			onBlur: onClose,
 			createOnBlur: true,
 			onItemAdd: function(value, $item) {
+				onClose();
 				if (options.onChange) options.onChange(value);
 				if (yasgui.options.api.corsProxy) checkCorsEnabled(value);
 			},
@@ -117,6 +123,13 @@ $.fn.endpointCombi = function(yasgui, options) {
 			valueField: 'endpoint',
 			labelField: 'endpoint',
 			searchField: ['endpoint', 'text'],
+			score: function(search) {
+				if ($select.showAll) {
+					return function(){$select.showAll = false;return 1};
+				} else {
+					return this.getScoreFunction(search);
+				}
+			},
 			render: {
 				option: function(data, escape){
 					var remove = '<a href="javascript:void(0)"  class="close pull-right" tabindex="-1" '+
@@ -154,7 +167,7 @@ $.fn.endpointCombi = function(yasgui, options) {
 	//add same handler (but slightly extended) myself:
 	$select[0].selectize.$dropdown.on('mousedown', '[data-selectable]', function(e) {
 		var value, $target, $option, self = $select[0].selectize;
-		
+
 		if (e.preventDefault) {
 			e.preventDefault();
 			e.stopPropagation();
