@@ -197,9 +197,11 @@ var Tab = function(yasgui, id, name, endpoint) {
 			});
 			tab.yasqe.on('query', function() {
 				yasgui.$tabsParent.find('a[href="#' + id + '"]').closest('li').addClass('querying');
+				yasgui.emit('query', yasgui, tab);
 			});
 			tab.yasqe.on('queryFinish', function() {
 				yasgui.$tabsParent.find('a[href="#' + id + '"]').closest('li').removeClass('querying');
+				yasgui.emit('queryFinish', yasgui, tab);
 			});
 			var beforeSend = null;
 			tab.yasqe.options.sparql.callbacks.beforeSend = function() {

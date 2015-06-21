@@ -88,7 +88,16 @@
 				<p>Access to the YASR api. For more information, see the <a href="http://yasr.yasgui.org/doc" target="_blank">YASR documentation</a></p>
 			</div>
 
-
+      <h2 id="events">Events</h2>
+      YASGUI emits several events. For information on the possibilities of our event handler, see the <a href="https://nodejs.org/api/events.html" target="_blank">EventEmitter implementation documentation</a> of NodeJS
+      <div class="doc">
+				<code>query (instance: yasgui, tab: tab)</code>
+				<p>Fires when a query is executed</p>
+			</div>
+      <div class="doc">
+        <code>queryFinished (instance: yasgui, tab: tab)</code>
+        <p>Fires when a query is finished</p>
+      </div>
      	<h2 id="config">Configuration</h2>
 
 
@@ -139,7 +148,6 @@
 			</div>
 		<h3 id="serverConfig">Server</h3>
 
-     	<h2 id="static">Statics</h2>
 
 </div><!-- col -->
 <div class="col-md-3" id="sidebarmenu">
@@ -157,8 +165,8 @@
 				</ul>
 
 			</li>
+      <li><a href="#events">Events</a></li>
 			<li><a href="#config">Configuration</a></li>
-			<li><a href="statics">Statics</a></li>
 		</ul>
 	</div>
 </div><!-- col -->
