@@ -236,6 +236,7 @@ var YASGUI = function(parent, options) {
 		$tabsParent.find('a[aria-controls="' + id + '"]').tab('show');
 		return yasgui.current();
 	}
+	yasgui.selectTab = selectTab;
 	var closeTab = function(id) {
 		/**
 		 * cleanup local storage
@@ -271,6 +272,7 @@ var YASGUI = function(parent, options) {
 		yasgui.store();
 		return yasgui.current();
 	};
+	yasgui.closeTab = closeTab;
 	var addTab = function(tabId) {
 		var newItem = !tabId;
 		if (!tabId) tabId = getRandomId();
