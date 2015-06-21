@@ -5157,6 +5157,22 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     margin-left: 7px;
     font-size: 17px; }
   .yasgui .nav-tabs li a {
+    padding-left: 20px; }
+  .yasgui .nav-tabs li.querying .loader {
+    display: inline-block; }
+  .yasgui .nav-tabs li .loader {
+    height: 15px;
+    width: 15px;
+    padding: 0px;
+    border: 0px;
+    background-color: transparent;
+    position: absolute;
+    left: 0px;
+    display: none; }
+    .yasgui .nav-tabs li .loader svg {
+      height: 15px;
+      width: 15px; }
+  .yasgui .nav-tabs li a {
     display: inline-block; }
   .yasgui .nav-tabs li div {
     color: #555555;
@@ -5171,7 +5187,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .nav-tabs li.rename div {
     display: inline-block; }
   .yasgui .tabDropDown {
-    /* 	position:absolute; */ }
+    position: absolute; }
   .yasgui .menu-slide {
     position: absolute;
     border: 1px solid #ddd;
