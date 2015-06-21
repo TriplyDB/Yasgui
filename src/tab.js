@@ -35,7 +35,6 @@ module.exports = function(yasgui, id, name, endpoint) {
 }
 var Tab = function(yasgui, id, name, endpoint) {
 	EventEmitter.call(this);
-
 	if (!yasgui.persistentOptions.tabs[id]) {
 		yasgui.persistentOptions.tabs[id] = $.extend(true, {
 			id: id,
@@ -163,6 +162,15 @@ var Tab = function(yasgui, id, name, endpoint) {
 
 	var initYasr = function() {
 		if (!tab.yasr) {
+			var addQueryDuration = function(yasr, plugin) {
+				if (tab.yasqe.lastQueryDuration && plugin.name == "Table") {
+					var tableInfo = tab.yasr.resultsContainer.find('.dataTables_info');
+					if (tableInfo.length > 0) {
+						var text = tableInfo.first().text();
+						tableInfo.text(text + ' (in ' + (tab.yasqe.lastQueryDuration / 1000) + ' seconds)');
+					}
+				}
+			}
 			if (!tab.yasqe) initYasqe(); //we need this one to initialize yasr
 			var getQueryString = function() {
 				return persistentOptions.yasqe.sparql.endpoint + "?" +
@@ -173,6 +181,7 @@ var Tab = function(yasgui, id, name, endpoint) {
 				//this way, the URLs in the results are prettified using the defined prefixes in the query
 				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
 			}, persistentOptions.yasr));
+			tab.yasr.on('drawn', addQueryDuration);
 		}
 
 	};
@@ -196,6 +205,7 @@ var Tab = function(yasgui, id, name, endpoint) {
 				yasgui.store();
 			});
 			tab.yasqe.on('query', function() {
+
 				yasgui.$tabsParent.find('a[href="#' + id + '"]').closest('li').addClass('querying');
 				yasgui.emit('query', yasgui, tab);
 			});
