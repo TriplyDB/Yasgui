@@ -4,7 +4,6 @@ var $ = require('jquery'),
 	utils = require('yasgui-utils'),
 	imgs = require('./imgs.js');
 require('./jquery/extendJquery.js'); //extend some own jquery plugins
-require('jquery-ui/position');
 
 /**
  * set this dynamically on instantiation: this YASR setting is dependent on the corsProxy yasgui setting
