@@ -1,6 +1,7 @@
 module.exports = {
 	"server": {
 		"port": 4545,
+		"shortUrlBasename": "http://yasgui.org/short/",
 		"db" : {
 			"engine": "tingodb",
 			"mongodb":{

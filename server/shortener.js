@@ -1,5 +1,5 @@
 var engine = require('./dbEngine.js'),
-  validUrl = require('valid-url');
+  validUrl = require('valid-url'),
   shortId = require('shortid');
 var db = engine.getDB();
 

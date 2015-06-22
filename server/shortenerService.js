@@ -1,4 +1,5 @@
-var shortenerFactory = require('./shortener.js');
+var shortenerFactory = require('./shortener.js'),
+	config = require('./config.js');
 
 
 
@@ -15,7 +16,7 @@ module.exports = function(app) {
 				if (err) {
 					return res.status(500).send(err.err);
 				}
-				return res.send(result.short);
+				return res.send(config.server.shortUrlBasename + result.short);
 			})
 		})
 		app.use('/short/:short', function(req, res) {
