@@ -59,11 +59,11 @@ gulp.task('bumpMinor', function() { return inc('minor'); })
 gulp.task('bumpMajor', function() { return inc('major'); })
 
 gulp.task('patch', function() {
-	runSequence('bumpPatch', 'default', 'buildManifest', 'tag', 'commitDist', 'publish', 'push');
+	runSequence('bumpPatch', 'default', 'buildManifest', 'commitDist', 'tag', 'publish', 'push');
 });
 gulp.task('minor', function() {
-	runSequence('bumpMinor', 'default', 'buildManifest', 'tag', 'commitDist', 'publish', 'push');
+	runSequence('bumpMinor', 'default', 'buildManifest', 'commitDist', 'tag', 'publish', 'push');
 });
 gulp.task('major', function() {
-	runSequence('bumpMajor', 'default', 'buildManifest', 'tag', 'commitDist', 'publish', 'push');
+	runSequence('bumpMajor', 'default', 'buildManifest', 'commitDist', 'tag', 'publish', 'push');
 });
