@@ -25,8 +25,8 @@ var htmlFile = __dirname + '/../server.html';
 var html = fs.readFileSync(htmlFile).toString();
 html = html.replace(/(var config = )\{.*\};/, '$1' + JSON.stringify(config.client) + ';');
 
-if (dev) {
-	html = html.replace('manifest="server.html.manifest"', '');
+if (!dev) {
+	html = html.replace('manifest=""', 'manifest="server.html.manifest"');
 }
 fs.writeFileSync(htmlFile, html);
 
