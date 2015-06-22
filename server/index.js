@@ -4,7 +4,7 @@ var express = require('express'),
 	bodyParser = require('body-parser'),
 	extend = require('deep-extend'),
 	fs = require('fs'),
-	config = require('./config.json');
+	config = require('./config.js');
 
 var dev = !!process.env.yasguiDev;
 

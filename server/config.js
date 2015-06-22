@@ -1,9 +1,9 @@
-{
+module.exports = {
 	"server": {
 		"port": 4545,
 		"db" : {
 			"engine": "tingodb",
-			"mongo":{
+			"mongodb":{
 					"host":"127.0.0.1",
 					"port":27017,
 					"db":"data",
@@ -12,14 +12,16 @@
 							"safe": true
 					}
 			},
-			"tingo":{
+			"tingodb":{
 					"path":"./tingodb"
 			}
 		}
 	},
+	//this code is automatically included in the YASGUI client configuration
 	"client": {
 		"api": {
-			"corsProxy": "/proxy/"
+			"corsProxy": "/proxy/",
+			"urlShortener": "/shorten"
 		}
 	}
 }

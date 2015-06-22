@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" manifest="server.html.manifest">
+<html lang="en" >
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -13,7 +13,7 @@
  <script src="dist/yasgui.min.js"></script>
 <script type="text/javascript">
   //want to change the config? use the config file in the ./server directory (this gets automatically inserted below)
-  var config = {"api":{"corsProxy":"/proxy/"}};
+  var config = {"api":{"corsProxy":"/proxy/","urlShortener":"/shorten"}};
 	var yasgui = YASGUI(document.getElementById("yasgui"), config);
 </script>
   </body>

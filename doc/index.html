@@ -125,29 +125,84 @@
 				These settings specify the URLs of the backend YASGUI API. Setting these values to null, will disable its functionality.
 			</div>
 
-			<div id="sparql" class="doc" style="margin-left: 30px">
+			<div  class="doc" style="margin-left: 30px">
 				<code>corsProxy: string (default: null)</code>
 				<p>The URL of the proxy, used to access <a href="http://enable-cors.org/" target="_blank">CORS disabled</a> endpoints</p>
 			</div>
-			<div id="sparql" class="doc" style="margin-left: 30px">
+			<div  class="doc" style="margin-left: 30px">
 				<code>collections: string (default: null)</code>
 				<p>The URL of the collections API, used to manage query collections</p>
 			</div>
+      <div  class="doc" style="margin-left: 30px">
+        <code>urlShortener: string (default: null)</code>
+        <p>The URL via which to shorten URLs</p>
+      </div>
 			<div class="doc">
 				<code>tracker: object</code>
 				<p>Object to which enables logging functionality. It currently supports <a href="http://www.google.com/analytics/" target="_blank">Google Analytics</a> as logging API.</p>
 			</div>
-			<div id="sparql" class="doc" style="margin-left: 30px">
+			<div  class="doc" style="margin-left: 30px">
 				<code>googleAnalyticsId: string (default: null)</code>
 				<p>The Google Analytics ID. Set to <code>null</code> to disable logging</p>
 			</div>
-			<div id="sparql" class="doc" style="margin-left: 30px">
+			<div  class="doc" style="margin-left: 30px">
 				<code>askConsent: boolean (default: true)</code>
 				<p>If tracking is enabled, present the user with a popup asking for consent.
-				Options are: enable tracking, enable only for visits and disable tracking of queries/endpoints, and disable tracking altogether.
+				Options are: enable tracking, enable only for visits and disable tracking of queries/endpoints, and disable tracking altogether.</p>
 			</div>
-		<h3 id="serverConfig">Server</h3>
 
+
+		<h3 id="serverConfig">Server</h3>
+    To change the server configuration change the <code>./server/config.js</code> file. <br>
+    <small>You'll also be able to change the client configuration via this file, by modifying values in the <code>client</code> object</small>
+    <div class="doc">
+      <code>port: int (default: 4545)</code>
+      <p>The port on which to run the API</p>
+    </div>
+    <div class="doc">
+      <code>db: object</code>
+      <p>Database connection information. Used at the moment for storing the shortened URLs</p>
+    </div>
+    <div  class="doc" style="margin-left: 30px">
+      <code>db.engine: string (default: tingodb)</code>
+      <p>The database to use. Either the file-based tingodb, or your own deployment of mongodb (our code uses a single interface, enabling you to simply switch between both). Possible values: <code>tingodb</code> or <code>mongodb</code></p>
+    </div>
+    <div  class="doc" style="margin-left: 30px">
+      <code>db.mongo: object</code>
+      <p>The MongoDb configuration object</p>
+    </div>
+    <div  class="doc" style="margin-left: 60px">
+      <code>db.mongodb.host: string (default: 127.0.0.1)</code>
+      <p>Host of mongodb</p>
+    </div>
+    <div  class="doc" style="margin-left: 60px">
+      <code>db.mongodb.port: int (default: 27017)</code>
+      <p>Mongodb port</p>
+    </div>
+    <div  class="doc" style="margin-left: 60px">
+      <code>db.mongodb.db: string (default: 'data')</code>
+      <p>Default mongo database</p>
+    </div>
+    <div  class="doc" style="margin-left: 60px">
+      <code>db.mongodb.opts: object</code>
+      <p>Additional MongoDb options</p>
+    </div>
+    <div  class="doc" style="margin-left: 90px">
+      <code>db.mongodb.opts.auto_reconnect: boolean (default: true)</code>
+      <p>Auto-reconnect when connection is lost</p>
+    </div>
+    <div  class="doc" style="margin-left: 90px">
+      <code>db.mongodb.opts.safe: boolean (default: true)</code>
+      <p>Enabling this flag means the mongo driver returns information of the success/error of an insert/update/remove</p>
+    </div>
+    <div  class="doc" style="margin-left: 30px">
+      <code>db.tingodb: object</code>
+      <p>The TingoDb configuration object</p>
+    </div>
+    <div  class="doc" style="margin-left: 60px">
+      <code>db.tingodb.path: string (default: './tingodb')</code>
+      <p>Path of TingoDB database</p>
+    </div>
 
 </div><!-- col -->
 <div class="col-md-3" id="sidebarmenu">
@@ -166,7 +221,13 @@
 
 			</li>
       <li><a href="#events">Events</a></li>
-			<li><a href="#config">Configuration</a></li>
+			<li><a href="#config">Configuration</a>
+        <ul class="nav">
+          <li><a href="#clientConfig">Client</a>
+          <li><a href="#serverConfig">Server</a>
+        </ul>
+
+      </li>
 		</ul>
 	</div>
 </div><!-- col -->
