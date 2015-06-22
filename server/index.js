@@ -48,7 +48,7 @@ app.use('/server.html.manifest', function(req,res) {
 app.use(/^\/$/, function(req,res, next) {
 	res.sendFile('server.html', {root: __dirname + '/../'});
 });
-
+require('./shortenerService.js')(app);
 http.createServer(app).listen(config.server.port)
 
 console.log('Running YASGUI on http://localhost:' + config.server.port);

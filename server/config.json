@@ -1,6 +1,21 @@
 {
 	"server": {
-		"port": 4545
+		"port": 4545,
+		"db" : {
+			"engine": "tingodb",
+			"mongo":{
+					"host":"127.0.0.1",
+					"port":27017,
+					"db":"data",
+					"opts":{
+							"auto_reconnect": true,
+							"safe": true
+					}
+			},
+			"tingo":{
+					"path":"./tingodb"
+			}
+		}
 	},
 	"client": {
 		"api": {
