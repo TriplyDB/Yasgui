@@ -7,7 +7,7 @@
   line-height: 1.42857;
   color: #333333;
   background-color: #fff;
-  /*! normalize.css v3.0.2 | MIT License | git.io/normalize */
+  /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
   /*! Source: https://github.com/h5bp/html5-boilerplate/blob/master/src/css/main.css */
   /*!
  * jQuery UI Resizable 1.10.4
@@ -119,7 +119,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui figure {
     margin: 1em 40px; }
   .yasgui hr {
-    -moz-box-sizing: content-box;
     box-sizing: content-box;
     height: 0; }
   .yasgui pre {
@@ -166,8 +165,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     height: auto; }
   .yasgui input[type="search"] {
     -webkit-appearance: textfield;
-    -moz-box-sizing: content-box;
-    -webkit-box-sizing: content-box;
     box-sizing: content-box; }
   .yasgui input[type="search"]::-webkit-search-cancel-button,
   .yasgui input[type="search"]::-webkit-search-decoration {
@@ -226,8 +223,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui h2,
     .yasgui h3 {
       page-break-after: avoid; }
-    .yasgui select {
-      background: #fff !important; }
     .yasgui .navbar {
       display: none; }
     .yasgui .btn > .caret,
@@ -245,10 +240,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       border: 1px solid #ddd !important; } }
 
 @font-face {
-  .yasgui {
-    font-family: 'Glyphicons Halflings';
-    src: url("../fonts/bootstrap/glyphicons-halflings-regular.eot");
-    src: url("../fonts/bootstrap/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("../fonts/bootstrap/glyphicons-halflings-regular.woff2") format("woff2"), url("../fonts/bootstrap/glyphicons-halflings-regular.woff") format("woff"), url("../fonts/bootstrap/glyphicons-halflings-regular.ttf") format("truetype"), url("../fonts/bootstrap/glyphicons-halflings-regular.svg#glyphicons_halflingsregular") format("svg"); } }
+  font-family: 'Glyphicons Halflings';
+  src: url("../fonts/bootstrap/glyphicons-halflings-regular.eot");
+  src: url("../fonts/bootstrap/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("../fonts/bootstrap/glyphicons-halflings-regular.woff2") format("woff2"), url("../fonts/bootstrap/glyphicons-halflings-regular.woff") format("woff"), url("../fonts/bootstrap/glyphicons-halflings-regular.ttf") format("truetype"), url("../fonts/bootstrap/glyphicons-halflings-regular.svg#glyphicons_halflingsregular") format("svg"); }
   .yasgui .glyphicon {
     position: relative;
     top: 1px;
@@ -710,9 +704,17 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     content: "\e226"; }
   .yasgui .glyphicon-bitcoin:before {
     content: "\e227"; }
+  .yasgui .glyphicon-btc:before {
+    content: "\e227"; }
+  .yasgui .glyphicon-xbt:before {
+    content: "\e227"; }
   .yasgui .glyphicon-yen:before {
     content: "\00a5"; }
+  .yasgui .glyphicon-jpy:before {
+    content: "\00a5"; }
   .yasgui .glyphicon-ruble:before {
+    content: "\20bd"; }
+  .yasgui .glyphicon-rub:before {
     content: "\20bd"; }
   .yasgui .glyphicon-scale:before {
     content: "\e230"; }
@@ -858,6 +860,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     margin: 0;
     overflow: visible;
     clip: auto; }
+  .yasgui [role="button"] {
+    cursor: pointer; }
   .yasgui h1, .yasgui h2, .yasgui h3, .yasgui h4, .yasgui h5, .yasgui h6,
   .yasgui .h1, .yasgui .h2, .yasgui .h3, .yasgui .h4, .yasgui .h5, .yasgui .h6 {
     font-family: inherit;
@@ -952,7 +956,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     white-space: nowrap; }
   .yasgui .text-lowercase {
     text-transform: lowercase; }
-  .yasgui .text-uppercase {
+  .yasgui .text-uppercase, .yasgui .initialism {
     text-transform: uppercase; }
   .yasgui .text-capitalize {
     text-transform: capitalize; }
@@ -960,45 +964,55 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     color: #777777; }
   .yasgui .text-primary {
     color: #337ab7; }
-  .yasgui a.text-primary:hover {
+  .yasgui a.text-primary:hover,
+  .yasgui a.text-primary:focus {
     color: #286090; }
   .yasgui .text-success {
     color: #3c763d; }
-  .yasgui a.text-success:hover {
+  .yasgui a.text-success:hover,
+  .yasgui a.text-success:focus {
     color: #2b542c; }
   .yasgui .text-info {
     color: #31708f; }
-  .yasgui a.text-info:hover {
+  .yasgui a.text-info:hover,
+  .yasgui a.text-info:focus {
     color: #245269; }
   .yasgui .text-warning {
     color: #8a6d3b; }
-  .yasgui a.text-warning:hover {
+  .yasgui a.text-warning:hover,
+  .yasgui a.text-warning:focus {
     color: #66512c; }
   .yasgui .text-danger {
     color: #a94442; }
-  .yasgui a.text-danger:hover {
+  .yasgui a.text-danger:hover,
+  .yasgui a.text-danger:focus {
     color: #843534; }
   .yasgui .bg-primary {
     color: #fff; }
   .yasgui .bg-primary {
     background-color: #337ab7; }
-  .yasgui a.bg-primary:hover {
+  .yasgui a.bg-primary:hover,
+  .yasgui a.bg-primary:focus {
     background-color: #286090; }
   .yasgui .bg-success {
     background-color: #dff0d8; }
-  .yasgui a.bg-success:hover {
+  .yasgui a.bg-success:hover,
+  .yasgui a.bg-success:focus {
     background-color: #c1e2b3; }
   .yasgui .bg-info {
     background-color: #d9edf7; }
-  .yasgui a.bg-info:hover {
+  .yasgui a.bg-info:hover,
+  .yasgui a.bg-info:focus {
     background-color: #afd9ee; }
   .yasgui .bg-warning {
     background-color: #fcf8e3; }
-  .yasgui a.bg-warning:hover {
+  .yasgui a.bg-warning:hover,
+  .yasgui a.bg-warning:focus {
     background-color: #f7ecb5; }
   .yasgui .bg-danger {
     background-color: #f2dede; }
-  .yasgui a.bg-danger:hover {
+  .yasgui a.bg-danger:hover,
+  .yasgui a.bg-danger:focus {
     background-color: #e4b9b9; }
   .yasgui .page-header {
     padding-bottom: 9px;
@@ -1056,8 +1070,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     cursor: help;
     border-bottom: 1px dotted #777777; }
   .yasgui .initialism {
-    font-size: 90%;
-    text-transform: uppercase; }
+    font-size: 90%; }
   .yasgui blockquote {
     padding: 10px 20px;
     margin: 0 0 20px;
@@ -1897,53 +1910,55 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .form-control[disabled],
     .yasgui .form-control[readonly],
     fieldset[disabled] .yasgui .form-control {
-      cursor: not-allowed;
       background-color: #eeeeee;
       opacity: 1; }
+    .yasgui .form-control[disabled],
+    fieldset[disabled] .yasgui .form-control {
+      cursor: not-allowed; }
   .yasgui textarea.form-control {
     height: auto; }
   .yasgui input[type="search"] {
     -webkit-appearance: none; }
   @media screen and (-webkit-min-device-pixel-ratio: 0) {
-    .yasgui input[type="date"],
-    .yasgui input[type="time"],
-    .yasgui input[type="datetime-local"],
-    .yasgui input[type="month"] {
+    .yasgui input[type="date"].form-control,
+    .yasgui input[type="time"].form-control,
+    .yasgui input[type="datetime-local"].form-control,
+    .yasgui input[type="month"].form-control {
       line-height: 34px; }
-      .yasgui input[type="date"].input-sm,
-      .yasgui .input-group-sm > input[type="date"].form-control,
-      .yasgui .input-group-sm > input[type="date"].input-group-addon,
-      .yasgui .input-group-sm > .input-group-btn > input[type="date"].btn, .input-group-sm .yasgui input[type="date"],
-      .yasgui input[type="time"].input-sm,
-      .yasgui .input-group-sm > input[type="time"].form-control,
-      .yasgui .input-group-sm > input[type="time"].input-group-addon,
-      .yasgui .input-group-sm > .input-group-btn > input[type="time"].btn, .input-group-sm .yasgui input[type="time"],
-      .yasgui input[type="datetime-local"].input-sm,
-      .yasgui .input-group-sm > input[type="datetime-local"].form-control,
-      .yasgui .input-group-sm > input[type="datetime-local"].input-group-addon,
-      .yasgui .input-group-sm > .input-group-btn > input[type="datetime-local"].btn, .input-group-sm .yasgui input[type="datetime-local"],
-      .yasgui input[type="month"].input-sm,
-      .yasgui .input-group-sm > input[type="month"].form-control,
-      .yasgui .input-group-sm > input[type="month"].input-group-addon,
-      .yasgui .input-group-sm > .input-group-btn > input[type="month"].btn, .input-group-sm .yasgui input[type="month"] {
-        line-height: 30px; }
-      .yasgui input[type="date"].input-lg,
-      .yasgui .input-group-lg > input[type="date"].form-control,
-      .yasgui .input-group-lg > input[type="date"].input-group-addon,
-      .yasgui .input-group-lg > .input-group-btn > input[type="date"].btn, .input-group-lg .yasgui input[type="date"],
-      .yasgui input[type="time"].input-lg,
-      .yasgui .input-group-lg > input[type="time"].form-control,
-      .yasgui .input-group-lg > input[type="time"].input-group-addon,
-      .yasgui .input-group-lg > .input-group-btn > input[type="time"].btn, .input-group-lg .yasgui input[type="time"],
-      .yasgui input[type="datetime-local"].input-lg,
-      .yasgui .input-group-lg > input[type="datetime-local"].form-control,
-      .yasgui .input-group-lg > input[type="datetime-local"].input-group-addon,
-      .yasgui .input-group-lg > .input-group-btn > input[type="datetime-local"].btn, .input-group-lg .yasgui input[type="datetime-local"],
-      .yasgui input[type="month"].input-lg,
-      .yasgui .input-group-lg > input[type="month"].form-control,
-      .yasgui .input-group-lg > input[type="month"].input-group-addon,
-      .yasgui .input-group-lg > .input-group-btn > input[type="month"].btn, .input-group-lg .yasgui input[type="month"] {
-        line-height: 46px; } }
+    .yasgui input[type="date"].input-sm,
+    .yasgui .input-group-sm > input[type="date"].form-control,
+    .yasgui .input-group-sm > input[type="date"].input-group-addon,
+    .yasgui .input-group-sm > .input-group-btn > input[type="date"].btn, .input-group-sm .yasgui input[type="date"],
+    .yasgui input[type="time"].input-sm,
+    .yasgui .input-group-sm > input[type="time"].form-control,
+    .yasgui .input-group-sm > input[type="time"].input-group-addon,
+    .yasgui .input-group-sm > .input-group-btn > input[type="time"].btn, .input-group-sm .yasgui input[type="time"],
+    .yasgui input[type="datetime-local"].input-sm,
+    .yasgui .input-group-sm > input[type="datetime-local"].form-control,
+    .yasgui .input-group-sm > input[type="datetime-local"].input-group-addon,
+    .yasgui .input-group-sm > .input-group-btn > input[type="datetime-local"].btn, .input-group-sm .yasgui input[type="datetime-local"],
+    .yasgui input[type="month"].input-sm,
+    .yasgui .input-group-sm > input[type="month"].form-control,
+    .yasgui .input-group-sm > input[type="month"].input-group-addon,
+    .yasgui .input-group-sm > .input-group-btn > input[type="month"].btn, .input-group-sm .yasgui input[type="month"] {
+      line-height: 30px; }
+    .yasgui input[type="date"].input-lg,
+    .yasgui .input-group-lg > input[type="date"].form-control,
+    .yasgui .input-group-lg > input[type="date"].input-group-addon,
+    .yasgui .input-group-lg > .input-group-btn > input[type="date"].btn, .input-group-lg .yasgui input[type="date"],
+    .yasgui input[type="time"].input-lg,
+    .yasgui .input-group-lg > input[type="time"].form-control,
+    .yasgui .input-group-lg > input[type="time"].input-group-addon,
+    .yasgui .input-group-lg > .input-group-btn > input[type="time"].btn, .input-group-lg .yasgui input[type="time"],
+    .yasgui input[type="datetime-local"].input-lg,
+    .yasgui .input-group-lg > input[type="datetime-local"].form-control,
+    .yasgui .input-group-lg > input[type="datetime-local"].input-group-addon,
+    .yasgui .input-group-lg > .input-group-btn > input[type="datetime-local"].btn, .input-group-lg .yasgui input[type="datetime-local"],
+    .yasgui input[type="month"].input-lg,
+    .yasgui .input-group-lg > input[type="month"].form-control,
+    .yasgui .input-group-lg > input[type="month"].input-group-addon,
+    .yasgui .input-group-lg > .input-group-btn > input[type="month"].btn, .input-group-lg .yasgui input[type="month"] {
+      line-height: 46px; } }
   .yasgui .form-group {
     margin-bottom: 15px; }
   .yasgui .radio,
@@ -1971,6 +1986,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     margin-top: -5px; }
   .yasgui .radio-inline,
   .yasgui .checkbox-inline {
+    position: relative;
     display: inline-block;
     padding-left: 20px;
     margin-bottom: 0;
@@ -2001,7 +2017,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .form-control-static {
     padding-top: 7px;
     padding-bottom: 7px;
-    margin-bottom: 0; }
+    margin-bottom: 0;
+    min-height: 34px; }
     .yasgui .form-control-static.input-lg,
     .yasgui .input-group-lg > .form-control-static.form-control,
     .yasgui .input-group-lg > .form-control-static.input-group-addon,
@@ -2044,7 +2061,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     height: auto; }
   .yasgui .form-group-sm .form-control-static {
     height: 30px;
-    padding: 5px 10px;
+    min-height: 32px;
+    padding: 6px 10px;
     font-size: 12px;
     line-height: 1.5; }
   .yasgui .input-lg, .yasgui .input-group-lg > .form-control,
@@ -2081,7 +2099,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     height: auto; }
   .yasgui .form-group-lg .form-control-static {
     height: 46px;
-    padding: 10px 16px;
+    min-height: 38px;
+    padding: 11px 16px;
     font-size: 18px;
     line-height: 1.33333; }
   .yasgui .has-feedback {
@@ -2099,15 +2118,19 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     line-height: 34px;
     text-align: center;
     pointer-events: none; }
-  .yasgui .input-lg + .form-control-feedback, .yasgui .input-group-lg > .form-control + .form-control-feedback,
+  .yasgui .input-lg + .form-control-feedback,
+  .yasgui .input-group-lg > .form-control + .form-control-feedback,
   .yasgui .input-group-lg > .input-group-addon + .form-control-feedback,
-  .yasgui .input-group-lg > .input-group-btn > .btn + .form-control-feedback {
+  .yasgui .input-group-lg > .input-group-btn > .btn + .form-control-feedback, .yasgui .input-group-lg + .form-control-feedback,
+  .yasgui .form-group-lg .form-control + .form-control-feedback {
     width: 46px;
     height: 46px;
     line-height: 46px; }
-  .yasgui .input-sm + .form-control-feedback, .yasgui .input-group-sm > .form-control + .form-control-feedback,
+  .yasgui .input-sm + .form-control-feedback,
+  .yasgui .input-group-sm > .form-control + .form-control-feedback,
   .yasgui .input-group-sm > .input-group-addon + .form-control-feedback,
-  .yasgui .input-group-sm > .input-group-btn > .btn + .form-control-feedback {
+  .yasgui .input-group-sm > .input-group-btn > .btn + .form-control-feedback, .yasgui .input-group-sm + .form-control-feedback,
+  .yasgui .form-group-sm .form-control + .form-control-feedback {
     width: 30px;
     height: 30px;
     line-height: 30px; }
@@ -2261,10 +2284,12 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     right: 15px; }
   @media (min-width: 768px) {
     .yasgui .form-horizontal .form-group-lg .control-label {
-      padding-top: 14.33333px; } }
+      padding-top: 14.33333px;
+      font-size: 18px; } }
   @media (min-width: 768px) {
     .yasgui .form-horizontal .form-group-sm .control-label {
-      padding-top: 6px; } }
+      padding-top: 6px;
+      font-size: 12px; } }
   .yasgui .btn {
     display: inline-block;
     margin-bottom: 0;
@@ -2308,24 +2333,44 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .btn[disabled],
     fieldset[disabled] .yasgui .btn {
       cursor: not-allowed;
-      pointer-events: none;
       opacity: 0.65;
       filter: alpha(opacity=65);
       -webkit-box-shadow: none;
       box-shadow: none; }
+  .yasgui a.btn.disabled,
+  fieldset[disabled] .yasgui a.btn {
+    pointer-events: none; }
   .yasgui .btn-default {
     color: #333;
     background-color: #fff;
     border-color: #ccc; }
-    .yasgui .btn-default:hover,
     .yasgui .btn-default:focus,
-    .yasgui .btn-default.focus,
+    .yasgui .btn-default.focus {
+      color: #333;
+      background-color: #e6e6e6;
+      border-color: #8c8c8c; }
+    .yasgui .btn-default:hover {
+      color: #333;
+      background-color: #e6e6e6;
+      border-color: #adadad; }
     .yasgui .btn-default:active,
     .yasgui .btn-default.active,
     .open > .yasgui .btn-default.dropdown-toggle {
       color: #333;
       background-color: #e6e6e6;
       border-color: #adadad; }
+      .yasgui .btn-default:active:hover,
+      .yasgui .btn-default:active:focus,
+      .yasgui .btn-default:active.focus,
+      .yasgui .btn-default.active:hover,
+      .yasgui .btn-default.active:focus,
+      .yasgui .btn-default.active.focus,
+      .open > .yasgui .btn-default.dropdown-toggle:hover,
+      .open > .yasgui .btn-default.dropdown-toggle:focus,
+      .open > .yasgui .btn-default.dropdown-toggle.focus {
+        color: #333;
+        background-color: #d4d4d4;
+        border-color: #8c8c8c; }
     .yasgui .btn-default:active,
     .yasgui .btn-default.active,
     .open > .yasgui .btn-default.dropdown-toggle {
@@ -2357,15 +2402,33 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     color: #fff;
     background-color: #337ab7;
     border-color: #2e6da4; }
-    .yasgui .btn-primary:hover,
     .yasgui .btn-primary:focus,
-    .yasgui .btn-primary.focus,
+    .yasgui .btn-primary.focus {
+      color: #fff;
+      background-color: #286090;
+      border-color: #122b40; }
+    .yasgui .btn-primary:hover {
+      color: #fff;
+      background-color: #286090;
+      border-color: #204d74; }
     .yasgui .btn-primary:active,
     .yasgui .btn-primary.active,
     .open > .yasgui .btn-primary.dropdown-toggle {
       color: #fff;
       background-color: #286090;
       border-color: #204d74; }
+      .yasgui .btn-primary:active:hover,
+      .yasgui .btn-primary:active:focus,
+      .yasgui .btn-primary:active.focus,
+      .yasgui .btn-primary.active:hover,
+      .yasgui .btn-primary.active:focus,
+      .yasgui .btn-primary.active.focus,
+      .open > .yasgui .btn-primary.dropdown-toggle:hover,
+      .open > .yasgui .btn-primary.dropdown-toggle:focus,
+      .open > .yasgui .btn-primary.dropdown-toggle.focus {
+        color: #fff;
+        background-color: #204d74;
+        border-color: #122b40; }
     .yasgui .btn-primary:active,
     .yasgui .btn-primary.active,
     .open > .yasgui .btn-primary.dropdown-toggle {
@@ -2397,15 +2460,33 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     color: #fff;
     background-color: #5cb85c;
     border-color: #4cae4c; }
-    .yasgui .btn-success:hover,
     .yasgui .btn-success:focus,
-    .yasgui .btn-success.focus,
+    .yasgui .btn-success.focus {
+      color: #fff;
+      background-color: #449d44;
+      border-color: #255625; }
+    .yasgui .btn-success:hover {
+      color: #fff;
+      background-color: #449d44;
+      border-color: #398439; }
     .yasgui .btn-success:active,
     .yasgui .btn-success.active,
     .open > .yasgui .btn-success.dropdown-toggle {
       color: #fff;
       background-color: #449d44;
       border-color: #398439; }
+      .yasgui .btn-success:active:hover,
+      .yasgui .btn-success:active:focus,
+      .yasgui .btn-success:active.focus,
+      .yasgui .btn-success.active:hover,
+      .yasgui .btn-success.active:focus,
+      .yasgui .btn-success.active.focus,
+      .open > .yasgui .btn-success.dropdown-toggle:hover,
+      .open > .yasgui .btn-success.dropdown-toggle:focus,
+      .open > .yasgui .btn-success.dropdown-toggle.focus {
+        color: #fff;
+        background-color: #398439;
+        border-color: #255625; }
     .yasgui .btn-success:active,
     .yasgui .btn-success.active,
     .open > .yasgui .btn-success.dropdown-toggle {
@@ -2437,15 +2518,33 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     color: #fff;
     background-color: #5bc0de;
     border-color: #46b8da; }
-    .yasgui .btn-info:hover,
     .yasgui .btn-info:focus,
-    .yasgui .btn-info.focus,
+    .yasgui .btn-info.focus {
+      color: #fff;
+      background-color: #31b0d5;
+      border-color: #1b6d85; }
+    .yasgui .btn-info:hover {
+      color: #fff;
+      background-color: #31b0d5;
+      border-color: #269abc; }
     .yasgui .btn-info:active,
     .yasgui .btn-info.active,
     .open > .yasgui .btn-info.dropdown-toggle {
       color: #fff;
       background-color: #31b0d5;
       border-color: #269abc; }
+      .yasgui .btn-info:active:hover,
+      .yasgui .btn-info:active:focus,
+      .yasgui .btn-info:active.focus,
+      .yasgui .btn-info.active:hover,
+      .yasgui .btn-info.active:focus,
+      .yasgui .btn-info.active.focus,
+      .open > .yasgui .btn-info.dropdown-toggle:hover,
+      .open > .yasgui .btn-info.dropdown-toggle:focus,
+      .open > .yasgui .btn-info.dropdown-toggle.focus {
+        color: #fff;
+        background-color: #269abc;
+        border-color: #1b6d85; }
     .yasgui .btn-info:active,
     .yasgui .btn-info.active,
     .open > .yasgui .btn-info.dropdown-toggle {
@@ -2477,15 +2576,33 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     color: #fff;
     background-color: #f0ad4e;
     border-color: #eea236; }
-    .yasgui .btn-warning:hover,
     .yasgui .btn-warning:focus,
-    .yasgui .btn-warning.focus,
+    .yasgui .btn-warning.focus {
+      color: #fff;
+      background-color: #ec971f;
+      border-color: #985f0d; }
+    .yasgui .btn-warning:hover {
+      color: #fff;
+      background-color: #ec971f;
+      border-color: #d58512; }
     .yasgui .btn-warning:active,
     .yasgui .btn-warning.active,
     .open > .yasgui .btn-warning.dropdown-toggle {
       color: #fff;
       background-color: #ec971f;
       border-color: #d58512; }
+      .yasgui .btn-warning:active:hover,
+      .yasgui .btn-warning:active:focus,
+      .yasgui .btn-warning:active.focus,
+      .yasgui .btn-warning.active:hover,
+      .yasgui .btn-warning.active:focus,
+      .yasgui .btn-warning.active.focus,
+      .open > .yasgui .btn-warning.dropdown-toggle:hover,
+      .open > .yasgui .btn-warning.dropdown-toggle:focus,
+      .open > .yasgui .btn-warning.dropdown-toggle.focus {
+        color: #fff;
+        background-color: #d58512;
+        border-color: #985f0d; }
     .yasgui .btn-warning:active,
     .yasgui .btn-warning.active,
     .open > .yasgui .btn-warning.dropdown-toggle {
@@ -2517,15 +2634,33 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     color: #fff;
     background-color: #d9534f;
     border-color: #d43f3a; }
-    .yasgui .btn-danger:hover,
     .yasgui .btn-danger:focus,
-    .yasgui .btn-danger.focus,
+    .yasgui .btn-danger.focus {
+      color: #fff;
+      background-color: #c9302c;
+      border-color: #761c19; }
+    .yasgui .btn-danger:hover {
+      color: #fff;
+      background-color: #c9302c;
+      border-color: #ac2925; }
     .yasgui .btn-danger:active,
     .yasgui .btn-danger.active,
     .open > .yasgui .btn-danger.dropdown-toggle {
       color: #fff;
       background-color: #c9302c;
       border-color: #ac2925; }
+      .yasgui .btn-danger:active:hover,
+      .yasgui .btn-danger:active:focus,
+      .yasgui .btn-danger:active.focus,
+      .yasgui .btn-danger.active:hover,
+      .yasgui .btn-danger.active:focus,
+      .yasgui .btn-danger.active.focus,
+      .open > .yasgui .btn-danger.dropdown-toggle:hover,
+      .open > .yasgui .btn-danger.dropdown-toggle:focus,
+      .open > .yasgui .btn-danger.dropdown-toggle.focus {
+        color: #fff;
+        background-color: #ac2925;
+        border-color: #761c19; }
     .yasgui .btn-danger:active,
     .yasgui .btn-danger.active,
     .open > .yasgui .btn-danger.dropdown-toggle {
@@ -2613,11 +2748,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .fade.in {
       opacity: 1; }
   .yasgui .collapse {
-    display: none;
-    visibility: hidden; }
+    display: none; }
     .yasgui .collapse.in {
-      display: block;
-      visibility: visible; }
+      display: block; }
   .yasgui tr.collapse.in {
     display: table-row; }
   .yasgui tbody.collapse.in {
@@ -2638,7 +2771,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     height: 0;
     margin-left: 2px;
     vertical-align: middle;
-    border-top: 4px solid;
+    border-top: 4px dashed;
+    border-top: 4px solid \9;
     border-right: 4px solid transparent;
     border-left: 4px solid transparent; }
   .yasgui .dropup,
@@ -2735,7 +2869,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .dropup .caret,
   .yasgui .navbar-fixed-bottom .dropdown .caret {
     border-top: 0;
-    border-bottom: 4px solid;
+    border-bottom: 4px dashed;
+    border-bottom: 4px solid \9;
     content: ""; }
   .yasgui .dropup .dropdown-menu,
   .yasgui .navbar-fixed-bottom .dropdown .dropdown-menu {
@@ -2780,6 +2915,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       display: table; }
     .yasgui .btn-toolbar:after {
       clear: both; }
+    .yasgui .btn-toolbar .btn,
     .yasgui .btn-toolbar .btn-group,
     .yasgui .btn-toolbar .input-group {
       float: left; }
@@ -2981,6 +3117,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       margin-right: -1px; }
     .yasgui .input-group-btn:last-child > .btn,
     .yasgui .input-group-btn:last-child > .btn-group {
+      z-index: 2;
       margin-left: -1px; }
   .yasgui .nav {
     margin-bottom: 0;
@@ -3093,11 +3230,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       .yasgui .nav-tabs.nav-justified > .active > a:hover, .yasgui .nav-tabs-justified > .active > a:focus, .yasgui .nav-tabs.nav-justified > .active > a:focus {
         border-bottom-color: #fff; } }
   .yasgui .tab-content > .tab-pane {
-    display: none;
-    visibility: hidden; }
+    display: none; }
   .yasgui .tab-content > .active {
-    display: block;
-    visibility: visible; }
+    display: block; }
   .yasgui .nav-tabs .dropdown-menu {
     margin-top: -1px;
     border-top-right-radius: 0;
@@ -3147,7 +3282,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
         box-shadow: none; }
         .yasgui .navbar-collapse.collapse {
           display: block !important;
-          visibility: visible !important;
           height: auto !important;
           padding-bottom: 0;
           overflow: visible !important; }
@@ -3564,6 +3698,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .pagination > li > a:focus,
     .yasgui .pagination > li > span:hover,
     .yasgui .pagination > li > span:focus {
+      z-index: 3;
       color: #23527c;
       background-color: #eeeeee;
       border-color: #ddd; }
@@ -3591,7 +3726,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .pagination-lg > li > a,
   .yasgui .pagination-lg > li > span {
     padding: 10px 16px;
-    font-size: 18px; }
+    font-size: 18px;
+    line-height: 1.33333; }
   .yasgui .pagination-lg > li:first-child > a,
   .yasgui .pagination-lg > li:first-child > span {
     border-bottom-left-radius: 6px;
@@ -3603,7 +3739,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .pagination-sm > li > a,
   .yasgui .pagination-sm > li > span {
     padding: 5px 10px;
-    font-size: 12px; }
+    font-size: 12px;
+    line-height: 1.5; }
   .yasgui .pagination-sm > li:first-child > a,
   .yasgui .pagination-sm > li:first-child > span {
     border-bottom-left-radius: 3px;
@@ -3708,7 +3845,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     font-weight: bold;
     color: #fff;
     line-height: 1;
-    vertical-align: baseline;
+    vertical-align: middle;
     white-space: nowrap;
     text-align: center;
     background-color: #777777;
@@ -3718,7 +3855,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .btn .yasgui .badge {
       position: relative;
       top: -1px; }
-    .btn-xs .yasgui .badge, .yasgui .btn-group-xs > .btn .yasgui .badge {
+    .btn-xs .yasgui .badge,
+    .yasgui .btn-group-xs > .btn .yasgui .badge,
+    .btn-group-xs > .btn .yasgui .badge {
       top: 0;
       padding: 1px 5px; }
     .list-group-item.active > .yasgui .badge,
@@ -3737,7 +3876,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     text-decoration: none;
     cursor: pointer; }
   .yasgui .jumbotron {
-    padding: 30px 15px;
+    padding-top: 30px;
+    padding-bottom: 30px;
     margin-bottom: 30px;
     color: inherit;
     background-color: #eeeeee; }
@@ -3757,7 +3897,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       max-width: 100%; }
     @media screen and (min-width: 768px) {
       .yasgui .jumbotron {
-        padding: 48px 0; }
+        padding-top: 48px;
+        padding-bottom: 48px; }
         .container .yasgui .jumbotron,
         .container-fluid .yasgui .jumbotron {
           padding-left: 60px;
@@ -3925,6 +4066,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     width: 10000px; }
   .yasgui .media-object {
     display: block; }
+    .yasgui .media-object.img-thumbnail {
+      max-width: none; }
   .yasgui .media-right,
   .yasgui .media > .pull-right {
     padding-left: 10px; }
@@ -3963,15 +4106,22 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       margin-bottom: 0;
       border-bottom-right-radius: 4px;
       border-bottom-left-radius: 4px; }
-  .yasgui a.list-group-item {
+  .yasgui a.list-group-item,
+  .yasgui button.list-group-item {
     color: #555; }
-    .yasgui a.list-group-item .list-group-item-heading {
+    .yasgui a.list-group-item .list-group-item-heading,
+    .yasgui button.list-group-item .list-group-item-heading {
       color: #333; }
     .yasgui a.list-group-item:hover,
-    .yasgui a.list-group-item:focus {
+    .yasgui a.list-group-item:focus,
+    .yasgui button.list-group-item:hover,
+    .yasgui button.list-group-item:focus {
       text-decoration: none;
       color: #555;
       background-color: #f5f5f5; }
+  .yasgui button.list-group-item {
+    width: 100%;
+    text-align: left; }
   .yasgui .list-group-item.disabled,
   .yasgui .list-group-item.disabled:hover,
   .yasgui .list-group-item.disabled:focus {
@@ -4010,68 +4160,96 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .list-group-item-success {
     color: #3c763d;
     background-color: #dff0d8; }
-  .yasgui a.list-group-item-success {
+  .yasgui a.list-group-item-success,
+  .yasgui button.list-group-item-success {
     color: #3c763d; }
-    .yasgui a.list-group-item-success .list-group-item-heading {
+    .yasgui a.list-group-item-success .list-group-item-heading,
+    .yasgui button.list-group-item-success .list-group-item-heading {
       color: inherit; }
     .yasgui a.list-group-item-success:hover,
-    .yasgui a.list-group-item-success:focus {
+    .yasgui a.list-group-item-success:focus,
+    .yasgui button.list-group-item-success:hover,
+    .yasgui button.list-group-item-success:focus {
       color: #3c763d;
       background-color: #d0e9c6; }
     .yasgui a.list-group-item-success.active,
     .yasgui a.list-group-item-success.active:hover,
-    .yasgui a.list-group-item-success.active:focus {
+    .yasgui a.list-group-item-success.active:focus,
+    .yasgui button.list-group-item-success.active,
+    .yasgui button.list-group-item-success.active:hover,
+    .yasgui button.list-group-item-success.active:focus {
       color: #fff;
       background-color: #3c763d;
       border-color: #3c763d; }
   .yasgui .list-group-item-info {
     color: #31708f;
     background-color: #d9edf7; }
-  .yasgui a.list-group-item-info {
+  .yasgui a.list-group-item-info,
+  .yasgui button.list-group-item-info {
     color: #31708f; }
-    .yasgui a.list-group-item-info .list-group-item-heading {
+    .yasgui a.list-group-item-info .list-group-item-heading,
+    .yasgui button.list-group-item-info .list-group-item-heading {
       color: inherit; }
     .yasgui a.list-group-item-info:hover,
-    .yasgui a.list-group-item-info:focus {
+    .yasgui a.list-group-item-info:focus,
+    .yasgui button.list-group-item-info:hover,
+    .yasgui button.list-group-item-info:focus {
       color: #31708f;
       background-color: #c4e3f3; }
     .yasgui a.list-group-item-info.active,
     .yasgui a.list-group-item-info.active:hover,
-    .yasgui a.list-group-item-info.active:focus {
+    .yasgui a.list-group-item-info.active:focus,
+    .yasgui button.list-group-item-info.active,
+    .yasgui button.list-group-item-info.active:hover,
+    .yasgui button.list-group-item-info.active:focus {
       color: #fff;
       background-color: #31708f;
       border-color: #31708f; }
   .yasgui .list-group-item-warning {
     color: #8a6d3b;
     background-color: #fcf8e3; }
-  .yasgui a.list-group-item-warning {
+  .yasgui a.list-group-item-warning,
+  .yasgui button.list-group-item-warning {
     color: #8a6d3b; }
-    .yasgui a.list-group-item-warning .list-group-item-heading {
+    .yasgui a.list-group-item-warning .list-group-item-heading,
+    .yasgui button.list-group-item-warning .list-group-item-heading {
       color: inherit; }
     .yasgui a.list-group-item-warning:hover,
-    .yasgui a.list-group-item-warning:focus {
+    .yasgui a.list-group-item-warning:focus,
+    .yasgui button.list-group-item-warning:hover,
+    .yasgui button.list-group-item-warning:focus {
       color: #8a6d3b;
       background-color: #faf2cc; }
     .yasgui a.list-group-item-warning.active,
     .yasgui a.list-group-item-warning.active:hover,
-    .yasgui a.list-group-item-warning.active:focus {
+    .yasgui a.list-group-item-warning.active:focus,
+    .yasgui button.list-group-item-warning.active,
+    .yasgui button.list-group-item-warning.active:hover,
+    .yasgui button.list-group-item-warning.active:focus {
       color: #fff;
       background-color: #8a6d3b;
       border-color: #8a6d3b; }
   .yasgui .list-group-item-danger {
     color: #a94442;
     background-color: #f2dede; }
-  .yasgui a.list-group-item-danger {
+  .yasgui a.list-group-item-danger,
+  .yasgui button.list-group-item-danger {
     color: #a94442; }
-    .yasgui a.list-group-item-danger .list-group-item-heading {
+    .yasgui a.list-group-item-danger .list-group-item-heading,
+    .yasgui button.list-group-item-danger .list-group-item-heading {
       color: inherit; }
     .yasgui a.list-group-item-danger:hover,
-    .yasgui a.list-group-item-danger:focus {
+    .yasgui a.list-group-item-danger:focus,
+    .yasgui button.list-group-item-danger:hover,
+    .yasgui button.list-group-item-danger:focus {
       color: #a94442;
       background-color: #ebcccc; }
     .yasgui a.list-group-item-danger.active,
     .yasgui a.list-group-item-danger.active:hover,
-    .yasgui a.list-group-item-danger.active:focus {
+    .yasgui a.list-group-item-danger.active:focus,
+    .yasgui button.list-group-item-danger.active,
+    .yasgui button.list-group-item-danger.active:hover,
+    .yasgui button.list-group-item-danger.active:focus {
       color: #fff;
       background-color: #a94442;
       border-color: #a94442; }
@@ -4137,6 +4315,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       border-bottom: 0;
       border-bottom-right-radius: 3px;
       border-bottom-left-radius: 3px; }
+  .yasgui .panel > .panel-heading + .panel-collapse > .list-group .list-group-item:first-child {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0; }
   .yasgui .panel-heading + .list-group .list-group-item:first-child {
     border-top-width: 0; }
   .yasgui .list-group + .panel-footer {
@@ -4376,10 +4557,10 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       height: 100%;
       width: 100%;
       border: 0; }
-    .yasgui .embed-responsive.embed-responsive-16by9 {
-      padding-bottom: 56.25%; }
-    .yasgui .embed-responsive.embed-responsive-4by3 {
-      padding-bottom: 75%; }
+  .yasgui .embed-responsive-16by9 {
+    padding-bottom: 56.25%; }
+  .yasgui .embed-responsive-4by3 {
+    padding-bottom: 75%; }
   .yasgui .well {
     min-height: 20px;
     padding: 19px;
@@ -4430,7 +4611,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 1040;
+    z-index: 1050;
     -webkit-overflow-scrolling: touch;
     outline: 0; }
     .yasgui .modal.fade .modal-dialog {
@@ -4465,10 +4646,12 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background-clip: padding-box;
     outline: 0; }
   .yasgui .modal-backdrop {
-    position: absolute;
+    position: fixed;
     top: 0;
     right: 0;
+    bottom: 0;
     left: 0;
+    z-index: 1040;
     background-color: #000; }
     .yasgui .modal-backdrop.fade {
       opacity: 0;
@@ -4527,11 +4710,22 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     position: absolute;
     z-index: 1070;
     display: block;
-    visibility: visible;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 12px;
+    font-style: normal;
     font-weight: normal;
-    line-height: 1.4;
+    letter-spacing: normal;
+    line-break: auto;
+    line-height: 1.42857;
+    text-align: left;
+    text-align: start;
+    text-decoration: none;
+    text-shadow: none;
+    text-transform: none;
+    white-space: normal;
+    word-break: normal;
+    word-spacing: normal;
+    word-wrap: normal;
+    font-size: 12px;
     opacity: 0;
     filter: alpha(opacity=0); }
     .yasgui .tooltip.in {
@@ -4554,7 +4748,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     padding: 3px 8px;
     color: #fff;
     text-align: center;
-    text-decoration: none;
     background-color: #000;
     border-radius: 4px; }
   .yasgui .tooltip-arrow {
@@ -4620,18 +4813,28 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     max-width: 276px;
     padding: 1px;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 14px;
+    font-style: normal;
     font-weight: normal;
+    letter-spacing: normal;
+    line-break: auto;
     line-height: 1.42857;
     text-align: left;
+    text-align: start;
+    text-decoration: none;
+    text-shadow: none;
+    text-transform: none;
+    white-space: normal;
+    word-break: normal;
+    word-spacing: normal;
+    word-wrap: normal;
+    font-size: 14px;
     background-color: #fff;
     background-clip: padding-box;
     border: 1px solid #ccc;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 6px;
     -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    white-space: normal; }
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
     .yasgui .popover.top {
       margin-top: -10px; }
     .yasgui .popover.right {
@@ -4741,9 +4944,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
           -webkit-backface-visibility: hidden;
           -moz-backface-visibility: hidden;
           backface-visibility: hidden;
-          -webkit-perspective: 1000;
-          -moz-perspective: 1000;
-          perspective: 1000; }
+          -webkit-perspective: 1000px;
+          -moz-perspective: 1000px;
+          perspective: 1000px; }
           .yasgui .carousel-inner > .item.next,
           .yasgui .carousel-inner > .item.active.right {
             -webkit-transform: translate3d(100%, 0, 0);
@@ -4821,6 +5024,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .carousel-control .glyphicon-chevron-right {
       position: absolute;
       top: 50%;
+      margin-top: -10px;
       z-index: 5;
       display: inline-block; }
     .yasgui .carousel-control .icon-prev,
@@ -4835,7 +5039,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .carousel-control .icon-next {
       width: 20px;
       height: 20px;
-      margin-top: -10px;
       line-height: 1;
       font-family: serif; }
     .yasgui .carousel-control .icon-prev:before {
@@ -4929,14 +5132,12 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background-color: transparent;
     border: 0; }
   .yasgui .hidden {
-    display: none !important;
-    visibility: hidden !important; }
+    display: none !important; }
   .yasgui .affix {
     position: fixed; }
 
 @-ms-viewport {
-  .yasgui {
-    width: device-width; } }
+  width: device-width; }
   .yasgui .visible-xs {
     display: none !important; }
   .yasgui .visible-sm {
@@ -4962,7 +5163,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .visible-xs {
       display: block !important; }
     .yasgui table.visible-xs {
-      display: table; }
+      display: table !important; }
     .yasgui tr.visible-xs {
       display: table-row !important; }
     .yasgui th.visible-xs,
@@ -4981,7 +5182,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .visible-sm {
       display: block !important; }
     .yasgui table.visible-sm {
-      display: table; }
+      display: table !important; }
     .yasgui tr.visible-sm {
       display: table-row !important; }
     .yasgui th.visible-sm,
@@ -5000,7 +5201,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .visible-md {
       display: block !important; }
     .yasgui table.visible-md {
-      display: table; }
+      display: table !important; }
     .yasgui tr.visible-md {
       display: table-row !important; }
     .yasgui th.visible-md,
@@ -5019,7 +5220,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .visible-lg {
       display: block !important; }
     .yasgui table.visible-lg {
-      display: table; }
+      display: table !important; }
     .yasgui tr.visible-lg {
       display: table-row !important; }
     .yasgui th.visible-lg,
@@ -5052,7 +5253,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .visible-print {
       display: block !important; }
     .yasgui table.visible-print {
-      display: table; }
+      display: table !important; }
     .yasgui tr.visible-print {
       display: table-row !important; }
     .yasgui th.visible-print,
@@ -6339,6 +6540,61 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 .yasqe .CodeMirror-foldgutter-folded:after {
   content: "\25B8"; }
 
+.yasqe .yasqe_btn {
+  color: #333;
+  border: 1px solid transparent;
+  background-color: #fff;
+  border-color: #ccc;
+  border-width: 1px;
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 4px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-appearance: button;
+  /* margin: 0; */
+  overflow: visible;
+  box-sizing: border-box; }
+
+.yasqe .yasqe_btn.btn_icon {
+  padding: 4px 8px; }
+
+.yasqe .yasqe_btn[disabled], .yasqe .yasqe_btn.disabled {
+  cursor: default;
+  opacity: .50;
+  filter: alpha(opacity=50);
+  -webkit-box-shadow: none;
+  box-shadow: none; }
+
+.yasqe .yasqe_btn:hover {
+  outline: 0;
+  background-color: #ebebeb;
+  border-color: #adadad; }
+
+.yasqe .yasqe_btn:focus, .yasqe .yasqe_btn.selected {
+  color: #fff;
+  outline: 0;
+  background-color: #337ab7;
+  border-color: #337ab7; }
+
+.yasqe .yasqe_btn.btn_icon:focus {
+  color: #333;
+  border: 1px solid transparent;
+  background-color: #fff;
+  border-color: #ccc; }
+
+.yasqe .yasqe_btn.yasqe_btn-sm {
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px; }
+
 .yasqe .backdrop {
   background-color: #000;
   opacity: 0.5;
@@ -6391,16 +6647,45 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   width: 20px;
   margin-top: 3px; }
 
-.yasqe .yasqe_sharePopup {
+.yasqe span.shortlinkErr {
+  font-size: small;
+  color: red;
+  font-weight: bold;
+  float: left; }
+
+.yasqe .yasqe_buttons div.yasqe_sharePopup {
   position: absolute;
-  padding: 6px;
-  background-color: #f5f5f5;
+  padding: 4px;
+  margin-left: 0px;
   border: 1px solid #e3e3e3;
   border-radius: 4px;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
-  width: 400px;
+  width: 500px;
   height: auto; }
+
+.yasqe .yasqe_buttons div.yasqe_sharePopup.enableShort .inputWrapper {
+  margin-right: 70px; }
+
+.yasqe .yasqe_buttons div.yasqe_sharePopup input {
+  float: left;
+  width: 100%;
+  border: 0px;
+  -ms-box-sizing: border-box;
+  /* ie8 */
+  -khtml-box-sizing: border-box;
+  /* konqueror */
+  -webkit-box-sizing: border-box;
+  /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;
+  /* Firefox, other Gecko */
+  box-sizing: border-box;
+  /* Opera/IE 8+ */
+  box-sizing: border-box;
+  /* css3 rec */ }
+
+.yasqe .yasqe_buttons div.yasqe_sharePopup button {
+  float: right; }
 
 .yasqe .yasqe_sharePopup textarea {
   width: 100%; }
