@@ -85,7 +85,7 @@
     "underscore": "^1.7.0",
     "valid-url": "^1.0.9",
     "yasgui-utils": "^1.4.1",
-    "yasgui-yasqe": "^2.6.0",
+    "yasgui-yasqe": "^2.6.1",
     "yasgui-yasr": "^2.6.0"
   },
   "browser": {

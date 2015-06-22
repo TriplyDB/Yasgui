@@ -1,3 +1,4 @@
+var $ = require('jquery');
 var deparam = function(queryString) {
 	var params = [];
 	if (queryString && queryString.length > 0) {
@@ -37,6 +38,22 @@ var getUrlParams = function() {
 };
 
 module.exports = {
+	getShortLinkHandler: function(yasgui) {
+		return function(url, callback) {
+			$.ajax({
+				url: yasgui.options.api.urlShortener,
+				data: {
+					url: url
+				},
+				error: function(jqXhr, textStatus, errorThrown){
+					callback(jqXhr.responseText);
+				},
+				success: function(data) {
+					callback(null, data);
+				}
+			})
+		}
+	},
 	getCreateLinkHandler: function(tab) {
 		return function() {
 			/**

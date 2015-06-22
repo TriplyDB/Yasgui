@@ -123,7 +123,9 @@ var Tab = function(yasgui, id, name, endpoint) {
 	var yasqeOptions = {
 		createShareLink: require('./shareLink').getCreateLinkHandler(tab)
 	};
-
+	if (yasgui.options.api.urlShortener) {
+		yasqeOptions.createShortLink = require('./shareLink').getShortLinkHandler(yasgui)
+	}
 	var storeInHist = function() {
 		persistentOptions.yasqe.value = tab.yasqe.getValue(); //in case the onblur hasnt happened yet
 		var resultSize = null;
