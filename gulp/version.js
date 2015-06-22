@@ -7,13 +7,13 @@ var gulp = require('gulp'),
 	runSequence = require('run-sequence').use(gulp),
 	manifest = require('gulp-manifest'),
 	spawn = require('child_process').spawn;
-	
+
 
 var manifestFile = './server.html.manifest';
 
 function inc(importance) {
     // get all the files to bump version in
-    return gulp.src(['./package.json', './bower.json']) 
+    return gulp.src(['./package.json', './bower.json'])
         // bump the version number in those files
         .pipe(bump({type: importance}))
         // save it back to filesystem
@@ -40,7 +40,7 @@ gulp.task('tag', function() {
 	return gulp.src(['./package.json', './bower.json'])
     .pipe(git.commit('version bump'))
     // read only one file to get the version number
-	.pipe(filter('package.json')) 
+	.pipe(filter('package.json'))
 	.pipe(tag_version());
 });
 gulp.task('buildManifest', function(){
@@ -59,11 +59,11 @@ gulp.task('bumpMinor', function() { return inc('minor'); })
 gulp.task('bumpMajor', function() { return inc('major'); })
 
 gulp.task('patch', function() {
-	runSequence('bumpPatch', 'default', 'buildManifest', 'commitDist', 'tag', 'publish', 'push');
+	runSequence('bumpPatch', 'default', 'buildManifest', 'tag', 'commitDist', 'publish', 'push');
 });
 gulp.task('minor', function() {
-	runSequence('bumpMinor', 'default', 'buildManifest', 'commitDist', 'tag', 'publish', 'push');
+	runSequence('bumpMinor', 'default', 'buildManifest', 'tag', 'commitDist', 'publish', 'push');
 });
 gulp.task('major', function() {
-	runSequence('bumpMajor', 'default', 'buildManifest', 'commitDist', 'tag', 'publish', 'push');
+	runSequence('bumpMajor', 'default', 'buildManifest', 'tag', 'commitDist', 'publish', 'push');
 });
