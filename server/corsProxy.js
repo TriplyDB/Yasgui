@@ -9,7 +9,7 @@ module.exports = function(req, res) {
 		res.statusCode = 405;
 		return res.end('GET request not supported');
 	}
-	
+
 	var arguments = req.body;
 	var acceptHeader = '*/*';
 	if (req.headers.accept) acceptHeader = req.headers.accept;
@@ -18,25 +18,24 @@ module.exports = function(req, res) {
 		requestMethod = arguments.requestMethod;
 		delete arguments["requestMethod"];
 	}
-	
+
 	if (!arguments.endpoint) {
 		res.statusCode = 400;
 		return res.end('Missing endpoint reference to proxy');
 	}
 	var endpoint = arguments.endpoint;
 	delete arguments["endpoint"];
-	
+
 	var parsedEndpoint = url.parse(endpoint);
-	
+
 	delete req.headers['content-type'];
 	delete req.headers['content-length'];
-	
+
 	var endpointReqOptions = {
 		host: parsedEndpoint.host,
 		path: parsedEndpoint.path,
 		headers:  req.headers,
 		method: requestMethod,
-		headers: {}
 	}
 	endpointReqOptions.headers['Accept'] = acceptHeader;
 	var postData = null;
