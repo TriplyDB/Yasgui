@@ -1,4 +1,5 @@
 var http = require('follow-redirects').http,
+	https = require('follow-redirects').https,
 	querystring = require('querystring'),
 	url = require('url');
 
@@ -41,7 +42,7 @@ module.exports = function(req, res) {
 	var postData = null;
 	if (requestMethod == "GET") {
 		var appendedQuery = "";
-		if (endpointReqOptions.path.indexOf("?") >= 0) { 
+		if (endpointReqOptions.path.indexOf("?") >= 0) {
 			appendedQuery = "&";
 		} else {
 			appendedQuery = "?";
@@ -51,10 +52,13 @@ module.exports = function(req, res) {
 	} else {
 		postData = querystring.stringify(arguments);
 		endpointReqOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-		endpointReqOptions.headers['Content-Length'] = postData.length
+		endpointReqOptions.headers['Content-Length'] = postData.length;
 	}
-	
-	var proxyReq = http.request(endpointReqOptions, function(proxyRes) {
+	var protocolReq = http;
+	if (parsedEndpoint.protocol == "https:") {
+		protocolReq = https;
+	}
+	var proxyReq = protocolReq.request(endpointReqOptions, function(proxyRes) {
 		res.setHeader('content-type', proxyRes.headers['content-type']);
 		res.statusCode = proxyRes.statusCode;
 		proxyRes.on('data', function(chunk) {
@@ -66,7 +70,7 @@ module.exports = function(req, res) {
 	});
 	if (postData) proxyReq.write(postData);
 	proxyReq.on('error', function (err) {
-		//If any error is encountered during the request (be that with DNS resolution, TCP level errors, 
+		//If any error is encountered during the request (be that with DNS resolution, TCP level errors,
 		//or actual HTTP parse errors) an 'error' event is emitted on the returned request object.
 		res.statusCode = 0;
 		res.end();
