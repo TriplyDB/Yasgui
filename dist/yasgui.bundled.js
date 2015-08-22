@@ -97460,6 +97460,12 @@ var YASGUI = function(parent, options) {
 					storeRename(el);
 				})
 			})
+			.mousedown(function(e){
+		    if (e.which == 2) {
+            //middle Click
+						closeTab(tabId);
+		    }
+			})
 			.bind('contextmenu', function(e) {
 				e.preventDefault();
 				$contextMenu
