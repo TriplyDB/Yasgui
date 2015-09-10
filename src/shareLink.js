@@ -28,7 +28,9 @@ var getUrlParams = function() {
 	//first try hash
 	var urlParams = [];
 	if (window.location.hash.length > 1) {
-		urlParams = deparam(window.location.hash.substring(1))
+		//firefox does some decoding if we're using window.location.hash (e.g. the + sign in contentType settings)
+		//Don't want this. So simply get the hash string ourselves
+		urlParams = deparam(location.href.split("#")[1])
 		window.location.hash = ""; //clear hash
 	} else if (window.location.search.length > 1) {
 		//ok, then just try regular url params
