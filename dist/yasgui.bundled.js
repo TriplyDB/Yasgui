@@ -44677,7 +44677,7 @@ module.exports=require(18)
 module.exports={
   "name": "yasgui-yasqe",
   "description": "Yet Another SPARQL Query Editor",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -45938,7 +45938,9 @@ var getUrlParams = function() {
 	//first try hash
 	var urlParams = null;
 	if (window.location.hash.length > 1) {
-		urlParams = $.deparam(window.location.hash.substring(1))
+		//firefox does some decoding if we're using window.location.hash (e.g. the + sign in contentType settings)
+		//Don't want this. So simply get the hash string ourselves
+		urlParams = $.deparam(location.href.split("#")[1])
 	}
 	if ((!urlParams || !('query' in urlParams)) && window.location.search.length > 1) {
 		//ok, then just try regular url params
@@ -46424,7 +46426,7 @@ var autoFormatLineBreaks = function(text, start, end) {
 
 require('./sparql.js'),
 	require('./defaults.js');
-
+root.$ = $;
 root.version = {
 	"CodeMirror": CodeMirror.version,
 	"YASQE": require("../package.json").version,
@@ -92972,7 +92974,7 @@ module.exports=require(18)
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -93912,16 +93914,16 @@ $.fn.tableToCsv = function(config) {
 
 	var tableArrays = [];
 	var $el = $(this);
-	var rowSpans = {};
+	var rowspans = {};
 
 
 
-	var colCount = 0;
+	var totalColCount = 0;
 	$el.find('tr:first *').each(function() {
 		if ($(this).attr('colspan')) {
-			colCount += +$(this).attr('colspan');
+			totalColCount += +$(this).attr('colspan');
 		} else {
-			colCount++;
+			totalColCount++;
 		}
 	});
 
@@ -93929,38 +93931,33 @@ $.fn.tableToCsv = function(config) {
 		var $tr = $(tr);
 		var rowArray = []
 
-		var skippedCols = 0;
-		for (var colId = 0;
-			(colId + skippedCols) < colCount; colId++) {
-
-			//for col Id, do we have a rowspan attr left? Then first add this one to rowArray
-			if (rowSpans[colId]) {
-				rowArray.push(rowSpans[colId].text);
-				rowSpans[colId].rowSpan--;
-				if (!rowSpans[colId].rowSpan) delete rowSpans[colId];
+		var htmlColId = 0;
+		var actualColId = 0;
+		while (actualColId < totalColCount) {
+			if (rowspans[actualColId]) {
+				rowArray.push(rowspans[actualColId].text);
+				rowspans[actualColId].rowSpan--;
+				if (!rowspans[actualColId].rowSpan) rowspans[actualColId] = null;
+				actualColId++;
 				continue;
 			}
 
-			var $cell = $tr.find(':nth-child(' + (colId + 1) + ')');
-			console.log($cell);
+			var $cell = $tr.find(':nth-child(' + (htmlColId + 1) + ')');
+			if (!$cell) break;
+			var colspan = $cell.attr('colspan') || 1;
+			var rowspan = $cell.attr('rowspan') || 1;
 
-			var colspan = $cell.attr('colspan');
-			var rowspan = $cell.attr('rowspan');
-			if (colspan && !isNaN(colspan)) {
-				for (var i = 0; i < colspan; i++) {
-					rowArray.push($cell.text());
-				}
-				skippedCols += (colspan - 1);
-			} else if (rowspan && !isNaN(rowspan)) {
-				rowSpans[colId + skippedCols] = {
-					rowSpan: rowspan - 1,
-					text: $cell.text()
-				}
+			for (var i = 0; i < colspan; i++) {
 				rowArray.push($cell.text());
-				skippedCols++;
-			} else {
-				rowArray.push($cell.text());
+				if (rowspan > 1) {
+					rowspans[actualColId] = {
+						rowSpan: rowspan - 1,
+						text: $cell.text(),
+					}
+				}
+				actualColId++;
 			}
+			htmlColId++;
 		}
 		addRowToString(rowArray);
 
@@ -93969,6 +93966,7 @@ $.fn.tableToCsv = function(config) {
 
 	return csvString;
 }
+
 },{"jquery":71}],91:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
@@ -97552,7 +97550,9 @@ var getUrlParams = function() {
 	//first try hash
 	var urlParams = [];
 	if (window.location.hash.length > 1) {
-		urlParams = deparam(window.location.hash.substring(1))
+		//firefox does some decoding if we're using window.location.hash (e.g. the + sign in contentType settings)
+		//Don't want this. So simply get the hash string ourselves
+		urlParams = deparam(location.href.split("#")[1])
 		window.location.hash = ""; //clear hash
 	} else if (window.location.search.length > 1) {
 		//ok, then just try regular url params
