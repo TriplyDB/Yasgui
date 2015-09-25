@@ -18,6 +18,7 @@ module.exports = function(yasgui, tab) {
 	var $acceptSelect;
 	var $acceptGraph;
 	var $urlArgsDiv;
+	var $httpHeadersDiv;
 	var $defaultGraphsDiv;
 	var $namedGraphsDiv;
 	var initWrapper = function() {
@@ -170,6 +171,17 @@ module.exports = function(yasgui, tab) {
 			role: 'group'
 		}).appendTo($urlArgsRow);
 
+		//HTTP headers
+		var $headersRow = $('<div>', {
+			class: 'reqRow'
+		}).appendTo($reqPanel);
+		$('<div>', {
+			class: 'rowLabel'
+		}).appendTo($headersRow).text('HTTP Headers');
+		$httpHeadersDiv = $('<div>', {
+			class: 'col-md-8',
+			role: 'group'
+		}).appendTo($headersRow);
 
 		//Default graphs
 		var $defaultGraphsRow = $('<div>', {
@@ -335,6 +347,14 @@ module.exports = function(yasgui, tab) {
 		}
 		addTextInputsTo($urlArgsDiv, 2, false); //and, always add one item
 
+		//http headers
+		$httpHeadersDiv.empty();
+		if (! $.isEmptyObject(options.sparql.headers)) {
+			$.each(options.sparql.headers, function(key, val) {
+				addTextInputsTo($httpHeadersDiv, 2, false, [key, val]);
+			});
+		}
+		addTextInputsTo($httpHeadersDiv, 2, false); //and, always add one item
 
 		//default graphs
 		$defaultGraphsDiv.empty();
@@ -425,6 +445,19 @@ module.exports = function(yasgui, tab) {
 		options.args = args;
 
 
+		//http headers
+		var headers = {};
+		$httpHeadersDiv.find('div').each(function(i, el) {
+			var inputVals = [];
+			$(el).find('input').each(function(i, input) {
+				inputVals.push($(input).val());
+			});
+			if (inputVals[0] && inputVals[0].trim().length > 0) {
+				headers[inputVals[0]] = (inputVals[1] ? inputVals[1] : "");
+			}
+		});
+		options.headers = headers;
+		
 		//default graphs
 		var defaultGraphs = [];
 		$defaultGraphsDiv.find('div').each(function(i, el) {

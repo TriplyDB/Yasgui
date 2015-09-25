@@ -79,6 +79,9 @@ module.exports = {
 			}, {
 				name: 'tabTitle',
 				value: tab.persistentOptions.name
+			}, {
+				name: 'headers',
+				value: JSON.stringify(tab.persistentOptions.yasqe.sparql.headers)
 			}];
 
 			tab.persistentOptions.yasqe.sparql.args.forEach(function(paramPair) {
@@ -169,6 +172,12 @@ module.exports = {
 			} else if (paramPair.name == 'defaultGraph') {
 				if (!options.yasqe.sparql.defaultGraphs) options.yasqe.sparql.defaultGraphs = [];
 				options.yasqe.sparql.defaultGraphs.push(paramPair.value);
+			} else if (paramPair.name == 'headers') {
+				if (!options.yasqe.sparql.headers) options.yasqe.sparql.headers = {};
+				var headers = JSON.parse(paramPair.value);
+				if ($.isPlainObject(headers)) {
+					options.yasqe.sparql.headers = headers;
+				}
 			} else {
 				if (!options.yasqe.sparql.args) options.yasqe.sparql.args = [];
 				//regular arguments. So store them as regular arguments

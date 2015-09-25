@@ -23,7 +23,8 @@ var defaultPersistent = {
 			args: YASGUI.YASQE.defaults.sparql.args,
 			defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
 			namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
-			requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod
+			requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod,
+			headers: YASGUI.YASQE.defaults.sparql.headers
 		}
 	}
 };
