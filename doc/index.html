@@ -13,14 +13,14 @@
   </head>
   <body data-spy="scroll" data-target="#sidebarmenu">
 
-  <a href="https://github.com/YASGUI/YASQE" target="_blank"><img style="z-index: 11111; position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  <a href="https://github.com/YASGUI/YASGUI" target="_blank"><img style="z-index: 11111; position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
     <div class="navbar navbar-inverse navbar-static-top" role="navigation">
       <div class="container">
-      <a class="navbar-brand" href="#">YASQE</a>
+      <a class="navbar-brand" href="#">YASGUI</a>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li><a href="../">About</a></li>
-            <li class="active"><a href="#l">Documentation</a></li>
+            <li class="active"><a href="#">Documentation</a></li>
             <li><a target="_blank" href="http://laurensrietveld.nl">About me</a></li>
           </ul>
         </div><!--/.nav-collapse -->
@@ -31,20 +31,17 @@
    <div class="col-md-9">
 		<h1>Documentation</h1>
 		YASGUI is a continuation of the <a href="http://legacy.yasgui.org" target="_blank">original</a> YASGUI library.
-		It uses the JavaScript libraries <a href="http://yasqe.yasgui.org" target="_blank">YASQE</a> (a SPARQL Query Editor) and <a href="http://yasr.yasgui.org" target="_blank">YASR</a> (a SPARQL Resultset Visualizer) library.
-		Below we elaborate on the functionality YASGUI offers in addition to these other libraries.
+		It uses the JavaScript libraries <a href="http://yasqe.yasgui.org" target="_blank">YASQE</a> (a SPARQL Query Editor) and <a href="http://yasr.yasgui.org" target="_blank">YASR</a> (a SPARQL Resultset Visualizer).
+		Below we desribe the functionality YASGUI offers in addition to these other libraries.
      	<h2 id="gettingStarted">Getting Started</h2>
-     	<p>Initialize YASGUI via its constructor, which return an instance we refer to as <code>yasqe</code> (lowercase).
+     	<p>Initialize YASGUI via its constructor, which return an instance we refer to as <code>yasgui</code> (lowercase).
      	The constructor take as argument a config object. See the section on <a href="#config">defaults</a> for more information on this config object.</p>
      	<div class="doc">
      		<code>YASGUI(parent: DOM-Element, settings: Object) → YASGUI instance: yasgui</code>
      		<p>Main YASGUI constructor. Pass a DOM element as argument to append the editor to, and (optionally) pass along config settings</p>
 
      	</div>
-     	<div class="doc">
-     		<code>YASQE.fromTextArea(textArea: DOM element, config: Object) → YASQE instance: yasqe</code>
-     		<p>Initialize YASQE from an existing text area (see <a href="http://codemirror.net/doc/manual.html#fromTextArea" target="_blank">CodeMirror</a> for more info)</p>
-   		</div>
+
      	<h3 id="gists">Examples</h3>
      	<div id="gistContainer">
 
@@ -119,10 +116,17 @@
 				<code>allowYasqeResize: boolean (default: true)</code>
 				<p>Allow resizing of the YASQE editor</p>
 			</div>
+      <div class="doc">
+        <code>catalogueEndpoints: array|function(instance:yasgui, callback)</code>
+        <p>The endpoints used as suggestions in the endpoint autocompletion field. This value is either an array of
+          objects (in the form <code>{endpoint: 'http://endpoint', title: 'some short title. optional.'}</code>), or a function that returns this array via a callback function.
+          By default, it uses a static list crawled from the SPARQLES website (that at the time of writing did not publish their endpoints via API).
+        </p>
+      </div>
 			<div class="doc">
 				<code>api: object</code>
-				<p>YASGUI works completely client-side. However, to increase the functionality you can choose to run the YASGUI below.
-				These settings specify the URLs of the backend YASGUI API. Setting these values to null, will disable its functionality.
+				<p>YASGUI works completely client-side. To increase the functionality you can choose to run the YASGUI server as well.
+				These settings specify the URLs of the backend YASGUI API. Setting these values to null, will disable their functionality.
 			</div>
 
 			<div  class="doc" style="margin-left: 30px">
