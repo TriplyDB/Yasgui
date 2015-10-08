@@ -5,11 +5,9 @@ var gulp = require('gulp'),
     filter = require('gulp-filter'),
     tag_version = require('gulp-tag-version'),
 	runSequence = require('run-sequence').use(gulp),
-	manifest = require('gulp-manifest'),
 	spawn = require('child_process').spawn;
 
 
-var manifestFile = './server.html.manifest';
 
 function inc(importance) {
     // get all the files to bump version in
@@ -31,7 +29,7 @@ gulp.task('push', function (done) {
 });
 
 gulp.task('commitDist', function() {
-	  return gulp.src(['./' + paths.docDir + '/*', './' + paths.bundleDir + '/*', manifestFile])
+	  return gulp.src(['./' + paths.docDir + '/*', './' + paths.bundleDir + '/*'])
 	    .pipe(git.add({args: '-f'}))
 	    .pipe(git.commit("Updated dist/docs"));
 });
@@ -43,27 +41,18 @@ gulp.task('tag', function() {
 	.pipe(filter('package.json'))
 	.pipe(tag_version());
 });
-gulp.task('buildManifest', function(){
-  gulp.src(['./dist/yasgui.min.css', './dist/yasgui.min.js'], {cwd: __dirname + '/../'})
-    .pipe(manifest({
-      hash: true,
-      timestamp: false,
-      filename: manifestFile,
-      basePath: './dist'
-     }))
-    .pipe(gulp.dest('./'));
-});
+
 
 gulp.task('bumpPatch', function() { return inc('patch'); })
 gulp.task('bumpMinor', function() { return inc('minor'); })
 gulp.task('bumpMajor', function() { return inc('major'); })
 
 gulp.task('patch', function() {
-	runSequence('bumpPatch', 'default', 'buildManifest', 'commitDist', 'tag', 'publish', 'push');
+	runSequence('bumpPatch', 'default', 'commitDist', 'tag', 'publish', 'push');
 });
 gulp.task('minor', function() {
-	runSequence('bumpMinor', 'default', 'buildManifest', 'commitDist', 'tag', 'publish', 'push');
+	runSequence('bumpMinor', 'default', 'commitDist', 'tag', 'publish', 'push');
 });
 gulp.task('major', function() {
-	runSequence('bumpMajor', 'default', 'buildManifest', 'commitDist', 'tag', 'publish', 'push');
+	runSequence('bumpMajor', 'default', 'commitDist', 'tag', 'publish', 'push');
 });

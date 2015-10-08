@@ -1,9 +1,7 @@
 var gulp = require('gulp'),
 	connect = require('gulp-connect'),
 	paths = require('./paths.js'),
-	livereload = require('gulp-livereload'),
-	server = require('gulp-express'),
-	nodemon = require('gulp-nodemon');
+	livereload = require('gulp-livereload');
 
 gulp.task('watch', function() {
 	gulp.watch(["./src/**/*.js"], [ 'browserifyForDebug' ]);
@@ -17,13 +15,8 @@ gulp.task('watch', function() {
 
 gulp.task('connect', function() {
 	connect.server({
-		root: [__dirname + '/../', __dirname + '/../server'],
+		root: [__dirname + '/../'],
 		port : 4000,
 		livereload: true
 	});
-});
-
-gulp.task('connectApi', function() {
-	process.env.yasguiDev = 1;
-	nodemon({ script: './server/index.js', watch: './server' })
 });
