@@ -50,6 +50,10 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
  *
  * @author Brian Reavis <brian@thirdroute.com>
  */ }
+
+@-webkit-keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg); } }
   .yasgui html {
     font-family: sans-serif;
     -ms-text-size-adjust: 100%;
@@ -779,13 +783,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .glyphicon-menu-up:before {
     content: "\e260"; }
   .yasgui * {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box; }
   .yasgui *:before,
   .yasgui *:after {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box; }
   .yasgui html {
     font-size: 10px;
@@ -831,7 +831,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     border: 1px solid #ddd;
     border-radius: 4px;
     -webkit-transition: all 0.2s ease-in-out;
-    -o-transition: all 0.2s ease-in-out;
     transition: all 0.2s ease-in-out;
     display: inline-block;
     max-width: 100%;
@@ -1850,8 +1849,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     margin-bottom: 5px;
     font-weight: bold; }
   .yasgui input[type="search"] {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box; }
   .yasgui input[type="radio"],
   .yasgui input[type="checkbox"] {
@@ -1890,15 +1887,12 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background-image: none;
     border: 1px solid #ccc;
     border-radius: 4px;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-    -o-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
     transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s; }
     .yasgui .form-control:focus {
       border-color: #66afe9;
       outline: 0;
-      -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
       box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6); }
     .yasgui .form-control::-moz-placeholder {
       color: #999;
@@ -2147,11 +2141,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     color: #3c763d; }
   .yasgui .has-success .form-control {
     border-color: #3c763d;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075); }
     .yasgui .has-success .form-control:focus {
       border-color: #2b542c;
-      -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #67b168;
       box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #67b168; }
   .yasgui .has-success .input-group-addon {
     color: #3c763d;
@@ -2172,11 +2164,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     color: #8a6d3b; }
   .yasgui .has-warning .form-control {
     border-color: #8a6d3b;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075); }
     .yasgui .has-warning .form-control:focus {
       border-color: #66512c;
-      -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #c0a16b;
       box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #c0a16b; }
   .yasgui .has-warning .input-group-addon {
     color: #8a6d3b;
@@ -2197,11 +2187,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     color: #a94442; }
   .yasgui .has-error .form-control {
     border-color: #a94442;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075); }
     .yasgui .has-error .form-control:focus {
       border-color: #843534;
-      -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ce8483;
       box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ce8483; }
   .yasgui .has-error .input-group-addon {
     color: #a94442;
@@ -2327,7 +2315,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .btn.active {
       outline: 0;
       background-image: none;
-      -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
       box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125); }
     .yasgui .btn.disabled,
     .yasgui .btn[disabled],
@@ -2335,7 +2322,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       cursor: not-allowed;
       opacity: 0.65;
       filter: alpha(opacity=65);
-      -webkit-box-shadow: none;
       box-shadow: none; }
   .yasgui a.btn.disabled,
   fieldset[disabled] .yasgui a.btn {
@@ -2698,7 +2684,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     .yasgui .btn-link[disabled],
     fieldset[disabled] .yasgui .btn-link {
       background-color: transparent;
-      -webkit-box-shadow: none;
       box-shadow: none; }
     .yasgui .btn-link,
     .yasgui .btn-link:hover,
@@ -2743,7 +2728,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .fade {
     opacity: 0;
     -webkit-transition: opacity 0.15s linear;
-    -o-transition: opacity 0.15s linear;
     transition: opacity 0.15s linear; }
     .yasgui .fade.in {
       opacity: 1; }
@@ -2797,7 +2781,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     border: 1px solid #ccc;
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 4px;
-    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
     background-clip: padding-box; }
     .yasgui .dropdown-menu.pull-right {
@@ -2955,10 +2938,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     padding-left: 12px;
     padding-right: 12px; }
   .yasgui .btn-group.open .dropdown-toggle {
-    -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125); }
     .yasgui .btn-group.open .dropdown-toggle.btn-link {
-      -webkit-box-shadow: none;
       box-shadow: none; }
   .yasgui .btn .caret {
     margin-left: 0; }
@@ -3411,7 +3392,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     padding: 10px 15px;
     border-top: 1px solid transparent;
     border-bottom: 1px solid transparent;
-    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.1);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.1);
     margin-top: 8px;
     margin-bottom: 8px; }
@@ -3466,7 +3446,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
         margin-right: 0;
         padding-top: 0;
         padding-bottom: 0;
-        -webkit-box-shadow: none;
         box-shadow: none; } }
   .yasgui .navbar-nav > li > .dropdown-menu {
     margin-top: 0;
@@ -3915,7 +3894,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     border: 1px solid #ddd;
     border-radius: 4px;
     -webkit-transition: border 0.2s ease-in-out;
-    -o-transition: border 0.2s ease-in-out;
     transition: border 0.2s ease-in-out; }
     .yasgui .thumbnail > img,
     .yasgui .thumbnail a > img {
@@ -4003,7 +3981,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     margin-bottom: 20px;
     background-color: #f5f5f5;
     border-radius: 4px;
-    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1); }
   .yasgui .progress-bar {
     float: left;
@@ -4014,45 +3991,37 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     color: #fff;
     text-align: center;
     background-color: #337ab7;
-    -webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
     box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
     -webkit-transition: width 0.6s ease;
-    -o-transition: width 0.6s ease;
     transition: width 0.6s ease; }
   .yasgui .progress-striped .progress-bar,
   .yasgui .progress-bar-striped {
     background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
-    background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
     background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
     background-size: 40px 40px; }
   .yasgui .progress.active .progress-bar,
   .yasgui .progress-bar.active {
     -webkit-animation: progress-bar-stripes 2s linear infinite;
-    -o-animation: progress-bar-stripes 2s linear infinite;
     animation: progress-bar-stripes 2s linear infinite; }
   .yasgui .progress-bar-success {
     background-color: #5cb85c; }
     .progress-striped .yasgui .progress-bar-success {
       background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
-      background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
       background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent); }
   .yasgui .progress-bar-info {
     background-color: #5bc0de; }
     .progress-striped .yasgui .progress-bar-info {
       background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
-      background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
       background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent); }
   .yasgui .progress-bar-warning {
     background-color: #f0ad4e; }
     .progress-striped .yasgui .progress-bar-warning {
       background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
-      background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
       background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent); }
   .yasgui .progress-bar-danger {
     background-color: #d9534f; }
     .progress-striped .yasgui .progress-bar-danger {
       background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
-      background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
       background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent); }
   .yasgui .media {
     margin-top: 15px; }
@@ -4264,7 +4233,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background-color: #fff;
     border: 1px solid transparent;
     border-radius: 4px;
-    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05); }
   .yasgui .panel-body {
     padding: 15px; }
@@ -4568,7 +4536,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background-color: #f5f5f5;
     border: 1px solid #e3e3e3;
     border-radius: 4px;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05); }
     .yasgui .well blockquote {
       border-color: #ddd;
@@ -4616,17 +4583,11 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     outline: 0; }
     .yasgui .modal.fade .modal-dialog {
       -webkit-transform: translate(0, -25%);
-      -ms-transform: translate(0, -25%);
-      -o-transform: translate(0, -25%);
       transform: translate(0, -25%);
       -webkit-transition: -webkit-transform 0.3s ease-out;
-      -moz-transition: -moz-transform 0.3s ease-out;
-      -o-transition: -o-transform 0.3s ease-out;
       transition: transform 0.3s ease-out; }
     .yasgui .modal.in .modal-dialog {
       -webkit-transform: translate(0, 0);
-      -ms-transform: translate(0, 0);
-      -o-transform: translate(0, 0);
       transform: translate(0, 0); }
   .yasgui .modal-open .modal {
     overflow-x: hidden;
@@ -4641,7 +4602,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     border: 1px solid #999;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 6px;
-    -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
     box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
     background-clip: padding-box;
     outline: 0; }
@@ -4699,7 +4659,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       width: 600px;
       margin: 30px auto; }
     .yasgui .modal-content {
-      -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); }
     .yasgui .modal-sm {
       width: 300px; } }
@@ -4833,7 +4792,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     border: 1px solid #ccc;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 6px;
-    -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
     .yasgui .popover.top {
       margin-top: -10px; }
@@ -4927,7 +4885,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       display: none;
       position: relative;
       -webkit-transition: 0.6s ease-in-out left;
-      -o-transition: 0.6s ease-in-out left;
       transition: 0.6s ease-in-out left; }
       .yasgui .carousel-inner > .item > img,
       .yasgui .carousel-inner > .item > a > img {
@@ -4938,14 +4895,10 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       @media all and (transform-3d), (-webkit-transform-3d) {
         .yasgui .carousel-inner > .item {
           -webkit-transition: -webkit-transform 0.6s ease-in-out;
-          -moz-transition: -moz-transform 0.6s ease-in-out;
-          -o-transition: -o-transform 0.6s ease-in-out;
           transition: transform 0.6s ease-in-out;
           -webkit-backface-visibility: hidden;
-          -moz-backface-visibility: hidden;
           backface-visibility: hidden;
           -webkit-perspective: 1000px;
-          -moz-perspective: 1000px;
           perspective: 1000px; }
           .yasgui .carousel-inner > .item.next,
           .yasgui .carousel-inner > .item.active.right {
@@ -4999,7 +4952,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); }
     .yasgui .carousel-control.left {
       background-image: -webkit-linear-gradient(left, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.0001) 100%);
-      background-image: -o-linear-gradient(left, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.0001) 100%);
       background-image: linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.0001) 100%);
       background-repeat: repeat-x;
       filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#80000000', endColorstr='#00000000', GradientType=1); }
@@ -5007,7 +4959,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       left: auto;
       right: 0;
       background-image: -webkit-linear-gradient(left, rgba(0, 0, 0, 0.0001) 0%, rgba(0, 0, 0, 0.5) 100%);
-      background-image: -o-linear-gradient(left, rgba(0, 0, 0, 0.0001) 0%, rgba(0, 0, 0, 0.5) 100%);
       background-image: linear-gradient(to right, rgba(0, 0, 0, 0.0001) 0%, rgba(0, 0, 0, 0.5) 100%);
       background-repeat: repeat-x;
       filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#80000000', GradientType=1); }
@@ -5362,17 +5313,19 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .nav-tabs li.querying .loader {
     display: inline-block; }
   .yasgui .nav-tabs li .loader {
-    height: 15px;
-    width: 15px;
     padding: 0px;
-    border: 0px;
-    background-color: transparent;
+    margin: 1px 1px 1px 2px;
+    width: 13.5px;
+    height: 13.5px;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border: solid 1.5px rgba(0, 0, 0, 0.2);
+    border-top-color: #000;
+    -webkit-animation: spin 1s infinite linear;
+            animation: spin 1s infinite linear;
     position: absolute;
-    left: 0px;
+    left: 0;
     display: none; }
-    .yasgui .nav-tabs li .loader svg {
-      height: 15px;
-      width: 15px; }
   .yasgui .nav-tabs li a {
     display: inline-block; }
   .yasgui .nav-tabs li div {
@@ -5469,9 +5422,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     left: 600px;
     visibility: visible;
     -webkit-transition: all 0.5s;
-    -moz-transition: all 0.5s;
-    -ms-transition: all 0.5s;
-    -o-transition: all 0.5s;
     transition: all 0.5s;
     -webkit-transform: translate3d(-100%, 0, 0) rotateY(0deg);
     transform: translate3d(-100%, 0, 0) rotateY(0deg); }
@@ -5480,9 +5430,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     position: relative;
     left: 0;
     -webkit-transition: all 0.5s;
-    -moz-transition: all 0.5s;
-    -ms-transition: all 0.5s;
-    -o-transition: all 0.5s;
     transition: all 0.5s;
     padding: 5px;
     padding-bottom: 0px;
@@ -5567,21 +5514,17 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background: #f2f2f2 !important;
     background: rgba(0, 0, 0, 0.06) !important;
     border: 0 none !important;
-    -webkit-box-shadow: inset 0 0 12px 4px #ffffff;
     box-shadow: inset 0 0 12px 4px #ffffff; }
   .yasgui .selectize-control.plugin-drag_drop .ui-sortable-placeholder::after {
     content: '!';
     visibility: hidden; }
   .yasgui .selectize-control.plugin-drag_drop .ui-sortable-helper {
-    -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
   .yasgui .selectize-dropdown-header {
     position: relative;
     padding: 5px 8px;
     border-bottom: 1px solid #d0d0d0;
     background: #f8f8f8;
-    -webkit-border-radius: 3px 3px 0 0;
-    -moz-border-radius: 3px 3px 0 0;
     border-radius: 3px 3px 0 0; }
   .yasgui .selectize-dropdown-header-close {
     position: absolute;
@@ -5598,8 +5541,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     border-right: 1px solid #f2f2f2;
     border-top: 0 none;
     float: left;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box; }
   .yasgui .selectize-dropdown.plugin-optgroup_columns .optgroup:last-child {
     border-right: 0 none; }
@@ -5627,11 +5568,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     display: inline-block;
     padding: 2px 0 0 0;
     border-left: 1px solid #d0d0d0;
-    -webkit-border-radius: 0 2px 2px 0;
-    -moz-border-radius: 0 2px 2px 0;
     border-radius: 0 2px 2px 0;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box; }
   .yasgui .selectize-control.plugin-remove_button [data-value] .remove:hover {
     background: rgba(0, 0, 0, 0.05); }
@@ -5664,13 +5601,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     overflow: hidden;
     position: relative;
     z-index: 1;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.1);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.1);
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
     border-radius: 3px; }
   .yasgui .selectize-control.multi .selectize-input.has-items {
     padding: 6px 8px 3px; }
@@ -5680,11 +5612,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .selectize-input.disabled * {
     cursor: default !important; }
   .yasgui .selectize-input.focus {
-    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15); }
   .yasgui .selectize-input.dropdown-active {
-    -webkit-border-radius: 3px 3px 0 0;
-    -moz-border-radius: 3px 3px 0 0;
     border-radius: 3px 3px 0 0; }
   .yasgui .selectize-input > * {
     vertical-align: baseline;
@@ -5720,7 +5649,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background: none !important;
     line-height: inherit !important;
     -webkit-user-select: auto !important;
-    -webkit-box-shadow: none !important;
     box-shadow: none !important; }
   .yasgui .selectize-input > input::-ms-clear {
     display: none; }
@@ -5746,21 +5674,14 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background: #ffffff;
     margin: -1px 0 0 0;
     border-top: 0 none;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box;
-    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    -webkit-border-radius: 0 0 3px 3px;
-    -moz-border-radius: 0 0 3px 3px;
     border-radius: 0 0 3px 3px; }
   .yasgui .selectize-dropdown [data-selectable] {
     cursor: pointer;
     overflow: hidden; }
   .yasgui .selectize-dropdown [data-selectable] .highlight {
     background: rgba(125, 168, 208, 0.2);
-    -webkit-border-radius: 1px;
-    -moz-border-radius: 1px;
     border-radius: 1px; }
   .yasgui .selectize-dropdown [data-selectable],
   .yasgui .selectize-dropdown .optgroup-header {
@@ -5817,21 +5738,17 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background: #f2f2f2 !important;
     background: rgba(0, 0, 0, 0.06) !important;
     border: 0 none !important;
-    -webkit-box-shadow: inset 0 0 12px 4px #ffffff;
     box-shadow: inset 0 0 12px 4px #ffffff; }
   .yasgui .selectize-control.plugin-drag_drop .ui-sortable-placeholder::after {
     content: '!';
     visibility: hidden; }
   .yasgui .selectize-control.plugin-drag_drop .ui-sortable-helper {
-    -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
   .yasgui .selectize-dropdown-header {
     position: relative;
     padding: 3px 12px;
     border-bottom: 1px solid #d0d0d0;
     background: #f8f8f8;
-    -webkit-border-radius: 4px 4px 0 0;
-    -moz-border-radius: 4px 4px 0 0;
     border-radius: 4px 4px 0 0; }
   .yasgui .selectize-dropdown-header-close {
     position: absolute;
@@ -5848,8 +5765,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     border-right: 1px solid #f2f2f2;
     border-top: 0 none;
     float: left;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box; }
   .yasgui .selectize-dropdown.plugin-optgroup_columns .optgroup:last-child {
     border-right: 0 none; }
@@ -5877,11 +5792,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     display: inline-block;
     padding: 1px 0 0 0;
     border-left: 1px solid transparent;
-    -webkit-border-radius: 0 2px 2px 0;
-    -moz-border-radius: 0 2px 2px 0;
     border-radius: 0 2px 2px 0;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box; }
   .yasgui .selectize-control.plugin-remove_button [data-value] .remove:hover {
     background: rgba(0, 0, 0, 0.05); }
@@ -5914,13 +5825,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     overflow: hidden;
     position: relative;
     z-index: 1;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box;
-    -webkit-box-shadow: none;
     box-shadow: none;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
     border-radius: 4px; }
   .yasgui .selectize-control.multi .selectize-input.has-items {
     padding: 5px 12px 2px; }
@@ -5930,11 +5836,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .selectize-input.disabled * {
     cursor: default !important; }
   .yasgui .selectize-input.focus {
-    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15); }
   .yasgui .selectize-input.dropdown-active {
-    -webkit-border-radius: 4px 4px 0 0;
-    -moz-border-radius: 4px 4px 0 0;
     border-radius: 4px 4px 0 0; }
   .yasgui .selectize-input > * {
     vertical-align: baseline;
@@ -5970,7 +5873,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background: none !important;
     line-height: inherit !important;
     -webkit-user-select: auto !important;
-    -webkit-box-shadow: none !important;
     box-shadow: none !important; }
   .yasgui .selectize-input > input::-ms-clear {
     display: none; }
@@ -5996,21 +5898,14 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background: #ffffff;
     margin: -1px 0 0 0;
     border-top: 0 none;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box;
-    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    -webkit-border-radius: 0 0 4px 4px;
-    -moz-border-radius: 0 0 4px 4px;
     border-radius: 0 0 4px 4px; }
   .yasgui .selectize-dropdown [data-selectable] {
     cursor: pointer;
     overflow: hidden; }
   .yasgui .selectize-dropdown [data-selectable] .highlight {
     background: rgba(255, 237, 40, 0.4);
-    -webkit-border-radius: 1px;
-    -moz-border-radius: 1px;
     border-radius: 1px; }
   .yasgui .selectize-dropdown [data-selectable],
   .yasgui .selectize-dropdown .optgroup-header {
@@ -6071,10 +5966,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background: #ffffff;
     border: 1px solid #cccccc;
     border: 1px solid rgba(0, 0, 0, 0.15);
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
     border-radius: 4px;
-    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175); }
   .yasgui .selectize-dropdown .optgroup-header {
     font-size: 12px;
@@ -6097,40 +5989,30 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .selectize-input {
     min-height: 34px; }
   .yasgui .selectize-input.dropdown-active {
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
     border-radius: 4px; }
   .yasgui .selectize-input.dropdown-active::before {
     display: none; }
   .yasgui .selectize-input.focus {
     border-color: #66afe9;
     outline: 0;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6); }
   .yasgui .has-error .selectize-input {
     border-color: #a94442;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075); }
   .yasgui .has-error .selectize-input:focus {
     border-color: #843534;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ce8483;
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ce8483; }
   .yasgui .selectize-control.multi .selectize-input.has-items {
     padding-left: 9px;
     padding-right: 9px; }
   .yasgui .selectize-control.multi .selectize-input > div {
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
     border-radius: 3px; }
   .yasgui .form-control.selectize-control {
     padding: 0;
     height: auto;
     border: none;
     background: none;
-    -webkit-box-shadow: none;
     box-shadow: none;
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
     border-radius: 0; }
 
 .yasqe {
@@ -6181,7 +6063,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   min-width: 20px;
   text-align: right;
   color: #999;
-  -moz-box-sizing: content-box;
   box-sizing: content-box; }
 
 .yasqe .CodeMirror-guttermarker {
@@ -6208,16 +6089,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   width: auto;
   border: 0;
   -webkit-animation: blink 1.06s steps(1) infinite;
-  -moz-animation: blink 1.06s steps(1) infinite;
   animation: blink 1.06s steps(1) infinite; }
-
-@-moz-keyframes blink {
-  0% {
-    background: #7e7; }
-  50% {
-    background: none; }
-  100% {
-    background: #7e7; } }
 
 @-webkit-keyframes blink {
   0% {
@@ -6355,13 +6227,11 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   outline: none;
   /* Prevent dragging from highlighting the element */
   position: relative;
-  -moz-box-sizing: content-box;
   box-sizing: content-box; }
 
 .yasqe .CodeMirror-sizer {
   position: relative;
   border-right: 30px solid transparent;
-  -moz-box-sizing: content-box;
   box-sizing: content-box; }
 
 .yasqe .CodeMirror-vscrollbar, .yasqe .CodeMirror-hscrollbar, .yasqe .CodeMirror-scrollbar-filler, .yasqe .CodeMirror-gutter-filler {
@@ -6398,7 +6268,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 .yasqe .CodeMirror-gutter {
   white-space: normal;
   height: 100%;
-  -moz-box-sizing: content-box;
   box-sizing: content-box;
   display: inline-block;
   margin-bottom: -30px;
@@ -6423,8 +6292,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 
 .yasqe .CodeMirror pre {
   /* Reset some styles that the rest of the page might have set */
-  -moz-border-radius: 0;
-  -webkit-border-radius: 0;
   border-radius: 0;
   border-width: 0;
   background: transparent;
@@ -6540,6 +6407,10 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 .yasqe .CodeMirror-foldgutter-folded:after {
   content: "\25B8"; }
 
+@-webkit-keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg); } }
+
 .yasqe .yasqe_btn {
   color: #333;
   border: 1px solid transparent;
@@ -6569,7 +6440,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   cursor: default;
   opacity: .50;
   filter: alpha(opacity=50);
-  -webkit-box-shadow: none;
   box-shadow: none; }
 
 .yasqe .yasqe_btn:hover {
@@ -6628,30 +6498,15 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   right: 5px;
   z-index: 5; }
 
-.yasqe .yasqe_buttons div {
-  vertical-align: top;
-  margin-left: 5px; }
-
-.yasqe .yasqe_queryButton {
-  display: inline-block;
-  cursor: pointer;
-  width: 40px;
-  height: 40px; }
-
-.yasqe .yasqe_queryButton .svgImg {
-  display: block; }
-
-.yasqe .yasqe_share {
+.yasqe .yasqe_buttons .yasqe_share {
   cursor: pointer;
   height: 20px;
   width: 20px;
   margin-top: 3px; }
 
-.yasqe span.shortlinkErr {
-  font-size: small;
-  color: red;
-  font-weight: bold;
-  float: left; }
+.yasqe .yasqe_buttons div {
+  vertical-align: top;
+  margin-left: 5px; }
 
 .yasqe .yasqe_buttons div.yasqe_sharePopup {
   position: absolute;
@@ -6659,7 +6514,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   margin-left: 0px;
   border: 1px solid #e3e3e3;
   border-radius: 4px;
-  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
   width: 500px;
   height: auto; }
@@ -6675,9 +6529,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   /* ie8 */
   -khtml-box-sizing: border-box;
   /* konqueror */
-  -webkit-box-sizing: border-box;
   /* Safari/Chrome, other WebKit */
-  -moz-box-sizing: border-box;
   /* Firefox, other Gecko */
   box-sizing: border-box;
   /* Opera/IE 8+ */
@@ -6687,8 +6539,37 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 .yasqe .yasqe_buttons div.yasqe_sharePopup button {
   float: right; }
 
-.yasqe .yasqe_sharePopup textarea {
+.yasqe .yasqe_buttons div.yasqe_sharePopup textarea {
   width: 100%; }
+
+.yasqe .yasqe_buttons .yasqe_queryButton {
+  display: inline-block;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  margin-left: 10px; }
+
+.yasqe .yasqe_buttons .yasqe_queryButton div {
+  margin-left: 0px; }
+
+.yasqe .yasqe_buttons .yasqe_queryButton .svgImg {
+  display: block; }
+
+.yasqe .yasqe_buttons .yasqe_queryButton .loader {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: solid 4px rgba(0, 0, 0, 0.2);
+  border-top-color: #000;
+  -webkit-animation: spin 1s infinite linear;
+  animation: spin 1s infinite linear; }
+
+.yasqe span.shortlinkErr {
+  font-size: small;
+  color: red;
+  font-weight: bold;
+  float: left; }
 
 .yasqe .completionNotification {
   color: #999;
@@ -6756,6 +6637,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 .yasqe .matchingVar {
   background-color: #DBDEED;
   border-radius: 6px;
+  -webkit-transition: background 0.5s linear;
   transition: background 0.5s linear; }
 
 .CodeMirror-hints {
@@ -6765,8 +6647,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   list-style: none;
   margin: 0;
   padding: 2px;
-  -webkit-box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.2);
-  -moz-box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.2);
   box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.2);
   border-radius: 3px;
   border: 1px solid silver;
@@ -6825,14 +6705,6 @@ li.CodeMirror-hint-active {
   /* Used to force a border model for a node */
   /* See issue #2901 */
   /* Help users use markselection to safely style text background */ }
-
-@-moz-keyframes blink {
-  0% {
-    background: #7e7; }
-  50% {
-    background: none; }
-  100% {
-    background: #7e7; } }
 
 @-webkit-keyframes blink {
   0% {
@@ -7058,8 +6930,6 @@ li.CodeMirror-hint-active {
   white-space: nowrap; }
 
 .yasr table.dataTable, .yasr table.dataTable th, .yasr table.dataTable td {
-  -webkit-box-sizing: content-box;
-  -moz-box-sizing: content-box;
   box-sizing: content-box; }
 
 .yasr .dataTables_wrapper {
@@ -7109,11 +6979,8 @@ li.CodeMirror-hint-active {
   /* Chrome,Safari4+ */
   background: -webkit-linear-gradient(top, white 0%, #dcdcdc 100%);
   /* Chrome10+,Safari5.1+ */
-  background: -moz-linear-gradient(top, white 0%, #dcdcdc 100%);
   /* FF3.6+ */
-  background: -ms-linear-gradient(top, white 0%, #dcdcdc 100%);
   /* IE10+ */
-  background: -o-linear-gradient(top, white 0%, #dcdcdc 100%);
   /* Opera 11.10+ */
   background: linear-gradient(to bottom, white 0%, #dcdcdc 100%);
   /* W3C */ }
@@ -7133,11 +7000,8 @@ li.CodeMirror-hint-active {
   /* Chrome,Safari4+ */
   background: -webkit-linear-gradient(top, #585858 0%, #111 100%);
   /* Chrome10+,Safari5.1+ */
-  background: -moz-linear-gradient(top, #585858 0%, #111 100%);
   /* FF3.6+ */
-  background: -ms-linear-gradient(top, #585858 0%, #111 100%);
   /* IE10+ */
-  background: -o-linear-gradient(top, #585858 0%, #111 100%);
   /* Opera 11.10+ */
   background: linear-gradient(to bottom, #585858 0%, #111 100%);
   /* W3C */ }
@@ -7149,11 +7013,8 @@ li.CodeMirror-hint-active {
   /* Chrome,Safari4+ */
   background: -webkit-linear-gradient(top, #2b2b2b 0%, #0c0c0c 100%);
   /* Chrome10+,Safari5.1+ */
-  background: -moz-linear-gradient(top, #2b2b2b 0%, #0c0c0c 100%);
   /* FF3.6+ */
-  background: -ms-linear-gradient(top, #2b2b2b 0%, #0c0c0c 100%);
   /* IE10+ */
-  background: -o-linear-gradient(top, #2b2b2b 0%, #0c0c0c 100%);
   /* Opera 11.10+ */
   background: linear-gradient(to bottom, #2b2b2b 0%, #0c0c0c 100%);
   /* W3C */
@@ -7178,11 +7039,8 @@ li.CodeMirror-hint-active {
   /* Chrome,Safari4+ */
   background: -webkit-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%);
   /* Chrome10+,Safari5.1+ */
-  background: -moz-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%);
   /* FF3.6+ */
-  background: -ms-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%);
   /* IE10+ */
-  background: -o-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%);
   /* Opera 11.10+ */
   background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%);
   /* W3C */ }
@@ -7282,7 +7140,6 @@ li.CodeMirror-hint-active {
 .yasr .pvtAxisContainer li.pvtPlaceholder {
   -webkit-border-radius: 5px;
   padding: 3px 15px;
-  -moz-border-radius: 5px;
   border-radius: 5px;
   border: 1px dashed #aaa; }
 
@@ -7291,8 +7148,6 @@ li.CodeMirror-hint-active {
   border: 1px solid #DEDEDE;
   padding: 2px 5px;
   white-space: nowrap;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
   border-radius: 5px; }
 
 .yasr .pvtTriangle {
@@ -7368,7 +7223,6 @@ li.CodeMirror-hint-active {
   min-width: 20px;
   text-align: right;
   color: #999;
-  -moz-box-sizing: content-box;
   box-sizing: content-box; }
 
 .yasr .CodeMirror-guttermarker {
@@ -7395,7 +7249,6 @@ li.CodeMirror-hint-active {
   width: auto;
   border: 0;
   -webkit-animation: blink 1.06s steps(1) infinite;
-  -moz-animation: blink 1.06s steps(1) infinite;
   animation: blink 1.06s steps(1) infinite; }
 
 .yasr .cm-tab {
@@ -7518,13 +7371,11 @@ li.CodeMirror-hint-active {
   outline: none;
   /* Prevent dragging from highlighting the element */
   position: relative;
-  -moz-box-sizing: content-box;
   box-sizing: content-box; }
 
 .yasr .CodeMirror-sizer {
   position: relative;
   border-right: 30px solid transparent;
-  -moz-box-sizing: content-box;
   box-sizing: content-box; }
 
 .yasr .CodeMirror-vscrollbar, .yasr .CodeMirror-hscrollbar, .yasr .CodeMirror-scrollbar-filler, .yasr .CodeMirror-gutter-filler {
@@ -7561,7 +7412,6 @@ li.CodeMirror-hint-active {
 .yasr .CodeMirror-gutter {
   white-space: normal;
   height: 100%;
-  -moz-box-sizing: content-box;
   box-sizing: content-box;
   display: inline-block;
   margin-bottom: -30px;
@@ -7586,8 +7436,6 @@ li.CodeMirror-hint-active {
 
 .yasr .CodeMirror pre {
   /* Reset some styles that the rest of the page might have set */
-  -moz-border-radius: 0;
-  -webkit-border-radius: 0;
   border-radius: 0;
   border-width: 0;
   background: transparent;
@@ -7769,7 +7617,6 @@ li.CodeMirror-hint-active {
   cursor: default;
   opacity: .50;
   filter: alpha(opacity=50);
-  -webkit-box-shadow: none;
   box-shadow: none; }
 
 .yasr .yasr_btn:hover {
@@ -7808,7 +7655,6 @@ li.CodeMirror-hint-active {
   background-color: #f5f5f5;
   border: 1px solid #e3e3e3;
   border-radius: 4px;
-  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
   width: 700px;
   height: 300px;
