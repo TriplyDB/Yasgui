@@ -306,7 +306,7 @@ var YASGUI = function(parent, options) {
 				yasgui.tabs[tabId].onShow();
 				yasgui.store();
 			})
-			.append($(utils.svg.getElement(imgs.loader)).addClass('loader'))
+			.append($('<div>', {class: 'loader'}))
 			.append($('<span>').text(name))
 			.append(
 				$('<button>', {
