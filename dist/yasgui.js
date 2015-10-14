@@ -3,7 +3,7 @@
 //the current browserify version does not support require-ing js files which are used as entry-point
 //this way, we can still require our main.js file
 module.exports = require('./main.js');
-},{"./main.js":98}],2:[function(require,module,exports){
+},{"./main.js":99}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -54351,7 +54351,7 @@ var selectHint = function(yasqe, data, completion) {
 ////	storeBulkCompletions: storeBulkCompletions,
 //	loadBulkCompletions: loadBulkCompletions,
 //};
-},{"../../lib/trie.js":30,"../main.js":56,"../utils.js":62,"jquery":41,"yasgui-utils":44}],49:[function(require,module,exports){
+},{"../../lib/trie.js":30,"../main.js":57,"../utils.js":63,"jquery":41,"yasgui-utils":44}],49:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = function(yasqe, name) {
@@ -54713,7 +54713,7 @@ module.exports = {
 	preprocessResourceTokenForCompletion: preprocessResourceTokenForCompletion,
 	postprocessResourceTokenForCompletion: postprocessResourceTokenForCompletion,
 };
-},{"../imgs.js":55,"./utils.js":52,"jquery":41,"yasgui-utils":44}],53:[function(require,module,exports){
+},{"../imgs.js":56,"./utils.js":52,"jquery":41,"yasgui-utils":44}],53:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = function(yasqe) {
@@ -54770,6 +54770,38 @@ module.exports = function(yasqe) {
 	}
 };
 },{"jquery":41}],54:[function(require,module,exports){
+var sparql = require('./sparql.js'),
+    $ = require('jquery');
+var quote = function(string) {
+  return "'" + string + "'";
+}
+module.exports = {
+  createCurlString : function(yasqe, config) {
+    var ajaxConfig = sparql.getAjaxConfig(yasqe, config);
+    
+    var url = yasqe.options.sparql.endpoint;
+    if (yasqe.options.sparql.requestMethod == 'GET') {
+      url += '?' + $.param(ajaxConfig.data);
+    }
+    var cmds = [
+      'curl', url,
+      '-X', yasqe.options.sparql.requestMethod
+    ];
+    if (yasqe.options.sparql.requestMethod == 'POST') {
+      cmds.push('--data ' + quote($.param(ajaxConfig.data)));
+    }
+    for (var header in ajaxConfig.headers) {
+      cmds.push('-H ' + quote(header + ': ' + ajaxConfig.headers[header]));
+    }
+    return cmds.join(' ');
+
+
+
+
+  }
+}
+
+},{"./sparql.js":60,"jquery":41}],55:[function(require,module,exports){
 /**
  * The default options of YASQE (check the CodeMirror documentation for even
  * more options, such as disabling line numbers, or changing keyboard shortcut
@@ -54941,7 +54973,7 @@ YASQE.defaults = $.extend(true, {}, YASQE.defaults, {
 	},
 });
 
-},{"./main.js":56,"jquery":41}],55:[function(require,module,exports){
+},{"./main.js":57,"jquery":41}],56:[function(require,module,exports){
 'use strict';
 module.exports = {
 	query: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 80 80" enable-background="new 0 0 80 80" xml:space="preserve"><g ></g><g >	<path d="M64.622,2.411H14.995c-6.627,0-12,5.373-12,12v49.897c0,6.627,5.373,12,12,12h49.627c6.627,0,12-5.373,12-12V14.411   C76.622,7.783,71.249,2.411,64.622,2.411z M24.125,63.906V15.093L61,39.168L24.125,63.906z"/></g></svg>',
@@ -54953,7 +54985,7 @@ module.exports = {
 	smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 };
 
-},{}],56:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 'use strict';
 //make sure any console statements
 window.console = window.console || {
@@ -55397,7 +55429,10 @@ root.createShareLink = function(yasqe) {
 	urlParams['query'] = yasqe.getValue();
 	return urlParams;
 };
-
+root.getAsCurl = function(yasqe, ajaxConfig) {
+	var curl = require('./curl.js');
+	return curl.createCurlString(yasqe, ajaxConfig);
+};
 /**
  * Consume the share link, by parsing the document URL for possible yasqe arguments, and setting the appropriate values in the YASQE doc
  *
@@ -55448,7 +55483,7 @@ root.drawButtons = function(yasqe) {
 					$('<button>Shorten</button>')
 						.addClass('yasqe_btn yasqe_btn-sm yasqe_btn-primary')
 						.click(function() {
-							$(this).attr('disabled', 'disabled');
+							$(this).parent().find('button').attr('disabled', 'disabled');
 							yasqe.options.createShortLink($input.val(), function(errString, shortLink) {
 								if (errString) {
 									$input.remove();
@@ -55459,6 +55494,13 @@ root.drawButtons = function(yasqe) {
 							})
 						}).appendTo(popup);
 				}
+				$('<button>CURL</button>')
+					.addClass('yasqe_btn yasqe_btn-sm yasqe_btn-primary')
+					.click(function() {
+
+						$(this).parent().find('button').attr('disabled', 'disabled');
+						$input.val(root.getAsCurl(yasqe)).focus();
+					}).appendTo(popup);
 				var positions = svgShare.position();
 				popup.css("top", (positions.top + svgShare.outerHeight() + parseInt(popup.css('padding-top')) ) + "px").css("left", ((positions.left + svgShare.outerWidth()) - popup.outerWidth()) + "px");
 				$input.focus();
@@ -55749,7 +55791,7 @@ root.version = {
 	"yasgui-utils": yutils.version
 };
 
-},{"../lib/deparam.js":27,"../lib/grammar/tokenizer.js":29,"../package.json":47,"./autocompleters/autocompleterBase.js":48,"./autocompleters/classes.js":49,"./autocompleters/prefixes.js":50,"./autocompleters/properties.js":51,"./autocompleters/variables.js":53,"./defaults.js":54,"./imgs.js":55,"./prefixFold.js":57,"./prefixUtils.js":58,"./sparql.js":59,"./tokenUtils.js":60,"./tooltip":61,"./utils.js":62,"codemirror":40,"codemirror/addon/display/fullscreen.js":31,"codemirror/addon/edit/matchbrackets.js":32,"codemirror/addon/fold/brace-fold.js":33,"codemirror/addon/fold/foldcode.js":34,"codemirror/addon/fold/foldgutter.js":35,"codemirror/addon/fold/xml-fold.js":36,"codemirror/addon/hint/show-hint.js":37,"codemirror/addon/runmode/runmode.js":38,"codemirror/addon/search/searchcursor.js":39,"jquery":41,"yasgui-utils":44}],57:[function(require,module,exports){
+},{"../lib/deparam.js":27,"../lib/grammar/tokenizer.js":29,"../package.json":47,"./autocompleters/autocompleterBase.js":48,"./autocompleters/classes.js":49,"./autocompleters/prefixes.js":50,"./autocompleters/properties.js":51,"./autocompleters/variables.js":53,"./curl.js":54,"./defaults.js":55,"./imgs.js":56,"./prefixFold.js":58,"./prefixUtils.js":59,"./sparql.js":60,"./tokenUtils.js":61,"./tooltip":62,"./utils.js":63,"codemirror":40,"codemirror/addon/display/fullscreen.js":31,"codemirror/addon/edit/matchbrackets.js":32,"codemirror/addon/fold/brace-fold.js":33,"codemirror/addon/fold/foldcode.js":34,"codemirror/addon/fold/foldgutter.js":35,"codemirror/addon/fold/xml-fold.js":36,"codemirror/addon/hint/show-hint.js":37,"codemirror/addon/runmode/runmode.js":38,"codemirror/addon/search/searchcursor.js":39,"jquery":41,"yasgui-utils":44}],58:[function(require,module,exports){
 var CodeMirror = require('codemirror'),
 	tokenUtils = require('./tokenUtils.js');
 
@@ -55879,7 +55921,7 @@ CodeMirror.registerHelper("fold", "prefix", function(cm, start) {
 		to: CodeMirror.Pos(prefixEndLine, prefixEndChar)
 	};
 });
-},{"./tokenUtils.js":60,"codemirror":40}],58:[function(require,module,exports){
+},{"./tokenUtils.js":61,"codemirror":40}],59:[function(require,module,exports){
 'use strict';
 /**
  * Append prefix declaration to list of prefixes in query window.
@@ -56017,12 +56059,12 @@ module.exports = {
 	getPrefixesFromQuery: getPrefixesFromQuery,
 	removePrefixes: removePrefixes
 };
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	YASQE = require('./main.js');
-YASQE.executeQuery = function(yasqe, callbackOrConfig) {
-	YASQE.signal(yasqe, 'query', yasqe, callbackOrConfig);
+
+YASQE.getAjaxConfig = function(yasqe, callbackOrConfig) {
 	var callback = (typeof callbackOrConfig == "function" ? callbackOrConfig : null);
 	var config = (typeof callbackOrConfig == "object" ? callbackOrConfig : {});
 
@@ -56033,7 +56075,7 @@ YASQE.executeQuery = function(yasqe, callbackOrConfig) {
 	if (config.handlers)
 		$.extend(true, config.callbacks, config.handlers);
 
-
+	
 	if (!config.endpoint || config.endpoint.length == 0)
 		return; // nothing to query!
 
@@ -56076,8 +56118,7 @@ YASQE.executeQuery = function(yasqe, callbackOrConfig) {
 	if (config.headers && !$.isEmptyObject(config.headers))
 		$.extend(ajaxConfig.headers, config.headers);
 
-	YASQE.updateQueryButton(yasqe, "busy");
-	yasqe.setBackdrop(true);
+
 	var queryStart = new Date();
 	var updateYasqe = function() {
 		yasqe.lastQueryDuration = new Date() - queryStart;
@@ -56094,8 +56135,16 @@ YASQE.executeQuery = function(yasqe, callbackOrConfig) {
 		completeCallbacks.push(ajaxConfig.complete);
 	}
 	ajaxConfig.complete = completeCallbacks;
+	return ajaxConfig;
+};
 
-	yasqe.xhr = $.ajax(ajaxConfig);
+
+
+YASQE.executeQuery = function(yasqe, callbackOrConfig) {
+	YASQE.signal(yasqe, 'query', yasqe, callbackOrConfig);
+	YASQE.updateQueryButton(yasqe, "busy");
+	yasqe.setBackdrop(true);
+	yasqe.xhr = $.ajax(YASQE.getAjaxConfig(yasqe, callbackOrConfig));
 };
 
 
@@ -56160,7 +56209,11 @@ var getAcceptHeader = function(yasqe, config) {
 	return acceptHeader;
 };
 
-},{"./main.js":56,"jquery":41}],60:[function(require,module,exports){
+module.exports = {
+	getAjaxConfig: YASQE.getAjaxConfig
+}
+
+},{"./main.js":57,"jquery":41}],61:[function(require,module,exports){
 'use strict';
 /**
  * When typing a query, this query is sometimes syntactically invalid, causing
@@ -56235,7 +56288,7 @@ module.exports = {
 	getCompleteToken: getCompleteToken,
 	getNextNonWsToken: getNextNonWsToken,
 };
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	utils = require('./utils.js');
@@ -56271,7 +56324,7 @@ module.exports = function(yasqe, parent, html) {
 		}
 	};
 };
-},{"./utils.js":62,"jquery":41}],62:[function(require,module,exports){
+},{"./utils.js":63,"jquery":41}],63:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 
@@ -56328,7 +56381,7 @@ module.exports = {
 	getPersistencyId: getPersistencyId,
 	elementsOverlap: elementsOverlap,
 };
-},{"jquery":41}],63:[function(require,module,exports){
+},{"jquery":41}],64:[function(require,module,exports){
 /**
                _ _____           _          _     _      
               | |  __ \         (_)        | |   | |     
@@ -56643,7 +56696,7 @@ var $ = require('jquery');
     });
 
 
-},{"jquery":17}],64:[function(require,module,exports){
+},{"jquery":17}],65:[function(require,module,exports){
 /**
  * jQuery-csv (jQuery Plugin)
  * version: 0.71 (2012-11-19)
@@ -57493,7 +57546,7 @@ RegExp.escape= function(s) {
 
 
 
-},{"jquery":17}],65:[function(require,module,exports){
+},{"jquery":17}],66:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.6"
@@ -66998,7 +67051,7 @@ RegExp.escape= function(s) {
   if (typeof define === "function" && define.amd) define(d3); else if (typeof module === "object" && module.exports) module.exports = d3;
   this.d3 = d3;
 }();
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 /*! DataTables 1.10.9
  * ©2008-2015 SpryMedia Ltd - datatables.net/license
  */
@@ -82129,7 +82182,7 @@ RegExp.escape= function(s) {
 }(window, document));
 
 
-},{"jquery":17}],67:[function(require,module,exports){
+},{"jquery":17}],68:[function(require,module,exports){
 (function() {
   var callWithJQuery;
 
@@ -82235,7 +82288,7 @@ RegExp.escape= function(s) {
 }).call(this);
 
 //# sourceMappingURL=d3_renderers.js.map
-},{"jquery":17}],68:[function(require,module,exports){
+},{"jquery":17}],69:[function(require,module,exports){
 (function() {
   var callWithJQuery;
 
@@ -82419,7 +82472,7 @@ RegExp.escape= function(s) {
 }).call(this);
 
 //# sourceMappingURL=gchart_renderers.js.map
-},{"jquery":17}],69:[function(require,module,exports){
+},{"jquery":17}],70:[function(require,module,exports){
 (function() {
   var callWithJQuery,
     indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
@@ -83929,7 +83982,7 @@ RegExp.escape= function(s) {
 }).call(this);
 
 //# sourceMappingURL=pivot.js.map
-},{"jquery":17}],70:[function(require,module,exports){
+},{"jquery":17}],71:[function(require,module,exports){
 module.exports={
   "name": "yasgui-yasr",
   "description": "Yet Another SPARQL Resultset GUI",
@@ -84049,7 +84102,7 @@ module.exports={
   "_from": "yasgui-yasr@>=2.6.1 <3.0.0"
 }
 
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 'use strict';
 module.exports = function(result) {
 	var quote = "\"";
@@ -84109,7 +84162,7 @@ module.exports = function(result) {
 	createBody();
 	return csvString;
 };
-},{}],72:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 
@@ -84169,7 +84222,7 @@ root.version = {
 	"YASR-boolean": require("../package.json").version,
 	"jquery": $.fn.jquery,
 };
-},{"../package.json":70,"./imgs.js":78,"jquery":17,"yasgui-utils":24}],73:[function(require,module,exports){
+},{"../package.json":71,"./imgs.js":79,"jquery":17,"yasgui-utils":24}],74:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 module.exports = {
@@ -84264,7 +84317,7 @@ module.exports = {
 
 
 };
-},{"jquery":17}],74:[function(require,module,exports){
+},{"jquery":17}],75:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 
@@ -84368,7 +84421,7 @@ root.defaults = {
 	corsMessage: 'Unable to get response from endpoint',
 	tryQueryLink: null,
 };
-},{"jquery":17}],75:[function(require,module,exports){
+},{"jquery":17}],76:[function(require,module,exports){
 module.exports = {
 	GoogleTypeException: function(foundTypes, varName) {
 		this.foundTypes = foundTypes;
@@ -84388,7 +84441,7 @@ module.exports = {
 		};
 	}
 }
-},{}],76:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 (function (global){
 var EventEmitter = require('events').EventEmitter,
 	$ = require('jquery');
@@ -84500,7 +84553,7 @@ loader.prototype = new EventEmitter;
 module.exports = new loader();
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 //# sourceMappingURL=data:application/json;charset:utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vZGVfbW9kdWxlcy95YXNndWkteWFzci9zcmMvZ0NoYXJ0TG9hZGVyLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EiLCJmaWxlIjoiZ2VuZXJhdGVkLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXNDb250ZW50IjpbInZhciBFdmVudEVtaXR0ZXIgPSByZXF1aXJlKCdldmVudHMnKS5FdmVudEVtaXR0ZXIsXG5cdCQgPSByZXF1aXJlKCdqcXVlcnknKTtcbi8vY2Fubm90IHBhY2thZ2UgZ29vZ2xlIGxvYWRlciB2aWEgYnJvd3NlcmlmeS4uLi5cbnZhciBsb2FkaW5nTWFpbiA9IGZhbHNlO1xudmFyIGxvYWRpbmdGYWlsZWQgPSBmYWxzZTtcbnZhciBsb2FkZXIgPSBmdW5jdGlvbigpIHtcblx0RXZlbnRFbWl0dGVyLmNhbGwodGhpcyk7XG5cdHZhciBtb2QgPSB0aGlzO1xuXHR0aGlzLmluaXQgPSBmdW5jdGlvbigpIHtcblx0XHRpZiAoIWxvYWRpbmdGYWlsZWQgJiYgISh0eXBlb2Ygd2luZG93ICE9PSBcInVuZGVmaW5lZFwiID8gd2luZG93Wydnb29nbGUnXSA6IHR5cGVvZiBnbG9iYWwgIT09IFwidW5kZWZpbmVkXCIgPyBnbG9iYWxbJ2dvb2dsZSddIDogbnVsbCkgJiYgIWxvYWRpbmdNYWluKSB7IC8vbm90IGluaXRpYXRlZCB5ZXQsIG5vdCBjdXJyZW50bHkgbG9hZGluZywgYW5kIGhhcyBub3QgZmFpbGVkIHRoZSBwcmV2aW91cyB0aW1lXG5cdFx0XHRsb2FkaW5nTWFpbiA9IHRydWU7XG5cdFx0XHQvKipcblx0XHRcdCAqIEl0IGlzIGV4dHJlbWVseSBkaWZmaWN1bHQgdG8gY2F0Y2ggc2NyaXB0IGxvYWRlciBlcnJvcnMgKHNlZSBodHRwOi8vd3d3Lmh0bWw1cm9ja3MuY29tL2VuL3R1dG9yaWFscy9zcGVlZC9zY3JpcHQtbG9hZGluZy8pXG5cdFx0XHQgKiBFeGlzdGluZyBsaWJyYXJpZXMgZWl0aGVyIGlnbm9yZSBzZXZlcmFsIGJyb3dzZXJzIChlLmcuIGpxdWVyeSAyLngpLCBvciB1c2UgdWdseSBoYWNrcyAodGltZW91dHMgb3Igc29tZXRoaW5nKVxuXHRcdFx0ICogU28sIHdlIHVzZSBvdXIgb3duIGN1c3RvbSB1Z2x5IGhhY2sgKHllcywgdGltZW91dHMpXG5cdFx0XHQgKi9cblx0XHRcdGxvYWRTY3JpcHQoJ2h0dHA6Ly9nb29nbGUuY29tL2pzYXBpJywgZnVuY3Rpb24oKSB7XG5cdFx0XHRcdGxvYWRpbmdNYWluID0gZmFsc2U7XG5cdFx0XHRcdG1vZC5lbWl0KCdpbml0RG9uZScpO1xuXHRcdFx0fSk7XG5cblx0XHRcdHZhciB0aW1lb3V0ID0gMTAwOyAvL21zXG5cdFx0XHR2YXIgbWF4VGltZW91dCA9IDYwMDA7IC8vc28gNiBzZWMgbWF4XG5cdFx0XHR2YXIgc3RhcnRUaW1lID0gK25ldyBEYXRlKCk7XG5cdFx0XHR2YXIgY2hlY2tBbmRXYWl0ID0gZnVuY3Rpb24oKSB7XG5cdFx0XHRcdGlmICghKHR5cGVvZiB3aW5kb3cgIT09IFwidW5kZWZpbmVkXCIgPyB3aW5kb3dbJ2dvb2dsZSddIDogdHlwZW9mIGdsb2JhbCAhPT0gXCJ1bmRlZmluZWRcIiA/IGdsb2JhbFsnZ29vZ2xlJ10gOiBudWxsKSkge1xuXHRcdFx0XHRcdGlmICgoK25ldyBEYXRlKCkgLSBzdGFydFRpbWUpID4gbWF4VGltZW91dCkge1xuXHRcdFx0XHRcdFx0Ly9vaywgd2UndmUgd2FpdGVkIGxvbmcgZW5vdWdoLiBPYnZpb3VzbHkgd2UgY291bGQgbm90IGxvYWQgdGhlIGdvb2dsZWxvYWRlci4uLlxuXHRcdFx0XHRcdFx0bG9hZGluZ0ZhaWxlZCA9IHRydWU7XG5cdFx0XHRcdFx0XHRsb2FkaW5nTWFpbiA9IGZhbHNlO1xuXHRcdFx0XHRcdFx0bW9kLmVtaXQoJ2luaXRFcnJvcicpO1xuXG5cdFx0XHRcdFx0XHQvL1RPRE86IGNsZWFyIGluaXREb25lIGNhbGxiYWNrcy4gdGhleSB3b24ndCBmaXJlIGFueW1vcmUgYW55d2F5XG5cblx0XHRcdFx0XHR9IGVsc2Uge1xuXHRcdFx0XHRcdFx0c2V0VGltZW91dChjaGVja0FuZFdhaXQsIHRpbWVvdXQpO1xuXHRcdFx0XHRcdH1cblx0XHRcdFx0fSBlbHNlIHtcblx0XHRcdFx0XHQvL1RPRE86IGNsZWFyIGluaXRGYWlsZWQgY2FsbGJhY2tzLiB0aGV5IHdvbid0IGZpcmUgYW55bW9yZSBhbnl3YXlcblx0XHRcdFx0fVxuXHRcdFx0fVxuXHRcdFx0Y2hlY2tBbmRXYWl0KCk7XG5cdFx0fSBlbHNlIHtcblx0XHRcdGlmICgodHlwZW9mIHdpbmRvdyAhPT0gXCJ1bmRlZmluZWRcIiA/IHdpbmRvd1snZ29vZ2xlJ10gOiB0eXBlb2YgZ2xvYmFsICE9PSBcInVuZGVmaW5lZFwiID8gZ2xvYmFsWydnb29nbGUnXSA6IG51bGwpKSB7XG5cdFx0XHRcdC8vYWxyZWFkeSBsb2FkZWQhIGV2ZXJ5dGhpbmcgaXMgZmluZVxuXHRcdFx0XHRtb2QuZW1pdCgnaW5pdERvbmUnKTtcblx0XHRcdH0gZWxzZSBpZiAobG9hZGluZ0ZhaWxlZCkge1xuXHRcdFx0XHRtb2QuZW1pdCgnaW5pdEVycm9yJylcblx0XHRcdH0gZWxzZSB7XG5cdFx0XHRcdC8vaG1tbSwgc2hvdWxkIG5ldmVyIGdldCBoZXJlXG5cdFx0XHR9XG5cblx0XHR9XG5cdH1cblx0dGhpcy5nb29nbGVMb2FkID0gZnVuY3Rpb24oKSB7XG5cblx0XHR2YXIgbG9hZCA9IGZ1bmN0aW9uKCkge1xuXHRcdFx0KHR5cGVvZiB3aW5kb3cgIT09IFwidW5kZWZpbmVkXCIgPyB3aW5kb3dbJ2dvb2dsZSddIDogdHlwZW9mIGdsb2JhbCAhPT0gXCJ1bmRlZmluZWRcIiA/IGdsb2JhbFsnZ29vZ2xlJ10gOiBudWxsKS5sb2FkKFwidmlzdWFsaXphdGlvblwiLCBcIjFcIiwge1xuXHRcdFx0XHRwYWNrYWdlczogW1wiY29yZWNoYXJ0XCIsIFwiY2hhcnRlZGl0b3JcIl0sXG5cdFx0XHRcdGNhbGxiYWNrOiBmdW5jdGlvbigpIHtcblx0XHRcdFx0XHRtb2QuZW1pdCgnZG9uZScpXG5cdFx0XHRcdH1cblx0XHRcdH0pXG5cdFx0fVxuXHRcdGlmIChsb2FkaW5nTWFpbikge1xuXHRcdFx0bW9kLm9uY2UoJ2luaXREb25lJywgbG9hZCk7XG5cdFx0XHRtb2Qub25jZSgnaW5pdEVycm9yJywgZnVuY3Rpb24oKSB7XG5cdFx0XHRcdG1vZC5lbWl0KCdlcnJvcicsICdDb3VsZCBub3QgbG9hZCBnb29nbGUgbG9hZGVyJylcblx0XHRcdH0pO1xuXHRcdH0gZWxzZSBpZiAoKHR5cGVvZiB3aW5kb3cgIT09IFwidW5kZWZpbmVkXCIgPyB3aW5kb3dbJ2dvb2dsZSddIDogdHlwZW9mIGdsb2JhbCAhPT0gXCJ1bmRlZmluZWRcIiA/IGdsb2JhbFsnZ29vZ2xlJ10gOiBudWxsKSkge1xuXHRcdFx0Ly9nb29nbGUgbG9hZGVyIGlzIHRoZXJlLiB1c2UgaXRcblx0XHRcdGxvYWQoKTtcblx0XHR9IGVsc2UgaWYgKGxvYWRpbmdGYWlsZWQpIHtcblx0XHRcdG1vZC5lbWl0KCdlcnJvcicsICdDb3VsZCBub3QgbG9hZCBnb29nbGUgbG9hZGVyJyk7XG5cdFx0fSBlbHNlIHtcblx0XHRcdC8vbm90IGxvYWRpbmcsIG5vIGxvYWRpbmcgZXJyb3IsIGFuZCBub3QgbG9hZGVkLiBpdCBtdXN0IG5vdCBoYXZlIGJlZW4gaW5pdGlhbGl6ZWQgeWV0LiBEbyB0aGF0XG5cdFx0XHRtb2Qub25jZSgnaW5pdERvbmUnLCBsb2FkKTtcblx0XHRcdG1vZC5vbmNlKCdpbml0RXJyb3InLCBmdW5jdGlvbigpIHtcblx0XHRcdFx0bW9kLmVtaXQoJ2Vycm9yJywgJ0NvdWxkIG5vdCBsb2FkIGdvb2dsZSBsb2FkZXInKVxuXHRcdFx0fSk7XG5cdFx0fVxuXHR9O1xufVxuXG5cbnZhciBsb2FkU2NyaXB0ID0gZnVuY3Rpb24odXJsLCBjYWxsYmFjaykge1xuXHR2YXIgc2NyaXB0ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcInNjcmlwdFwiKVxuXHRzY3JpcHQudHlwZSA9IFwidGV4dC9qYXZhc2NyaXB0XCI7XG5cblx0aWYgKHNjcmlwdC5yZWFkeVN0YXRlKSB7IC8vSUVcblx0XHRzY3JpcHQub25yZWFkeXN0YXRlY2hhbmdlID0gZnVuY3Rpb24oKSB7XG5cdFx0XHRpZiAoc2NyaXB0LnJlYWR5U3RhdGUgPT0gXCJsb2FkZWRcIiB8fFxuXHRcdFx0XHRzY3JpcHQucmVhZHlTdGF0ZSA9PSBcImNvbXBsZXRlXCIpIHtcblx0XHRcdFx0c2NyaXB0Lm9ucmVhZHlzdGF0ZWNoYW5nZSA9IG51bGw7XG5cdFx0XHRcdGNhbGxiYWNrKCk7XG5cdFx0XHR9XG5cdFx0fTtcblx0fSBlbHNlIHsgLy9PdGhlcnNcblx0XHRzY3JpcHQub25sb2FkID0gZnVuY3Rpb24oKSB7XG5cdFx0XHRjYWxsYmFjaygpO1xuXHRcdH07XG5cdH1cblxuXHRzY3JpcHQuc3JjID0gdXJsO1xuXHRkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKHNjcmlwdCk7XG59XG5sb2FkZXIucHJvdG90eXBlID0gbmV3IEV2ZW50RW1pdHRlcjtcbm1vZHVsZS5leHBvcnRzID0gbmV3IGxvYWRlcigpOyJdfQ==
-},{"events":2,"jquery":17}],77:[function(require,module,exports){
+},{"events":2,"jquery":17}],78:[function(require,module,exports){
 (function (global){
 'use strict';
 /**
@@ -84827,7 +84880,7 @@ function deepEq$(x, y, type) {
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 //# sourceMappingURL=data:application/json;charset:utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vZGVfbW9kdWxlcy95YXNndWkteWFzci9zcmMvZ2NoYXJ0LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBIiwiZmlsZSI6ImdlbmVyYXRlZC5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHN0cmljdCc7XG4vKipcbiAqIHRvZG86IGNoYXJ0IGhlaWdodCBhcyBvcHRpb25cbiAqIFxuICovXG52YXIgJCA9IHJlcXVpcmUoJ2pxdWVyeScpLFxuXHR1dGlscyA9IHJlcXVpcmUoJy4vdXRpbHMuanMnKSxcblx0eVV0aWxzID0gcmVxdWlyZSgneWFzZ3VpLXV0aWxzJyk7XG5cbnZhciByb290ID0gbW9kdWxlLmV4cG9ydHMgPSBmdW5jdGlvbih5YXNyKSB7XG5cblx0dmFyIG9wdGlvbnMgPSAkLmV4dGVuZCh0cnVlLCB7fSwgcm9vdC5kZWZhdWx0cyk7XG5cdHZhciBpZCA9IHlhc3IuY29udGFpbmVyLmNsb3Nlc3QoJ1tpZF0nKS5hdHRyKCdpZCcpO1xuXG5cdHZhciBjaGFydFdyYXBwZXIgPSBudWxsO1xuXHR2YXIgZWRpdG9yID0gbnVsbDtcblxuXHR2YXIgaW5pdEVkaXRvciA9IGZ1bmN0aW9uKGNhbGxiYWNrKSB7XG5cdFx0dmFyIGdvb2dsZSA9ICh0eXBlb2Ygd2luZG93ICE9PSBcInVuZGVmaW5lZFwiID8gd2luZG93Wydnb29nbGUnXSA6IHR5cGVvZiBnbG9iYWwgIT09IFwidW5kZWZpbmVkXCIgPyBnbG9iYWxbJ2dvb2dsZSddIDogbnVsbCk7XG5cdFx0ZWRpdG9yID0gbmV3IGdvb2dsZS52aXN1YWxpemF0aW9uLkNoYXJ0RWRpdG9yKCk7XG5cdFx0Z29vZ2xlLnZpc3VhbGl6YXRpb24uZXZlbnRzLmFkZExpc3RlbmVyKGVkaXRvciwgJ29rJywgZnVuY3Rpb24oKSB7XG5cdFx0XHR2YXIgdG1wO1xuXHRcdFx0Y2hhcnRXcmFwcGVyID0gZWRpdG9yLmdldENoYXJ0V3JhcHBlcigpO1xuXHRcdFx0dG1wID0gY2hhcnRXcmFwcGVyLmdldERhdGFUYWJsZSgpO1xuXHRcdFx0Y2hhcnRXcmFwcGVyLnNldERhdGFUYWJsZShudWxsKTtcblx0XHRcdC8vdWdseTogbmVlZCB0byBwYXJzZSBqc29uIHN0cmluZyB0byBqc29uIG9iaiBhZ2FpbiwgYXMgZ29vZ2xlIGNoYXJ0IGRvZXMgbm90IHByb3ZpZGUgYWNjZXNzIHRvIG9iamVjdCBkaXJlY3RseVxuXHRcdFx0b3B0aW9ucy5jaGFydENvbmZpZyA9IEpTT04ucGFyc2UoY2hhcnRXcmFwcGVyLnRvSlNPTigpKTtcblx0XHRcdC8vcmVtb3ZlIGNvbnRhaW5lciBJRCB0aG91Z2gsIGZvciBwb3J0YWJpbGl0eVxuXHRcdFx0aWYgKG9wdGlvbnMuY2hhcnRDb25maWcuY29udGFpbmVySWQpIGRlbGV0ZSBvcHRpb25zLmNoYXJ0Q29uZmlnWydjb250YWluZXJJZCddO1xuXHRcdFx0eWFzci5zdG9yZSgpO1xuXHRcdFx0Y2hhcnRXcmFwcGVyLnNldERhdGFUYWJsZSh0bXApO1xuXHRcdFx0Y2hhcnRXcmFwcGVyLnNldE9wdGlvbihcIndpZHRoXCIsIG9wdGlvbnMud2lkdGgpO1xuXHRcdFx0Y2hhcnRXcmFwcGVyLnNldE9wdGlvbihcImhlaWdodFwiLCBvcHRpb25zLmhlaWdodCk7XG5cdFx0XHRjaGFydFdyYXBwZXIuZHJhdygpO1xuXHRcdFx0eWFzci51cGRhdGVIZWFkZXIoKTtcblx0XHR9KTtcblx0XHRpZiAoY2FsbGJhY2spIGNhbGxiYWNrKCk7XG5cdH07XG5cblx0cmV0dXJuIHtcblx0XHRuYW1lOiBcIkdvb2dsZSBDaGFydFwiLFxuXHRcdGhpZGVGcm9tU2VsZWN0aW9uOiBmYWxzZSxcblx0XHRwcmlvcml0eTogNyxcblx0XHRvcHRpb25zOiBvcHRpb25zLFxuXHRcdGdldFBlcnNpc3RlbnRTZXR0aW5nczogZnVuY3Rpb24oKSB7XG5cdFx0XHRyZXR1cm4ge1xuXHRcdFx0XHRjaGFydENvbmZpZzogb3B0aW9ucy5jaGFydENvbmZpZyxcblx0XHRcdFx0bW90aW9uQ2hhcnRTdGF0ZTogb3B0aW9ucy5tb3Rpb25DaGFydFN0YXRlXG5cdFx0XHR9XG5cdFx0fSxcblx0XHRzZXRQZXJzaXN0ZW50U2V0dGluZ3M6IGZ1bmN0aW9uKHBlcnNTZXR0aW5ncykge1xuXHRcdFx0aWYgKHBlcnNTZXR0aW5nc1snY2hhcnRDb25maWcnXSkgb3B0aW9ucy5jaGFydENvbmZpZyA9IHBlcnNTZXR0aW5nc1snY2hhcnRDb25maWcnXTtcblx0XHRcdGlmIChwZXJzU2V0dGluZ3NbJ21vdGlvbkNoYXJ0U3RhdGUnXSkgb3B0aW9ucy5tb3Rpb25DaGFydFN0YXRlID0gcGVyc1NldHRpbmdzWydtb3Rpb25DaGFydFN0YXRlJ107XG5cdFx0fSxcblx0XHRjYW5IYW5kbGVSZXN1bHRzOiBmdW5jdGlvbih5YXNyKSB7XG5cdFx0XHR2YXIgcmVzdWx0cywgdmFyaWFibGVzO1xuXHRcdFx0cmV0dXJuIChyZXN1bHRzID0geWFzci5yZXN1bHRzKSAhPSBudWxsICYmICh2YXJpYWJsZXMgPSByZXN1bHRzLmdldFZhcmlhYmxlcygpKSAmJiB2YXJpYWJsZXMubGVuZ3RoID4gMDtcblx0XHR9LFxuXHRcdGdldERvd25sb2FkSW5mbzogZnVuY3Rpb24oKSB7XG5cdFx0XHRpZiAoIXlhc3IucmVzdWx0cykgcmV0dXJuIG51bGw7XG5cdFx0XHR2YXIgc3ZnRWwgPSB5YXNyLnJlc3VsdHNDb250YWluZXIuZmluZCgnc3ZnJyk7XG5cdFx0XHRpZiAoc3ZnRWwubGVuZ3RoID4gMCkge1xuXHRcdFx0XHRyZXR1cm4ge1xuXHRcdFx0XHRcdGdldENvbnRlbnQ6IGZ1bmN0aW9uKCkge1xuXHRcdFx0XHRcdFx0aWYgKHN2Z0VsWzBdLm91dGVySFRNTCkge1xuXHRcdFx0XHRcdFx0XHRyZXR1cm4gc3ZnRWxbMF0ub3V0ZXJIVE1MO1xuXHRcdFx0XHRcdFx0fSBlbHNlIHtcblx0XHRcdFx0XHRcdFx0Ly9vdXRlckhUTUwgbm90IHN1cHBvcnRlZC4gdXNlIHdvcmthcm91bmRcblx0XHRcdFx0XHRcdFx0cmV0dXJuICQoJzxkaXY+JykuYXBwZW5kKHN2Z0VsLmNsb25lKCkpLmh0bWwoKTtcblx0XHRcdFx0XHRcdH1cblx0XHRcdFx0XHR9LFxuXHRcdFx0XHRcdGZpbGVuYW1lOiBcInF1ZXJ5UmVzdWx0cy5zdmdcIixcblx0XHRcdFx0XHRjb250ZW50VHlwZTogXCJpbWFnZS9zdmcreG1sXCIsXG5cdFx0XHRcdFx0YnV0dG9uVGl0bGU6IFwiRG93bmxvYWQgU1ZHIEltYWdlXCJcblx0XHRcdFx0fTtcblx0XHRcdH1cblx0XHRcdC8vb2ssIG5vdCBhIHN2Zy4gaXMgaXQgYSB0YWJsZT9cblx0XHRcdHZhciAkdGFibGUgPSB5YXNyLnJlc3VsdHNDb250YWluZXIuZmluZCgnLmdvb2dsZS12aXN1YWxpemF0aW9uLXRhYmxlLXRhYmxlJyk7XG5cdFx0XHRpZiAoJHRhYmxlLmxlbmd0aCA+IDApIHtcblx0XHRcdFx0cmV0dXJuIHtcblx0XHRcdFx0XHRnZXRDb250ZW50OiBmdW5jdGlvbigpIHtcblx0XHRcdFx0XHRcdHJldHVybiAkdGFibGUudGFibGVUb0NzdigpO1xuXHRcdFx0XHRcdH0sXG5cdFx0XHRcdFx0ZmlsZW5hbWU6IFwicXVlcnlSZXN1bHRzLmNzdlwiLFxuXHRcdFx0XHRcdGNvbnRlbnRUeXBlOiBcInRleHQvY3N2XCIsXG5cdFx0XHRcdFx0YnV0dG9uVGl0bGU6IFwiRG93bmxvYWQgYXMgQ1NWXCJcblx0XHRcdFx0fTtcblx0XHRcdH1cblx0XHR9LFxuXHRcdGdldEVtYmVkSHRtbDogZnVuY3Rpb24oKSB7XG5cdFx0XHRpZiAoIXlhc3IucmVzdWx0cykgcmV0dXJuIG51bGw7XG5cblx0XHRcdHZhciBzdmdFbCA9IHlhc3IucmVzdWx0c0NvbnRhaW5lci5maW5kKCdzdmcnKVxuXHRcdFx0XHQuY2xvbmUoKSAvL2NyZWF0ZSBjbG9uZSwgYXMgd2UnZCBsaWtlIHRvIHJlbW92ZSBoZWlnaHQvd2lkdGggYXR0cmlidXRlc1xuXHRcdFx0XHQucmVtb3ZlQXR0cignaGVpZ2h0JykucmVtb3ZlQXR0cignd2lkdGgnKVxuXHRcdFx0XHQuY3NzKCdoZWlnaHQnLCAnJykuY3NzKCd3aWR0aCcsICcnKTtcblx0XHRcdGlmIChzdmdFbC5sZW5ndGggPT0gMCkgcmV0dXJuIG51bGw7XG5cblx0XHRcdHZhciBodG1sU3RyaW5nID0gc3ZnRWxbMF0ub3V0ZXJIVE1MO1xuXHRcdFx0aWYgKCFodG1sU3RyaW5nKSB7XG5cdFx0XHRcdC8vb3V0ZXJIVE1MIG5vdCBzdXBwb3J0ZWQuIHVzZSB3b3JrYXJvdW5kXG5cdFx0XHRcdGh0bWxTdHJpbmcgPSAkKCc8ZGl2PicpLmFwcGVuZChzdmdFbC5jbG9uZSgpKS5odG1sKCk7XG5cdFx0XHR9XG5cdFx0XHQvL3dyYXAgaW4gZGl2LCBzbyB1c2VycyBjYW4gbW9yZSBlYXNpbHkgdHVuZSB3aWR0aC9oZWlnaHRcblx0XHRcdC8vZG9uJ3QgdXNlIGpxdWVyeSwgc28gd2UgY2FuIGVhc2lseSBpbmZsdWVuY2UgaW5kZW50YXRpb25cblx0XHRcdHJldHVybiAnPGRpdiBzdHlsZT1cIndpZHRoOiA4MDBweDsgaGVpZ2h0OiA2MDBweDtcIj5cXG4nICsgaHRtbFN0cmluZyArICdcXG48L2Rpdj4nO1xuXHRcdH0sXG5cdFx0ZHJhdzogZnVuY3Rpb24oKSB7XG5cdFx0XHR2YXIgZG9EcmF3ID0gZnVuY3Rpb24oKSB7XG5cdFx0XHRcdC8vY2xlYXIgcHJldmlvdXMgcmVzdWx0cyAoaWYgYW55KVxuXHRcdFx0XHR5YXNyLnJlc3VsdHNDb250YWluZXIuZW1wdHkoKTtcblx0XHRcdFx0dmFyIHdyYXBwZXJJZCA9IGlkICsgJ19nY2hhcnRXcmFwcGVyJztcblxuXHRcdFx0XHR5YXNyLnJlc3VsdHNDb250YWluZXIuYXBwZW5kKFxuXHRcdFx0XHRcdCQoJzxidXR0b24+Jywge1xuXHRcdFx0XHRcdFx0Y2xhc3M6ICdvcGVuR2NoYXJ0QnRuIHlhc3JfYnRuJ1xuXHRcdFx0XHRcdH0pXG5cdFx0XHRcdFx0LnRleHQoJ0NoYXJ0IENvbmZpZycpXG5cdFx0XHRcdFx0LmNsaWNrKGZ1bmN0aW9uKCkge1xuXHRcdFx0XHRcdFx0ZWRpdG9yLm9wZW5EaWFsb2coY2hhcnRXcmFwcGVyKTtcblx0XHRcdFx0XHR9KVxuXHRcdFx0XHQpLmFwcGVuZChcblx0XHRcdFx0XHQkKCc8ZGl2PicsIHtcblx0XHRcdFx0XHRcdGlkOiB3cmFwcGVySWQsXG5cdFx0XHRcdFx0XHRjbGFzczogJ2djaGFydFdyYXBwZXInXG5cdFx0XHRcdFx0fSlcblx0XHRcdFx0KTtcblx0XHRcdFx0dmFyIGRhdGFUYWJsZSA9IG5ldyBnb29nbGUudmlzdWFsaXphdGlvbi5EYXRhVGFibGUoKTtcblx0XHRcdFx0dmFyIGpzb25SZXN1bHRzID0geWFzci5yZXN1bHRzLmdldEFzSnNvbigpO1xuXG5cdFx0XHRcdGpzb25SZXN1bHRzLmhlYWQudmFycy5mb3JFYWNoKGZ1bmN0aW9uKHZhcmlhYmxlKSB7XG5cdFx0XHRcdFx0dmFyIHR5cGUgPSAnc3RyaW5nJztcblx0XHRcdFx0XHR0cnkge1xuXHRcdFx0XHRcdFx0dHlwZSA9IHV0aWxzLmdldEdvb2dsZVR5cGVGb3JCaW5kaW5ncyhqc29uUmVzdWx0cy5yZXN1bHRzLmJpbmRpbmdzLCB2YXJpYWJsZSk7XG5cdFx0XHRcdFx0fSBjYXRjaCAoZSkge1xuXHRcdFx0XHRcdFx0aWYgKGUgaW5zdGFuY2VvZiByZXF1aXJlKCcuL2V4Y2VwdGlvbnMuanMnKS5Hb29nbGVUeXBlRXhjZXB0aW9uKSB7XG5cdFx0XHRcdFx0XHRcdHlhc3Iud2FybihlLnRvSHRtbCgpKVxuXHRcdFx0XHRcdFx0fSBlbHNlIHtcblx0XHRcdFx0XHRcdFx0dGhyb3cgZTtcblx0XHRcdFx0XHRcdH1cblx0XHRcdFx0XHR9XG5cdFx0XHRcdFx0ZGF0YVRhYmxlLmFkZENvbHVtbih0eXBlLCB2YXJpYWJsZSk7XG5cdFx0XHRcdH0pO1xuXHRcdFx0XHR2YXIgdXNlZFByZWZpeGVzID0gbnVsbDtcblx0XHRcdFx0aWYgKHlhc3Iub3B0aW9ucy5nZXRVc2VkUHJlZml4ZXMpIHtcblx0XHRcdFx0XHR1c2VkUHJlZml4ZXMgPSAodHlwZW9mIHlhc3Iub3B0aW9ucy5nZXRVc2VkUHJlZml4ZXMgPT0gXCJmdW5jdGlvblwiID8geWFzci5vcHRpb25zLmdldFVzZWRQcmVmaXhlcyh5YXNyKSA6IHlhc3Iub3B0aW9ucy5nZXRVc2VkUHJlZml4ZXMpO1xuXHRcdFx0XHR9XG5cdFx0XHRcdGpzb25SZXN1bHRzLnJlc3VsdHMuYmluZGluZ3MuZm9yRWFjaChmdW5jdGlvbihiaW5kaW5nKSB7XG5cdFx0XHRcdFx0dmFyIHJvdyA9IFtdO1xuXHRcdFx0XHRcdGpzb25SZXN1bHRzLmhlYWQudmFycy5mb3JFYWNoKGZ1bmN0aW9uKHZhcmlhYmxlLCBjb2x1bW5JZCkge1xuXHRcdFx0XHRcdFx0cm93LnB1c2godXRpbHMuY2FzdEdvb2dsZVR5cGUoYmluZGluZ1t2YXJpYWJsZV0sIHVzZWRQcmVmaXhlcywgZGF0YVRhYmxlLmdldENvbHVtblR5cGUoY29sdW1uSWQpKSk7XG5cdFx0XHRcdFx0fSlcblx0XHRcdFx0XHRkYXRhVGFibGUuYWRkUm93KHJvdyk7XG5cdFx0XHRcdH0pO1xuXG5cdFx0XHRcdGlmIChvcHRpb25zLmNoYXJ0Q29uZmlnICYmIG9wdGlvbnMuY2hhcnRDb25maWcuY2hhcnRUeXBlKSB7XG5cdFx0XHRcdFx0b3B0aW9ucy5jaGFydENvbmZpZy5jb250YWluZXJJZCA9IHdyYXBwZXJJZDtcblx0XHRcdFx0XHRjaGFydFdyYXBwZXIgPSBuZXcgZ29vZ2xlLnZpc3VhbGl6YXRpb24uQ2hhcnRXcmFwcGVyKG9wdGlvbnMuY2hhcnRDb25maWcpO1xuXHRcdFx0XHRcdGlmIChjaGFydFdyYXBwZXIuZ2V0Q2hhcnRUeXBlKCkgPT09IFwiTW90aW9uQ2hhcnRcIiAmJiBvcHRpb25zLm1vdGlvbkNoYXJ0U3RhdGUpIHtcblx0XHRcdFx0XHRcdGNoYXJ0V3JhcHBlci5zZXRPcHRpb24oXCJzdGF0ZVwiLCBvcHRpb25zLm1vdGlvbkNoYXJ0U3RhdGUpO1xuXHRcdFx0XHRcdFx0Z29vZ2xlLnZpc3VhbGl6YXRpb24uZXZlbnRzLmFkZExpc3RlbmVyKGNoYXJ0V3JhcHBlciwgJ3JlYWR5JywgZnVuY3Rpb24oKSB7XG5cdFx0XHRcdFx0XHRcdHZhciBtb3Rpb25DaGFydDtcblx0XHRcdFx0XHRcdFx0bW90aW9uQ2hhcnQgPSBjaGFydFdyYXBwZXIuZ2V0Q2hhcnQoKTtcblx0XHRcdFx0XHRcdFx0Z29vZ2xlLnZpc3VhbGl6YXRpb24uZXZlbnRzLmFkZExpc3RlbmVyKG1vdGlvbkNoYXJ0LCAnc3RhdGVjaGFuZ2UnLCBmdW5jdGlvbigpIHtcblx0XHRcdFx0XHRcdFx0XHRvcHRpb25zLm1vdGlvbkNoYXJ0U3RhdGUgPSBtb3Rpb25DaGFydC5nZXRTdGF0ZSgpO1xuXHRcdFx0XHRcdFx0XHRcdHlhc3Iuc3RvcmUoKTtcblx0XHRcdFx0XHRcdFx0fSk7XG5cdFx0XHRcdFx0XHR9KTtcblx0XHRcdFx0XHR9XG5cdFx0XHRcdFx0Y2hhcnRXcmFwcGVyLnNldERhdGFUYWJsZShkYXRhVGFibGUpO1xuXHRcdFx0XHR9IGVsc2Uge1xuXHRcdFx0XHRcdGNoYXJ0V3JhcHBlciA9IG5ldyBnb29nbGUudmlzdWFsaXphdGlvbi5DaGFydFdyYXBwZXIoe1xuXHRcdFx0XHRcdFx0Y2hhcnRUeXBlOiAnVGFibGUnLFxuXHRcdFx0XHRcdFx0ZGF0YVRhYmxlOiBkYXRhVGFibGUsXG5cdFx0XHRcdFx0XHRjb250YWluZXJJZDogd3JhcHBlcklkXG5cdFx0XHRcdFx0fSk7XG5cdFx0XHRcdH1cblx0XHRcdFx0Y2hhcnRXcmFwcGVyLnNldE9wdGlvbihcIndpZHRoXCIsIG9wdGlvbnMud2lkdGgpO1xuXHRcdFx0XHRjaGFydFdyYXBwZXIuc2V0T3B0aW9uKFwiaGVpZ2h0XCIsIG9wdGlvbnMuaGVpZ2h0KTtcblx0XHRcdFx0Y2hhcnRXcmFwcGVyLmRyYXcoKTtcblx0XHRcdFx0Z29vZ2xlLnZpc3VhbGl6YXRpb24uZXZlbnRzLmFkZExpc3RlbmVyKGNoYXJ0V3JhcHBlciwgJ3JlYWR5JywgeWFzci51cGRhdGVIZWFkZXIpO1xuXHRcdFx0fVxuXG5cdFx0XHRpZiAoISh0eXBlb2Ygd2luZG93ICE9PSBcInVuZGVmaW5lZFwiID8gd2luZG93Wydnb29nbGUnXSA6IHR5cGVvZiBnbG9iYWwgIT09IFwidW5kZWZpbmVkXCIgPyBnbG9iYWxbJ2dvb2dsZSddIDogbnVsbCkgfHwgISh0eXBlb2Ygd2luZG93ICE9PSBcInVuZGVmaW5lZFwiID8gd2luZG93Wydnb29nbGUnXSA6IHR5cGVvZiBnbG9iYWwgIT09IFwidW5kZWZpbmVkXCIgPyBnbG9iYWxbJ2dvb2dsZSddIDogbnVsbCkudmlzdWFsaXphdGlvbiB8fCAhZWRpdG9yKSB7XG5cdFx0XHRcdHJlcXVpcmUoJy4vZ0NoYXJ0TG9hZGVyLmpzJylcblx0XHRcdFx0XHQub24oJ2RvbmUnLCBmdW5jdGlvbigpIHtcblx0XHRcdFx0XHRcdGluaXRFZGl0b3IoKTtcblx0XHRcdFx0XHRcdGRvRHJhdygpO1xuXHRcdFx0XHRcdH0pXG5cdFx0XHRcdFx0Lm9uKCdlcnJvcicsIGZ1bmN0aW9uKCkge1xuXHRcdFx0XHRcdFx0Ly9UT0RPOiBkaXNhYmxlIG9yIHNvbWV0aGluZz9cblx0XHRcdFx0XHR9KVxuXHRcdFx0XHRcdC5nb29nbGVMb2FkKCk7XG5cdFx0XHR9IGVsc2Uge1xuXHRcdFx0XHQvL2V2ZXJ5dGhpbmcgKGVkaXRvciBhcyB3ZWxsKSBpcyBhbHJlYWR5IGluaXRpYWxpemVkXG5cdFx0XHRcdGRvRHJhdygpO1xuXHRcdFx0fVxuXHRcdH1cblx0fTtcbn07XG5yb290LmRlZmF1bHRzID0ge1xuXHRoZWlnaHQ6IFwiMTAwJVwiLFxuXHR3aWR0aDogXCIxMDAlXCIsXG5cdHBlcnNpc3RlbmN5SWQ6ICdnY2hhcnQnLFxuXHRjaGFydENvbmZpZzogbnVsbCxcblx0bW90aW9uQ2hhcnRTdGF0ZTogbnVsbFxufTtcblxuZnVuY3Rpb24gZGVlcEVxJCh4LCB5LCB0eXBlKSB7XG5cdHZhciB0b1N0cmluZyA9IHt9LnRvU3RyaW5nLFxuXHRcdGhhc093blByb3BlcnR5ID0ge30uaGFzT3duUHJvcGVydHksXG5cdFx0aGFzID0gZnVuY3Rpb24ob2JqLCBrZXkpIHtcblx0XHRcdHJldHVybiBoYXNPd25Qcm9wZXJ0eS5jYWxsKG9iaiwga2V5KTtcblx0XHR9O1xuXHR2YXIgZmlyc3QgPSB0cnVlO1xuXHRyZXR1cm4gZXEoeCwgeSwgW10pO1xuXG5cdGZ1bmN0aW9uIGVxKGEsIGIsIHN0YWNrKSB7XG5cdFx0dmFyIGNsYXNzTmFtZSwgbGVuZ3RoLCBzaXplLCByZXN1bHQsIGFsZW5ndGgsIGJsZW5ndGgsIHIsIGtleSwgcmVmLCBzaXplQjtcblx0XHRpZiAoYSA9PSBudWxsIHx8IGIgPT0gbnVsbCkge1xuXHRcdFx0cmV0dXJuIGEgPT09IGI7XG5cdFx0fVxuXHRcdGlmIChhLl9fcGxhY2Vob2xkZXJfXyB8fCBiLl9fcGxhY2Vob2xkZXJfXykge1xuXHRcdFx0cmV0dXJuIHRydWU7XG5cdFx0fVxuXHRcdGlmIChhID09PSBiKSB7XG5cdFx0XHRyZXR1cm4gYSAhPT0gMCB8fCAxIC8gYSA9PSAxIC8gYjtcblx0XHR9XG5cdFx0Y2xhc3NOYW1lID0gdG9TdHJpbmcuY2FsbChhKTtcblx0XHRpZiAodG9TdHJpbmcuY2FsbChiKSAhPSBjbGFzc05hbWUpIHtcblx0XHRcdHJldHVybiBmYWxzZTtcblx0XHR9XG5cdFx0c3dpdGNoIChjbGFzc05hbWUpIHtcblx0XHRcdGNhc2UgJ1tvYmplY3QgU3RyaW5nXSc6XG5cdFx0XHRcdHJldHVybiBhID09IFN0cmluZyhiKTtcblx0XHRcdGNhc2UgJ1tvYmplY3QgTnVtYmVyXSc6XG5cdFx0XHRcdHJldHVybiBhICE9ICthID8gYiAhPSArYiA6IChhID09IDAgPyAxIC8gYSA9PSAxIC8gYiA6IGEgPT0gK2IpO1xuXHRcdFx0Y2FzZSAnW29iamVjdCBEYXRlXSc6XG5cdFx0XHRjYXNlICdbb2JqZWN0IEJvb2xlYW5dJzpcblx0XHRcdFx0cmV0dXJuICthID09ICtiO1xuXHRcdFx0Y2FzZSAnW29iamVjdCBSZWdFeHBdJzpcblx0XHRcdFx0cmV0dXJuIGEuc291cmNlID09IGIuc291cmNlICYmXG5cdFx0XHRcdFx0YS5nbG9iYWwgPT0gYi5nbG9iYWwgJiZcblx0XHRcdFx0XHRhLm11bHRpbGluZSA9PSBiLm11bHRpbGluZSAmJlxuXHRcdFx0XHRcdGEuaWdub3JlQ2FzZSA9PSBiLmlnbm9yZUNhc2U7XG5cdFx0fVxuXHRcdGlmICh0eXBlb2YgYSAhPSAnb2JqZWN0JyB8fCB0eXBlb2YgYiAhPSAnb2JqZWN0Jykge1xuXHRcdFx0cmV0dXJuIGZhbHNlO1xuXHRcdH1cblx0XHRsZW5ndGggPSBzdGFjay5sZW5ndGg7XG5cdFx0d2hpbGUgKGxlbmd0aC0tKSB7XG5cdFx0XHRpZiAoc3RhY2tbbGVuZ3RoXSA9PSBhKSB7XG5cdFx0XHRcdHJldHVybiB0cnVlO1xuXHRcdFx0fVxuXHRcdH1cblx0XHRzdGFjay5wdXNoKGEpO1xuXHRcdHNpemUgPSAwO1xuXHRcdHJlc3VsdCA9IHRydWU7XG5cdFx0aWYgKGNsYXNzTmFtZSA9PSAnW29iamVjdCBBcnJheV0nKSB7XG5cdFx0XHRhbGVuZ3RoID0gYS5sZW5ndGg7XG5cdFx0XHRibGVuZ3RoID0gYi5sZW5ndGg7XG5cdFx0XHRpZiAoZmlyc3QpIHtcblx0XHRcdFx0c3dpdGNoICh0eXBlKSB7XG5cdFx0XHRcdFx0Y2FzZSAnPT09Jzpcblx0XHRcdFx0XHRcdHJlc3VsdCA9IGFsZW5ndGggPT09IGJsZW5ndGg7XG5cdFx0XHRcdFx0XHRicmVhaztcblx0XHRcdFx0XHRjYXNlICc8PT0nOlxuXHRcdFx0XHRcdFx0cmVzdWx0ID0gYWxlbmd0aCA8PSBibGVuZ3RoO1xuXHRcdFx0XHRcdFx0YnJlYWs7XG5cdFx0XHRcdFx0Y2FzZSAnPDw9Jzpcblx0XHRcdFx0XHRcdHJlc3VsdCA9IGFsZW5ndGggPCBibGVuZ3RoO1xuXHRcdFx0XHRcdFx0YnJlYWs7XG5cdFx0XHRcdH1cblx0XHRcdFx0c2l6ZSA9IGFsZW5ndGg7XG5cdFx0XHRcdGZpcnN0ID0gZmFsc2U7XG5cdFx0XHR9IGVsc2Uge1xuXHRcdFx0XHRyZXN1bHQgPSBhbGVuZ3RoID09PSBibGVuZ3RoO1xuXHRcdFx0XHRzaXplID0gYWxlbmd0aDtcblx0XHRcdH1cblx0XHRcdGlmIChyZXN1bHQpIHtcblx0XHRcdFx0d2hpbGUgKHNpemUtLSkge1xuXHRcdFx0XHRcdGlmICghKHJlc3VsdCA9IHNpemUgaW4gYSA9PSBzaXplIGluIGIgJiYgZXEoYVtzaXplXSwgYltzaXplXSwgc3RhY2spKSkge1xuXHRcdFx0XHRcdFx0YnJlYWs7XG5cdFx0XHRcdFx0fVxuXHRcdFx0XHR9XG5cdFx0XHR9XG5cdFx0fSBlbHNlIHtcblx0XHRcdGlmICgnY29uc3RydWN0b3InIGluIGEgIT0gJ2NvbnN0cnVjdG9yJyBpbiBiIHx8IGEuY29uc3RydWN0b3IgIT0gYi5jb25zdHJ1Y3Rvcikge1xuXHRcdFx0XHRyZXR1cm4gZmFsc2U7XG5cdFx0XHR9XG5cdFx0XHRmb3IgKGtleSBpbiBhKSB7XG5cdFx0XHRcdGlmIChoYXMoYSwga2V5KSkge1xuXHRcdFx0XHRcdHNpemUrKztcblx0XHRcdFx0XHRpZiAoIShyZXN1bHQgPSBoYXMoYiwga2V5KSAmJiBlcShhW2tleV0sIGJba2V5XSwgc3RhY2spKSkge1xuXHRcdFx0XHRcdFx0YnJlYWs7XG5cdFx0XHRcdFx0fVxuXHRcdFx0XHR9XG5cdFx0XHR9XG5cdFx0XHRpZiAocmVzdWx0KSB7XG5cdFx0XHRcdHNpemVCID0gMDtcblx0XHRcdFx0Zm9yIChrZXkgaW4gYikge1xuXHRcdFx0XHRcdGlmIChoYXMoYiwga2V5KSkge1xuXHRcdFx0XHRcdFx0KytzaXplQjtcblx0XHRcdFx0XHR9XG5cdFx0XHRcdH1cblx0XHRcdFx0aWYgKGZpcnN0KSB7XG5cdFx0XHRcdFx0aWYgKHR5cGUgPT09ICc8PD0nKSB7XG5cdFx0XHRcdFx0XHRyZXN1bHQgPSBzaXplIDwgc2l6ZUI7XG5cdFx0XHRcdFx0fSBlbHNlIGlmICh0eXBlID09PSAnPD09Jykge1xuXHRcdFx0XHRcdFx0cmVzdWx0ID0gc2l6ZSA8PSBzaXplQlxuXHRcdFx0XHRcdH0gZWxzZSB7XG5cdFx0XHRcdFx0XHRyZXN1bHQgPSBzaXplID09PSBzaXplQjtcblx0XHRcdFx0XHR9XG5cdFx0XHRcdH0gZWxzZSB7XG5cdFx0XHRcdFx0Zmlyc3QgPSBmYWxzZTtcblx0XHRcdFx0XHRyZXN1bHQgPSBzaXplID09PSBzaXplQjtcblx0XHRcdFx0fVxuXHRcdFx0fVxuXHRcdH1cblx0XHRzdGFjay5wb3AoKTtcblx0XHRyZXR1cm4gcmVzdWx0O1xuXHR9XG59Il19
-},{"./exceptions.js":75,"./gChartLoader.js":76,"./utils.js":91,"jquery":17,"yasgui-utils":24}],78:[function(require,module,exports){
+},{"./exceptions.js":76,"./gChartLoader.js":77,"./utils.js":92,"jquery":17,"yasgui-utils":24}],79:[function(require,module,exports){
 'use strict';
 module.exports = {
 	cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
@@ -84840,9 +84893,9 @@ module.exports = {
 	fullscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="640"     inkscape:window-height="480"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="0"     inkscape:current-layer="Layer_1" /><path     d="m -7.962963,-10 v 38.889 l 16.667,-16.667 16.667,16.667 5.555,-5.555 -16.667,-16.667 16.667,-16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 92.037037,-10 v 38.889 l -16.667,-16.667 -16.666,16.667 -5.556,-5.555 16.666,-16.667 -16.666,-16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M -7.962963,90 V 51.111 l 16.667,16.666 16.667,-16.666 5.555,5.556 -16.667,16.666 16.667,16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M 92.037037,90 V 51.111 l -16.667,16.666 -16.666,-16.666 -5.556,5.556 16.666,16.666 -16.666,16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 	smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
 };
-},{}],79:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 require('./tableToCsv.js');
-},{"./tableToCsv.js":80}],80:[function(require,module,exports){
+},{"./tableToCsv.js":81}],81:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 
@@ -84937,7 +84990,7 @@ $.fn.tableToCsv = function(config) {
 	return csvString;
 }
 
-},{"jquery":17}],81:[function(require,module,exports){
+},{"jquery":17}],82:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	EventEmitter = require('events').EventEmitter,
@@ -85421,13 +85474,13 @@ try {
 	module.exports.registerOutput('gchart', require("./gchart.js"))
 } catch (e) {};
 
-},{"../package.json":70,"./boolean.js":72,"./defaults.js":73,"./error.js":74,"./gChartLoader.js":76,"./gchart.js":77,"./imgs.js":78,"./jquery/extendJquery.js":79,"./parsers/wrapper.js":86,"./pivot.js":88,"./rawResponse.js":89,"./table.js":90,"./utils.js":91,"events":2,"jquery":17,"yasgui-utils":24}],82:[function(require,module,exports){
+},{"../package.json":71,"./boolean.js":73,"./defaults.js":74,"./error.js":75,"./gChartLoader.js":77,"./gchart.js":78,"./imgs.js":79,"./jquery/extendJquery.js":80,"./parsers/wrapper.js":87,"./pivot.js":89,"./rawResponse.js":90,"./table.js":91,"./utils.js":92,"events":2,"jquery":17,"yasgui-utils":24}],83:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, ",");
 };
-},{"./dlv.js":83,"jquery":17}],83:[function(require,module,exports){
+},{"./dlv.js":84,"jquery":17}],84:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 require("../../lib/jquery.csv-0.71.js");
@@ -85498,7 +85551,7 @@ var root = module.exports = function(queryResponse, separator) {
 
 	return json;
 };
-},{"../../lib/jquery.csv-0.71.js":64,"jquery":17}],84:[function(require,module,exports){
+},{"../../lib/jquery.csv-0.71.js":65,"jquery":17}],85:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
@@ -85516,13 +85569,13 @@ var root = module.exports = function(queryResponse) {
 	return false;
 
 };
-},{"jquery":17}],85:[function(require,module,exports){
+},{"jquery":17}],86:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
 	return require("./dlv.js")(queryResponse, "\t");
 };
-},{"./dlv.js":83,"jquery":17}],86:[function(require,module,exports){
+},{"./dlv.js":84,"jquery":17}],87:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 
@@ -85756,7 +85809,7 @@ var root = module.exports = function(dataOrJqXhr, textStatus, jqXhrOrErrorString
 		getException: getException
 	};
 };
-},{"./csv.js":82,"./json.js":84,"./tsv.js":85,"./xml.js":87,"jquery":17}],87:[function(require,module,exports){
+},{"./csv.js":83,"./json.js":85,"./tsv.js":86,"./xml.js":88,"jquery":17}],88:[function(require,module,exports){
 'use strict';
 var $ = require("jquery");
 var root = module.exports = function(xml) {
@@ -85841,7 +85894,7 @@ var root = module.exports = function(xml) {
 
 	return json;
 };
-},{"jquery":17}],88:[function(require,module,exports){
+},{"jquery":17}],89:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	utils = require('./utils.js'),
@@ -86122,7 +86175,7 @@ root.version = {
 	"YASR-rawResponse": require("../package.json").version,
 	"jquery": $.fn.jquery,
 };
-},{"../node_modules/pivottable/dist/d3_renderers.js":67,"../node_modules/pivottable/dist/gchart_renderers.js":68,"../package.json":70,"./gChartLoader.js":76,"./imgs.js":78,"./utils.js":91,"d3":65,"jquery":17,"jquery-ui/sortable":15,"pivottable":69,"yasgui-utils":24}],89:[function(require,module,exports){
+},{"../node_modules/pivottable/dist/d3_renderers.js":68,"../node_modules/pivottable/dist/gchart_renderers.js":69,"../package.json":71,"./gChartLoader.js":77,"./imgs.js":79,"./utils.js":92,"d3":66,"jquery":17,"jquery-ui/sortable":15,"pivottable":70,"yasgui-utils":24}],90:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	CodeMirror = require("codemirror");
@@ -86216,7 +86269,7 @@ root.version = {
 	"jquery": $.fn.jquery,
 	"CodeMirror": CodeMirror.version
 };
-},{"../package.json":70,"codemirror":8,"codemirror/addon/edit/matchbrackets.js":3,"codemirror/addon/fold/brace-fold.js":4,"codemirror/addon/fold/foldcode.js":5,"codemirror/addon/fold/foldgutter.js":6,"codemirror/addon/fold/xml-fold.js":7,"codemirror/mode/javascript/javascript.js":9,"codemirror/mode/xml/xml.js":10,"jquery":17}],90:[function(require,module,exports){
+},{"../package.json":71,"codemirror":8,"codemirror/addon/edit/matchbrackets.js":3,"codemirror/addon/fold/brace-fold.js":4,"codemirror/addon/fold/foldcode.js":5,"codemirror/addon/fold/foldgutter.js":6,"codemirror/addon/fold/xml-fold.js":7,"codemirror/mode/javascript/javascript.js":9,"codemirror/mode/xml/xml.js":10,"jquery":17}],91:[function(require,module,exports){
 'use strict';
 var $ = require("jquery"),
 	yutils = require("yasgui-utils"),
@@ -86598,7 +86651,7 @@ root.version = {
 	"jquery": $.fn.jquery,
 	"jquery-datatables": $.fn.DataTable.version
 };
-},{"../lib/colResizable-1.4.js":63,"../package.json":70,"./bindingsToCsv.js":71,"./imgs.js":78,"./utils.js":91,"datatables":66,"jquery":17,"yasgui-utils":24}],91:[function(require,module,exports){
+},{"../lib/colResizable-1.4.js":64,"../package.json":71,"./bindingsToCsv.js":72,"./imgs.js":79,"./utils.js":92,"datatables":67,"jquery":17,"yasgui-utils":24}],92:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	GoogleTypeException = require('./exceptions.js').GoogleTypeException;
@@ -86737,7 +86790,7 @@ var parseXmlSchemaDate = function(dateString) {
 	if (isNaN(date)) return null;
 	return date;
 };
-},{"./exceptions.js":75,"jquery":17}],92:[function(require,module,exports){
+},{"./exceptions.js":76,"jquery":17}],93:[function(require,module,exports){
 'use strict';
 
 var $ = require('jquery');
@@ -86826,7 +86879,7 @@ module.exports = {
 	{"endpoint":"http://wiktionary.dbpedia.org/sparql","title":"wiktionary.dbpedia.org"},{"endpoint":"http://www.opmw.org/sparql","title":"Wings workflow provenance dataset"},{"endpoint":"http://wordnet.rkbexplorer.com/sparql/","title":"WordNet (RKBExplorer)"},{"endpoint":"http://worldbank.270a.info/sparql","title":"World Bank Linked Data"},{"endpoint":"http://ldf.fi/ww1lod/sparql","title":"World War 1 as Linked Open Data"},{"endpoint":"http://diwis.imis.athena-innovation.gr:8181/sparql","title":"xxxxx"}]
 };
 
-},{"jquery":17}],93:[function(require,module,exports){
+},{"jquery":17}],94:[function(require,module,exports){
 'use strict';
 module.exports = {
 	yasgui: '<svg   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="0 0 603.99 522.51"   width="100%"   height="100%"      version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="test.svg">  <defs     >    <linearGradient              osb:paint="solid">      <stop         style="stop-color:#3b3b3b;stop-opacity:1;"         offset="0"          />    </linearGradient>    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />  </defs>  <sodipodi:namedview          pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1.0"     inkscape:pageopacity="0.0"     inkscape:pageshadow="2"     inkscape:zoom="0.35"     inkscape:cx="-469.55507"     inkscape:cy="840.5292"     inkscape:document-units="px"     inkscape:current-layer="layer1"     showgrid="false"     inkscape:window-width="1855"     inkscape:window-height="1056"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0" />  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />        <dc:title />      </cc:Work>    </rdf:RDF>  </metadata>  <g     inkscape:label="Layer 1"     inkscape:groupmode="layer"          transform="translate(-50.966817,-280.33262)">    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="478.57324"       x="-374.48849"       y="103.99496"       transform="matrix(-2.679181e-4,-0.99999996,0.99999993,-3.6684387e-4,0,0)" />    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="560"       x="651.37634"       y="-132.06581"       transform="matrix(0.74639582,0.66550228,-0.66550228,0.74639582,0,0)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,92.132758,620.67568)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,457.84706,214.96137)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,-30.152972,219.81853)" />    <g       transform="matrix(0.68747304,-0.7262099,0.7262099,0.68747304,0,0)"       inkscape:transform-center-x="239.86342"       inkscape:transform-center-y="-26.958107"       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#3b3b3b;fill-opacity:1;stroke:none;font-family:Sans"       >      <path         d="m -320.16655,490.61871 33.2,0 -32.4,75.4 0,64.6 -32.2,0 0,-64.6 -32.4,-75.4 33.2,0 15.2,43 15.4,-43 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -177.4603,630.61871 -32.2,0 -21.6,-80.4 -21.6,80.4 -32.2,0 37.4,-140 0.4,0 32,0 0.4,0 37.4,140 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -84.835303,544.41871 c 5.999926,9e-5 11.59992,1.13342 16.8,3.4 5.19991,2.26675 9.733238,5.40008 13.6,9.4 3.866564,3.86674 6.933228,8.40007 9.2,13.6 2.266556,5.20006 3.399889,10.80005 3.4,16.8 -1.11e-4,6.00004 -1.133444,11.60003 -3.4,16.8 -2.266772,5.20002 -5.333436,9.73335 -9.2,13.6 -3.866762,3.86668 -8.40009,6.93334 -13.6,9.2 -5.20008,2.26667 -10.800074,3.4 -16.8,3.4 l -64.599997,0 0,-32.2 64.599997,0 c 3.066595,-0.1333 5.599926,-1.19996 7.6,-3.2 2.133255,-2.13329 3.199921,-4.66662 3.2,-7.6 -7.9e-5,-3.06662 -1.066745,-5.59995 -3.2,-7.6 -2.000074,-2.13328 -4.533405,-3.19994 -7.6,-3.2 l -21.599997,0 c -6.00004,6e-5 -11.60004,-1.13328 -16.8,-3.4 -5.20003,-2.2666 -9.73336,-5.33327 -13.6,-9.2 -3.86668,-3.99993 -6.93335,-8.59992 -9.2,-13.8 -2.26667,-5.19991 -3.40001,-10.79991 -3.4,-16.8 -10e-6,-5.99989 1.13333,-11.59989 3.4,-16.8 2.26665,-5.19988 5.33332,-9.73321 9.2,-13.6 3.86664,-3.86653 8.39997,-6.9332 13.6,-9.2 5.19996,-2.26652 10.79996,-3.39986 16.8,-3.4 l 42.999997,0 0,32.4 -42.999997,0 c -3.06671,1.1e-4 -5.66671,1.06678 -7.8,3.2 -2.00004,2.00011 -3.00004,4.46677 -3,7.4 -4e-5,3.06676 0.99996,5.66676 3,7.8 2.13329,2.00009 4.73329,3.00009 7.8,3 l 21.599997,0 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />    </g>    <g       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Theorem NBP;-inkscape-font-specification:Theorem NBP"       >      <path         d="m 422.17683,677.02126 36.55,0 -5.44,27.54 -1.87,9.18 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 9.18,-45.9 c 1.01998,-5.09991 2.94664,-9.85991 5.78,-14.28 2.8333,-4.4199 6.17663,-8.27323 10.03,-11.56 3.96662,-3.28656 8.32995,-5.89322 13.09,-7.82 4.87328,-1.92655 9.85994,-2.88988 14.96,-2.89 l 18.36,0 c 5.09991,1.2e-4 9.63324,0.96345 13.6,2.89 4.0799,1.92678 7.42323,4.53344 10.03,7.82 2.71989,3.28677 4.58989,7.1401 5.61,11.56 1.01988,4.42009 1.01988,9.18009 0,14.28 l -27.37,0 c 0.45325,-2.49325 -9e-5,-4.58991 -1.36,-6.29 -1.36009,-1.81324 -3.34342,-2.71991 -5.95,-2.72 l -18.36,0 c -2.60673,9e-5 -4.98672,0.90676 -7.14,2.72 -2.15339,1.70009 -3.45672,3.79675 -3.91,6.29 l -9.18,45.9 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 1.87,-9.18 -9.18,0 5.44,-27.54"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 569.69808,713.74126 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 16.49,-82.45 27.37,0 -16.49,82.45 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 16.49,-82.45 27.37,0 -16.49,82.45"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 613.00933,631.29126 27.37,0 -23.8,119 -27.37,0 23.8,-119 0,0"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />    </g>    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.4331683,0,0,0.38716814,381.83246,155.72497)" />  </g></svg>', //svg with letters as paths (solves font issues)
@@ -86837,7 +86890,7 @@ module.exports = {
 	checkCrossMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 49.752653 49.990111"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"     showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="41.024355"     inkscape:cy="53.698163"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2"      />  <g     transform="matrix(0.59034297,0,0,0.59034297,12.298561,2.5312719)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"       inkscape:connector-curvature="0"        />  </g>  <g     transform="matrix(0.46036177,0,0,0.46036177,-0.49935505,-12.592753)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 67.335938,21.40625 60.320312,11.0625 C 50.757812,17.542969 43.875,22.636719 38.28125,27.542969 32.691406,22.636719 25.808594,17.546875 16.242188,11.0625 L 9.230469,21.40625 C 18.03125,27.375 24.3125,31.953125 29.398438,36.351562 23.574219,42.90625 18.523438,50.332031 11.339844,61.183594 l 10.421875,6.902344 C 28.515625,57.886719 33.144531,51.046875 38.28125,45.160156 c 5.140625,5.886719 9.765625,12.726563 16.523438,22.925782 L 65.226562,61.183594 C 58.039062,50.335938 52.988281,42.90625 47.167969,36.351562 52.25,31.953125 58.53125,27.375 67.335938,21.40625 z m 0,0"       inkscape:connector-curvature="0"        />  </g></svg>',
 };
 
-},{}],94:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	selectize = require('selectize'),
@@ -87095,7 +87148,7 @@ $.fn.endpointCombi = function(yasgui, options) {
 
 };
 
-},{"jquery":17,"selectize":19,"yasgui-utils":24}],95:[function(require,module,exports){
+},{"jquery":17,"selectize":19,"yasgui-utils":24}],96:[function(require,module,exports){
 //extend jquery
 require('../../node_modules/jquery-ui/resizable.js');
 require('./outsideclick.js');
@@ -87104,7 +87157,7 @@ require('./endpointCombi.js');
 require('jquery-ui/position');
 require('jquery-ui/sortable');
 
-},{"../../node_modules/jquery-ui/resizable.js":14,"./endpointCombi.js":94,"./outsideclick.js":96,"./tab.js":97,"jquery-ui/position":13,"jquery-ui/sortable":15}],96:[function(require,module,exports){
+},{"../../node_modules/jquery-ui/resizable.js":14,"./endpointCombi.js":95,"./outsideclick.js":97,"./tab.js":98,"jquery-ui/position":13,"jquery-ui/sortable":15}],97:[function(require,module,exports){
 'use strict';
 var $ = require('jquery');
 
@@ -87134,7 +87187,7 @@ $.fn.onOutsideClick = function(onOutsideClick, config) {
 
 	return this;
 }
-},{"jquery":17}],97:[function(require,module,exports){
+},{"jquery":17}],98:[function(require,module,exports){
 //Based on Bootstrap: tab.js v3.3.1
 var $ = require('jquery');
 'use strict';
@@ -87276,7 +87329,7 @@ var clickHandler = function(e) {
 $(document)
 	.on('click.bs.tab.data-api', '[data-toggle="tab"]', clickHandler)
 	.on('click.bs.tab.data-api', '[data-toggle="pill"]', clickHandler)
-},{"jquery":17}],98:[function(require,module,exports){
+},{"jquery":17}],99:[function(require,module,exports){
 "use strict";
 var $ = require('jquery'),
 	EventEmitter = require('events').EventEmitter,
@@ -87693,7 +87746,7 @@ module.exports.YASR = require('./yasr.js');
 module.exports.$ = $;
 module.exports.defaults = require('./defaults.js');
 
-},{"./defaults.js":92,"./imgs.js":93,"./jquery/extendJquery.js":95,"./shareLink.js":99,"./tab.js":100,"./tracker.js":102,"./yasqe.js":104,"./yasr.js":105,"events":2,"jquery":17,"yasgui-utils":24}],99:[function(require,module,exports){
+},{"./defaults.js":93,"./imgs.js":94,"./jquery/extendJquery.js":96,"./shareLink.js":100,"./tab.js":101,"./tracker.js":103,"./yasqe.js":105,"./yasr.js":106,"events":2,"jquery":17,"yasgui-utils":24}],100:[function(require,module,exports){
 var $ = require('jquery');
 var deparam = function(queryString) {
 	var params = [];
@@ -87888,7 +87941,7 @@ module.exports = {
 	}
 }
 
-},{"jquery":17}],100:[function(require,module,exports){
+},{"jquery":17}],101:[function(require,module,exports){
 'use strict';
 
 //		mod.emit('initError')
@@ -88211,7 +88264,7 @@ var Tab = function(yasgui, id, name, endpoint) {
 
 Tab.prototype = new EventEmitter;
 
-},{"./main.js":98,"./shareLink":99,"./tabPaneMenu.js":101,"./utils.js":103,"events":2,"jquery":17,"underscore":21,"yasgui-utils":24}],101:[function(require,module,exports){
+},{"./main.js":99,"./shareLink":100,"./tabPaneMenu.js":102,"./utils.js":104,"events":2,"jquery":17,"underscore":21,"yasgui-utils":24}],102:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	imgs = require('./imgs.js'),
@@ -88706,7 +88759,7 @@ module.exports = function(yasgui, tab) {
 	};
 };
 
-},{"./imgs.js":93,"jquery":17,"selectize":19,"yasgui-utils":24}],102:[function(require,module,exports){
+},{"./imgs.js":94,"jquery":17,"selectize":19,"yasgui-utils":24}],103:[function(require,module,exports){
 var yUtils = require('yasgui-utils'),
 	imgs = require('./imgs.js'),
 	$ = require('jquery');
@@ -88865,7 +88918,7 @@ module.exports = function(yasgui) {
 		drawConsentWindow: drawConsentWindow,
 	}
 };
-},{"./imgs.js":93,"jquery":17,"yasgui-utils":24}],103:[function(require,module,exports){
+},{"./imgs.js":94,"jquery":17,"yasgui-utils":24}],104:[function(require,module,exports){
 var $ = require('jquery');
 module.exports = {
 	escapeHtmlEntities: function(unescapedString) {
@@ -88883,7 +88936,7 @@ module.exports = {
 	},
 
 }
-},{"jquery":17}],104:[function(require,module,exports){
+},{"jquery":17}],105:[function(require,module,exports){
 var $ = require('jquery');
 var root = module.exports = require('yasgui-yasqe');
 
@@ -88897,11 +88950,11 @@ root.defaults = $.extend(true, root.defaults, {
 		acceptHeaderSelect: "application/sparql-results+json"
 	}
 });
-},{"jquery":17,"yasgui-yasqe":56}],105:[function(require,module,exports){
+},{"jquery":17,"yasgui-yasqe":57}],106:[function(require,module,exports){
 var $ = require('jquery'),
 	YASGUI = require('./main.js');
 var root = module.exports = require('yasgui-yasr');
-},{"./main.js":98,"jquery":17,"yasgui-yasr":81}]},{},[1])(1)
+},{"./main.js":99,"jquery":17,"yasgui-yasr":82}]},{},[1])(1)
 });
 
 
