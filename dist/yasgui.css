@@ -6029,8 +6029,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   /* The rest of this file contains styles related to the mechanics of
    the editor. You probably shouldn't touch them. */
   /* The fake, visible scrollbars. Used to force redraw during scrolling
-   before actuall scrolling happens, thus preventing shaking and
+   before actual scrolling happens, thus preventing shaking and
    flickering artifacts. */
+  /* Force content-box sizing for the elements where we expect it */
   /* IE7 hack to prevent it from returning funny offsetTops on the spans */
   /* Used to force a border model for a node */
   /* See issue #2901 */
@@ -6039,7 +6040,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 .yasqe .CodeMirror {
   /* Set height, width, borders, and global font properties here */
   font-family: monospace;
-  height: 300px; }
+  height: 300px;
+  color: black; }
 
 .yasqe .CodeMirror-lines {
   padding: 4px 0;
@@ -6063,7 +6065,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   min-width: 20px;
   text-align: right;
   color: #999;
-  box-sizing: content-box; }
+  white-space: nowrap; }
 
 .yasqe .CodeMirror-guttermarker {
   color: black; }
@@ -6071,41 +6073,40 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 .yasqe .CodeMirror-guttermarker-subtle {
   color: #999; }
 
-.yasqe .CodeMirror div.CodeMirror-cursor {
-  border-left: 1px solid black; }
+.yasqe .CodeMirror-cursor {
+  border-left: 1px solid black;
+  border-right: none;
+  width: 0; }
 
 .yasqe .CodeMirror div.CodeMirror-secondarycursor {
   border-left: 1px solid silver; }
 
-.yasqe .CodeMirror.cm-fat-cursor div.CodeMirror-cursor {
+.yasqe .cm-fat-cursor .CodeMirror-cursor {
   width: auto;
   border: 0;
   background: #7e7; }
 
-.yasqe .CodeMirror.cm-fat-cursor div.CodeMirror-cursors {
+.yasqe .cm-fat-cursor div.CodeMirror-cursors {
   z-index: 1; }
 
 .yasqe .cm-animate-fat-cursor {
   width: auto;
   border: 0;
   -webkit-animation: blink 1.06s steps(1) infinite;
-  animation: blink 1.06s steps(1) infinite; }
+  animation: blink 1.06s steps(1) infinite;
+  background-color: #7e7; }
 
 @-webkit-keyframes blink {
-  0% {
-    background: #7e7; }
+  0% { }
   50% {
-    background: none; }
-  100% {
-    background: #7e7; } }
+    background-color: transparent; }
+  100% { } }
 
 @keyframes blink {
-  0% {
-    background: #7e7; }
+  0% { }
   50% {
-    background: none; }
-  100% {
-    background: #7e7; } }
+    background-color: transparent; }
+  100% { } }
 
 .yasqe .cm-tab {
   display: inline-block;
@@ -6114,6 +6115,30 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 .yasqe .CodeMirror-ruler {
   border-left: 1px solid #ccc;
   position: absolute; }
+
+.yasqe .cm-s-default .cm-header {
+  color: blue; }
+
+.yasqe .cm-s-default .cm-quote {
+  color: #090; }
+
+.yasqe .cm-negative {
+  color: #d44; }
+
+.yasqe .cm-positive {
+  color: #292; }
+
+.yasqe .cm-header, .yasqe .cm-strong {
+  font-weight: bold; }
+
+.yasqe .cm-em {
+  font-style: italic; }
+
+.yasqe .cm-link {
+  text-decoration: underline; }
+
+.yasqe .cm-strikethrough {
+  text-decoration: line-through; }
 
 .yasqe .cm-s-default .cm-keyword {
   color: #708; }
@@ -6160,41 +6185,20 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 .yasqe .cm-s-default .cm-attribute {
   color: #00c; }
 
-.yasqe .cm-s-default .cm-header {
-  color: blue; }
-
-.yasqe .cm-s-default .cm-quote {
-  color: #090; }
-
 .yasqe .cm-s-default .cm-hr {
   color: #999; }
 
 .yasqe .cm-s-default .cm-link {
   color: #00c; }
 
-.yasqe .cm-negative {
-  color: #d44; }
-
-.yasqe .cm-positive {
-  color: #292; }
-
-.yasqe .cm-header, .yasqe .cm-strong {
-  font-weight: bold; }
-
-.yasqe .cm-em {
-  font-style: italic; }
-
-.yasqe .cm-link {
-  text-decoration: underline; }
-
-.yasqe .cm-strikethrough {
-  text-decoration: line-through; }
-
 .yasqe .cm-s-default .cm-error {
   color: #f00; }
 
 .yasqe .cm-invalidchar {
   color: #f00; }
+
+.yasqe .CodeMirror-composing {
+  border-bottom: 2px solid; }
 
 .yasqe div.CodeMirror span.CodeMirror-matchingbracket {
   color: #0f0; }
@@ -6209,11 +6213,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   background: #e8f2ff; }
 
 .yasqe .CodeMirror {
-  line-height: 1;
   position: relative;
   overflow: hidden;
-  background: white;
-  color: black; }
+  background: white; }
 
 .yasqe .CodeMirror-scroll {
   overflow: scroll !important;
@@ -6226,13 +6228,11 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   height: 100%;
   outline: none;
   /* Prevent dragging from highlighting the element */
-  position: relative;
-  box-sizing: content-box; }
+  position: relative; }
 
 .yasqe .CodeMirror-sizer {
   position: relative;
-  border-right: 30px solid transparent;
-  box-sizing: content-box; }
+  border-right: 30px solid transparent; }
 
 .yasqe .CodeMirror-vscrollbar, .yasqe .CodeMirror-hscrollbar, .yasqe .CodeMirror-scrollbar-filler, .yasqe .CodeMirror-gutter-filler {
   position: absolute;
@@ -6268,7 +6268,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 .yasqe .CodeMirror-gutter {
   white-space: normal;
   height: 100%;
-  box-sizing: content-box;
   display: inline-block;
   margin-bottom: -30px;
   /* Hack to make IE7 behave */
@@ -6278,12 +6277,25 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 .yasqe .CodeMirror-gutter-wrapper {
   position: absolute;
   z-index: 4;
-  height: 100%; }
+  background: none !important;
+  border: none !important; }
+
+.yasqe .CodeMirror-gutter-background {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 4; }
 
 .yasqe .CodeMirror-gutter-elt {
   position: absolute;
   cursor: default;
   z-index: 4; }
+
+.yasqe .CodeMirror-gutter-wrapper {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
+       user-select: none; }
 
 .yasqe .CodeMirror-lines {
   cursor: text;
@@ -6304,7 +6316,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   color: inherit;
   z-index: 2;
   position: relative;
-  overflow: visible; }
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent; }
 
 .yasqe .CodeMirror-wrap pre {
   word-wrap: break-word;
@@ -6324,6 +6337,16 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   z-index: 2;
   overflow: auto; }
 
+.yasqe .CodeMirror-code {
+  outline: none; }
+
+.yasqe .CodeMirror-scroll,
+.yasqe .CodeMirror-sizer,
+.yasqe .CodeMirror-gutter,
+.yasqe .CodeMirror-gutters,
+.yasqe .CodeMirror-linenumber {
+  box-sizing: content-box; }
+
 .yasqe .CodeMirror-measure {
   position: absolute;
   width: 100%;
@@ -6331,18 +6354,19 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   overflow: hidden;
   visibility: hidden; }
 
+.yasqe .CodeMirror-cursor {
+  position: absolute; }
+
 .yasqe .CodeMirror-measure pre {
   position: static; }
-
-.yasqe .CodeMirror div.CodeMirror-cursor {
-  position: absolute;
-  border-right: none;
-  width: 0; }
 
 .yasqe div.CodeMirror-cursors {
   visibility: hidden;
   position: relative;
   z-index: 3; }
+
+.yasqe div.CodeMirror-dragcursors {
+  visibility: visible; }
 
 .yasqe .CodeMirror-focused div.CodeMirror-cursors {
   visibility: visible; }
@@ -6355,6 +6379,15 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
 
 .yasqe .CodeMirror-crosshair {
   cursor: crosshair; }
+
+.yasqe .CodeMirror-line::-moz-selection, .yasqe .CodeMirror-line > span::-moz-selection, .yasqe .CodeMirror-line > span > span::-moz-selection {
+  background: #d7d4f0; }
+
+.yasqe .CodeMirror-line::selection, .yasqe .CodeMirror-line > span::selection, .yasqe .CodeMirror-line > span > span::selection {
+  background: #d7d4f0; }
+
+.yasqe .CodeMirror-line::-moz-selection, .yasqe .CodeMirror-line > span::-moz-selection, .yasqe .CodeMirror-line > span > span::-moz-selection {
+  background: #d7d4f0; }
 
 .yasqe .cm-searching {
   background: #ffa;
@@ -6425,9 +6458,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   padding: 6px 12px;
   border-radius: 4px;
   -webkit-user-select: none;
-  -moz-user-select: none;
   -ms-user-select: none;
-  user-select: none;
+  -moz-user-select: none;
+       user-select: none;
   -webkit-appearance: button;
   /* margin: 0; */
   overflow: visible;
