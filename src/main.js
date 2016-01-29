@@ -299,7 +299,7 @@ var YASGUI = function(parent, options) {
 			.click(function(e) {
 				e.preventDefault();
 				$(this).tab('show');
-				yasgui.tabs[tabId].yasqe.refresh();
+				if (yasgui.tabs[tabId].yasqe) yasgui.tabs[tabId].yasqe.refresh();
 			})
 			.on('shown.bs.tab', function(e) {
 				persistentOptions.selected = $(this).attr('aria-controls');
@@ -382,7 +382,8 @@ var YASGUI = function(parent, options) {
 		$tabsParent.find('li:has(a[role="addTab"])').before($tabItem);
 
 		if (newItem) persistentOptions.tabOrder.push(tabId);
-		yasgui.tabs[tabId] = require('./tab.js')(yasgui, tabId, name, endpoint);
+		var Tab = require('./tab.js');
+		yasgui.tabs[tabId] = new Tab(yasgui, tabId, name, endpoint);
 		if (newItem || persistentOptions.selected == tabId) {
 			yasgui.tabs[tabId].beforeShow();
 			$tabToggle.tab('show');

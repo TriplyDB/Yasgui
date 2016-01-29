@@ -165,26 +165,26 @@ var Tab = function(yasgui, id, name, endpoint) {
 
 	var initYasr = function() {
 		if (!tab.yasr) {
-			var addQueryDuration = function(yasr, plugin) {
-				if (tab.yasqe.lastQueryDuration && plugin.name == "Table") {
-					var tableInfo = tab.yasr.resultsContainer.find('.dataTables_info');
-					if (tableInfo.length > 0) {
-						var text = tableInfo.first().text();
-						tableInfo.text(text + ' (in ' + (tab.yasqe.lastQueryDuration / 1000) + ' seconds)');
-					}
-				}
-			}
 			if (!tab.yasqe) initYasqe(); //we need this one to initialize yasr
 			var getQueryString = function() {
 				return persistentOptions.yasqe.sparql.endpoint + "?" +
 					$.param(tab.yasqe.getUrlArguments(persistentOptions.yasqe.sparql));
 			};
 			YASGUI.YASR.plugins.error.defaults.tryQueryLink = getQueryString;
-			tab.yasr = YASGUI.YASR(yasrContainer[0], $.extend({
+
+			tab.yasr = new YASGUI.YASR(yasrContainer[0], $.extend({
 				//this way, the URLs in the results are prettified using the defined prefixes in the query
 				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
 			}, persistentOptions.yasr));
-			tab.yasr.on('drawn', addQueryDuration);
+			tab.yasr.on('drawn', function(yasr, plugin) {
+				if (tab.yasqe.lastQueryDuration && plugin.name == "Table" && yasr === tab.yasr) {
+					var tableInfo = tab.yasr.resultsContainer.find('.dataTables_info');
+					if (tableInfo.length > 0) {
+						var text = tableInfo.first().text();
+						tableInfo.text(text + ' (in ' + (tab.yasqe.lastQueryDuration / 1000) + ' seconds)');
+					}
+				}
+			})
 		}
 
 	};
