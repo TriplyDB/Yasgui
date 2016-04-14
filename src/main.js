@@ -92,7 +92,34 @@ var YASGUI = function(parent, options) {
 		return Math.random().toString(36).substring(7);
 	};
 
-
+	var $tabRename = $('<div><input type="text"></div>')
+		.keydown(function(e) {
+			if (e.which == 27 || e.keyCode == 27) {
+				//esc
+				$(this).closest('li').removeClass('rename');
+			} else if (e.which == 13 || e.keyCode == 13) {
+				//enter
+				storeRename($(this).closest('li'));
+			}
+		})
+	var renameStart = function(tabEl) {
+		var val = tabEl.find('span').text();
+		tabEl.addClass('rename');
+		tabEl.find('input').val(val);
+		$tabRename.find('input').focus();
+		tabEl.onOutsideClick(function() {
+			storeRename(tabEl);
+		})
+	}
+	var storeRename = function($liEl) {
+		var tabId = $liEl.find('a[role="tab"]').attr('aria-controls');
+		var val = $liEl.find('input').val();
+		// console.log($liEl)
+		$liEl.find('span').text($liEl.find('input').val());
+		persistentOptions.tabs[tabId].name = val;
+		yasgui.store();
+		$liEl.removeClass('rename');
+	};
 	yasgui.init = function() {
 
 		//tab panel contains tabs and panes
@@ -207,7 +234,7 @@ var YASGUI = function(parent, options) {
 			addTab();
 		});
 		addMenuItem('Rename', function(tabId) {
-			$tabsParent.find('a[href="#' + tabId + '"]').dblclick();
+			renameStart($tabsParent.find('a[href="#' + tabId + '"]').parent())
 		});
 		addMenuItem('Copy', function(tabId) {
 			var newTabId = getRandomId();
@@ -318,26 +345,10 @@ var YASGUI = function(parent, options) {
 					closeTab(tabId);
 				})
 			);
-		var $tabRename = $('<div><input type="text"></div>')
-			.keydown(function(e) {
-				if (event.which == 27 || event.keyCode == 27) {
-					//esc
-					$(this).closest('li').removeClass('rename');
-				} else if (event.which == 13 || event.keyCode == 13) {
-					//enter
-					storeRename($(this).closest('li'));
-				}
-			})
 
 
-		var storeRename = function($liEl) {
-			var tabId = $liEl.find('a[role="tab"]').attr('aria-controls');
-			var val = $liEl.find('input').val();
-			$tabToggle.find('span').text($liEl.find('input').val());
-			persistentOptions.tabs[tabId].name = val;
-			yasgui.store();
-			$liEl.removeClass('rename');
-		};
+
+
 		var $tabItem = $("<li>", {
 				role: "presentation"
 			})
@@ -345,13 +356,7 @@ var YASGUI = function(parent, options) {
 			.append($tabRename)
 			.dblclick(function() {
 				var el = $(this);
-				var val = el.find('span').text();
-				el.addClass('rename');
-				el.find('input').val(val);
-				$tabRename.find('input').focus();
-				el.onOutsideClick(function() {
-					storeRename(el);
-				})
+				renameStart(el);
 			})
 			.mousedown(function(e){
 		    if (e.which == 2) {
