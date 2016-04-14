@@ -221,7 +221,7 @@ var YASGUI = function(parent, options) {
 						role: 'menuitem',
 						href: '#'
 					}).text(name))
-					.click(function() {
+					.click(function(event) {
 						$contextMenu.hide();
 						event.preventDefault();
 						if (onClick) onClick($contextMenu.attr('target-tab'));
