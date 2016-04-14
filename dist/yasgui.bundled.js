@@ -35468,7 +35468,7 @@ module.exports=require(18)
 module.exports={
   "name": "yasgui-yasqe",
   "description": "Yet Another SPARQL Query Editor",
-  "version": "2.9.0",
+  "version": "2.9.1",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -37596,7 +37596,6 @@ YASQE.getAjaxConfig = function(yasqe, callbackOrConfig) {
 			}
 		}
 	}
-	console.log('bla', ajaxConfig.type)
 	if (ajaxConfig.type === 'GET') {
 		//we need to do encoding ourselve, as jquery does not properly encode the url string
 		//https://github.com/OpenTriply/YASGUI/issues/75
@@ -86921,10 +86920,7 @@ $.fn.endpointCombi = function(yasgui, options) {
 		if (!yasgui.corsEnabled) yasgui.corsEnabled = {};
 		if (!(endpoint in yasgui.corsEnabled)) {
 			$.ajax({
-				url: endpoint,
-				data: {
-					query: 'ASK {?x ?y ?z}'
-				},
+				url: endpoint + '&query=' + encodeURIComponent('ASK {?x ?y ?z}'),
 				complete: function(jqXHR) {
 					yasgui.corsEnabled[endpoint] = jqXHR.status > 0;
 				}
