@@ -35468,7 +35468,7 @@ module.exports=require(18)
 module.exports={
   "name": "yasgui-yasqe",
   "description": "Yet Another SPARQL Query Editor",
-  "version": "2.8.4",
+  "version": "2.9.0",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -37596,7 +37596,18 @@ YASQE.getAjaxConfig = function(yasqe, callbackOrConfig) {
 			}
 		}
 	}
-	ajaxConfig.data = yasqe.getUrlArguments(config);
+	console.log('bla', ajaxConfig.type)
+	if (ajaxConfig.type === 'GET') {
+		//we need to do encoding ourselve, as jquery does not properly encode the url string
+		//https://github.com/OpenTriply/YASGUI/issues/75
+		var first = true;
+		$.each(yasqe.getUrlArguments(config), function(key, val) {
+			ajaxConfig.url += (first?'?': '&') + val.name + '=' + encodeURIComponent(val.value);
+			first = false;
+		});
+	} else {
+		ajaxConfig.data = yasqe.getUrlArguments(config);
+	}
 	if (!handlerDefined && !callback)
 		return; // ok, we can query, but have no callbacks. just stop now
 
