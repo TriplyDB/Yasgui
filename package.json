@@ -16,7 +16,7 @@
     "browserify-transform-tools": "^1.2.1",
     "connect": "^3.3.4",
     "exorcist": "^0.1.6",
-    "gulp": "~3.6.0",
+    "gulp": "~3.9.0",
     "gulp-autoprefixer": "^3.0.2",
     "gulp-bump": "^0.1.11",
     "gulp-concat": "^2.4.1",
@@ -66,7 +66,6 @@
   "dependencies": {
     "bootstrap-contextmenu": "git://github.com/sydcanem/bootstrap-contextmenu",
     "bootstrap-sass": "^3.3.1",
-    "codemirror": "^4.7.0",
     "jquery": "~ 1.11.0",
     "jquery-ui": "^1.10.5",
     "microplugin": "0.0.3",
@@ -74,8 +73,8 @@
     "selectize": "git://github.com/brianreavis/selectize.js",
     "underscore": "^1.7.0",
     "yasgui-utils": "^1.4.1",
-    "yasgui-yasqe": "^2.9.0",
-    "yasgui-yasr": "^2.6.5"
+    "yasgui-yasqe": "^2.10.0",
+    "yasgui-yasr": "^2.7.0"
   },
   "browser": {
     "selectize": "./node_modules/selectize/dist/js/selectize.js"
