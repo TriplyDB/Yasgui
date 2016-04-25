@@ -74,7 +74,7 @@
     "underscore": "^1.7.0",
     "yasgui-utils": "^1.4.1",
     "yasgui-yasqe": "^2.10.0",
-    "yasgui-yasr": "^2.7.0"
+    "yasgui-yasr": "^2.7.3"
   },
   "browser": {
     "selectize": "./node_modules/selectize/dist/js/selectize.js"
