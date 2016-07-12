@@ -29266,7 +29266,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 	
 		return resolved.replace( '%d', plural ); // nb: plural might be undefined,
 	} );
-
 	/**
 	 * Version string for plug-ins to check compatibility. Allowed format is
 	 * `a.b.c-d` where: a:int, b:int, c:int, d:string(dev|beta|alpha). `d` is used
@@ -74950,19 +74949,19 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
 module.exports={
   "_args": [
     [
-      "yasgui-yasr@^2.7.0",
+      "yasgui-yasr@^2.7.3",
       "/home/lrd900/yasgui/yasgui"
     ]
   ],
-  "_from": "yasgui-yasr@>=2.7.0 <3.0.0",
-  "_id": "yasgui-yasr@2.7.1",
+  "_from": "yasgui-yasr@>=2.7.3 <3.0.0",
+  "_id": "yasgui-yasr@2.7.3",
   "_inCache": true,
   "_installable": true,
   "_location": "/yasgui-yasr",
   "_nodeVersion": "5.10.1",
   "_npmOperationalInternal": {
     "host": "packages-12-west.internal.npmjs.com",
-    "tmp": "tmp/yasgui-yasr-2.7.1.tgz_1461582589219_0.9923362277913839"
+    "tmp": "tmp/yasgui-yasr-2.7.3.tgz_1461595117396_0.5120407103095204"
   },
   "_npmUser": {
     "email": "laurens.rietveld@gmail.com",
@@ -74972,18 +74971,18 @@ module.exports={
   "_phantomChildren": {},
   "_requested": {
     "name": "yasgui-yasr",
-    "raw": "yasgui-yasr@^2.7.0",
-    "rawSpec": "^2.7.0",
+    "raw": "yasgui-yasr@^2.7.3",
+    "rawSpec": "^2.7.3",
     "scope": null,
-    "spec": ">=2.7.0 <3.0.0",
+    "spec": ">=2.7.3 <3.0.0",
     "type": "range"
   },
   "_requiredBy": [
     "/"
   ],
-  "_shasum": "d1e8c3bde29367c3e4f06d03e3ef3185ba593de5",
+  "_shasum": "ef5769ebf6905b9820ad009ffab86ef4d929e83e",
   "_shrinkwrap": null,
-  "_spec": "yasgui-yasr@^2.7.0",
+  "_spec": "yasgui-yasr@^2.7.3",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -75002,7 +75001,8 @@ module.exports={
   "dependencies": {
     "codemirror": "^4.7.0",
     "d3": "^3.4.13",
-    "datatables": "^1.10.7",
+    "datatables.net": "^1.10.11",
+    "datatables.net-dt": "^1.10.11",
     "jquery": ">=1.11.3",
     "jquery-ui": "^1.10.5",
     "pivottable": "^1.2.2",
@@ -75015,7 +75015,7 @@ module.exports={
     "browserify-shim": "^3.8.1",
     "browserify-transform-tools": "^1.2.1",
     "exorcist": "^0.1.6",
-    "gulp": "~3.6.0",
+    "gulp": "^3.9.0",
     "gulp-autoprefixer": "^3.0.2",
     "gulp-bump": "^0.1.11",
     "gulp-concat": "^2.4.1",
@@ -75046,10 +75046,10 @@ module.exports={
   },
   "directories": {},
   "dist": {
-    "shasum": "d1e8c3bde29367c3e4f06d03e3ef3185ba593de5",
-    "tarball": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.7.1.tgz"
+    "shasum": "ef5769ebf6905b9820ad009ffab86ef4d929e83e",
+    "tarball": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.7.3.tgz"
   },
-  "gitHead": "d441c66a0ddc5ba1957f37be9a3033dc6ca01039",
+  "gitHead": "4636a518c68930a43f33d13af2aacf371fb7c166",
   "homepage": "http://yasr.yasgui.org",
   "keywords": [
     "JavaScript",
@@ -75104,7 +75104,7 @@ module.exports={
     "url": "git+https://github.com/YASGUI/YASR.git"
   },
   "scripts": {},
-  "version": "2.7.1"
+  "version": "2.7.3"
 }
 
 },{}],66:[function(require,module,exports){
@@ -76467,22 +76467,34 @@ module.exports.$ = $;
 //put these in a try-catch. When using the unbundled version, and when some dependencies are missing, then YASR as a whole will still function
 try {
 	module.exports.registerOutput('boolean', require("./boolean.js"))
-} catch (e) {};
+} catch (e) {
+	console.warn(e);
+};
 try {
 	module.exports.registerOutput('rawResponse', require("./rawResponse.js"))
-} catch (e) {};
+} catch (e) {
+	console.warn(e);
+};
 try {
 	module.exports.registerOutput('table', require("./table.js"))
-} catch (e) {};
+} catch (e) {
+	console.warn(e);
+};
 try {
 	module.exports.registerOutput('error', require("./error.js"))
-} catch (e) {};
+} catch (e) {
+	console.warn(e);
+};
 try {
 	module.exports.registerOutput('pivot', require("./pivot.js"))
-} catch (e) {};
+} catch (e) {
+	console.warn(e);
+};
 try {
 	module.exports.registerOutput('gchart', require("./gchart.js"))
-} catch (e) {};
+} catch (e) {
+	console.warn(e);
+};
 
 },{"../package.json":65,"./boolean.js":67,"./defaults.js":68,"./error.js":69,"./gChartLoader.js":71,"./gchart.js":72,"./imgs.js":73,"./jquery/extendJquery.js":74,"./parsers/wrapper.js":81,"./pivot.js":83,"./rawResponse.js":84,"./table.js":85,"./utils.js":86,"events":14,"jquery":21,"yasgui-utils":31}],77:[function(require,module,exports){
 'use strict';
@@ -77286,7 +77298,7 @@ var $ = require("jquery"),
 	yutils = require("yasgui-utils"),
 	utils = require('./utils.js'),
 	imgs = require('./imgs.js');
-require("datatables");
+require("datatables.net")();
 require("../lib/colResizable-1.4.js");
 
 
@@ -77657,14 +77669,13 @@ root.defaults = {
 		],
 	},
 };
-
 root.version = {
 	"YASR-table": require("../package.json").version,
 	"jquery": $.fn.jquery,
 	"jquery-datatables": $.fn.DataTable.version
 };
 
-},{"../lib/colResizable-1.4.js":55,"../package.json":65,"./bindingsToCsv.js":66,"./imgs.js":73,"./utils.js":86,"datatables":13,"jquery":21,"yasgui-utils":31}],86:[function(require,module,exports){
+},{"../lib/colResizable-1.4.js":55,"../package.json":65,"./bindingsToCsv.js":66,"./imgs.js":73,"./utils.js":86,"datatables.net":13,"jquery":21,"yasgui-utils":31}],86:[function(require,module,exports){
 'use strict';
 var $ = require('jquery'),
 	GoogleTypeException = require('./exceptions.js').GoogleTypeException;
