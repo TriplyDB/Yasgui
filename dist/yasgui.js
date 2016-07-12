@@ -10362,7 +10362,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 },{}],12:[function(require,module,exports){
 !function() {
   var d3 = {
-    version: "3.5.16"
+    version: "3.5.17"
   };
   var d3_arraySlice = [].slice, d3_array = function(list) {
     return d3_arraySlice.call(list);
@@ -13887,7 +13887,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
         λ0 = λ, sinφ0 = sinφ, cosφ0 = cosφ, point0 = point;
       }
     }
-    return (polarAngle < -ε || polarAngle < ε && d3_geo_areaRingSum < 0) ^ winding & 1;
+    return (polarAngle < -ε || polarAngle < ε && d3_geo_areaRingSum < -ε) ^ winding & 1;
   }
   function d3_geo_clipCircle(radius) {
     var cr = Math.cos(radius), smallRadius = cr > 0, notHemisphere = abs(cr) > ε, interpolate = d3_geo_circleInterpolate(radius, 6 * d3_radians);
@@ -19915,14 +19915,14 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   if (typeof define === "function" && define.amd) this.d3 = d3, define(d3); else if (typeof module === "object" && module.exports) module.exports = d3; else this.d3 = d3;
 }();
 },{}],13:[function(require,module,exports){
-/*! DataTables 1.10.11
+/*! DataTables 1.10.12
  * ©2008-2015 SpryMedia Ltd - datatables.net/license
  */
 
 /**
  * @summary     DataTables
  * @description Paginate, search and order HTML tables
- * @version     1.10.11
+ * @version     1.10.12
  * @file        jquery.dataTables.js
  * @author      SpryMedia Ltd (www.sprymedia.co.uk)
  * @contact     www.sprymedia.co.uk/contact
@@ -20008,7 +20008,1257 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 	 *      } );
 	 *    } );
 	 */
-	var DataTable;
+	var DataTable = function ( options )
+	{
+		/**
+		 * Perform a jQuery selector action on the table's TR elements (from the tbody) and
+		 * return the resulting jQuery object.
+		 *  @param {string|node|jQuery} sSelector jQuery selector or node collection to act on
+		 *  @param {object} [oOpts] Optional parameters for modifying the rows to be included
+		 *  @param {string} [oOpts.filter=none] Select TR elements that meet the current filter
+		 *    criterion ("applied") or all TR elements (i.e. no filter).
+		 *  @param {string} [oOpts.order=current] Order of the TR elements in the processed array.
+		 *    Can be either 'current', whereby the current sorting of the table is used, or
+		 *    'original' whereby the original order the data was read into the table is used.
+		 *  @param {string} [oOpts.page=all] Limit the selection to the currently displayed page
+		 *    ("current") or not ("all"). If 'current' is given, then order is assumed to be
+		 *    'current' and filter is 'applied', regardless of what they might be given as.
+		 *  @returns {object} jQuery object, filtered by the given selector.
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Highlight every second row
+		 *      oTable.$('tr:odd').css('backgroundColor', 'blue');
+		 *    } );
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Filter to rows with 'Webkit' in them, add a background colour and then
+		 *      // remove the filter, thus highlighting the 'Webkit' rows only.
+		 *      oTable.fnFilter('Webkit');
+		 *      oTable.$('tr', {"search": "applied"}).css('backgroundColor', 'blue');
+		 *      oTable.fnFilter('');
+		 *    } );
+		 */
+		this.$ = function ( sSelector, oOpts )
+		{
+			return this.api(true).$( sSelector, oOpts );
+		};
+		
+		
+		/**
+		 * Almost identical to $ in operation, but in this case returns the data for the matched
+		 * rows - as such, the jQuery selector used should match TR row nodes or TD/TH cell nodes
+		 * rather than any descendants, so the data can be obtained for the row/cell. If matching
+		 * rows are found, the data returned is the original data array/object that was used to
+		 * create the row (or a generated array if from a DOM source).
+		 *
+		 * This method is often useful in-combination with $ where both functions are given the
+		 * same parameters and the array indexes will match identically.
+		 *  @param {string|node|jQuery} sSelector jQuery selector or node collection to act on
+		 *  @param {object} [oOpts] Optional parameters for modifying the rows to be included
+		 *  @param {string} [oOpts.filter=none] Select elements that meet the current filter
+		 *    criterion ("applied") or all elements (i.e. no filter).
+		 *  @param {string} [oOpts.order=current] Order of the data in the processed array.
+		 *    Can be either 'current', whereby the current sorting of the table is used, or
+		 *    'original' whereby the original order the data was read into the table is used.
+		 *  @param {string} [oOpts.page=all] Limit the selection to the currently displayed page
+		 *    ("current") or not ("all"). If 'current' is given, then order is assumed to be
+		 *    'current' and filter is 'applied', regardless of what they might be given as.
+		 *  @returns {array} Data for the matched elements. If any elements, as a result of the
+		 *    selector, were not TR, TD or TH elements in the DataTable, they will have a null
+		 *    entry in the array.
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Get the data from the first row in the table
+		 *      var data = oTable._('tr:first');
+		 *
+		 *      // Do something useful with the data
+		 *      alert( "First cell is: "+data[0] );
+		 *    } );
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Filter to 'Webkit' and get all data for
+		 *      oTable.fnFilter('Webkit');
+		 *      var data = oTable._('tr', {"search": "applied"});
+		 *
+		 *      // Do something with the data
+		 *      alert( data.length+" rows matched the search" );
+		 *    } );
+		 */
+		this._ = function ( sSelector, oOpts )
+		{
+			return this.api(true).rows( sSelector, oOpts ).data();
+		};
+		
+		
+		/**
+		 * Create a DataTables Api instance, with the currently selected tables for
+		 * the Api's context.
+		 * @param {boolean} [traditional=false] Set the API instance's context to be
+		 *   only the table referred to by the `DataTable.ext.iApiIndex` option, as was
+		 *   used in the API presented by DataTables 1.9- (i.e. the traditional mode),
+		 *   or if all tables captured in the jQuery object should be used.
+		 * @return {DataTables.Api}
+		 */
+		this.api = function ( traditional )
+		{
+			return traditional ?
+				new _Api(
+					_fnSettingsFromNode( this[ _ext.iApiIndex ] )
+				) :
+				new _Api( this );
+		};
+		
+		
+		/**
+		 * Add a single new row or multiple rows of data to the table. Please note
+		 * that this is suitable for client-side processing only - if you are using
+		 * server-side processing (i.e. "bServerSide": true), then to add data, you
+		 * must add it to the data source, i.e. the server-side, through an Ajax call.
+		 *  @param {array|object} data The data to be added to the table. This can be:
+		 *    <ul>
+		 *      <li>1D array of data - add a single row with the data provided</li>
+		 *      <li>2D array of arrays - add multiple rows in a single call</li>
+		 *      <li>object - data object when using <i>mData</i></li>
+		 *      <li>array of objects - multiple data objects when using <i>mData</i></li>
+		 *    </ul>
+		 *  @param {bool} [redraw=true] redraw the table or not
+		 *  @returns {array} An array of integers, representing the list of indexes in
+		 *    <i>aoData</i> ({@link DataTable.models.oSettings}) that have been added to
+		 *    the table.
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    // Global var for counter
+		 *    var giCount = 2;
+		 *
+		 *    $(document).ready(function() {
+		 *      $('#example').dataTable();
+		 *    } );
+		 *
+		 *    function fnClickAddRow() {
+		 *      $('#example').dataTable().fnAddData( [
+		 *        giCount+".1",
+		 *        giCount+".2",
+		 *        giCount+".3",
+		 *        giCount+".4" ]
+		 *      );
+		 *
+		 *      giCount++;
+		 *    }
+		 */
+		this.fnAddData = function( data, redraw )
+		{
+			var api = this.api( true );
+		
+			/* Check if we want to add multiple rows or not */
+			var rows = $.isArray(data) && ( $.isArray(data[0]) || $.isPlainObject(data[0]) ) ?
+				api.rows.add( data ) :
+				api.row.add( data );
+		
+			if ( redraw === undefined || redraw ) {
+				api.draw();
+			}
+		
+			return rows.flatten().toArray();
+		};
+		
+		
+		/**
+		 * This function will make DataTables recalculate the column sizes, based on the data
+		 * contained in the table and the sizes applied to the columns (in the DOM, CSS or
+		 * through the sWidth parameter). This can be useful when the width of the table's
+		 * parent element changes (for example a window resize).
+		 *  @param {boolean} [bRedraw=true] Redraw the table or not, you will typically want to
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable( {
+		 *        "sScrollY": "200px",
+		 *        "bPaginate": false
+		 *      } );
+		 *
+		 *      $(window).bind('resize', function () {
+		 *        oTable.fnAdjustColumnSizing();
+		 *      } );
+		 *    } );
+		 */
+		this.fnAdjustColumnSizing = function ( bRedraw )
+		{
+			var api = this.api( true ).columns.adjust();
+			var settings = api.settings()[0];
+			var scroll = settings.oScroll;
+		
+			if ( bRedraw === undefined || bRedraw ) {
+				api.draw( false );
+			}
+			else if ( scroll.sX !== "" || scroll.sY !== "" ) {
+				/* If not redrawing, but scrolling, we want to apply the new column sizes anyway */
+				_fnScrollDraw( settings );
+			}
+		};
+		
+		
+		/**
+		 * Quickly and simply clear a table
+		 *  @param {bool} [bRedraw=true] redraw the table or not
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Immediately 'nuke' the current rows (perhaps waiting for an Ajax callback...)
+		 *      oTable.fnClearTable();
+		 *    } );
+		 */
+		this.fnClearTable = function( bRedraw )
+		{
+			var api = this.api( true ).clear();
+		
+			if ( bRedraw === undefined || bRedraw ) {
+				api.draw();
+			}
+		};
+		
+		
+		/**
+		 * The exact opposite of 'opening' a row, this function will close any rows which
+		 * are currently 'open'.
+		 *  @param {node} nTr the table row to 'close'
+		 *  @returns {int} 0 on success, or 1 if failed (can't find the row)
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable;
+		 *
+		 *      // 'open' an information row when a row is clicked on
+		 *      $('#example tbody tr').click( function () {
+		 *        if ( oTable.fnIsOpen(this) ) {
+		 *          oTable.fnClose( this );
+		 *        } else {
+		 *          oTable.fnOpen( this, "Temporary row opened", "info_row" );
+		 *        }
+		 *      } );
+		 *
+		 *      oTable = $('#example').dataTable();
+		 *    } );
+		 */
+		this.fnClose = function( nTr )
+		{
+			this.api( true ).row( nTr ).child.hide();
+		};
+		
+		
+		/**
+		 * Remove a row for the table
+		 *  @param {mixed} target The index of the row from aoData to be deleted, or
+		 *    the TR element you want to delete
+		 *  @param {function|null} [callBack] Callback function
+		 *  @param {bool} [redraw=true] Redraw the table or not
+		 *  @returns {array} The row that was deleted
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Immediately remove the first row
+		 *      oTable.fnDeleteRow( 0 );
+		 *    } );
+		 */
+		this.fnDeleteRow = function( target, callback, redraw )
+		{
+			var api = this.api( true );
+			var rows = api.rows( target );
+			var settings = rows.settings()[0];
+			var data = settings.aoData[ rows[0][0] ];
+		
+			rows.remove();
+		
+			if ( callback ) {
+				callback.call( this, settings, data );
+			}
+		
+			if ( redraw === undefined || redraw ) {
+				api.draw();
+			}
+		
+			return data;
+		};
+		
+		
+		/**
+		 * Restore the table to it's original state in the DOM by removing all of DataTables
+		 * enhancements, alterations to the DOM structure of the table and event listeners.
+		 *  @param {boolean} [remove=false] Completely remove the table from the DOM
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      // This example is fairly pointless in reality, but shows how fnDestroy can be used
+		 *      var oTable = $('#example').dataTable();
+		 *      oTable.fnDestroy();
+		 *    } );
+		 */
+		this.fnDestroy = function ( remove )
+		{
+			this.api( true ).destroy( remove );
+		};
+		
+		
+		/**
+		 * Redraw the table
+		 *  @param {bool} [complete=true] Re-filter and resort (if enabled) the table before the draw.
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Re-draw the table - you wouldn't want to do it here, but it's an example :-)
+		 *      oTable.fnDraw();
+		 *    } );
+		 */
+		this.fnDraw = function( complete )
+		{
+			// Note that this isn't an exact match to the old call to _fnDraw - it takes
+			// into account the new data, but can hold position.
+			this.api( true ).draw( complete );
+		};
+		
+		
+		/**
+		 * Filter the input based on data
+		 *  @param {string} sInput String to filter the table on
+		 *  @param {int|null} [iColumn] Column to limit filtering to
+		 *  @param {bool} [bRegex=false] Treat as regular expression or not
+		 *  @param {bool} [bSmart=true] Perform smart filtering or not
+		 *  @param {bool} [bShowGlobal=true] Show the input global filter in it's input box(es)
+		 *  @param {bool} [bCaseInsensitive=true] Do case-insensitive matching (true) or not (false)
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Sometime later - filter...
+		 *      oTable.fnFilter( 'test string' );
+		 *    } );
+		 */
+		this.fnFilter = function( sInput, iColumn, bRegex, bSmart, bShowGlobal, bCaseInsensitive )
+		{
+			var api = this.api( true );
+		
+			if ( iColumn === null || iColumn === undefined ) {
+				api.search( sInput, bRegex, bSmart, bCaseInsensitive );
+			}
+			else {
+				api.column( iColumn ).search( sInput, bRegex, bSmart, bCaseInsensitive );
+			}
+		
+			api.draw();
+		};
+		
+		
+		/**
+		 * Get the data for the whole table, an individual row or an individual cell based on the
+		 * provided parameters.
+		 *  @param {int|node} [src] A TR row node, TD/TH cell node or an integer. If given as
+		 *    a TR node then the data source for the whole row will be returned. If given as a
+		 *    TD/TH cell node then iCol will be automatically calculated and the data for the
+		 *    cell returned. If given as an integer, then this is treated as the aoData internal
+		 *    data index for the row (see fnGetPosition) and the data for that row used.
+		 *  @param {int} [col] Optional column index that you want the data of.
+		 *  @returns {array|object|string} If mRow is undefined, then the data for all rows is
+		 *    returned. If mRow is defined, just data for that row, and is iCol is
+		 *    defined, only data for the designated cell is returned.
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    // Row data
+		 *    $(document).ready(function() {
+		 *      oTable = $('#example').dataTable();
+		 *
+		 *      oTable.$('tr').click( function () {
+		 *        var data = oTable.fnGetData( this );
+		 *        // ... do something with the array / object of data for the row
+		 *      } );
+		 *    } );
+		 *
+		 *  @example
+		 *    // Individual cell data
+		 *    $(document).ready(function() {
+		 *      oTable = $('#example').dataTable();
+		 *
+		 *      oTable.$('td').click( function () {
+		 *        var sData = oTable.fnGetData( this );
+		 *        alert( 'The cell clicked on had the value of '+sData );
+		 *      } );
+		 *    } );
+		 */
+		this.fnGetData = function( src, col )
+		{
+			var api = this.api( true );
+		
+			if ( src !== undefined ) {
+				var type = src.nodeName ? src.nodeName.toLowerCase() : '';
+		
+				return col !== undefined || type == 'td' || type == 'th' ?
+					api.cell( src, col ).data() :
+					api.row( src ).data() || null;
+			}
+		
+			return api.data().toArray();
+		};
+		
+		
+		/**
+		 * Get an array of the TR nodes that are used in the table's body. Note that you will
+		 * typically want to use the '$' API method in preference to this as it is more
+		 * flexible.
+		 *  @param {int} [iRow] Optional row index for the TR element you want
+		 *  @returns {array|node} If iRow is undefined, returns an array of all TR elements
+		 *    in the table's body, or iRow is defined, just the TR element requested.
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Get the nodes from the table
+		 *      var nNodes = oTable.fnGetNodes( );
+		 *    } );
+		 */
+		this.fnGetNodes = function( iRow )
+		{
+			var api = this.api( true );
+		
+			return iRow !== undefined ?
+				api.row( iRow ).node() :
+				api.rows().nodes().flatten().toArray();
+		};
+		
+		
+		/**
+		 * Get the array indexes of a particular cell from it's DOM element
+		 * and column index including hidden columns
+		 *  @param {node} node this can either be a TR, TD or TH in the table's body
+		 *  @returns {int} If nNode is given as a TR, then a single index is returned, or
+		 *    if given as a cell, an array of [row index, column index (visible),
+		 *    column index (all)] is given.
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      $('#example tbody td').click( function () {
+		 *        // Get the position of the current data from the node
+		 *        var aPos = oTable.fnGetPosition( this );
+		 *
+		 *        // Get the data array for this row
+		 *        var aData = oTable.fnGetData( aPos[0] );
+		 *
+		 *        // Update the data array and return the value
+		 *        aData[ aPos[1] ] = 'clicked';
+		 *        this.innerHTML = 'clicked';
+		 *      } );
+		 *
+		 *      // Init DataTables
+		 *      oTable = $('#example').dataTable();
+		 *    } );
+		 */
+		this.fnGetPosition = function( node )
+		{
+			var api = this.api( true );
+			var nodeName = node.nodeName.toUpperCase();
+		
+			if ( nodeName == 'TR' ) {
+				return api.row( node ).index();
+			}
+			else if ( nodeName == 'TD' || nodeName == 'TH' ) {
+				var cell = api.cell( node ).index();
+		
+				return [
+					cell.row,
+					cell.columnVisible,
+					cell.column
+				];
+			}
+			return null;
+		};
+		
+		
+		/**
+		 * Check to see if a row is 'open' or not.
+		 *  @param {node} nTr the table row to check
+		 *  @returns {boolean} true if the row is currently open, false otherwise
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable;
+		 *
+		 *      // 'open' an information row when a row is clicked on
+		 *      $('#example tbody tr').click( function () {
+		 *        if ( oTable.fnIsOpen(this) ) {
+		 *          oTable.fnClose( this );
+		 *        } else {
+		 *          oTable.fnOpen( this, "Temporary row opened", "info_row" );
+		 *        }
+		 *      } );
+		 *
+		 *      oTable = $('#example').dataTable();
+		 *    } );
+		 */
+		this.fnIsOpen = function( nTr )
+		{
+			return this.api( true ).row( nTr ).child.isShown();
+		};
+		
+		
+		/**
+		 * This function will place a new row directly after a row which is currently
+		 * on display on the page, with the HTML contents that is passed into the
+		 * function. This can be used, for example, to ask for confirmation that a
+		 * particular record should be deleted.
+		 *  @param {node} nTr The table row to 'open'
+		 *  @param {string|node|jQuery} mHtml The HTML to put into the row
+		 *  @param {string} sClass Class to give the new TD cell
+		 *  @returns {node} The row opened. Note that if the table row passed in as the
+		 *    first parameter, is not found in the table, this method will silently
+		 *    return.
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable;
+		 *
+		 *      // 'open' an information row when a row is clicked on
+		 *      $('#example tbody tr').click( function () {
+		 *        if ( oTable.fnIsOpen(this) ) {
+		 *          oTable.fnClose( this );
+		 *        } else {
+		 *          oTable.fnOpen( this, "Temporary row opened", "info_row" );
+		 *        }
+		 *      } );
+		 *
+		 *      oTable = $('#example').dataTable();
+		 *    } );
+		 */
+		this.fnOpen = function( nTr, mHtml, sClass )
+		{
+			return this.api( true )
+				.row( nTr )
+				.child( mHtml, sClass )
+				.show()
+				.child()[0];
+		};
+		
+		
+		/**
+		 * Change the pagination - provides the internal logic for pagination in a simple API
+		 * function. With this function you can have a DataTables table go to the next,
+		 * previous, first or last pages.
+		 *  @param {string|int} mAction Paging action to take: "first", "previous", "next" or "last"
+		 *    or page number to jump to (integer), note that page 0 is the first page.
+		 *  @param {bool} [bRedraw=true] Redraw the table or not
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *      oTable.fnPageChange( 'next' );
+		 *    } );
+		 */
+		this.fnPageChange = function ( mAction, bRedraw )
+		{
+			var api = this.api( true ).page( mAction );
+		
+			if ( bRedraw === undefined || bRedraw ) {
+				api.draw(false);
+			}
+		};
+		
+		
+		/**
+		 * Show a particular column
+		 *  @param {int} iCol The column whose display should be changed
+		 *  @param {bool} bShow Show (true) or hide (false) the column
+		 *  @param {bool} [bRedraw=true] Redraw the table or not
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Hide the second column after initialisation
+		 *      oTable.fnSetColumnVis( 1, false );
+		 *    } );
+		 */
+		this.fnSetColumnVis = function ( iCol, bShow, bRedraw )
+		{
+			var api = this.api( true ).column( iCol ).visible( bShow );
+		
+			if ( bRedraw === undefined || bRedraw ) {
+				api.columns.adjust().draw();
+			}
+		};
+		
+		
+		/**
+		 * Get the settings for a particular table for external manipulation
+		 *  @returns {object} DataTables settings object. See
+		 *    {@link DataTable.models.oSettings}
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *      var oSettings = oTable.fnSettings();
+		 *
+		 *      // Show an example parameter from the settings
+		 *      alert( oSettings._iDisplayStart );
+		 *    } );
+		 */
+		this.fnSettings = function()
+		{
+			return _fnSettingsFromNode( this[_ext.iApiIndex] );
+		};
+		
+		
+		/**
+		 * Sort the table by a particular column
+		 *  @param {int} iCol the data index to sort on. Note that this will not match the
+		 *    'display index' if you have hidden data entries
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Sort immediately with columns 0 and 1
+		 *      oTable.fnSort( [ [0,'asc'], [1,'asc'] ] );
+		 *    } );
+		 */
+		this.fnSort = function( aaSort )
+		{
+			this.api( true ).order( aaSort ).draw();
+		};
+		
+		
+		/**
+		 * Attach a sort listener to an element for a given column
+		 *  @param {node} nNode the element to attach the sort listener to
+		 *  @param {int} iColumn the column that a click on this node will sort on
+		 *  @param {function} [fnCallback] callback function when sort is run
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *
+		 *      // Sort on column 1, when 'sorter' is clicked on
+		 *      oTable.fnSortListener( document.getElementById('sorter'), 1 );
+		 *    } );
+		 */
+		this.fnSortListener = function( nNode, iColumn, fnCallback )
+		{
+			this.api( true ).order.listener( nNode, iColumn, fnCallback );
+		};
+		
+		
+		/**
+		 * Update a table cell or row - this method will accept either a single value to
+		 * update the cell with, an array of values with one element for each column or
+		 * an object in the same format as the original data source. The function is
+		 * self-referencing in order to make the multi column updates easier.
+		 *  @param {object|array|string} mData Data to update the cell/row with
+		 *  @param {node|int} mRow TR element you want to update or the aoData index
+		 *  @param {int} [iColumn] The column to update, give as null or undefined to
+		 *    update a whole row.
+		 *  @param {bool} [bRedraw=true] Redraw the table or not
+		 *  @param {bool} [bAction=true] Perform pre-draw actions or not
+		 *  @returns {int} 0 on success, 1 on error
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *      oTable.fnUpdate( 'Example update', 0, 0 ); // Single cell
+		 *      oTable.fnUpdate( ['a', 'b', 'c', 'd', 'e'], $('tbody tr')[0] ); // Row
+		 *    } );
+		 */
+		this.fnUpdate = function( mData, mRow, iColumn, bRedraw, bAction )
+		{
+			var api = this.api( true );
+		
+			if ( iColumn === undefined || iColumn === null ) {
+				api.row( mRow ).data( mData );
+			}
+			else {
+				api.cell( mRow, iColumn ).data( mData );
+			}
+		
+			if ( bAction === undefined || bAction ) {
+				api.columns.adjust();
+			}
+		
+			if ( bRedraw === undefined || bRedraw ) {
+				api.draw();
+			}
+			return 0;
+		};
+		
+		
+		/**
+		 * Provide a common method for plug-ins to check the version of DataTables being used, in order
+		 * to ensure compatibility.
+		 *  @param {string} sVersion Version string to check for, in the format "X.Y.Z". Note that the
+		 *    formats "X" and "X.Y" are also acceptable.
+		 *  @returns {boolean} true if this version of DataTables is greater or equal to the required
+		 *    version, or false if this version of DataTales is not suitable
+		 *  @method
+		 *  @dtopt API
+		 *  @deprecated Since v1.10
+		 *
+		 *  @example
+		 *    $(document).ready(function() {
+		 *      var oTable = $('#example').dataTable();
+		 *      alert( oTable.fnVersionCheck( '1.9.0' ) );
+		 *    } );
+		 */
+		this.fnVersionCheck = _ext.fnVersionCheck;
+		
+
+		var _that = this;
+		var emptyInit = options === undefined;
+		var len = this.length;
+
+		if ( emptyInit ) {
+			options = {};
+		}
+
+		this.oApi = this.internal = _ext.internal;
+
+		// Extend with old style plug-in API methods
+		for ( var fn in DataTable.ext.internal ) {
+			if ( fn ) {
+				this[fn] = _fnExternApiFunc(fn);
+			}
+		}
+
+		this.each(function() {
+			// For each initialisation we want to give it a clean initialisation
+			// object that can be bashed around
+			var o = {};
+			var oInit = len > 1 ? // optimisation for single table case
+				_fnExtend( o, options, true ) :
+				options;
+
+			/*global oInit,_that,emptyInit*/
+			var i=0, iLen, j, jLen, k, kLen;
+			var sId = this.getAttribute( 'id' );
+			var bInitHandedOff = false;
+			var defaults = DataTable.defaults;
+			var $this = $(this);
+			
+			
+			/* Sanity check */
+			if ( this.nodeName.toLowerCase() != 'table' )
+			{
+				_fnLog( null, 0, 'Non-table node initialisation ('+this.nodeName+')', 2 );
+				return;
+			}
+			
+			/* Backwards compatibility for the defaults */
+			_fnCompatOpts( defaults );
+			_fnCompatCols( defaults.column );
+			
+			/* Convert the camel-case defaults to Hungarian */
+			_fnCamelToHungarian( defaults, defaults, true );
+			_fnCamelToHungarian( defaults.column, defaults.column, true );
+			
+			/* Setting up the initialisation object */
+			_fnCamelToHungarian( defaults, $.extend( oInit, $this.data() ) );
+			
+			
+			
+			/* Check to see if we are re-initialising a table */
+			var allSettings = DataTable.settings;
+			for ( i=0, iLen=allSettings.length ; i<iLen ; i++ )
+			{
+				var s = allSettings[i];
+			
+				/* Base check on table node */
+				if ( s.nTable == this || s.nTHead.parentNode == this || (s.nTFoot && s.nTFoot.parentNode == this) )
+				{
+					var bRetrieve = oInit.bRetrieve !== undefined ? oInit.bRetrieve : defaults.bRetrieve;
+					var bDestroy = oInit.bDestroy !== undefined ? oInit.bDestroy : defaults.bDestroy;
+			
+					if ( emptyInit || bRetrieve )
+					{
+						return s.oInstance;
+					}
+					else if ( bDestroy )
+					{
+						s.oInstance.fnDestroy();
+						break;
+					}
+					else
+					{
+						_fnLog( s, 0, 'Cannot reinitialise DataTable', 3 );
+						return;
+					}
+				}
+			
+				/* If the element we are initialising has the same ID as a table which was previously
+				 * initialised, but the table nodes don't match (from before) then we destroy the old
+				 * instance by simply deleting it. This is under the assumption that the table has been
+				 * destroyed by other methods. Anyone using non-id selectors will need to do this manually
+				 */
+				if ( s.sTableId == this.id )
+				{
+					allSettings.splice( i, 1 );
+					break;
+				}
+			}
+			
+			/* Ensure the table has an ID - required for accessibility */
+			if ( sId === null || sId === "" )
+			{
+				sId = "DataTables_Table_"+(DataTable.ext._unique++);
+				this.id = sId;
+			}
+			
+			/* Create the settings object for this table and set some of the default parameters */
+			var oSettings = $.extend( true, {}, DataTable.models.oSettings, {
+				"sDestroyWidth": $this[0].style.width,
+				"sInstance":     sId,
+				"sTableId":      sId
+			} );
+			oSettings.nTable = this;
+			oSettings.oApi   = _that.internal;
+			oSettings.oInit  = oInit;
+			
+			allSettings.push( oSettings );
+			
+			// Need to add the instance after the instance after the settings object has been added
+			// to the settings array, so we can self reference the table instance if more than one
+			oSettings.oInstance = (_that.length===1) ? _that : $this.dataTable();
+			
+			// Backwards compatibility, before we apply all the defaults
+			_fnCompatOpts( oInit );
+			
+			if ( oInit.oLanguage )
+			{
+				_fnLanguageCompat( oInit.oLanguage );
+			}
+			
+			// If the length menu is given, but the init display length is not, use the length menu
+			if ( oInit.aLengthMenu && ! oInit.iDisplayLength )
+			{
+				oInit.iDisplayLength = $.isArray( oInit.aLengthMenu[0] ) ?
+					oInit.aLengthMenu[0][0] : oInit.aLengthMenu[0];
+			}
+			
+			// Apply the defaults and init options to make a single init object will all
+			// options defined from defaults and instance options.
+			oInit = _fnExtend( $.extend( true, {}, defaults ), oInit );
+			
+			
+			// Map the initialisation options onto the settings object
+			_fnMap( oSettings.oFeatures, oInit, [
+				"bPaginate",
+				"bLengthChange",
+				"bFilter",
+				"bSort",
+				"bSortMulti",
+				"bInfo",
+				"bProcessing",
+				"bAutoWidth",
+				"bSortClasses",
+				"bServerSide",
+				"bDeferRender"
+			] );
+			_fnMap( oSettings, oInit, [
+				"asStripeClasses",
+				"ajax",
+				"fnServerData",
+				"fnFormatNumber",
+				"sServerMethod",
+				"aaSorting",
+				"aaSortingFixed",
+				"aLengthMenu",
+				"sPaginationType",
+				"sAjaxSource",
+				"sAjaxDataProp",
+				"iStateDuration",
+				"sDom",
+				"bSortCellsTop",
+				"iTabIndex",
+				"fnStateLoadCallback",
+				"fnStateSaveCallback",
+				"renderer",
+				"searchDelay",
+				"rowId",
+				[ "iCookieDuration", "iStateDuration" ], // backwards compat
+				[ "oSearch", "oPreviousSearch" ],
+				[ "aoSearchCols", "aoPreSearchCols" ],
+				[ "iDisplayLength", "_iDisplayLength" ],
+				[ "bJQueryUI", "bJUI" ]
+			] );
+			_fnMap( oSettings.oScroll, oInit, [
+				[ "sScrollX", "sX" ],
+				[ "sScrollXInner", "sXInner" ],
+				[ "sScrollY", "sY" ],
+				[ "bScrollCollapse", "bCollapse" ]
+			] );
+			_fnMap( oSettings.oLanguage, oInit, "fnInfoCallback" );
+			
+			/* Callback functions which are array driven */
+			_fnCallbackReg( oSettings, 'aoDrawCallback',       oInit.fnDrawCallback,      'user' );
+			_fnCallbackReg( oSettings, 'aoServerParams',       oInit.fnServerParams,      'user' );
+			_fnCallbackReg( oSettings, 'aoStateSaveParams',    oInit.fnStateSaveParams,   'user' );
+			_fnCallbackReg( oSettings, 'aoStateLoadParams',    oInit.fnStateLoadParams,   'user' );
+			_fnCallbackReg( oSettings, 'aoStateLoaded',        oInit.fnStateLoaded,       'user' );
+			_fnCallbackReg( oSettings, 'aoRowCallback',        oInit.fnRowCallback,       'user' );
+			_fnCallbackReg( oSettings, 'aoRowCreatedCallback', oInit.fnCreatedRow,        'user' );
+			_fnCallbackReg( oSettings, 'aoHeaderCallback',     oInit.fnHeaderCallback,    'user' );
+			_fnCallbackReg( oSettings, 'aoFooterCallback',     oInit.fnFooterCallback,    'user' );
+			_fnCallbackReg( oSettings, 'aoInitComplete',       oInit.fnInitComplete,      'user' );
+			_fnCallbackReg( oSettings, 'aoPreDrawCallback',    oInit.fnPreDrawCallback,   'user' );
+			
+			oSettings.rowIdFn = _fnGetObjectDataFn( oInit.rowId );
+			
+			/* Browser support detection */
+			_fnBrowserDetect( oSettings );
+			
+			var oClasses = oSettings.oClasses;
+			
+			// @todo Remove in 1.11
+			if ( oInit.bJQueryUI )
+			{
+				/* Use the JUI classes object for display. You could clone the oStdClasses object if
+				 * you want to have multiple tables with multiple independent classes
+				 */
+				$.extend( oClasses, DataTable.ext.oJUIClasses, oInit.oClasses );
+			
+				if ( oInit.sDom === defaults.sDom && defaults.sDom === "lfrtip" )
+				{
+					/* Set the DOM to use a layout suitable for jQuery UI's theming */
+					oSettings.sDom = '<"H"lfr>t<"F"ip>';
+				}
+			
+				if ( ! oSettings.renderer ) {
+					oSettings.renderer = 'jqueryui';
+				}
+				else if ( $.isPlainObject( oSettings.renderer ) && ! oSettings.renderer.header ) {
+					oSettings.renderer.header = 'jqueryui';
+				}
+			}
+			else
+			{
+				$.extend( oClasses, DataTable.ext.classes, oInit.oClasses );
+			}
+			$this.addClass( oClasses.sTable );
+			
+			
+			if ( oSettings.iInitDisplayStart === undefined )
+			{
+				/* Display start point, taking into account the save saving */
+				oSettings.iInitDisplayStart = oInit.iDisplayStart;
+				oSettings._iDisplayStart = oInit.iDisplayStart;
+			}
+			
+			if ( oInit.iDeferLoading !== null )
+			{
+				oSettings.bDeferLoading = true;
+				var tmp = $.isArray( oInit.iDeferLoading );
+				oSettings._iRecordsDisplay = tmp ? oInit.iDeferLoading[0] : oInit.iDeferLoading;
+				oSettings._iRecordsTotal = tmp ? oInit.iDeferLoading[1] : oInit.iDeferLoading;
+			}
+			
+			/* Language definitions */
+			var oLanguage = oSettings.oLanguage;
+			$.extend( true, oLanguage, oInit.oLanguage );
+			
+			if ( oLanguage.sUrl !== "" )
+			{
+				/* Get the language definitions from a file - because this Ajax call makes the language
+				 * get async to the remainder of this function we use bInitHandedOff to indicate that
+				 * _fnInitialise will be fired by the returned Ajax handler, rather than the constructor
+				 */
+				$.ajax( {
+					dataType: 'json',
+					url: oLanguage.sUrl,
+					success: function ( json ) {
+						_fnLanguageCompat( json );
+						_fnCamelToHungarian( defaults.oLanguage, json );
+						$.extend( true, oLanguage, json );
+						_fnInitialise( oSettings );
+					},
+					error: function () {
+						// Error occurred loading language file, continue on as best we can
+						_fnInitialise( oSettings );
+					}
+				} );
+				bInitHandedOff = true;
+			}
+			
+			/*
+			 * Stripes
+			 */
+			if ( oInit.asStripeClasses === null )
+			{
+				oSettings.asStripeClasses =[
+					oClasses.sStripeOdd,
+					oClasses.sStripeEven
+				];
+			}
+			
+			/* Remove row stripe classes if they are already on the table row */
+			var stripeClasses = oSettings.asStripeClasses;
+			var rowOne = $this.children('tbody').find('tr').eq(0);
+			if ( $.inArray( true, $.map( stripeClasses, function(el, i) {
+				return rowOne.hasClass(el);
+			} ) ) !== -1 ) {
+				$('tbody tr', this).removeClass( stripeClasses.join(' ') );
+				oSettings.asDestroyStripes = stripeClasses.slice();
+			}
+			
+			/*
+			 * Columns
+			 * See if we should load columns automatically or use defined ones
+			 */
+			var anThs = [];
+			var aoColumnsInit;
+			var nThead = this.getElementsByTagName('thead');
+			if ( nThead.length !== 0 )
+			{
+				_fnDetectHeader( oSettings.aoHeader, nThead[0] );
+				anThs = _fnGetUniqueThs( oSettings );
+			}
+			
+			/* If not given a column array, generate one with nulls */
+			if ( oInit.aoColumns === null )
+			{
+				aoColumnsInit = [];
+				for ( i=0, iLen=anThs.length ; i<iLen ; i++ )
+				{
+					aoColumnsInit.push( null );
+				}
+			}
+			else
+			{
+				aoColumnsInit = oInit.aoColumns;
+			}
+			
+			/* Add the columns */
+			for ( i=0, iLen=aoColumnsInit.length ; i<iLen ; i++ )
+			{
+				_fnAddColumn( oSettings, anThs ? anThs[i] : null );
+			}
+			
+			/* Apply the column definitions */
+			_fnApplyColumnDefs( oSettings, oInit.aoColumnDefs, aoColumnsInit, function (iCol, oDef) {
+				_fnColumnOptions( oSettings, iCol, oDef );
+			} );
+			
+			/* HTML5 attribute detection - build an mData object automatically if the
+			 * attributes are found
+			 */
+			if ( rowOne.length ) {
+				var a = function ( cell, name ) {
+					return cell.getAttribute( 'data-'+name ) !== null ? name : null;
+				};
+			
+				$( rowOne[0] ).children('th, td').each( function (i, cell) {
+					var col = oSettings.aoColumns[i];
+			
+					if ( col.mData === i ) {
+						var sort = a( cell, 'sort' ) || a( cell, 'order' );
+						var filter = a( cell, 'filter' ) || a( cell, 'search' );
+			
+						if ( sort !== null || filter !== null ) {
+							col.mData = {
+								_:      i+'.display',
+								sort:   sort !== null   ? i+'.@data-'+sort   : undefined,
+								type:   sort !== null   ? i+'.@data-'+sort   : undefined,
+								filter: filter !== null ? i+'.@data-'+filter : undefined
+							};
+			
+							_fnColumnOptions( oSettings, i );
+						}
+					}
+				} );
+			}
+			
+			var features = oSettings.oFeatures;
+			
+			/* Must be done after everything which can be overridden by the state saving! */
+			if ( oInit.bStateSave )
+			{
+				features.bStateSave = true;
+				_fnLoadState( oSettings, oInit );
+				_fnCallbackReg( oSettings, 'aoDrawCallback', _fnSaveState, 'state_save' );
+			}
+			
+			
+			/*
+			 * Sorting
+			 * @todo For modularisation (1.11) this needs to do into a sort start up handler
+			 */
+			
+			// If aaSorting is not defined, then we use the first indicator in asSorting
+			// in case that has been altered, so the default sort reflects that option
+			if ( oInit.aaSorting === undefined )
+			{
+				var sorting = oSettings.aaSorting;
+				for ( i=0, iLen=sorting.length ; i<iLen ; i++ )
+				{
+					sorting[i][1] = oSettings.aoColumns[ i ].asSorting[0];
+				}
+			}
+			
+			/* Do a first pass on the sorting classes (allows any size changes to be taken into
+			 * account, and also will apply sorting disabled classes if disabled
+			 */
+			_fnSortingClasses( oSettings );
+			
+			if ( features.bSort )
+			{
+				_fnCallbackReg( oSettings, 'aoDrawCallback', function () {
+					if ( oSettings.bSorted ) {
+						var aSort = _fnSortFlatten( oSettings );
+						var sortedColumns = {};
+			
+						$.each( aSort, function (i, val) {
+							sortedColumns[ val.src ] = val.dir;
+						} );
+			
+						_fnCallbackFire( oSettings, null, 'order', [oSettings, aSort, sortedColumns] );
+						_fnSortAria( oSettings );
+					}
+				} );
+			}
+			
+			_fnCallbackReg( oSettings, 'aoDrawCallback', function () {
+				if ( oSettings.bSorted || _fnDataSource( oSettings ) === 'ssp' || features.bDeferRender ) {
+					_fnSortingClasses( oSettings );
+				}
+			}, 'sc' );
+			
+			
+			/*
+			 * Final init
+			 * Cache the header, body and footer as required, creating them if needed
+			 */
+			
+			// Work around for Webkit bug 83867 - store the caption-side before removing from doc
+			var captions = $this.children('caption').each( function () {
+				this._captionSide = $this.css('caption-side');
+			} );
+			
+			var thead = $this.children('thead');
+			if ( thead.length === 0 )
+			{
+				thead = $('<thead/>').appendTo(this);
+			}
+			oSettings.nTHead = thead[0];
+			
+			var tbody = $this.children('tbody');
+			if ( tbody.length === 0 )
+			{
+				tbody = $('<tbody/>').appendTo(this);
+			}
+			oSettings.nTBody = tbody[0];
+			
+			var tfoot = $this.children('tfoot');
+			if ( tfoot.length === 0 && captions.length > 0 && (oSettings.oScroll.sX !== "" || oSettings.oScroll.sY !== "") )
+			{
+				// If we are a scrolling table, and no footer has been given, then we need to create
+				// a tfoot element for the caption element to be appended to
+				tfoot = $('<tfoot/>').appendTo(this);
+			}
+			
+			if ( tfoot.length === 0 || tfoot.children().length === 0 ) {
+				$this.addClass( oClasses.sNoFooter );
+			}
+			else if ( tfoot.length > 0 ) {
+				oSettings.nTFoot = tfoot[0];
+				_fnDetectHeader( oSettings.aoFooter, oSettings.nTFoot );
+			}
+			
+			/* Check if there is data passing into the constructor */
+			if ( oInit.aaData )
+			{
+				for ( i=0 ; i<oInit.aaData.length ; i++ )
+				{
+					_fnAddData( oSettings, oInit.aaData[ i ] );
+				}
+			}
+			else if ( oSettings.bDeferLoading || _fnDataSource( oSettings ) == 'dom' )
+			{
+				/* Grab the data from the page - only do this when deferred loading or no Ajax
+				 * source since there is no point in reading the DOM data if we are then going
+				 * to replace it with Ajax data
+				 */
+				_fnAddTr( oSettings, $(oSettings.nTBody).children('tr') );
+			}
+			
+			/* Copy the data index array */
+			oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
+			
+			/* Initialisation complete - table can be drawn */
+			oSettings.bInitialised = true;
+			
+			/* Check if we need to initialise the table (it might not have been handed off to the
+			 * language processor)
+			 */
+			if ( bInitHandedOff === false )
+			{
+				_fnInitialise( oSettings );
+			}
+		} );
+		_that = null;
+		return this;
+	};
 
 	
 	/*
@@ -20244,6 +21494,65 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 		}
 	
 		return out;
+	};
+	
+	
+	/**
+	 * DataTables utility methods
+	 * 
+	 * This namespace provides helper methods that DataTables uses internally to
+	 * create a DataTable, but which are not exclusively used only for DataTables.
+	 * These methods can be used by extension authors to save the duplication of
+	 * code.
+	 *
+	 *  @namespace
+	 */
+	DataTable.util = {
+		/**
+		 * Throttle the calls to a function. Arguments and context are maintained
+		 * for the throttled function.
+		 *
+		 * @param {function} fn Function to be called
+		 * @param {integer} freq Call frequency in mS
+		 * @return {function} Wrapped function
+		 */
+		throttle: function ( fn, freq ) {
+			var
+				frequency = freq !== undefined ? freq : 200,
+				last,
+				timer;
+	
+			return function () {
+				var
+					that = this,
+					now  = +new Date(),
+					args = arguments;
+	
+				if ( last && now < last + frequency ) {
+					clearTimeout( timer );
+	
+					timer = setTimeout( function () {
+						last = undefined;
+						fn.apply( that, args );
+					}, frequency );
+				}
+				else {
+					last = now;
+					fn.apply( that, args );
+				}
+			};
+		},
+	
+	
+		/**
+		 * Escape a string such that it can be used in a regular expression
+		 *
+		 *  @param {string} val string to escape
+		 *  @returns {string} escaped string
+		 */
+		escapeRegex: function ( val ) {
+			return val.replace( _re_escape_regex, '\\$1' );
+		}
 	};
 	
 	
@@ -20786,7 +22095,16 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 	 */
 	function _fnVisbleColumns( oSettings )
 	{
-		return $( _pluck( oSettings.aoColumns, 'nTh' ) ).filter(':visible').length;
+		var vis = 0;
+	
+		// No reduce in IE8, use a loop for now
+		$.each( oSettings.aoColumns, function ( i, col ) {
+			if ( col.bVisible && $(col.nTh).css('display') !== 'none' ) {
+				vis++;
+			}
+		} );
+	
+		return vis;
 	}
 	
 	
@@ -23048,12 +24366,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 	 *  @returns {string} escaped string
 	 *  @memberof DataTable#oApi
 	 */
-	function _fnEscapeRegex ( sVal )
-	{
-		return sVal.replace( _re_escape_regex, '\\$1' );
-	}
-	
-	
+	var _fnEscapeRegex = DataTable.util.escapeRegex;
 	
 	var __filter_div = $('<div>')[0];
 	var __filter_div_textContent = __filter_div.textContent !== undefined;
@@ -24314,32 +25627,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 	 *  @returns {function} wrapped function
 	 *  @memberof DataTable#oApi
 	 */
-	function _fnThrottle( fn, freq ) {
-		var
-			frequency = freq !== undefined ? freq : 200,
-			last,
-			timer;
-	
-		return function () {
-			var
-				that = this,
-				now  = +new Date(),
-				args = arguments;
-	
-			if ( last && now < last + frequency ) {
-				clearTimeout( timer );
-	
-				timer = setTimeout( function () {
-					last = undefined;
-					fn.apply( that, args );
-				}, frequency );
-			}
-			else {
-				last = now;
-				fn.apply( that, args );
-			}
-		};
-	}
+	var _fnThrottle = DataTable.util.throttle;
 	
 	
 	/**
@@ -25294,1258 +26582,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 		return 'dom';
 	}
 	
-
-	DataTable = function( options )
-	{
-		/**
-		 * Perform a jQuery selector action on the table's TR elements (from the tbody) and
-		 * return the resulting jQuery object.
-		 *  @param {string|node|jQuery} sSelector jQuery selector or node collection to act on
-		 *  @param {object} [oOpts] Optional parameters for modifying the rows to be included
-		 *  @param {string} [oOpts.filter=none] Select TR elements that meet the current filter
-		 *    criterion ("applied") or all TR elements (i.e. no filter).
-		 *  @param {string} [oOpts.order=current] Order of the TR elements in the processed array.
-		 *    Can be either 'current', whereby the current sorting of the table is used, or
-		 *    'original' whereby the original order the data was read into the table is used.
-		 *  @param {string} [oOpts.page=all] Limit the selection to the currently displayed page
-		 *    ("current") or not ("all"). If 'current' is given, then order is assumed to be
-		 *    'current' and filter is 'applied', regardless of what they might be given as.
-		 *  @returns {object} jQuery object, filtered by the given selector.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Highlight every second row
-		 *      oTable.$('tr:odd').css('backgroundColor', 'blue');
-		 *    } );
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Filter to rows with 'Webkit' in them, add a background colour and then
-		 *      // remove the filter, thus highlighting the 'Webkit' rows only.
-		 *      oTable.fnFilter('Webkit');
-		 *      oTable.$('tr', {"search": "applied"}).css('backgroundColor', 'blue');
-		 *      oTable.fnFilter('');
-		 *    } );
-		 */
-		this.$ = function ( sSelector, oOpts )
-		{
-			return this.api(true).$( sSelector, oOpts );
-		};
-		
-		
-		/**
-		 * Almost identical to $ in operation, but in this case returns the data for the matched
-		 * rows - as such, the jQuery selector used should match TR row nodes or TD/TH cell nodes
-		 * rather than any descendants, so the data can be obtained for the row/cell. If matching
-		 * rows are found, the data returned is the original data array/object that was used to
-		 * create the row (or a generated array if from a DOM source).
-		 *
-		 * This method is often useful in-combination with $ where both functions are given the
-		 * same parameters and the array indexes will match identically.
-		 *  @param {string|node|jQuery} sSelector jQuery selector or node collection to act on
-		 *  @param {object} [oOpts] Optional parameters for modifying the rows to be included
-		 *  @param {string} [oOpts.filter=none] Select elements that meet the current filter
-		 *    criterion ("applied") or all elements (i.e. no filter).
-		 *  @param {string} [oOpts.order=current] Order of the data in the processed array.
-		 *    Can be either 'current', whereby the current sorting of the table is used, or
-		 *    'original' whereby the original order the data was read into the table is used.
-		 *  @param {string} [oOpts.page=all] Limit the selection to the currently displayed page
-		 *    ("current") or not ("all"). If 'current' is given, then order is assumed to be
-		 *    'current' and filter is 'applied', regardless of what they might be given as.
-		 *  @returns {array} Data for the matched elements. If any elements, as a result of the
-		 *    selector, were not TR, TD or TH elements in the DataTable, they will have a null
-		 *    entry in the array.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Get the data from the first row in the table
-		 *      var data = oTable._('tr:first');
-		 *
-		 *      // Do something useful with the data
-		 *      alert( "First cell is: "+data[0] );
-		 *    } );
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Filter to 'Webkit' and get all data for
-		 *      oTable.fnFilter('Webkit');
-		 *      var data = oTable._('tr', {"search": "applied"});
-		 *
-		 *      // Do something with the data
-		 *      alert( data.length+" rows matched the search" );
-		 *    } );
-		 */
-		this._ = function ( sSelector, oOpts )
-		{
-			return this.api(true).rows( sSelector, oOpts ).data();
-		};
-		
-		
-		/**
-		 * Create a DataTables Api instance, with the currently selected tables for
-		 * the Api's context.
-		 * @param {boolean} [traditional=false] Set the API instance's context to be
-		 *   only the table referred to by the `DataTable.ext.iApiIndex` option, as was
-		 *   used in the API presented by DataTables 1.9- (i.e. the traditional mode),
-		 *   or if all tables captured in the jQuery object should be used.
-		 * @return {DataTables.Api}
-		 */
-		this.api = function ( traditional )
-		{
-			return traditional ?
-				new _Api(
-					_fnSettingsFromNode( this[ _ext.iApiIndex ] )
-				) :
-				new _Api( this );
-		};
-		
-		
-		/**
-		 * Add a single new row or multiple rows of data to the table. Please note
-		 * that this is suitable for client-side processing only - if you are using
-		 * server-side processing (i.e. "bServerSide": true), then to add data, you
-		 * must add it to the data source, i.e. the server-side, through an Ajax call.
-		 *  @param {array|object} data The data to be added to the table. This can be:
-		 *    <ul>
-		 *      <li>1D array of data - add a single row with the data provided</li>
-		 *      <li>2D array of arrays - add multiple rows in a single call</li>
-		 *      <li>object - data object when using <i>mData</i></li>
-		 *      <li>array of objects - multiple data objects when using <i>mData</i></li>
-		 *    </ul>
-		 *  @param {bool} [redraw=true] redraw the table or not
-		 *  @returns {array} An array of integers, representing the list of indexes in
-		 *    <i>aoData</i> ({@link DataTable.models.oSettings}) that have been added to
-		 *    the table.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    // Global var for counter
-		 *    var giCount = 2;
-		 *
-		 *    $(document).ready(function() {
-		 *      $('#example').dataTable();
-		 *    } );
-		 *
-		 *    function fnClickAddRow() {
-		 *      $('#example').dataTable().fnAddData( [
-		 *        giCount+".1",
-		 *        giCount+".2",
-		 *        giCount+".3",
-		 *        giCount+".4" ]
-		 *      );
-		 *
-		 *      giCount++;
-		 *    }
-		 */
-		this.fnAddData = function( data, redraw )
-		{
-			var api = this.api( true );
-		
-			/* Check if we want to add multiple rows or not */
-			var rows = $.isArray(data) && ( $.isArray(data[0]) || $.isPlainObject(data[0]) ) ?
-				api.rows.add( data ) :
-				api.row.add( data );
-		
-			if ( redraw === undefined || redraw ) {
-				api.draw();
-			}
-		
-			return rows.flatten().toArray();
-		};
-		
-		
-		/**
-		 * This function will make DataTables recalculate the column sizes, based on the data
-		 * contained in the table and the sizes applied to the columns (in the DOM, CSS or
-		 * through the sWidth parameter). This can be useful when the width of the table's
-		 * parent element changes (for example a window resize).
-		 *  @param {boolean} [bRedraw=true] Redraw the table or not, you will typically want to
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable( {
-		 *        "sScrollY": "200px",
-		 *        "bPaginate": false
-		 *      } );
-		 *
-		 *      $(window).bind('resize', function () {
-		 *        oTable.fnAdjustColumnSizing();
-		 *      } );
-		 *    } );
-		 */
-		this.fnAdjustColumnSizing = function ( bRedraw )
-		{
-			var api = this.api( true ).columns.adjust();
-			var settings = api.settings()[0];
-			var scroll = settings.oScroll;
-		
-			if ( bRedraw === undefined || bRedraw ) {
-				api.draw( false );
-			}
-			else if ( scroll.sX !== "" || scroll.sY !== "" ) {
-				/* If not redrawing, but scrolling, we want to apply the new column sizes anyway */
-				_fnScrollDraw( settings );
-			}
-		};
-		
-		
-		/**
-		 * Quickly and simply clear a table
-		 *  @param {bool} [bRedraw=true] redraw the table or not
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Immediately 'nuke' the current rows (perhaps waiting for an Ajax callback...)
-		 *      oTable.fnClearTable();
-		 *    } );
-		 */
-		this.fnClearTable = function( bRedraw )
-		{
-			var api = this.api( true ).clear();
-		
-			if ( bRedraw === undefined || bRedraw ) {
-				api.draw();
-			}
-		};
-		
-		
-		/**
-		 * The exact opposite of 'opening' a row, this function will close any rows which
-		 * are currently 'open'.
-		 *  @param {node} nTr the table row to 'close'
-		 *  @returns {int} 0 on success, or 1 if failed (can't find the row)
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable;
-		 *
-		 *      // 'open' an information row when a row is clicked on
-		 *      $('#example tbody tr').click( function () {
-		 *        if ( oTable.fnIsOpen(this) ) {
-		 *          oTable.fnClose( this );
-		 *        } else {
-		 *          oTable.fnOpen( this, "Temporary row opened", "info_row" );
-		 *        }
-		 *      } );
-		 *
-		 *      oTable = $('#example').dataTable();
-		 *    } );
-		 */
-		this.fnClose = function( nTr )
-		{
-			this.api( true ).row( nTr ).child.hide();
-		};
-		
-		
-		/**
-		 * Remove a row for the table
-		 *  @param {mixed} target The index of the row from aoData to be deleted, or
-		 *    the TR element you want to delete
-		 *  @param {function|null} [callBack] Callback function
-		 *  @param {bool} [redraw=true] Redraw the table or not
-		 *  @returns {array} The row that was deleted
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Immediately remove the first row
-		 *      oTable.fnDeleteRow( 0 );
-		 *    } );
-		 */
-		this.fnDeleteRow = function( target, callback, redraw )
-		{
-			var api = this.api( true );
-			var rows = api.rows( target );
-			var settings = rows.settings()[0];
-			var data = settings.aoData[ rows[0][0] ];
-		
-			rows.remove();
-		
-			if ( callback ) {
-				callback.call( this, settings, data );
-			}
-		
-			if ( redraw === undefined || redraw ) {
-				api.draw();
-			}
-		
-			return data;
-		};
-		
-		
-		/**
-		 * Restore the table to it's original state in the DOM by removing all of DataTables
-		 * enhancements, alterations to the DOM structure of the table and event listeners.
-		 *  @param {boolean} [remove=false] Completely remove the table from the DOM
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      // This example is fairly pointless in reality, but shows how fnDestroy can be used
-		 *      var oTable = $('#example').dataTable();
-		 *      oTable.fnDestroy();
-		 *    } );
-		 */
-		this.fnDestroy = function ( remove )
-		{
-			this.api( true ).destroy( remove );
-		};
-		
-		
-		/**
-		 * Redraw the table
-		 *  @param {bool} [complete=true] Re-filter and resort (if enabled) the table before the draw.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Re-draw the table - you wouldn't want to do it here, but it's an example :-)
-		 *      oTable.fnDraw();
-		 *    } );
-		 */
-		this.fnDraw = function( complete )
-		{
-			// Note that this isn't an exact match to the old call to _fnDraw - it takes
-			// into account the new data, but can hold position.
-			this.api( true ).draw( complete );
-		};
-		
-		
-		/**
-		 * Filter the input based on data
-		 *  @param {string} sInput String to filter the table on
-		 *  @param {int|null} [iColumn] Column to limit filtering to
-		 *  @param {bool} [bRegex=false] Treat as regular expression or not
-		 *  @param {bool} [bSmart=true] Perform smart filtering or not
-		 *  @param {bool} [bShowGlobal=true] Show the input global filter in it's input box(es)
-		 *  @param {bool} [bCaseInsensitive=true] Do case-insensitive matching (true) or not (false)
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Sometime later - filter...
-		 *      oTable.fnFilter( 'test string' );
-		 *    } );
-		 */
-		this.fnFilter = function( sInput, iColumn, bRegex, bSmart, bShowGlobal, bCaseInsensitive )
-		{
-			var api = this.api( true );
-		
-			if ( iColumn === null || iColumn === undefined ) {
-				api.search( sInput, bRegex, bSmart, bCaseInsensitive );
-			}
-			else {
-				api.column( iColumn ).search( sInput, bRegex, bSmart, bCaseInsensitive );
-			}
-		
-			api.draw();
-		};
-		
-		
-		/**
-		 * Get the data for the whole table, an individual row or an individual cell based on the
-		 * provided parameters.
-		 *  @param {int|node} [src] A TR row node, TD/TH cell node or an integer. If given as
-		 *    a TR node then the data source for the whole row will be returned. If given as a
-		 *    TD/TH cell node then iCol will be automatically calculated and the data for the
-		 *    cell returned. If given as an integer, then this is treated as the aoData internal
-		 *    data index for the row (see fnGetPosition) and the data for that row used.
-		 *  @param {int} [col] Optional column index that you want the data of.
-		 *  @returns {array|object|string} If mRow is undefined, then the data for all rows is
-		 *    returned. If mRow is defined, just data for that row, and is iCol is
-		 *    defined, only data for the designated cell is returned.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    // Row data
-		 *    $(document).ready(function() {
-		 *      oTable = $('#example').dataTable();
-		 *
-		 *      oTable.$('tr').click( function () {
-		 *        var data = oTable.fnGetData( this );
-		 *        // ... do something with the array / object of data for the row
-		 *      } );
-		 *    } );
-		 *
-		 *  @example
-		 *    // Individual cell data
-		 *    $(document).ready(function() {
-		 *      oTable = $('#example').dataTable();
-		 *
-		 *      oTable.$('td').click( function () {
-		 *        var sData = oTable.fnGetData( this );
-		 *        alert( 'The cell clicked on had the value of '+sData );
-		 *      } );
-		 *    } );
-		 */
-		this.fnGetData = function( src, col )
-		{
-			var api = this.api( true );
-		
-			if ( src !== undefined ) {
-				var type = src.nodeName ? src.nodeName.toLowerCase() : '';
-		
-				return col !== undefined || type == 'td' || type == 'th' ?
-					api.cell( src, col ).data() :
-					api.row( src ).data() || null;
-			}
-		
-			return api.data().toArray();
-		};
-		
-		
-		/**
-		 * Get an array of the TR nodes that are used in the table's body. Note that you will
-		 * typically want to use the '$' API method in preference to this as it is more
-		 * flexible.
-		 *  @param {int} [iRow] Optional row index for the TR element you want
-		 *  @returns {array|node} If iRow is undefined, returns an array of all TR elements
-		 *    in the table's body, or iRow is defined, just the TR element requested.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Get the nodes from the table
-		 *      var nNodes = oTable.fnGetNodes( );
-		 *    } );
-		 */
-		this.fnGetNodes = function( iRow )
-		{
-			var api = this.api( true );
-		
-			return iRow !== undefined ?
-				api.row( iRow ).node() :
-				api.rows().nodes().flatten().toArray();
-		};
-		
-		
-		/**
-		 * Get the array indexes of a particular cell from it's DOM element
-		 * and column index including hidden columns
-		 *  @param {node} node this can either be a TR, TD or TH in the table's body
-		 *  @returns {int} If nNode is given as a TR, then a single index is returned, or
-		 *    if given as a cell, an array of [row index, column index (visible),
-		 *    column index (all)] is given.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      $('#example tbody td').click( function () {
-		 *        // Get the position of the current data from the node
-		 *        var aPos = oTable.fnGetPosition( this );
-		 *
-		 *        // Get the data array for this row
-		 *        var aData = oTable.fnGetData( aPos[0] );
-		 *
-		 *        // Update the data array and return the value
-		 *        aData[ aPos[1] ] = 'clicked';
-		 *        this.innerHTML = 'clicked';
-		 *      } );
-		 *
-		 *      // Init DataTables
-		 *      oTable = $('#example').dataTable();
-		 *    } );
-		 */
-		this.fnGetPosition = function( node )
-		{
-			var api = this.api( true );
-			var nodeName = node.nodeName.toUpperCase();
-		
-			if ( nodeName == 'TR' ) {
-				return api.row( node ).index();
-			}
-			else if ( nodeName == 'TD' || nodeName == 'TH' ) {
-				var cell = api.cell( node ).index();
-		
-				return [
-					cell.row,
-					cell.columnVisible,
-					cell.column
-				];
-			}
-			return null;
-		};
-		
-		
-		/**
-		 * Check to see if a row is 'open' or not.
-		 *  @param {node} nTr the table row to check
-		 *  @returns {boolean} true if the row is currently open, false otherwise
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable;
-		 *
-		 *      // 'open' an information row when a row is clicked on
-		 *      $('#example tbody tr').click( function () {
-		 *        if ( oTable.fnIsOpen(this) ) {
-		 *          oTable.fnClose( this );
-		 *        } else {
-		 *          oTable.fnOpen( this, "Temporary row opened", "info_row" );
-		 *        }
-		 *      } );
-		 *
-		 *      oTable = $('#example').dataTable();
-		 *    } );
-		 */
-		this.fnIsOpen = function( nTr )
-		{
-			return this.api( true ).row( nTr ).child.isShown();
-		};
-		
-		
-		/**
-		 * This function will place a new row directly after a row which is currently
-		 * on display on the page, with the HTML contents that is passed into the
-		 * function. This can be used, for example, to ask for confirmation that a
-		 * particular record should be deleted.
-		 *  @param {node} nTr The table row to 'open'
-		 *  @param {string|node|jQuery} mHtml The HTML to put into the row
-		 *  @param {string} sClass Class to give the new TD cell
-		 *  @returns {node} The row opened. Note that if the table row passed in as the
-		 *    first parameter, is not found in the table, this method will silently
-		 *    return.
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable;
-		 *
-		 *      // 'open' an information row when a row is clicked on
-		 *      $('#example tbody tr').click( function () {
-		 *        if ( oTable.fnIsOpen(this) ) {
-		 *          oTable.fnClose( this );
-		 *        } else {
-		 *          oTable.fnOpen( this, "Temporary row opened", "info_row" );
-		 *        }
-		 *      } );
-		 *
-		 *      oTable = $('#example').dataTable();
-		 *    } );
-		 */
-		this.fnOpen = function( nTr, mHtml, sClass )
-		{
-			return this.api( true )
-				.row( nTr )
-				.child( mHtml, sClass )
-				.show()
-				.child()[0];
-		};
-		
-		
-		/**
-		 * Change the pagination - provides the internal logic for pagination in a simple API
-		 * function. With this function you can have a DataTables table go to the next,
-		 * previous, first or last pages.
-		 *  @param {string|int} mAction Paging action to take: "first", "previous", "next" or "last"
-		 *    or page number to jump to (integer), note that page 0 is the first page.
-		 *  @param {bool} [bRedraw=true] Redraw the table or not
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *      oTable.fnPageChange( 'next' );
-		 *    } );
-		 */
-		this.fnPageChange = function ( mAction, bRedraw )
-		{
-			var api = this.api( true ).page( mAction );
-		
-			if ( bRedraw === undefined || bRedraw ) {
-				api.draw(false);
-			}
-		};
-		
-		
-		/**
-		 * Show a particular column
-		 *  @param {int} iCol The column whose display should be changed
-		 *  @param {bool} bShow Show (true) or hide (false) the column
-		 *  @param {bool} [bRedraw=true] Redraw the table or not
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Hide the second column after initialisation
-		 *      oTable.fnSetColumnVis( 1, false );
-		 *    } );
-		 */
-		this.fnSetColumnVis = function ( iCol, bShow, bRedraw )
-		{
-			var api = this.api( true ).column( iCol ).visible( bShow );
-		
-			if ( bRedraw === undefined || bRedraw ) {
-				api.columns.adjust().draw();
-			}
-		};
-		
-		
-		/**
-		 * Get the settings for a particular table for external manipulation
-		 *  @returns {object} DataTables settings object. See
-		 *    {@link DataTable.models.oSettings}
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *      var oSettings = oTable.fnSettings();
-		 *
-		 *      // Show an example parameter from the settings
-		 *      alert( oSettings._iDisplayStart );
-		 *    } );
-		 */
-		this.fnSettings = function()
-		{
-			return _fnSettingsFromNode( this[_ext.iApiIndex] );
-		};
-		
-		
-		/**
-		 * Sort the table by a particular column
-		 *  @param {int} iCol the data index to sort on. Note that this will not match the
-		 *    'display index' if you have hidden data entries
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Sort immediately with columns 0 and 1
-		 *      oTable.fnSort( [ [0,'asc'], [1,'asc'] ] );
-		 *    } );
-		 */
-		this.fnSort = function( aaSort )
-		{
-			this.api( true ).order( aaSort ).draw();
-		};
-		
-		
-		/**
-		 * Attach a sort listener to an element for a given column
-		 *  @param {node} nNode the element to attach the sort listener to
-		 *  @param {int} iColumn the column that a click on this node will sort on
-		 *  @param {function} [fnCallback] callback function when sort is run
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *
-		 *      // Sort on column 1, when 'sorter' is clicked on
-		 *      oTable.fnSortListener( document.getElementById('sorter'), 1 );
-		 *    } );
-		 */
-		this.fnSortListener = function( nNode, iColumn, fnCallback )
-		{
-			this.api( true ).order.listener( nNode, iColumn, fnCallback );
-		};
-		
-		
-		/**
-		 * Update a table cell or row - this method will accept either a single value to
-		 * update the cell with, an array of values with one element for each column or
-		 * an object in the same format as the original data source. The function is
-		 * self-referencing in order to make the multi column updates easier.
-		 *  @param {object|array|string} mData Data to update the cell/row with
-		 *  @param {node|int} mRow TR element you want to update or the aoData index
-		 *  @param {int} [iColumn] The column to update, give as null or undefined to
-		 *    update a whole row.
-		 *  @param {bool} [bRedraw=true] Redraw the table or not
-		 *  @param {bool} [bAction=true] Perform pre-draw actions or not
-		 *  @returns {int} 0 on success, 1 on error
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *      oTable.fnUpdate( 'Example update', 0, 0 ); // Single cell
-		 *      oTable.fnUpdate( ['a', 'b', 'c', 'd', 'e'], $('tbody tr')[0] ); // Row
-		 *    } );
-		 */
-		this.fnUpdate = function( mData, mRow, iColumn, bRedraw, bAction )
-		{
-			var api = this.api( true );
-		
-			if ( iColumn === undefined || iColumn === null ) {
-				api.row( mRow ).data( mData );
-			}
-			else {
-				api.cell( mRow, iColumn ).data( mData );
-			}
-		
-			if ( bAction === undefined || bAction ) {
-				api.columns.adjust();
-			}
-		
-			if ( bRedraw === undefined || bRedraw ) {
-				api.draw();
-			}
-			return 0;
-		};
-		
-		
-		/**
-		 * Provide a common method for plug-ins to check the version of DataTables being used, in order
-		 * to ensure compatibility.
-		 *  @param {string} sVersion Version string to check for, in the format "X.Y.Z". Note that the
-		 *    formats "X" and "X.Y" are also acceptable.
-		 *  @returns {boolean} true if this version of DataTables is greater or equal to the required
-		 *    version, or false if this version of DataTales is not suitable
-		 *  @method
-		 *  @dtopt API
-		 *  @deprecated Since v1.10
-		 *
-		 *  @example
-		 *    $(document).ready(function() {
-		 *      var oTable = $('#example').dataTable();
-		 *      alert( oTable.fnVersionCheck( '1.9.0' ) );
-		 *    } );
-		 */
-		this.fnVersionCheck = _ext.fnVersionCheck;
-		
-
-		var _that = this;
-		var emptyInit = options === undefined;
-		var len = this.length;
-
-		if ( emptyInit ) {
-			options = {};
-		}
-
-		this.oApi = this.internal = _ext.internal;
-
-		// Extend with old style plug-in API methods
-		for ( var fn in DataTable.ext.internal ) {
-			if ( fn ) {
-				this[fn] = _fnExternApiFunc(fn);
-			}
-		}
-
-		this.each(function() {
-			// For each initialisation we want to give it a clean initialisation
-			// object that can be bashed around
-			var o = {};
-			var oInit = len > 1 ? // optimisation for single table case
-				_fnExtend( o, options, true ) :
-				options;
-
-			/*global oInit,_that,emptyInit*/
-			var i=0, iLen, j, jLen, k, kLen;
-			var sId = this.getAttribute( 'id' );
-			var bInitHandedOff = false;
-			var defaults = DataTable.defaults;
-			var $this = $(this);
-			
-			
-			/* Sanity check */
-			if ( this.nodeName.toLowerCase() != 'table' )
-			{
-				_fnLog( null, 0, 'Non-table node initialisation ('+this.nodeName+')', 2 );
-				return;
-			}
-			
-			/* Backwards compatibility for the defaults */
-			_fnCompatOpts( defaults );
-			_fnCompatCols( defaults.column );
-			
-			/* Convert the camel-case defaults to Hungarian */
-			_fnCamelToHungarian( defaults, defaults, true );
-			_fnCamelToHungarian( defaults.column, defaults.column, true );
-			
-			/* Setting up the initialisation object */
-			_fnCamelToHungarian( defaults, $.extend( oInit, $this.data() ) );
-			
-			
-			
-			/* Check to see if we are re-initialising a table */
-			var allSettings = DataTable.settings;
-			for ( i=0, iLen=allSettings.length ; i<iLen ; i++ )
-			{
-				var s = allSettings[i];
-			
-				/* Base check on table node */
-				if ( s.nTable == this || s.nTHead.parentNode == this || (s.nTFoot && s.nTFoot.parentNode == this) )
-				{
-					var bRetrieve = oInit.bRetrieve !== undefined ? oInit.bRetrieve : defaults.bRetrieve;
-					var bDestroy = oInit.bDestroy !== undefined ? oInit.bDestroy : defaults.bDestroy;
-			
-					if ( emptyInit || bRetrieve )
-					{
-						return s.oInstance;
-					}
-					else if ( bDestroy )
-					{
-						s.oInstance.fnDestroy();
-						break;
-					}
-					else
-					{
-						_fnLog( s, 0, 'Cannot reinitialise DataTable', 3 );
-						return;
-					}
-				}
-			
-				/* If the element we are initialising has the same ID as a table which was previously
-				 * initialised, but the table nodes don't match (from before) then we destroy the old
-				 * instance by simply deleting it. This is under the assumption that the table has been
-				 * destroyed by other methods. Anyone using non-id selectors will need to do this manually
-				 */
-				if ( s.sTableId == this.id )
-				{
-					allSettings.splice( i, 1 );
-					break;
-				}
-			}
-			
-			/* Ensure the table has an ID - required for accessibility */
-			if ( sId === null || sId === "" )
-			{
-				sId = "DataTables_Table_"+(DataTable.ext._unique++);
-				this.id = sId;
-			}
-			
-			/* Create the settings object for this table and set some of the default parameters */
-			var oSettings = $.extend( true, {}, DataTable.models.oSettings, {
-				"sDestroyWidth": $this[0].style.width,
-				"sInstance":     sId,
-				"sTableId":      sId
-			} );
-			oSettings.nTable = this;
-			oSettings.oApi   = _that.internal;
-			oSettings.oInit  = oInit;
-			
-			allSettings.push( oSettings );
-			
-			// Need to add the instance after the instance after the settings object has been added
-			// to the settings array, so we can self reference the table instance if more than one
-			oSettings.oInstance = (_that.length===1) ? _that : $this.dataTable();
-			
-			// Backwards compatibility, before we apply all the defaults
-			_fnCompatOpts( oInit );
-			
-			if ( oInit.oLanguage )
-			{
-				_fnLanguageCompat( oInit.oLanguage );
-			}
-			
-			// If the length menu is given, but the init display length is not, use the length menu
-			if ( oInit.aLengthMenu && ! oInit.iDisplayLength )
-			{
-				oInit.iDisplayLength = $.isArray( oInit.aLengthMenu[0] ) ?
-					oInit.aLengthMenu[0][0] : oInit.aLengthMenu[0];
-			}
-			
-			// Apply the defaults and init options to make a single init object will all
-			// options defined from defaults and instance options.
-			oInit = _fnExtend( $.extend( true, {}, defaults ), oInit );
-			
-			
-			// Map the initialisation options onto the settings object
-			_fnMap( oSettings.oFeatures, oInit, [
-				"bPaginate",
-				"bLengthChange",
-				"bFilter",
-				"bSort",
-				"bSortMulti",
-				"bInfo",
-				"bProcessing",
-				"bAutoWidth",
-				"bSortClasses",
-				"bServerSide",
-				"bDeferRender"
-			] );
-			_fnMap( oSettings, oInit, [
-				"asStripeClasses",
-				"ajax",
-				"fnServerData",
-				"fnFormatNumber",
-				"sServerMethod",
-				"aaSorting",
-				"aaSortingFixed",
-				"aLengthMenu",
-				"sPaginationType",
-				"sAjaxSource",
-				"sAjaxDataProp",
-				"iStateDuration",
-				"sDom",
-				"bSortCellsTop",
-				"iTabIndex",
-				"fnStateLoadCallback",
-				"fnStateSaveCallback",
-				"renderer",
-				"searchDelay",
-				"rowId",
-				[ "iCookieDuration", "iStateDuration" ], // backwards compat
-				[ "oSearch", "oPreviousSearch" ],
-				[ "aoSearchCols", "aoPreSearchCols" ],
-				[ "iDisplayLength", "_iDisplayLength" ],
-				[ "bJQueryUI", "bJUI" ]
-			] );
-			_fnMap( oSettings.oScroll, oInit, [
-				[ "sScrollX", "sX" ],
-				[ "sScrollXInner", "sXInner" ],
-				[ "sScrollY", "sY" ],
-				[ "bScrollCollapse", "bCollapse" ]
-			] );
-			_fnMap( oSettings.oLanguage, oInit, "fnInfoCallback" );
-			
-			/* Callback functions which are array driven */
-			_fnCallbackReg( oSettings, 'aoDrawCallback',       oInit.fnDrawCallback,      'user' );
-			_fnCallbackReg( oSettings, 'aoServerParams',       oInit.fnServerParams,      'user' );
-			_fnCallbackReg( oSettings, 'aoStateSaveParams',    oInit.fnStateSaveParams,   'user' );
-			_fnCallbackReg( oSettings, 'aoStateLoadParams',    oInit.fnStateLoadParams,   'user' );
-			_fnCallbackReg( oSettings, 'aoStateLoaded',        oInit.fnStateLoaded,       'user' );
-			_fnCallbackReg( oSettings, 'aoRowCallback',        oInit.fnRowCallback,       'user' );
-			_fnCallbackReg( oSettings, 'aoRowCreatedCallback', oInit.fnCreatedRow,        'user' );
-			_fnCallbackReg( oSettings, 'aoHeaderCallback',     oInit.fnHeaderCallback,    'user' );
-			_fnCallbackReg( oSettings, 'aoFooterCallback',     oInit.fnFooterCallback,    'user' );
-			_fnCallbackReg( oSettings, 'aoInitComplete',       oInit.fnInitComplete,      'user' );
-			_fnCallbackReg( oSettings, 'aoPreDrawCallback',    oInit.fnPreDrawCallback,   'user' );
-			
-			oSettings.rowIdFn = _fnGetObjectDataFn( oInit.rowId );
-			
-			/* Browser support detection */
-			_fnBrowserDetect( oSettings );
-			
-			var oClasses = oSettings.oClasses;
-			
-			// @todo Remove in 1.11
-			if ( oInit.bJQueryUI )
-			{
-				/* Use the JUI classes object for display. You could clone the oStdClasses object if
-				 * you want to have multiple tables with multiple independent classes
-				 */
-				$.extend( oClasses, DataTable.ext.oJUIClasses, oInit.oClasses );
-			
-				if ( oInit.sDom === defaults.sDom && defaults.sDom === "lfrtip" )
-				{
-					/* Set the DOM to use a layout suitable for jQuery UI's theming */
-					oSettings.sDom = '<"H"lfr>t<"F"ip>';
-				}
-			
-				if ( ! oSettings.renderer ) {
-					oSettings.renderer = 'jqueryui';
-				}
-				else if ( $.isPlainObject( oSettings.renderer ) && ! oSettings.renderer.header ) {
-					oSettings.renderer.header = 'jqueryui';
-				}
-			}
-			else
-			{
-				$.extend( oClasses, DataTable.ext.classes, oInit.oClasses );
-			}
-			$this.addClass( oClasses.sTable );
-			
-			
-			if ( oSettings.iInitDisplayStart === undefined )
-			{
-				/* Display start point, taking into account the save saving */
-				oSettings.iInitDisplayStart = oInit.iDisplayStart;
-				oSettings._iDisplayStart = oInit.iDisplayStart;
-			}
-			
-			if ( oInit.iDeferLoading !== null )
-			{
-				oSettings.bDeferLoading = true;
-				var tmp = $.isArray( oInit.iDeferLoading );
-				oSettings._iRecordsDisplay = tmp ? oInit.iDeferLoading[0] : oInit.iDeferLoading;
-				oSettings._iRecordsTotal = tmp ? oInit.iDeferLoading[1] : oInit.iDeferLoading;
-			}
-			
-			/* Language definitions */
-			var oLanguage = oSettings.oLanguage;
-			$.extend( true, oLanguage, oInit.oLanguage );
-			
-			if ( oLanguage.sUrl !== "" )
-			{
-				/* Get the language definitions from a file - because this Ajax call makes the language
-				 * get async to the remainder of this function we use bInitHandedOff to indicate that
-				 * _fnInitialise will be fired by the returned Ajax handler, rather than the constructor
-				 */
-				$.ajax( {
-					dataType: 'json',
-					url: oLanguage.sUrl,
-					success: function ( json ) {
-						_fnLanguageCompat( json );
-						_fnCamelToHungarian( defaults.oLanguage, json );
-						$.extend( true, oLanguage, json );
-						_fnInitialise( oSettings );
-					},
-					error: function () {
-						// Error occurred loading language file, continue on as best we can
-						_fnInitialise( oSettings );
-					}
-				} );
-				bInitHandedOff = true;
-			}
-			
-			/*
-			 * Stripes
-			 */
-			if ( oInit.asStripeClasses === null )
-			{
-				oSettings.asStripeClasses =[
-					oClasses.sStripeOdd,
-					oClasses.sStripeEven
-				];
-			}
-			
-			/* Remove row stripe classes if they are already on the table row */
-			var stripeClasses = oSettings.asStripeClasses;
-			var rowOne = $this.children('tbody').find('tr').eq(0);
-			if ( $.inArray( true, $.map( stripeClasses, function(el, i) {
-				return rowOne.hasClass(el);
-			} ) ) !== -1 ) {
-				$('tbody tr', this).removeClass( stripeClasses.join(' ') );
-				oSettings.asDestroyStripes = stripeClasses.slice();
-			}
-			
-			/*
-			 * Columns
-			 * See if we should load columns automatically or use defined ones
-			 */
-			var anThs = [];
-			var aoColumnsInit;
-			var nThead = this.getElementsByTagName('thead');
-			if ( nThead.length !== 0 )
-			{
-				_fnDetectHeader( oSettings.aoHeader, nThead[0] );
-				anThs = _fnGetUniqueThs( oSettings );
-			}
-			
-			/* If not given a column array, generate one with nulls */
-			if ( oInit.aoColumns === null )
-			{
-				aoColumnsInit = [];
-				for ( i=0, iLen=anThs.length ; i<iLen ; i++ )
-				{
-					aoColumnsInit.push( null );
-				}
-			}
-			else
-			{
-				aoColumnsInit = oInit.aoColumns;
-			}
-			
-			/* Add the columns */
-			for ( i=0, iLen=aoColumnsInit.length ; i<iLen ; i++ )
-			{
-				_fnAddColumn( oSettings, anThs ? anThs[i] : null );
-			}
-			
-			/* Apply the column definitions */
-			_fnApplyColumnDefs( oSettings, oInit.aoColumnDefs, aoColumnsInit, function (iCol, oDef) {
-				_fnColumnOptions( oSettings, iCol, oDef );
-			} );
-			
-			/* HTML5 attribute detection - build an mData object automatically if the
-			 * attributes are found
-			 */
-			if ( rowOne.length ) {
-				var a = function ( cell, name ) {
-					return cell.getAttribute( 'data-'+name ) !== null ? name : null;
-				};
-			
-				$( rowOne[0] ).children('th, td').each( function (i, cell) {
-					var col = oSettings.aoColumns[i];
-			
-					if ( col.mData === i ) {
-						var sort = a( cell, 'sort' ) || a( cell, 'order' );
-						var filter = a( cell, 'filter' ) || a( cell, 'search' );
-			
-						if ( sort !== null || filter !== null ) {
-							col.mData = {
-								_:      i+'.display',
-								sort:   sort !== null   ? i+'.@data-'+sort   : undefined,
-								type:   sort !== null   ? i+'.@data-'+sort   : undefined,
-								filter: filter !== null ? i+'.@data-'+filter : undefined
-							};
-			
-							_fnColumnOptions( oSettings, i );
-						}
-					}
-				} );
-			}
-			
-			var features = oSettings.oFeatures;
-			
-			/* Must be done after everything which can be overridden by the state saving! */
-			if ( oInit.bStateSave )
-			{
-				features.bStateSave = true;
-				_fnLoadState( oSettings, oInit );
-				_fnCallbackReg( oSettings, 'aoDrawCallback', _fnSaveState, 'state_save' );
-			}
-			
-			
-			/*
-			 * Sorting
-			 * @todo For modularisation (1.11) this needs to do into a sort start up handler
-			 */
-			
-			// If aaSorting is not defined, then we use the first indicator in asSorting
-			// in case that has been altered, so the default sort reflects that option
-			if ( oInit.aaSorting === undefined )
-			{
-				var sorting = oSettings.aaSorting;
-				for ( i=0, iLen=sorting.length ; i<iLen ; i++ )
-				{
-					sorting[i][1] = oSettings.aoColumns[ i ].asSorting[0];
-				}
-			}
-			
-			/* Do a first pass on the sorting classes (allows any size changes to be taken into
-			 * account, and also will apply sorting disabled classes if disabled
-			 */
-			_fnSortingClasses( oSettings );
-			
-			if ( features.bSort )
-			{
-				_fnCallbackReg( oSettings, 'aoDrawCallback', function () {
-					if ( oSettings.bSorted ) {
-						var aSort = _fnSortFlatten( oSettings );
-						var sortedColumns = {};
-			
-						$.each( aSort, function (i, val) {
-							sortedColumns[ val.src ] = val.dir;
-						} );
-			
-						_fnCallbackFire( oSettings, null, 'order', [oSettings, aSort, sortedColumns] );
-						_fnSortAria( oSettings );
-					}
-				} );
-			}
-			
-			_fnCallbackReg( oSettings, 'aoDrawCallback', function () {
-				if ( oSettings.bSorted || _fnDataSource( oSettings ) === 'ssp' || features.bDeferRender ) {
-					_fnSortingClasses( oSettings );
-				}
-			}, 'sc' );
-			
-			
-			/*
-			 * Final init
-			 * Cache the header, body and footer as required, creating them if needed
-			 */
-			
-			// Work around for Webkit bug 83867 - store the caption-side before removing from doc
-			var captions = $this.children('caption').each( function () {
-				this._captionSide = $this.css('caption-side');
-			} );
-			
-			var thead = $this.children('thead');
-			if ( thead.length === 0 )
-			{
-				thead = $('<thead/>').appendTo(this);
-			}
-			oSettings.nTHead = thead[0];
-			
-			var tbody = $this.children('tbody');
-			if ( tbody.length === 0 )
-			{
-				tbody = $('<tbody/>').appendTo(this);
-			}
-			oSettings.nTBody = tbody[0];
-			
-			var tfoot = $this.children('tfoot');
-			if ( tfoot.length === 0 && captions.length > 0 && (oSettings.oScroll.sX !== "" || oSettings.oScroll.sY !== "") )
-			{
-				// If we are a scrolling table, and no footer has been given, then we need to create
-				// a tfoot element for the caption element to be appended to
-				tfoot = $('<tfoot/>').appendTo(this);
-			}
-			
-			if ( tfoot.length === 0 || tfoot.children().length === 0 ) {
-				$this.addClass( oClasses.sNoFooter );
-			}
-			else if ( tfoot.length > 0 ) {
-				oSettings.nTFoot = tfoot[0];
-				_fnDetectHeader( oSettings.aoFooter, oSettings.nTFoot );
-			}
-			
-			/* Check if there is data passing into the constructor */
-			if ( oInit.aaData )
-			{
-				for ( i=0 ; i<oInit.aaData.length ; i++ )
-				{
-					_fnAddData( oSettings, oInit.aaData[ i ] );
-				}
-			}
-			else if ( oSettings.bDeferLoading || _fnDataSource( oSettings ) == 'dom' )
-			{
-				/* Grab the data from the page - only do this when deferred loading or no Ajax
-				 * source since there is no point in reading the DOM data if we are then going
-				 * to replace it with Ajax data
-				 */
-				_fnAddTr( oSettings, $(oSettings.nTBody).children('tr') );
-			}
-			
-			/* Copy the data index array */
-			oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
-			
-			/* Initialisation complete - table can be drawn */
-			oSettings.bInitialised = true;
-			
-			/* Check if we need to initialise the table (it might not have been handed off to the
-			 * language processor)
-			 */
-			if ( bInitHandedOff === false )
-			{
-				_fnInitialise( oSettings );
-			}
-		} );
-		_that = null;
-		return this;
-	};
 
 	
 	
@@ -28244,7 +28280,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 			if ( s === '' ) {
 				return _range( columns.length );
 			}
-			
+	
 			// Selector - index
 			if ( selInt !== null ) {
 				return [ selInt >= 0 ?
@@ -28252,7 +28288,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 					columns.length + selInt // Count from right (+ because its a negative value)
 				];
 			}
-			
+	
 			// Selector = function
 			if ( typeof s === 'function' ) {
 				var rows = _selector_row_indexes( settings, opts );
@@ -28327,7 +28363,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 	};
 	
 	
-	var __setColumnVis = function ( settings, column, vis, recalc ) {
+	var __setColumnVis = function ( settings, column, vis ) {
 		var
 			cols = settings.aoColumns,
 			col  = cols[ column ],
@@ -28369,13 +28405,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 		col.bVisible = vis;
 		_fnDrawHead( settings, settings.aoHeader );
 		_fnDrawHead( settings, settings.aoFooter );
-	
-		if ( recalc === undefined || recalc ) {
-			// Automatically adjust column sizing
-			_fnAdjustColumnSizing( settings );
-		}
-	
-		_fnCallbackFire( settings, null, 'column-visibility', [settings, column, vis, recalc] );
 	
 		_fnSaveState( settings );
 	};
@@ -28441,12 +28470,26 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 	} );
 	
 	_api_registerPlural( 'columns().visible()', 'column().visible()', function ( vis, calc ) {
-		return this.iterator( 'column', function ( settings, column ) {
+		var ret = this.iterator( 'column', function ( settings, column ) {
 			if ( vis === undefined ) {
 				return settings.aoColumns[ column ].bVisible;
 			} // else
-			__setColumnVis( settings, column, vis, calc );
+			__setColumnVis( settings, column, vis );
 		} );
+	
+		// Group the column visibility changes
+		if ( vis !== undefined ) {
+			// Second loop once the first is done for events
+			this.iterator( 'column', function ( settings, column ) {
+				_fnCallbackFire( settings, null, 'column-visibility', [settings, column, vis, calc] );
+			} );
+	
+			if ( calc === undefined || calc ) {
+				this.columns.adjust();
+			}
+		}
+	
+		return ret;
 	} );
 	
 	_api_registerPlural( 'columns().indexes()', 'column().index()', function ( type ) {
@@ -28479,7 +28522,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 	_api_register( 'column()', function ( selector, opts ) {
 		return _selector_first( this.columns( selector, opts ) );
 	} );
-	
 	
 	
 	
@@ -28743,7 +28785,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 			// Simple column / direction passed in
 			order = [ [ order, dir ] ];
 		}
-		else if ( ! $.isArray( order[0] ) ) {
+		else if ( order.length && ! $.isArray( order[0] ) ) {
 			// Arguments passed in (list of 1D arrays)
 			order = Array.prototype.slice.call( arguments );
 		}
@@ -29008,38 +29050,6 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 	
 	
 	/**
-	 * DataTables utility methods
-	 * 
-	 * This namespace provides helper methods that DataTables uses internally to
-	 * create a DataTable, but which are not exclusively used only for DataTables.
-	 * These methods can be used by extension authors to save the duplication of
-	 * code.
-	 *
-	 *  @namespace
-	 */
-	DataTable.util = {
-		/**
-		 * Throttle the calls to a function. Arguments and context are maintained
-		 * for the throttled function.
-		 *
-		 * @param {function} fn Function to be called
-		 * @param {integer} freq Call frequency in mS
-		 * @return {function} Wrapped function
-		 */
-		throttle: _fnThrottle,
-	
-	
-		/**
-		 * Escape a string such that it can be used in a regular expression
-		 *
-		 *  @param {string} sVal string to escape
-		 *  @returns {string} escaped string
-		 */
-		escapeRegex: _fnEscapeRegex
-	};
-	
-	
-	/**
 	 * Convert from camel case parameters to Hungarian notation. This is made public
 	 * for the extensions to provide the same ability as DataTables core to accept
 	 * either the 1.9 style Hungarian notation, or the 1.10+ style camelCase
@@ -29274,7 +29284,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 	 *  @type string
 	 *  @default Version number
 	 */
-	DataTable.version = "1.10.11";
+	DataTable.version = "1.10.12";
 
 	/**
 	 * Private data store, containing all of the settings objects that are
@@ -74949,38 +74959,49 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
 module.exports={
   "_args": [
     [
-      "yasgui-yasr@^2.7.3",
+      {
+        "raw": "yasgui-yasr@^2.7.3",
+        "scope": null,
+        "escapedName": "yasgui-yasr",
+        "name": "yasgui-yasr",
+        "rawSpec": "^2.7.3",
+        "spec": ">=2.7.3 <3.0.0",
+        "type": "range"
+      },
       "/home/lrd900/yasgui/yasgui"
     ]
   ],
   "_from": "yasgui-yasr@>=2.7.3 <3.0.0",
-  "_id": "yasgui-yasr@2.7.3",
+  "_id": "yasgui-yasr@2.7.4",
   "_inCache": true,
   "_installable": true,
   "_location": "/yasgui-yasr",
-  "_nodeVersion": "5.10.1",
+  "_nodeVersion": "6.3.0",
   "_npmOperationalInternal": {
-    "host": "packages-12-west.internal.npmjs.com",
-    "tmp": "tmp/yasgui-yasr-2.7.3.tgz_1461595117396_0.5120407103095204"
+    "host": "packages-16-east.internal.npmjs.com",
+    "tmp": "tmp/yasgui-yasr-2.7.4.tgz_1468314733289_0.9908011839725077"
   },
   "_npmUser": {
-    "email": "laurens.rietveld@gmail.com",
-    "name": "laurens.rietveld"
+    "name": "laurens.rietveld",
+    "email": "laurens.rietveld@gmail.com"
   },
-  "_npmVersion": "3.8.3",
+  "_npmVersion": "3.10.3",
   "_phantomChildren": {},
   "_requested": {
-    "name": "yasgui-yasr",
     "raw": "yasgui-yasr@^2.7.3",
-    "rawSpec": "^2.7.3",
     "scope": null,
+    "escapedName": "yasgui-yasr",
+    "name": "yasgui-yasr",
+    "rawSpec": "^2.7.3",
     "spec": ">=2.7.3 <3.0.0",
     "type": "range"
   },
   "_requiredBy": [
+    "#USER",
     "/"
   ],
-  "_shasum": "ef5769ebf6905b9820ad009ffab86ef4d929e83e",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.7.4.tgz",
+  "_shasum": "8b1687a49335917a1ad9adbe64fbefcea04b6bc0",
   "_shrinkwrap": null,
   "_spec": "yasgui-yasr@^2.7.3",
   "_where": "/home/lrd900/yasgui/yasgui",
@@ -75046,10 +75067,10 @@ module.exports={
   },
   "directories": {},
   "dist": {
-    "shasum": "ef5769ebf6905b9820ad009ffab86ef4d929e83e",
-    "tarball": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.7.3.tgz"
+    "shasum": "8b1687a49335917a1ad9adbe64fbefcea04b6bc0",
+    "tarball": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.7.4.tgz"
   },
-  "gitHead": "4636a518c68930a43f33d13af2aacf371fb7c166",
+  "gitHead": "6ae35a8c5b3c046b1e1bcbebe433e682f901cadb",
   "homepage": "http://yasr.yasgui.org",
   "keywords": [
     "JavaScript",
@@ -75062,40 +75083,40 @@ module.exports={
   "main": "src/main.js",
   "maintainers": [
     {
-      "email": "laurens.rietveld@gmail.com",
-      "name": "laurens.rietveld"
+      "name": "laurens.rietveld",
+      "email": "laurens.rietveld@gmail.com"
     }
   ],
   "name": "yasgui-yasr",
   "optionalDependencies": {},
   "optionalShim": {
-    "../../lib/codemirror": {
-      "global": "CodeMirror",
-      "require": "codemirror"
-    },
     "codemirror": {
-      "global": "CodeMirror",
-      "require": "codemirror"
-    },
-    "d3": {
-      "global": "d3",
-      "require": "d3"
-    },
-    "datatables": {
-      "global": "jQuery",
-      "require": "datatables"
+      "require": "codemirror",
+      "global": "CodeMirror"
     },
     "jquery": {
-      "global": "jQuery",
-      "require": "jquery"
+      "require": "jquery",
+      "global": "jQuery"
+    },
+    "../../lib/codemirror": {
+      "require": "codemirror",
+      "global": "CodeMirror"
+    },
+    "datatables": {
+      "require": "datatables",
+      "global": "jQuery"
+    },
+    "d3": {
+      "require": "d3",
+      "global": "d3"
     },
     "jquery-ui/sortable": {
-      "global": "jQuery",
-      "require": "jquery-ui/sortable"
+      "require": "jquery-ui/sortable",
+      "global": "jQuery"
     },
     "pivottable": {
-      "global": "jQuery",
-      "require": "pivottable"
+      "require": "pivottable",
+      "global": "jQuery"
     }
   },
   "readme": "ERROR: No README data found!",
@@ -75104,7 +75125,7 @@ module.exports={
     "url": "git+https://github.com/YASGUI/YASR.git"
   },
   "scripts": {},
-  "version": "2.7.3"
+  "version": "2.7.4"
 }
 
 },{}],66:[function(require,module,exports){
@@ -75740,8 +75761,9 @@ var root = module.exports = function(yasr) {
 						containerId: wrapperId
 					});
 				}
-				chartWrapper.setOption("width", options.width);
-				chartWrapper.setOption("height", options.height);
+				var $wrapper = $('#' + wrapperId);
+				chartWrapper.setOption("width", $wrapper.width());
+				chartWrapper.setOption("height", $wrapper.height());
 				chartWrapper.draw();
 				google.visualization.events.addListener(chartWrapper, 'ready', yasr.updateHeader);
 			}
@@ -75887,7 +75909,7 @@ function deepEq$(x, y, type) {
 	}
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-//# sourceMappingURL=data:application/json;charset:utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vZGVfbW9kdWxlcy95YXNndWkteWFzci9zcmMvZ2NoYXJ0LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBIiwiZmlsZSI6ImdlbmVyYXRlZC5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHN0cmljdCc7XG4vKipcbiAqIHRvZG86IGNoYXJ0IGhlaWdodCBhcyBvcHRpb25cbiAqIFxuICovXG52YXIgJCA9IHJlcXVpcmUoJ2pxdWVyeScpLFxuXHR1dGlscyA9IHJlcXVpcmUoJy4vdXRpbHMuanMnKSxcblx0eVV0aWxzID0gcmVxdWlyZSgneWFzZ3VpLXV0aWxzJyk7XG5cbnZhciByb290ID0gbW9kdWxlLmV4cG9ydHMgPSBmdW5jdGlvbih5YXNyKSB7XG5cblx0dmFyIG9wdGlvbnMgPSAkLmV4dGVuZCh0cnVlLCB7fSwgcm9vdC5kZWZhdWx0cyk7XG5cdHZhciBpZCA9IHlhc3IuY29udGFpbmVyLmNsb3Nlc3QoJ1tpZF0nKS5hdHRyKCdpZCcpO1xuXG5cdHZhciBjaGFydFdyYXBwZXIgPSBudWxsO1xuXHR2YXIgZWRpdG9yID0gbnVsbDtcblxuXHR2YXIgaW5pdEVkaXRvciA9IGZ1bmN0aW9uKGNhbGxiYWNrKSB7XG5cdFx0dmFyIGdvb2dsZSA9ICh0eXBlb2Ygd2luZG93ICE9PSBcInVuZGVmaW5lZFwiID8gd2luZG93Wydnb29nbGUnXSA6IHR5cGVvZiBnbG9iYWwgIT09IFwidW5kZWZpbmVkXCIgPyBnbG9iYWxbJ2dvb2dsZSddIDogbnVsbCk7XG5cdFx0ZWRpdG9yID0gbmV3IGdvb2dsZS52aXN1YWxpemF0aW9uLkNoYXJ0RWRpdG9yKCk7XG5cdFx0Z29vZ2xlLnZpc3VhbGl6YXRpb24uZXZlbnRzLmFkZExpc3RlbmVyKGVkaXRvciwgJ29rJywgZnVuY3Rpb24oKSB7XG5cdFx0XHR2YXIgdG1wO1xuXHRcdFx0Y2hhcnRXcmFwcGVyID0gZWRpdG9yLmdldENoYXJ0V3JhcHBlcigpO1xuXHRcdFx0dG1wID0gY2hhcnRXcmFwcGVyLmdldERhdGFUYWJsZSgpO1xuXHRcdFx0Y2hhcnRXcmFwcGVyLnNldERhdGFUYWJsZShudWxsKTtcblx0XHRcdC8vdWdseTogbmVlZCB0byBwYXJzZSBqc29uIHN0cmluZyB0byBqc29uIG9iaiBhZ2FpbiwgYXMgZ29vZ2xlIGNoYXJ0IGRvZXMgbm90IHByb3ZpZGUgYWNjZXNzIHRvIG9iamVjdCBkaXJlY3RseVxuXHRcdFx0b3B0aW9ucy5jaGFydENvbmZpZyA9IEpTT04ucGFyc2UoY2hhcnRXcmFwcGVyLnRvSlNPTigpKTtcblx0XHRcdC8vcmVtb3ZlIGNvbnRhaW5lciBJRCB0aG91Z2gsIGZvciBwb3J0YWJpbGl0eVxuXHRcdFx0aWYgKG9wdGlvbnMuY2hhcnRDb25maWcuY29udGFpbmVySWQpIGRlbGV0ZSBvcHRpb25zLmNoYXJ0Q29uZmlnWydjb250YWluZXJJZCddO1xuXHRcdFx0eWFzci5zdG9yZSgpO1xuXHRcdFx0Y2hhcnRXcmFwcGVyLnNldERhdGFUYWJsZSh0bXApO1xuXHRcdFx0Y2hhcnRXcmFwcGVyLnNldE9wdGlvbihcIndpZHRoXCIsIG9wdGlvbnMud2lkdGgpO1xuXHRcdFx0Y2hhcnRXcmFwcGVyLnNldE9wdGlvbihcImhlaWdodFwiLCBvcHRpb25zLmhlaWdodCk7XG5cdFx0XHRjaGFydFdyYXBwZXIuZHJhdygpO1xuXHRcdFx0eWFzci51cGRhdGVIZWFkZXIoKTtcblx0XHR9KTtcblx0XHRpZiAoY2FsbGJhY2spIGNhbGxiYWNrKCk7XG5cdH07XG5cblx0cmV0dXJuIHtcblx0XHRuYW1lOiBcIkdvb2dsZSBDaGFydFwiLFxuXHRcdGhpZGVGcm9tU2VsZWN0aW9uOiBmYWxzZSxcblx0XHRwcmlvcml0eTogNyxcblx0XHRvcHRpb25zOiBvcHRpb25zLFxuXHRcdGdldFBlcnNpc3RlbnRTZXR0aW5nczogZnVuY3Rpb24oKSB7XG5cdFx0XHRyZXR1cm4ge1xuXHRcdFx0XHRjaGFydENvbmZpZzogb3B0aW9ucy5jaGFydENvbmZpZyxcblx0XHRcdFx0bW90aW9uQ2hhcnRTdGF0ZTogb3B0aW9ucy5tb3Rpb25DaGFydFN0YXRlXG5cdFx0XHR9XG5cdFx0fSxcblx0XHRzZXRQZXJzaXN0ZW50U2V0dGluZ3M6IGZ1bmN0aW9uKHBlcnNTZXR0aW5ncykge1xuXHRcdFx0aWYgKHBlcnNTZXR0aW5nc1snY2hhcnRDb25maWcnXSkgb3B0aW9ucy5jaGFydENvbmZpZyA9IHBlcnNTZXR0aW5nc1snY2hhcnRDb25maWcnXTtcblx0XHRcdGlmIChwZXJzU2V0dGluZ3NbJ21vdGlvbkNoYXJ0U3RhdGUnXSkgb3B0aW9ucy5tb3Rpb25DaGFydFN0YXRlID0gcGVyc1NldHRpbmdzWydtb3Rpb25DaGFydFN0YXRlJ107XG5cdFx0fSxcblx0XHRjYW5IYW5kbGVSZXN1bHRzOiBmdW5jdGlvbih5YXNyKSB7XG5cdFx0XHR2YXIgcmVzdWx0cywgdmFyaWFibGVzO1xuXHRcdFx0cmV0dXJuIChyZXN1bHRzID0geWFzci5yZXN1bHRzKSAhPSBudWxsICYmICh2YXJpYWJsZXMgPSByZXN1bHRzLmdldFZhcmlhYmxlcygpKSAmJiB2YXJpYWJsZXMubGVuZ3RoID4gMDtcblx0XHR9LFxuXHRcdGdldERvd25sb2FkSW5mbzogZnVuY3Rpb24oKSB7XG5cdFx0XHRpZiAoIXlhc3IucmVzdWx0cykgcmV0dXJuIG51bGw7XG5cdFx0XHR2YXIgc3ZnRWwgPSB5YXNyLnJlc3VsdHNDb250YWluZXIuZmluZCgnc3ZnJyk7XG5cdFx0XHRpZiAoc3ZnRWwubGVuZ3RoID4gMCkge1xuXHRcdFx0XHRyZXR1cm4ge1xuXHRcdFx0XHRcdGdldENvbnRlbnQ6IGZ1bmN0aW9uKCkge1xuXHRcdFx0XHRcdFx0aWYgKHN2Z0VsWzBdLm91dGVySFRNTCkge1xuXHRcdFx0XHRcdFx0XHRyZXR1cm4gc3ZnRWxbMF0ub3V0ZXJIVE1MO1xuXHRcdFx0XHRcdFx0fSBlbHNlIHtcblx0XHRcdFx0XHRcdFx0Ly9vdXRlckhUTUwgbm90IHN1cHBvcnRlZC4gdXNlIHdvcmthcm91bmRcblx0XHRcdFx0XHRcdFx0cmV0dXJuICQoJzxkaXY+JykuYXBwZW5kKHN2Z0VsLmNsb25lKCkpLmh0bWwoKTtcblx0XHRcdFx0XHRcdH1cblx0XHRcdFx0XHR9LFxuXHRcdFx0XHRcdGZpbGVuYW1lOiBcInF1ZXJ5UmVzdWx0cy5zdmdcIixcblx0XHRcdFx0XHRjb250ZW50VHlwZTogXCJpbWFnZS9zdmcreG1sXCIsXG5cdFx0XHRcdFx0YnV0dG9uVGl0bGU6IFwiRG93bmxvYWQgU1ZHIEltYWdlXCJcblx0XHRcdFx0fTtcblx0XHRcdH1cblx0XHRcdC8vb2ssIG5vdCBhIHN2Zy4gaXMgaXQgYSB0YWJsZT9cblx0XHRcdHZhciAkdGFibGUgPSB5YXNyLnJlc3VsdHNDb250YWluZXIuZmluZCgnLmdvb2dsZS12aXN1YWxpemF0aW9uLXRhYmxlLXRhYmxlJyk7XG5cdFx0XHRpZiAoJHRhYmxlLmxlbmd0aCA+IDApIHtcblx0XHRcdFx0cmV0dXJuIHtcblx0XHRcdFx0XHRnZXRDb250ZW50OiBmdW5jdGlvbigpIHtcblx0XHRcdFx0XHRcdHJldHVybiAkdGFibGUudGFibGVUb0NzdigpO1xuXHRcdFx0XHRcdH0sXG5cdFx0XHRcdFx0ZmlsZW5hbWU6IFwicXVlcnlSZXN1bHRzLmNzdlwiLFxuXHRcdFx0XHRcdGNvbnRlbnRUeXBlOiBcInRleHQvY3N2XCIsXG5cdFx0XHRcdFx0YnV0dG9uVGl0bGU6IFwiRG93bmxvYWQgYXMgQ1NWXCJcblx0XHRcdFx0fTtcblx0XHRcdH1cblx0XHR9LFxuXHRcdGdldEVtYmVkSHRtbDogZnVuY3Rpb24oKSB7XG5cdFx0XHRpZiAoIXlhc3IucmVzdWx0cykgcmV0dXJuIG51bGw7XG5cblx0XHRcdHZhciBzdmdFbCA9IHlhc3IucmVzdWx0c0NvbnRhaW5lci5maW5kKCdzdmcnKVxuXHRcdFx0XHQuY2xvbmUoKSAvL2NyZWF0ZSBjbG9uZSwgYXMgd2UnZCBsaWtlIHRvIHJlbW92ZSBoZWlnaHQvd2lkdGggYXR0cmlidXRlc1xuXHRcdFx0XHQucmVtb3ZlQXR0cignaGVpZ2h0JykucmVtb3ZlQXR0cignd2lkdGgnKVxuXHRcdFx0XHQuY3NzKCdoZWlnaHQnLCAnJykuY3NzKCd3aWR0aCcsICcnKTtcblx0XHRcdGlmIChzdmdFbC5sZW5ndGggPT0gMCkgcmV0dXJuIG51bGw7XG5cblx0XHRcdHZhciBodG1sU3RyaW5nID0gc3ZnRWxbMF0ub3V0ZXJIVE1MO1xuXHRcdFx0aWYgKCFodG1sU3RyaW5nKSB7XG5cdFx0XHRcdC8vb3V0ZXJIVE1MIG5vdCBzdXBwb3J0ZWQuIHVzZSB3b3JrYXJvdW5kXG5cdFx0XHRcdGh0bWxTdHJpbmcgPSAkKCc8ZGl2PicpLmFwcGVuZChzdmdFbC5jbG9uZSgpKS5odG1sKCk7XG5cdFx0XHR9XG5cdFx0XHQvL3dyYXAgaW4gZGl2LCBzbyB1c2VycyBjYW4gbW9yZSBlYXNpbHkgdHVuZSB3aWR0aC9oZWlnaHRcblx0XHRcdC8vZG9uJ3QgdXNlIGpxdWVyeSwgc28gd2UgY2FuIGVhc2lseSBpbmZsdWVuY2UgaW5kZW50YXRpb25cblx0XHRcdHJldHVybiAnPGRpdiBzdHlsZT1cIndpZHRoOiA4MDBweDsgaGVpZ2h0OiA2MDBweDtcIj5cXG4nICsgaHRtbFN0cmluZyArICdcXG48L2Rpdj4nO1xuXHRcdH0sXG5cdFx0ZHJhdzogZnVuY3Rpb24oKSB7XG5cdFx0XHR2YXIgZG9EcmF3ID0gZnVuY3Rpb24oKSB7XG5cdFx0XHRcdC8vY2xlYXIgcHJldmlvdXMgcmVzdWx0cyAoaWYgYW55KVxuXHRcdFx0XHR5YXNyLnJlc3VsdHNDb250YWluZXIuZW1wdHkoKTtcblx0XHRcdFx0dmFyIHdyYXBwZXJJZCA9IGlkICsgJ19nY2hhcnRXcmFwcGVyJztcblxuXHRcdFx0XHR5YXNyLnJlc3VsdHNDb250YWluZXIuYXBwZW5kKFxuXHRcdFx0XHRcdCQoJzxidXR0b24+Jywge1xuXHRcdFx0XHRcdFx0Y2xhc3M6ICdvcGVuR2NoYXJ0QnRuIHlhc3JfYnRuJ1xuXHRcdFx0XHRcdH0pXG5cdFx0XHRcdFx0LnRleHQoJ0NoYXJ0IENvbmZpZycpXG5cdFx0XHRcdFx0LmNsaWNrKGZ1bmN0aW9uKCkge1xuXHRcdFx0XHRcdFx0ZWRpdG9yLm9wZW5EaWFsb2coY2hhcnRXcmFwcGVyKTtcblx0XHRcdFx0XHR9KVxuXHRcdFx0XHQpLmFwcGVuZChcblx0XHRcdFx0XHQkKCc8ZGl2PicsIHtcblx0XHRcdFx0XHRcdGlkOiB3cmFwcGVySWQsXG5cdFx0XHRcdFx0XHRjbGFzczogJ2djaGFydFdyYXBwZXInXG5cdFx0XHRcdFx0fSlcblx0XHRcdFx0KTtcblx0XHRcdFx0dmFyIGRhdGFUYWJsZSA9IG5ldyBnb29nbGUudmlzdWFsaXphdGlvbi5EYXRhVGFibGUoKTtcblx0XHRcdFx0dmFyIGpzb25SZXN1bHRzID0geWFzci5yZXN1bHRzLmdldEFzSnNvbigpO1xuXG5cdFx0XHRcdGpzb25SZXN1bHRzLmhlYWQudmFycy5mb3JFYWNoKGZ1bmN0aW9uKHZhcmlhYmxlKSB7XG5cdFx0XHRcdFx0dmFyIHR5cGUgPSAnc3RyaW5nJztcblx0XHRcdFx0XHR0cnkge1xuXHRcdFx0XHRcdFx0dHlwZSA9IHV0aWxzLmdldEdvb2dsZVR5cGVGb3JCaW5kaW5ncyhqc29uUmVzdWx0cy5yZXN1bHRzLmJpbmRpbmdzLCB2YXJpYWJsZSk7XG5cdFx0XHRcdFx0fSBjYXRjaCAoZSkge1xuXHRcdFx0XHRcdFx0aWYgKGUgaW5zdGFuY2VvZiByZXF1aXJlKCcuL2V4Y2VwdGlvbnMuanMnKS5Hb29nbGVUeXBlRXhjZXB0aW9uKSB7XG5cdFx0XHRcdFx0XHRcdHlhc3Iud2FybihlLnRvSHRtbCgpKVxuXHRcdFx0XHRcdFx0fSBlbHNlIHtcblx0XHRcdFx0XHRcdFx0dGhyb3cgZTtcblx0XHRcdFx0XHRcdH1cblx0XHRcdFx0XHR9XG5cdFx0XHRcdFx0ZGF0YVRhYmxlLmFkZENvbHVtbih0eXBlLCB2YXJpYWJsZSk7XG5cdFx0XHRcdH0pO1xuXHRcdFx0XHR2YXIgdXNlZFByZWZpeGVzID0gbnVsbDtcblx0XHRcdFx0aWYgKHlhc3Iub3B0aW9ucy5nZXRVc2VkUHJlZml4ZXMpIHtcblx0XHRcdFx0XHR1c2VkUHJlZml4ZXMgPSAodHlwZW9mIHlhc3Iub3B0aW9ucy5nZXRVc2VkUHJlZml4ZXMgPT0gXCJmdW5jdGlvblwiID8geWFzci5vcHRpb25zLmdldFVzZWRQcmVmaXhlcyh5YXNyKSA6IHlhc3Iub3B0aW9ucy5nZXRVc2VkUHJlZml4ZXMpO1xuXHRcdFx0XHR9XG5cdFx0XHRcdGpzb25SZXN1bHRzLnJlc3VsdHMuYmluZGluZ3MuZm9yRWFjaChmdW5jdGlvbihiaW5kaW5nKSB7XG5cdFx0XHRcdFx0dmFyIHJvdyA9IFtdO1xuXHRcdFx0XHRcdGpzb25SZXN1bHRzLmhlYWQudmFycy5mb3JFYWNoKGZ1bmN0aW9uKHZhcmlhYmxlLCBjb2x1bW5JZCkge1xuXHRcdFx0XHRcdFx0cm93LnB1c2godXRpbHMuY2FzdEdvb2dsZVR5cGUoYmluZGluZ1t2YXJpYWJsZV0sIHVzZWRQcmVmaXhlcywgZGF0YVRhYmxlLmdldENvbHVtblR5cGUoY29sdW1uSWQpKSk7XG5cdFx0XHRcdFx0fSlcblx0XHRcdFx0XHRkYXRhVGFibGUuYWRkUm93KHJvdyk7XG5cdFx0XHRcdH0pO1xuXG5cdFx0XHRcdGlmIChvcHRpb25zLmNoYXJ0Q29uZmlnICYmIG9wdGlvbnMuY2hhcnRDb25maWcuY2hhcnRUeXBlKSB7XG5cdFx0XHRcdFx0b3B0aW9ucy5jaGFydENvbmZpZy5jb250YWluZXJJZCA9IHdyYXBwZXJJZDtcblx0XHRcdFx0XHRjaGFydFdyYXBwZXIgPSBuZXcgZ29vZ2xlLnZpc3VhbGl6YXRpb24uQ2hhcnRXcmFwcGVyKG9wdGlvbnMuY2hhcnRDb25maWcpO1xuXHRcdFx0XHRcdGlmIChjaGFydFdyYXBwZXIuZ2V0Q2hhcnRUeXBlKCkgPT09IFwiTW90aW9uQ2hhcnRcIiAmJiBvcHRpb25zLm1vdGlvbkNoYXJ0U3RhdGUpIHtcblx0XHRcdFx0XHRcdGNoYXJ0V3JhcHBlci5zZXRPcHRpb24oXCJzdGF0ZVwiLCBvcHRpb25zLm1vdGlvbkNoYXJ0U3RhdGUpO1xuXHRcdFx0XHRcdFx0Z29vZ2xlLnZpc3VhbGl6YXRpb24uZXZlbnRzLmFkZExpc3RlbmVyKGNoYXJ0V3JhcHBlciwgJ3JlYWR5JywgZnVuY3Rpb24oKSB7XG5cdFx0XHRcdFx0XHRcdHZhciBtb3Rpb25DaGFydDtcblx0XHRcdFx0XHRcdFx0bW90aW9uQ2hhcnQgPSBjaGFydFdyYXBwZXIuZ2V0Q2hhcnQoKTtcblx0XHRcdFx0XHRcdFx0Z29vZ2xlLnZpc3VhbGl6YXRpb24uZXZlbnRzLmFkZExpc3RlbmVyKG1vdGlvbkNoYXJ0LCAnc3RhdGVjaGFuZ2UnLCBmdW5jdGlvbigpIHtcblx0XHRcdFx0XHRcdFx0XHRvcHRpb25zLm1vdGlvbkNoYXJ0U3RhdGUgPSBtb3Rpb25DaGFydC5nZXRTdGF0ZSgpO1xuXHRcdFx0XHRcdFx0XHRcdHlhc3Iuc3RvcmUoKTtcblx0XHRcdFx0XHRcdFx0fSk7XG5cdFx0XHRcdFx0XHR9KTtcblx0XHRcdFx0XHR9XG5cdFx0XHRcdFx0Y2hhcnRXcmFwcGVyLnNldERhdGFUYWJsZShkYXRhVGFibGUpO1xuXHRcdFx0XHR9IGVsc2Uge1xuXHRcdFx0XHRcdGNoYXJ0V3JhcHBlciA9IG5ldyBnb29nbGUudmlzdWFsaXphdGlvbi5DaGFydFdyYXBwZXIoe1xuXHRcdFx0XHRcdFx0Y2hhcnRUeXBlOiAnVGFibGUnLFxuXHRcdFx0XHRcdFx0ZGF0YVRhYmxlOiBkYXRhVGFibGUsXG5cdFx0XHRcdFx0XHRjb250YWluZXJJZDogd3JhcHBlcklkXG5cdFx0XHRcdFx0fSk7XG5cdFx0XHRcdH1cblx0XHRcdFx0Y2hhcnRXcmFwcGVyLnNldE9wdGlvbihcIndpZHRoXCIsIG9wdGlvbnMud2lkdGgpO1xuXHRcdFx0XHRjaGFydFdyYXBwZXIuc2V0T3B0aW9uKFwiaGVpZ2h0XCIsIG9wdGlvbnMuaGVpZ2h0KTtcblx0XHRcdFx0Y2hhcnRXcmFwcGVyLmRyYXcoKTtcblx0XHRcdFx0Z29vZ2xlLnZpc3VhbGl6YXRpb24uZXZlbnRzLmFkZExpc3RlbmVyKGNoYXJ0V3JhcHBlciwgJ3JlYWR5JywgeWFzci51cGRhdGVIZWFkZXIpO1xuXHRcdFx0fVxuXG5cdFx0XHRpZiAoISh0eXBlb2Ygd2luZG93ICE9PSBcInVuZGVmaW5lZFwiID8gd2luZG93Wydnb29nbGUnXSA6IHR5cGVvZiBnbG9iYWwgIT09IFwidW5kZWZpbmVkXCIgPyBnbG9iYWxbJ2dvb2dsZSddIDogbnVsbCkgfHwgISh0eXBlb2Ygd2luZG93ICE9PSBcInVuZGVmaW5lZFwiID8gd2luZG93Wydnb29nbGUnXSA6IHR5cGVvZiBnbG9iYWwgIT09IFwidW5kZWZpbmVkXCIgPyBnbG9iYWxbJ2dvb2dsZSddIDogbnVsbCkudmlzdWFsaXphdGlvbiB8fCAhZWRpdG9yKSB7XG5cdFx0XHRcdHJlcXVpcmUoJy4vZ0NoYXJ0TG9hZGVyLmpzJylcblx0XHRcdFx0XHQub24oJ2RvbmUnLCBmdW5jdGlvbigpIHtcblx0XHRcdFx0XHRcdGluaXRFZGl0b3IoKTtcblx0XHRcdFx0XHRcdGRvRHJhdygpO1xuXHRcdFx0XHRcdH0pXG5cdFx0XHRcdFx0Lm9uKCdlcnJvcicsIGZ1bmN0aW9uKCkge1xuXHRcdFx0XHRcdFx0Ly9UT0RPOiBkaXNhYmxlIG9yIHNvbWV0aGluZz9cblx0XHRcdFx0XHR9KVxuXHRcdFx0XHRcdC5nb29nbGVMb2FkKCk7XG5cdFx0XHR9IGVsc2Uge1xuXHRcdFx0XHQvL2V2ZXJ5dGhpbmcgKGVkaXRvciBhcyB3ZWxsKSBpcyBhbHJlYWR5IGluaXRpYWxpemVkXG5cdFx0XHRcdGRvRHJhdygpO1xuXHRcdFx0fVxuXHRcdH1cblx0fTtcbn07XG5yb290LmRlZmF1bHRzID0ge1xuXHRoZWlnaHQ6IFwiMTAwJVwiLFxuXHR3aWR0aDogXCIxMDAlXCIsXG5cdHBlcnNpc3RlbmN5SWQ6ICdnY2hhcnQnLFxuXHRjaGFydENvbmZpZzogbnVsbCxcblx0bW90aW9uQ2hhcnRTdGF0ZTogbnVsbFxufTtcblxuZnVuY3Rpb24gZGVlcEVxJCh4LCB5LCB0eXBlKSB7XG5cdHZhciB0b1N0cmluZyA9IHt9LnRvU3RyaW5nLFxuXHRcdGhhc093blByb3BlcnR5ID0ge30uaGFzT3duUHJvcGVydHksXG5cdFx0aGFzID0gZnVuY3Rpb24ob2JqLCBrZXkpIHtcblx0XHRcdHJldHVybiBoYXNPd25Qcm9wZXJ0eS5jYWxsKG9iaiwga2V5KTtcblx0XHR9O1xuXHR2YXIgZmlyc3QgPSB0cnVlO1xuXHRyZXR1cm4gZXEoeCwgeSwgW10pO1xuXG5cdGZ1bmN0aW9uIGVxKGEsIGIsIHN0YWNrKSB7XG5cdFx0dmFyIGNsYXNzTmFtZSwgbGVuZ3RoLCBzaXplLCByZXN1bHQsIGFsZW5ndGgsIGJsZW5ndGgsIHIsIGtleSwgcmVmLCBzaXplQjtcblx0XHRpZiAoYSA9PSBudWxsIHx8IGIgPT0gbnVsbCkge1xuXHRcdFx0cmV0dXJuIGEgPT09IGI7XG5cdFx0fVxuXHRcdGlmIChhLl9fcGxhY2Vob2xkZXJfXyB8fCBiLl9fcGxhY2Vob2xkZXJfXykge1xuXHRcdFx0cmV0dXJuIHRydWU7XG5cdFx0fVxuXHRcdGlmIChhID09PSBiKSB7XG5cdFx0XHRyZXR1cm4gYSAhPT0gMCB8fCAxIC8gYSA9PSAxIC8gYjtcblx0XHR9XG5cdFx0Y2xhc3NOYW1lID0gdG9TdHJpbmcuY2FsbChhKTtcblx0XHRpZiAodG9TdHJpbmcuY2FsbChiKSAhPSBjbGFzc05hbWUpIHtcblx0XHRcdHJldHVybiBmYWxzZTtcblx0XHR9XG5cdFx0c3dpdGNoIChjbGFzc05hbWUpIHtcblx0XHRcdGNhc2UgJ1tvYmplY3QgU3RyaW5nXSc6XG5cdFx0XHRcdHJldHVybiBhID09IFN0cmluZyhiKTtcblx0XHRcdGNhc2UgJ1tvYmplY3QgTnVtYmVyXSc6XG5cdFx0XHRcdHJldHVybiBhICE9ICthID8gYiAhPSArYiA6IChhID09IDAgPyAxIC8gYSA9PSAxIC8gYiA6IGEgPT0gK2IpO1xuXHRcdFx0Y2FzZSAnW29iamVjdCBEYXRlXSc6XG5cdFx0XHRjYXNlICdbb2JqZWN0IEJvb2xlYW5dJzpcblx0XHRcdFx0cmV0dXJuICthID09ICtiO1xuXHRcdFx0Y2FzZSAnW29iamVjdCBSZWdFeHBdJzpcblx0XHRcdFx0cmV0dXJuIGEuc291cmNlID09IGIuc291cmNlICYmXG5cdFx0XHRcdFx0YS5nbG9iYWwgPT0gYi5nbG9iYWwgJiZcblx0XHRcdFx0XHRhLm11bHRpbGluZSA9PSBiLm11bHRpbGluZSAmJlxuXHRcdFx0XHRcdGEuaWdub3JlQ2FzZSA9PSBiLmlnbm9yZUNhc2U7XG5cdFx0fVxuXHRcdGlmICh0eXBlb2YgYSAhPSAnb2JqZWN0JyB8fCB0eXBlb2YgYiAhPSAnb2JqZWN0Jykge1xuXHRcdFx0cmV0dXJuIGZhbHNlO1xuXHRcdH1cblx0XHRsZW5ndGggPSBzdGFjay5sZW5ndGg7XG5cdFx0d2hpbGUgKGxlbmd0aC0tKSB7XG5cdFx0XHRpZiAoc3RhY2tbbGVuZ3RoXSA9PSBhKSB7XG5cdFx0XHRcdHJldHVybiB0cnVlO1xuXHRcdFx0fVxuXHRcdH1cblx0XHRzdGFjay5wdXNoKGEpO1xuXHRcdHNpemUgPSAwO1xuXHRcdHJlc3VsdCA9IHRydWU7XG5cdFx0aWYgKGNsYXNzTmFtZSA9PSAnW29iamVjdCBBcnJheV0nKSB7XG5cdFx0XHRhbGVuZ3RoID0gYS5sZW5ndGg7XG5cdFx0XHRibGVuZ3RoID0gYi5sZW5ndGg7XG5cdFx0XHRpZiAoZmlyc3QpIHtcblx0XHRcdFx0c3dpdGNoICh0eXBlKSB7XG5cdFx0XHRcdFx0Y2FzZSAnPT09Jzpcblx0XHRcdFx0XHRcdHJlc3VsdCA9IGFsZW5ndGggPT09IGJsZW5ndGg7XG5cdFx0XHRcdFx0XHRicmVhaztcblx0XHRcdFx0XHRjYXNlICc8PT0nOlxuXHRcdFx0XHRcdFx0cmVzdWx0ID0gYWxlbmd0aCA8PSBibGVuZ3RoO1xuXHRcdFx0XHRcdFx0YnJlYWs7XG5cdFx0XHRcdFx0Y2FzZSAnPDw9Jzpcblx0XHRcdFx0XHRcdHJlc3VsdCA9IGFsZW5ndGggPCBibGVuZ3RoO1xuXHRcdFx0XHRcdFx0YnJlYWs7XG5cdFx0XHRcdH1cblx0XHRcdFx0c2l6ZSA9IGFsZW5ndGg7XG5cdFx0XHRcdGZpcnN0ID0gZmFsc2U7XG5cdFx0XHR9IGVsc2Uge1xuXHRcdFx0XHRyZXN1bHQgPSBhbGVuZ3RoID09PSBibGVuZ3RoO1xuXHRcdFx0XHRzaXplID0gYWxlbmd0aDtcblx0XHRcdH1cblx0XHRcdGlmIChyZXN1bHQpIHtcblx0XHRcdFx0d2hpbGUgKHNpemUtLSkge1xuXHRcdFx0XHRcdGlmICghKHJlc3VsdCA9IHNpemUgaW4gYSA9PSBzaXplIGluIGIgJiYgZXEoYVtzaXplXSwgYltzaXplXSwgc3RhY2spKSkge1xuXHRcdFx0XHRcdFx0YnJlYWs7XG5cdFx0XHRcdFx0fVxuXHRcdFx0XHR9XG5cdFx0XHR9XG5cdFx0fSBlbHNlIHtcblx0XHRcdGlmICgnY29uc3RydWN0b3InIGluIGEgIT0gJ2NvbnN0cnVjdG9yJyBpbiBiIHx8IGEuY29uc3RydWN0b3IgIT0gYi5jb25zdHJ1Y3Rvcikge1xuXHRcdFx0XHRyZXR1cm4gZmFsc2U7XG5cdFx0XHR9XG5cdFx0XHRmb3IgKGtleSBpbiBhKSB7XG5cdFx0XHRcdGlmIChoYXMoYSwga2V5KSkge1xuXHRcdFx0XHRcdHNpemUrKztcblx0XHRcdFx0XHRpZiAoIShyZXN1bHQgPSBoYXMoYiwga2V5KSAmJiBlcShhW2tleV0sIGJba2V5XSwgc3RhY2spKSkge1xuXHRcdFx0XHRcdFx0YnJlYWs7XG5cdFx0XHRcdFx0fVxuXHRcdFx0XHR9XG5cdFx0XHR9XG5cdFx0XHRpZiAocmVzdWx0KSB7XG5cdFx0XHRcdHNpemVCID0gMDtcblx0XHRcdFx0Zm9yIChrZXkgaW4gYikge1xuXHRcdFx0XHRcdGlmIChoYXMoYiwga2V5KSkge1xuXHRcdFx0XHRcdFx0KytzaXplQjtcblx0XHRcdFx0XHR9XG5cdFx0XHRcdH1cblx0XHRcdFx0aWYgKGZpcnN0KSB7XG5cdFx0XHRcdFx0aWYgKHR5cGUgPT09ICc8PD0nKSB7XG5cdFx0XHRcdFx0XHRyZXN1bHQgPSBzaXplIDwgc2l6ZUI7XG5cdFx0XHRcdFx0fSBlbHNlIGlmICh0eXBlID09PSAnPD09Jykge1xuXHRcdFx0XHRcdFx0cmVzdWx0ID0gc2l6ZSA8PSBzaXplQlxuXHRcdFx0XHRcdH0gZWxzZSB7XG5cdFx0XHRcdFx0XHRyZXN1bHQgPSBzaXplID09PSBzaXplQjtcblx0XHRcdFx0XHR9XG5cdFx0XHRcdH0gZWxzZSB7XG5cdFx0XHRcdFx0Zmlyc3QgPSBmYWxzZTtcblx0XHRcdFx0XHRyZXN1bHQgPSBzaXplID09PSBzaXplQjtcblx0XHRcdFx0fVxuXHRcdFx0fVxuXHRcdH1cblx0XHRzdGFjay5wb3AoKTtcblx0XHRyZXR1cm4gcmVzdWx0O1xuXHR9XG59Il19
+//# sourceMappingURL=data:application/json;charset:utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vZGVfbW9kdWxlcy95YXNndWkteWFzci9zcmMvZ2NoYXJ0LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EiLCJmaWxlIjoiZ2VuZXJhdGVkLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc3RyaWN0Jztcbi8qKlxuICogdG9kbzogY2hhcnQgaGVpZ2h0IGFzIG9wdGlvblxuICogXG4gKi9cbnZhciAkID0gcmVxdWlyZSgnanF1ZXJ5JyksXG5cdHV0aWxzID0gcmVxdWlyZSgnLi91dGlscy5qcycpLFxuXHR5VXRpbHMgPSByZXF1aXJlKCd5YXNndWktdXRpbHMnKTtcblxudmFyIHJvb3QgPSBtb2R1bGUuZXhwb3J0cyA9IGZ1bmN0aW9uKHlhc3IpIHtcblxuXHR2YXIgb3B0aW9ucyA9ICQuZXh0ZW5kKHRydWUsIHt9LCByb290LmRlZmF1bHRzKTtcblx0dmFyIGlkID0geWFzci5jb250YWluZXIuY2xvc2VzdCgnW2lkXScpLmF0dHIoJ2lkJyk7XG5cblx0dmFyIGNoYXJ0V3JhcHBlciA9IG51bGw7XG5cdHZhciBlZGl0b3IgPSBudWxsO1xuXG5cdHZhciBpbml0RWRpdG9yID0gZnVuY3Rpb24oY2FsbGJhY2spIHtcblx0XHR2YXIgZ29vZ2xlID0gKHR5cGVvZiB3aW5kb3cgIT09IFwidW5kZWZpbmVkXCIgPyB3aW5kb3dbJ2dvb2dsZSddIDogdHlwZW9mIGdsb2JhbCAhPT0gXCJ1bmRlZmluZWRcIiA/IGdsb2JhbFsnZ29vZ2xlJ10gOiBudWxsKTtcblx0XHRlZGl0b3IgPSBuZXcgZ29vZ2xlLnZpc3VhbGl6YXRpb24uQ2hhcnRFZGl0b3IoKTtcblx0XHRnb29nbGUudmlzdWFsaXphdGlvbi5ldmVudHMuYWRkTGlzdGVuZXIoZWRpdG9yLCAnb2snLCBmdW5jdGlvbigpIHtcblx0XHRcdHZhciB0bXA7XG5cdFx0XHRjaGFydFdyYXBwZXIgPSBlZGl0b3IuZ2V0Q2hhcnRXcmFwcGVyKCk7XG5cdFx0XHR0bXAgPSBjaGFydFdyYXBwZXIuZ2V0RGF0YVRhYmxlKCk7XG5cdFx0XHRjaGFydFdyYXBwZXIuc2V0RGF0YVRhYmxlKG51bGwpO1xuXHRcdFx0Ly91Z2x5OiBuZWVkIHRvIHBhcnNlIGpzb24gc3RyaW5nIHRvIGpzb24gb2JqIGFnYWluLCBhcyBnb29nbGUgY2hhcnQgZG9lcyBub3QgcHJvdmlkZSBhY2Nlc3MgdG8gb2JqZWN0IGRpcmVjdGx5XG5cdFx0XHRvcHRpb25zLmNoYXJ0Q29uZmlnID0gSlNPTi5wYXJzZShjaGFydFdyYXBwZXIudG9KU09OKCkpO1xuXHRcdFx0Ly9yZW1vdmUgY29udGFpbmVyIElEIHRob3VnaCwgZm9yIHBvcnRhYmlsaXR5XG5cdFx0XHRpZiAob3B0aW9ucy5jaGFydENvbmZpZy5jb250YWluZXJJZCkgZGVsZXRlIG9wdGlvbnMuY2hhcnRDb25maWdbJ2NvbnRhaW5lcklkJ107XG5cdFx0XHR5YXNyLnN0b3JlKCk7XG5cdFx0XHRjaGFydFdyYXBwZXIuc2V0RGF0YVRhYmxlKHRtcCk7XG5cdFx0XHRjaGFydFdyYXBwZXIuc2V0T3B0aW9uKFwid2lkdGhcIiwgb3B0aW9ucy53aWR0aCk7XG5cdFx0XHRjaGFydFdyYXBwZXIuc2V0T3B0aW9uKFwiaGVpZ2h0XCIsIG9wdGlvbnMuaGVpZ2h0KTtcblx0XHRcdGNoYXJ0V3JhcHBlci5kcmF3KCk7XG5cdFx0XHR5YXNyLnVwZGF0ZUhlYWRlcigpO1xuXHRcdH0pO1xuXHRcdGlmIChjYWxsYmFjaykgY2FsbGJhY2soKTtcblx0fTtcblxuXHRyZXR1cm4ge1xuXHRcdG5hbWU6IFwiR29vZ2xlIENoYXJ0XCIsXG5cdFx0aGlkZUZyb21TZWxlY3Rpb246IGZhbHNlLFxuXHRcdHByaW9yaXR5OiA3LFxuXHRcdG9wdGlvbnM6IG9wdGlvbnMsXG5cdFx0Z2V0UGVyc2lzdGVudFNldHRpbmdzOiBmdW5jdGlvbigpIHtcblx0XHRcdHJldHVybiB7XG5cdFx0XHRcdGNoYXJ0Q29uZmlnOiBvcHRpb25zLmNoYXJ0Q29uZmlnLFxuXHRcdFx0XHRtb3Rpb25DaGFydFN0YXRlOiBvcHRpb25zLm1vdGlvbkNoYXJ0U3RhdGVcblx0XHRcdH1cblx0XHR9LFxuXHRcdHNldFBlcnNpc3RlbnRTZXR0aW5nczogZnVuY3Rpb24ocGVyc1NldHRpbmdzKSB7XG5cdFx0XHRpZiAocGVyc1NldHRpbmdzWydjaGFydENvbmZpZyddKSBvcHRpb25zLmNoYXJ0Q29uZmlnID0gcGVyc1NldHRpbmdzWydjaGFydENvbmZpZyddO1xuXHRcdFx0aWYgKHBlcnNTZXR0aW5nc1snbW90aW9uQ2hhcnRTdGF0ZSddKSBvcHRpb25zLm1vdGlvbkNoYXJ0U3RhdGUgPSBwZXJzU2V0dGluZ3NbJ21vdGlvbkNoYXJ0U3RhdGUnXTtcblx0XHR9LFxuXHRcdGNhbkhhbmRsZVJlc3VsdHM6IGZ1bmN0aW9uKHlhc3IpIHtcblx0XHRcdHZhciByZXN1bHRzLCB2YXJpYWJsZXM7XG5cdFx0XHRyZXR1cm4gKHJlc3VsdHMgPSB5YXNyLnJlc3VsdHMpICE9IG51bGwgJiYgKHZhcmlhYmxlcyA9IHJlc3VsdHMuZ2V0VmFyaWFibGVzKCkpICYmIHZhcmlhYmxlcy5sZW5ndGggPiAwO1xuXHRcdH0sXG5cdFx0Z2V0RG93bmxvYWRJbmZvOiBmdW5jdGlvbigpIHtcblx0XHRcdGlmICgheWFzci5yZXN1bHRzKSByZXR1cm4gbnVsbDtcblx0XHRcdHZhciBzdmdFbCA9IHlhc3IucmVzdWx0c0NvbnRhaW5lci5maW5kKCdzdmcnKTtcblx0XHRcdGlmIChzdmdFbC5sZW5ndGggPiAwKSB7XG5cdFx0XHRcdHJldHVybiB7XG5cdFx0XHRcdFx0Z2V0Q29udGVudDogZnVuY3Rpb24oKSB7XG5cdFx0XHRcdFx0XHRpZiAoc3ZnRWxbMF0ub3V0ZXJIVE1MKSB7XG5cdFx0XHRcdFx0XHRcdHJldHVybiBzdmdFbFswXS5vdXRlckhUTUw7XG5cdFx0XHRcdFx0XHR9IGVsc2Uge1xuXHRcdFx0XHRcdFx0XHQvL291dGVySFRNTCBub3Qgc3VwcG9ydGVkLiB1c2Ugd29ya2Fyb3VuZFxuXHRcdFx0XHRcdFx0XHRyZXR1cm4gJCgnPGRpdj4nKS5hcHBlbmQoc3ZnRWwuY2xvbmUoKSkuaHRtbCgpO1xuXHRcdFx0XHRcdFx0fVxuXHRcdFx0XHRcdH0sXG5cdFx0XHRcdFx0ZmlsZW5hbWU6IFwicXVlcnlSZXN1bHRzLnN2Z1wiLFxuXHRcdFx0XHRcdGNvbnRlbnRUeXBlOiBcImltYWdlL3N2Zyt4bWxcIixcblx0XHRcdFx0XHRidXR0b25UaXRsZTogXCJEb3dubG9hZCBTVkcgSW1hZ2VcIlxuXHRcdFx0XHR9O1xuXHRcdFx0fVxuXHRcdFx0Ly9vaywgbm90IGEgc3ZnLiBpcyBpdCBhIHRhYmxlP1xuXHRcdFx0dmFyICR0YWJsZSA9IHlhc3IucmVzdWx0c0NvbnRhaW5lci5maW5kKCcuZ29vZ2xlLXZpc3VhbGl6YXRpb24tdGFibGUtdGFibGUnKTtcblx0XHRcdGlmICgkdGFibGUubGVuZ3RoID4gMCkge1xuXHRcdFx0XHRyZXR1cm4ge1xuXHRcdFx0XHRcdGdldENvbnRlbnQ6IGZ1bmN0aW9uKCkge1xuXHRcdFx0XHRcdFx0cmV0dXJuICR0YWJsZS50YWJsZVRvQ3N2KCk7XG5cdFx0XHRcdFx0fSxcblx0XHRcdFx0XHRmaWxlbmFtZTogXCJxdWVyeVJlc3VsdHMuY3N2XCIsXG5cdFx0XHRcdFx0Y29udGVudFR5cGU6IFwidGV4dC9jc3ZcIixcblx0XHRcdFx0XHRidXR0b25UaXRsZTogXCJEb3dubG9hZCBhcyBDU1ZcIlxuXHRcdFx0XHR9O1xuXHRcdFx0fVxuXHRcdH0sXG5cdFx0Z2V0RW1iZWRIdG1sOiBmdW5jdGlvbigpIHtcblx0XHRcdGlmICgheWFzci5yZXN1bHRzKSByZXR1cm4gbnVsbDtcblxuXHRcdFx0dmFyIHN2Z0VsID0geWFzci5yZXN1bHRzQ29udGFpbmVyLmZpbmQoJ3N2ZycpXG5cdFx0XHRcdC5jbG9uZSgpIC8vY3JlYXRlIGNsb25lLCBhcyB3ZSdkIGxpa2UgdG8gcmVtb3ZlIGhlaWdodC93aWR0aCBhdHRyaWJ1dGVzXG5cdFx0XHRcdC5yZW1vdmVBdHRyKCdoZWlnaHQnKS5yZW1vdmVBdHRyKCd3aWR0aCcpXG5cdFx0XHRcdC5jc3MoJ2hlaWdodCcsICcnKS5jc3MoJ3dpZHRoJywgJycpO1xuXHRcdFx0aWYgKHN2Z0VsLmxlbmd0aCA9PSAwKSByZXR1cm4gbnVsbDtcblxuXHRcdFx0dmFyIGh0bWxTdHJpbmcgPSBzdmdFbFswXS5vdXRlckhUTUw7XG5cdFx0XHRpZiAoIWh0bWxTdHJpbmcpIHtcblx0XHRcdFx0Ly9vdXRlckhUTUwgbm90IHN1cHBvcnRlZC4gdXNlIHdvcmthcm91bmRcblx0XHRcdFx0aHRtbFN0cmluZyA9ICQoJzxkaXY+JykuYXBwZW5kKHN2Z0VsLmNsb25lKCkpLmh0bWwoKTtcblx0XHRcdH1cblx0XHRcdC8vd3JhcCBpbiBkaXYsIHNvIHVzZXJzIGNhbiBtb3JlIGVhc2lseSB0dW5lIHdpZHRoL2hlaWdodFxuXHRcdFx0Ly9kb24ndCB1c2UganF1ZXJ5LCBzbyB3ZSBjYW4gZWFzaWx5IGluZmx1ZW5jZSBpbmRlbnRhdGlvblxuXHRcdFx0cmV0dXJuICc8ZGl2IHN0eWxlPVwid2lkdGg6IDgwMHB4OyBoZWlnaHQ6IDYwMHB4O1wiPlxcbicgKyBodG1sU3RyaW5nICsgJ1xcbjwvZGl2Pic7XG5cdFx0fSxcblx0XHRkcmF3OiBmdW5jdGlvbigpIHtcblx0XHRcdHZhciBkb0RyYXcgPSBmdW5jdGlvbigpIHtcblx0XHRcdFx0Ly9jbGVhciBwcmV2aW91cyByZXN1bHRzIChpZiBhbnkpXG5cdFx0XHRcdHlhc3IucmVzdWx0c0NvbnRhaW5lci5lbXB0eSgpO1xuXHRcdFx0XHR2YXIgd3JhcHBlcklkID0gaWQgKyAnX2djaGFydFdyYXBwZXInO1xuXG5cdFx0XHRcdHlhc3IucmVzdWx0c0NvbnRhaW5lci5hcHBlbmQoXG5cdFx0XHRcdFx0JCgnPGJ1dHRvbj4nLCB7XG5cdFx0XHRcdFx0XHRjbGFzczogJ29wZW5HY2hhcnRCdG4geWFzcl9idG4nXG5cdFx0XHRcdFx0fSlcblx0XHRcdFx0XHQudGV4dCgnQ2hhcnQgQ29uZmlnJylcblx0XHRcdFx0XHQuY2xpY2soZnVuY3Rpb24oKSB7XG5cdFx0XHRcdFx0XHRlZGl0b3Iub3BlbkRpYWxvZyhjaGFydFdyYXBwZXIpO1xuXHRcdFx0XHRcdH0pXG5cdFx0XHRcdCkuYXBwZW5kKFxuXHRcdFx0XHRcdCQoJzxkaXY+Jywge1xuXHRcdFx0XHRcdFx0aWQ6IHdyYXBwZXJJZCxcblx0XHRcdFx0XHRcdGNsYXNzOiAnZ2NoYXJ0V3JhcHBlcidcblx0XHRcdFx0XHR9KVxuXHRcdFx0XHQpO1xuXHRcdFx0XHR2YXIgZGF0YVRhYmxlID0gbmV3IGdvb2dsZS52aXN1YWxpemF0aW9uLkRhdGFUYWJsZSgpO1xuXHRcdFx0XHR2YXIganNvblJlc3VsdHMgPSB5YXNyLnJlc3VsdHMuZ2V0QXNKc29uKCk7XG5cblx0XHRcdFx0anNvblJlc3VsdHMuaGVhZC52YXJzLmZvckVhY2goZnVuY3Rpb24odmFyaWFibGUpIHtcblx0XHRcdFx0XHR2YXIgdHlwZSA9ICdzdHJpbmcnO1xuXHRcdFx0XHRcdHRyeSB7XG5cdFx0XHRcdFx0XHR0eXBlID0gdXRpbHMuZ2V0R29vZ2xlVHlwZUZvckJpbmRpbmdzKGpzb25SZXN1bHRzLnJlc3VsdHMuYmluZGluZ3MsIHZhcmlhYmxlKTtcblx0XHRcdFx0XHR9IGNhdGNoIChlKSB7XG5cdFx0XHRcdFx0XHRpZiAoZSBpbnN0YW5jZW9mIHJlcXVpcmUoJy4vZXhjZXB0aW9ucy5qcycpLkdvb2dsZVR5cGVFeGNlcHRpb24pIHtcblx0XHRcdFx0XHRcdFx0eWFzci53YXJuKGUudG9IdG1sKCkpXG5cdFx0XHRcdFx0XHR9IGVsc2Uge1xuXHRcdFx0XHRcdFx0XHR0aHJvdyBlO1xuXHRcdFx0XHRcdFx0fVxuXHRcdFx0XHRcdH1cblx0XHRcdFx0XHRkYXRhVGFibGUuYWRkQ29sdW1uKHR5cGUsIHZhcmlhYmxlKTtcblx0XHRcdFx0fSk7XG5cdFx0XHRcdHZhciB1c2VkUHJlZml4ZXMgPSBudWxsO1xuXHRcdFx0XHRpZiAoeWFzci5vcHRpb25zLmdldFVzZWRQcmVmaXhlcykge1xuXHRcdFx0XHRcdHVzZWRQcmVmaXhlcyA9ICh0eXBlb2YgeWFzci5vcHRpb25zLmdldFVzZWRQcmVmaXhlcyA9PSBcImZ1bmN0aW9uXCIgPyB5YXNyLm9wdGlvbnMuZ2V0VXNlZFByZWZpeGVzKHlhc3IpIDogeWFzci5vcHRpb25zLmdldFVzZWRQcmVmaXhlcyk7XG5cdFx0XHRcdH1cblx0XHRcdFx0anNvblJlc3VsdHMucmVzdWx0cy5iaW5kaW5ncy5mb3JFYWNoKGZ1bmN0aW9uKGJpbmRpbmcpIHtcblx0XHRcdFx0XHR2YXIgcm93ID0gW107XG5cdFx0XHRcdFx0anNvblJlc3VsdHMuaGVhZC52YXJzLmZvckVhY2goZnVuY3Rpb24odmFyaWFibGUsIGNvbHVtbklkKSB7XG5cdFx0XHRcdFx0XHRyb3cucHVzaCh1dGlscy5jYXN0R29vZ2xlVHlwZShiaW5kaW5nW3ZhcmlhYmxlXSwgdXNlZFByZWZpeGVzLCBkYXRhVGFibGUuZ2V0Q29sdW1uVHlwZShjb2x1bW5JZCkpKTtcblx0XHRcdFx0XHR9KVxuXHRcdFx0XHRcdGRhdGFUYWJsZS5hZGRSb3cocm93KTtcblx0XHRcdFx0fSk7XG5cblx0XHRcdFx0aWYgKG9wdGlvbnMuY2hhcnRDb25maWcgJiYgb3B0aW9ucy5jaGFydENvbmZpZy5jaGFydFR5cGUpIHtcblx0XHRcdFx0XHRvcHRpb25zLmNoYXJ0Q29uZmlnLmNvbnRhaW5lcklkID0gd3JhcHBlcklkO1xuXHRcdFx0XHRcdGNoYXJ0V3JhcHBlciA9IG5ldyBnb29nbGUudmlzdWFsaXphdGlvbi5DaGFydFdyYXBwZXIob3B0aW9ucy5jaGFydENvbmZpZyk7XG5cdFx0XHRcdFx0aWYgKGNoYXJ0V3JhcHBlci5nZXRDaGFydFR5cGUoKSA9PT0gXCJNb3Rpb25DaGFydFwiICYmIG9wdGlvbnMubW90aW9uQ2hhcnRTdGF0ZSkge1xuXHRcdFx0XHRcdFx0Y2hhcnRXcmFwcGVyLnNldE9wdGlvbihcInN0YXRlXCIsIG9wdGlvbnMubW90aW9uQ2hhcnRTdGF0ZSk7XG5cdFx0XHRcdFx0XHRnb29nbGUudmlzdWFsaXphdGlvbi5ldmVudHMuYWRkTGlzdGVuZXIoY2hhcnRXcmFwcGVyLCAncmVhZHknLCBmdW5jdGlvbigpIHtcblx0XHRcdFx0XHRcdFx0dmFyIG1vdGlvbkNoYXJ0O1xuXHRcdFx0XHRcdFx0XHRtb3Rpb25DaGFydCA9IGNoYXJ0V3JhcHBlci5nZXRDaGFydCgpO1xuXHRcdFx0XHRcdFx0XHRnb29nbGUudmlzdWFsaXphdGlvbi5ldmVudHMuYWRkTGlzdGVuZXIobW90aW9uQ2hhcnQsICdzdGF0ZWNoYW5nZScsIGZ1bmN0aW9uKCkge1xuXHRcdFx0XHRcdFx0XHRcdG9wdGlvbnMubW90aW9uQ2hhcnRTdGF0ZSA9IG1vdGlvbkNoYXJ0LmdldFN0YXRlKCk7XG5cdFx0XHRcdFx0XHRcdFx0eWFzci5zdG9yZSgpO1xuXHRcdFx0XHRcdFx0XHR9KTtcblx0XHRcdFx0XHRcdH0pO1xuXHRcdFx0XHRcdH1cblx0XHRcdFx0XHRjaGFydFdyYXBwZXIuc2V0RGF0YVRhYmxlKGRhdGFUYWJsZSk7XG5cdFx0XHRcdH0gZWxzZSB7XG5cdFx0XHRcdFx0Y2hhcnRXcmFwcGVyID0gbmV3IGdvb2dsZS52aXN1YWxpemF0aW9uLkNoYXJ0V3JhcHBlcih7XG5cdFx0XHRcdFx0XHRjaGFydFR5cGU6ICdUYWJsZScsXG5cdFx0XHRcdFx0XHRkYXRhVGFibGU6IGRhdGFUYWJsZSxcblx0XHRcdFx0XHRcdGNvbnRhaW5lcklkOiB3cmFwcGVySWRcblx0XHRcdFx0XHR9KTtcblx0XHRcdFx0fVxuXHRcdFx0XHR2YXIgJHdyYXBwZXIgPSAkKCcjJyArIHdyYXBwZXJJZCk7XG5cdFx0XHRcdGNoYXJ0V3JhcHBlci5zZXRPcHRpb24oXCJ3aWR0aFwiLCAkd3JhcHBlci53aWR0aCgpKTtcblx0XHRcdFx0Y2hhcnRXcmFwcGVyLnNldE9wdGlvbihcImhlaWdodFwiLCAkd3JhcHBlci5oZWlnaHQoKSk7XG5cdFx0XHRcdGNoYXJ0V3JhcHBlci5kcmF3KCk7XG5cdFx0XHRcdGdvb2dsZS52aXN1YWxpemF0aW9uLmV2ZW50cy5hZGRMaXN0ZW5lcihjaGFydFdyYXBwZXIsICdyZWFkeScsIHlhc3IudXBkYXRlSGVhZGVyKTtcblx0XHRcdH1cblxuXHRcdFx0aWYgKCEodHlwZW9mIHdpbmRvdyAhPT0gXCJ1bmRlZmluZWRcIiA/IHdpbmRvd1snZ29vZ2xlJ10gOiB0eXBlb2YgZ2xvYmFsICE9PSBcInVuZGVmaW5lZFwiID8gZ2xvYmFsWydnb29nbGUnXSA6IG51bGwpIHx8ICEodHlwZW9mIHdpbmRvdyAhPT0gXCJ1bmRlZmluZWRcIiA/IHdpbmRvd1snZ29vZ2xlJ10gOiB0eXBlb2YgZ2xvYmFsICE9PSBcInVuZGVmaW5lZFwiID8gZ2xvYmFsWydnb29nbGUnXSA6IG51bGwpLnZpc3VhbGl6YXRpb24gfHwgIWVkaXRvcikge1xuXHRcdFx0XHRyZXF1aXJlKCcuL2dDaGFydExvYWRlci5qcycpXG5cdFx0XHRcdFx0Lm9uKCdkb25lJywgZnVuY3Rpb24oKSB7XG5cdFx0XHRcdFx0XHRpbml0RWRpdG9yKCk7XG5cdFx0XHRcdFx0XHRkb0RyYXcoKTtcblx0XHRcdFx0XHR9KVxuXHRcdFx0XHRcdC5vbignZXJyb3InLCBmdW5jdGlvbigpIHtcblx0XHRcdFx0XHRcdC8vVE9ETzogZGlzYWJsZSBvciBzb21ldGhpbmc/XG5cdFx0XHRcdFx0fSlcblx0XHRcdFx0XHQuZ29vZ2xlTG9hZCgpO1xuXHRcdFx0fSBlbHNlIHtcblx0XHRcdFx0Ly9ldmVyeXRoaW5nIChlZGl0b3IgYXMgd2VsbCkgaXMgYWxyZWFkeSBpbml0aWFsaXplZFxuXHRcdFx0XHRkb0RyYXcoKTtcblx0XHRcdH1cblx0XHR9XG5cdH07XG59O1xucm9vdC5kZWZhdWx0cyA9IHtcblx0aGVpZ2h0OiBcIjEwMCVcIixcblx0d2lkdGg6IFwiMTAwJVwiLFxuXHRwZXJzaXN0ZW5jeUlkOiAnZ2NoYXJ0Jyxcblx0Y2hhcnRDb25maWc6IG51bGwsXG5cdG1vdGlvbkNoYXJ0U3RhdGU6IG51bGxcbn07XG5cbmZ1bmN0aW9uIGRlZXBFcSQoeCwgeSwgdHlwZSkge1xuXHR2YXIgdG9TdHJpbmcgPSB7fS50b1N0cmluZyxcblx0XHRoYXNPd25Qcm9wZXJ0eSA9IHt9Lmhhc093blByb3BlcnR5LFxuXHRcdGhhcyA9IGZ1bmN0aW9uKG9iaiwga2V5KSB7XG5cdFx0XHRyZXR1cm4gaGFzT3duUHJvcGVydHkuY2FsbChvYmosIGtleSk7XG5cdFx0fTtcblx0dmFyIGZpcnN0ID0gdHJ1ZTtcblx0cmV0dXJuIGVxKHgsIHksIFtdKTtcblxuXHRmdW5jdGlvbiBlcShhLCBiLCBzdGFjaykge1xuXHRcdHZhciBjbGFzc05hbWUsIGxlbmd0aCwgc2l6ZSwgcmVzdWx0LCBhbGVuZ3RoLCBibGVuZ3RoLCByLCBrZXksIHJlZiwgc2l6ZUI7XG5cdFx0aWYgKGEgPT0gbnVsbCB8fCBiID09IG51bGwpIHtcblx0XHRcdHJldHVybiBhID09PSBiO1xuXHRcdH1cblx0XHRpZiAoYS5fX3BsYWNlaG9sZGVyX18gfHwgYi5fX3BsYWNlaG9sZGVyX18pIHtcblx0XHRcdHJldHVybiB0cnVlO1xuXHRcdH1cblx0XHRpZiAoYSA9PT0gYikge1xuXHRcdFx0cmV0dXJuIGEgIT09IDAgfHwgMSAvIGEgPT0gMSAvIGI7XG5cdFx0fVxuXHRcdGNsYXNzTmFtZSA9IHRvU3RyaW5nLmNhbGwoYSk7XG5cdFx0aWYgKHRvU3RyaW5nLmNhbGwoYikgIT0gY2xhc3NOYW1lKSB7XG5cdFx0XHRyZXR1cm4gZmFsc2U7XG5cdFx0fVxuXHRcdHN3aXRjaCAoY2xhc3NOYW1lKSB7XG5cdFx0XHRjYXNlICdbb2JqZWN0IFN0cmluZ10nOlxuXHRcdFx0XHRyZXR1cm4gYSA9PSBTdHJpbmcoYik7XG5cdFx0XHRjYXNlICdbb2JqZWN0IE51bWJlcl0nOlxuXHRcdFx0XHRyZXR1cm4gYSAhPSArYSA/IGIgIT0gK2IgOiAoYSA9PSAwID8gMSAvIGEgPT0gMSAvIGIgOiBhID09ICtiKTtcblx0XHRcdGNhc2UgJ1tvYmplY3QgRGF0ZV0nOlxuXHRcdFx0Y2FzZSAnW29iamVjdCBCb29sZWFuXSc6XG5cdFx0XHRcdHJldHVybiArYSA9PSArYjtcblx0XHRcdGNhc2UgJ1tvYmplY3QgUmVnRXhwXSc6XG5cdFx0XHRcdHJldHVybiBhLnNvdXJjZSA9PSBiLnNvdXJjZSAmJlxuXHRcdFx0XHRcdGEuZ2xvYmFsID09IGIuZ2xvYmFsICYmXG5cdFx0XHRcdFx0YS5tdWx0aWxpbmUgPT0gYi5tdWx0aWxpbmUgJiZcblx0XHRcdFx0XHRhLmlnbm9yZUNhc2UgPT0gYi5pZ25vcmVDYXNlO1xuXHRcdH1cblx0XHRpZiAodHlwZW9mIGEgIT0gJ29iamVjdCcgfHwgdHlwZW9mIGIgIT0gJ29iamVjdCcpIHtcblx0XHRcdHJldHVybiBmYWxzZTtcblx0XHR9XG5cdFx0bGVuZ3RoID0gc3RhY2subGVuZ3RoO1xuXHRcdHdoaWxlIChsZW5ndGgtLSkge1xuXHRcdFx0aWYgKHN0YWNrW2xlbmd0aF0gPT0gYSkge1xuXHRcdFx0XHRyZXR1cm4gdHJ1ZTtcblx0XHRcdH1cblx0XHR9XG5cdFx0c3RhY2sucHVzaChhKTtcblx0XHRzaXplID0gMDtcblx0XHRyZXN1bHQgPSB0cnVlO1xuXHRcdGlmIChjbGFzc05hbWUgPT0gJ1tvYmplY3QgQXJyYXldJykge1xuXHRcdFx0YWxlbmd0aCA9IGEubGVuZ3RoO1xuXHRcdFx0Ymxlbmd0aCA9IGIubGVuZ3RoO1xuXHRcdFx0aWYgKGZpcnN0KSB7XG5cdFx0XHRcdHN3aXRjaCAodHlwZSkge1xuXHRcdFx0XHRcdGNhc2UgJz09PSc6XG5cdFx0XHRcdFx0XHRyZXN1bHQgPSBhbGVuZ3RoID09PSBibGVuZ3RoO1xuXHRcdFx0XHRcdFx0YnJlYWs7XG5cdFx0XHRcdFx0Y2FzZSAnPD09Jzpcblx0XHRcdFx0XHRcdHJlc3VsdCA9IGFsZW5ndGggPD0gYmxlbmd0aDtcblx0XHRcdFx0XHRcdGJyZWFrO1xuXHRcdFx0XHRcdGNhc2UgJzw8PSc6XG5cdFx0XHRcdFx0XHRyZXN1bHQgPSBhbGVuZ3RoIDwgYmxlbmd0aDtcblx0XHRcdFx0XHRcdGJyZWFrO1xuXHRcdFx0XHR9XG5cdFx0XHRcdHNpemUgPSBhbGVuZ3RoO1xuXHRcdFx0XHRmaXJzdCA9IGZhbHNlO1xuXHRcdFx0fSBlbHNlIHtcblx0XHRcdFx0cmVzdWx0ID0gYWxlbmd0aCA9PT0gYmxlbmd0aDtcblx0XHRcdFx0c2l6ZSA9IGFsZW5ndGg7XG5cdFx0XHR9XG5cdFx0XHRpZiAocmVzdWx0KSB7XG5cdFx0XHRcdHdoaWxlIChzaXplLS0pIHtcblx0XHRcdFx0XHRpZiAoIShyZXN1bHQgPSBzaXplIGluIGEgPT0gc2l6ZSBpbiBiICYmIGVxKGFbc2l6ZV0sIGJbc2l6ZV0sIHN0YWNrKSkpIHtcblx0XHRcdFx0XHRcdGJyZWFrO1xuXHRcdFx0XHRcdH1cblx0XHRcdFx0fVxuXHRcdFx0fVxuXHRcdH0gZWxzZSB7XG5cdFx0XHRpZiAoJ2NvbnN0cnVjdG9yJyBpbiBhICE9ICdjb25zdHJ1Y3RvcicgaW4gYiB8fCBhLmNvbnN0cnVjdG9yICE9IGIuY29uc3RydWN0b3IpIHtcblx0XHRcdFx0cmV0dXJuIGZhbHNlO1xuXHRcdFx0fVxuXHRcdFx0Zm9yIChrZXkgaW4gYSkge1xuXHRcdFx0XHRpZiAoaGFzKGEsIGtleSkpIHtcblx0XHRcdFx0XHRzaXplKys7XG5cdFx0XHRcdFx0aWYgKCEocmVzdWx0ID0gaGFzKGIsIGtleSkgJiYgZXEoYVtrZXldLCBiW2tleV0sIHN0YWNrKSkpIHtcblx0XHRcdFx0XHRcdGJyZWFrO1xuXHRcdFx0XHRcdH1cblx0XHRcdFx0fVxuXHRcdFx0fVxuXHRcdFx0aWYgKHJlc3VsdCkge1xuXHRcdFx0XHRzaXplQiA9IDA7XG5cdFx0XHRcdGZvciAoa2V5IGluIGIpIHtcblx0XHRcdFx0XHRpZiAoaGFzKGIsIGtleSkpIHtcblx0XHRcdFx0XHRcdCsrc2l6ZUI7XG5cdFx0XHRcdFx0fVxuXHRcdFx0XHR9XG5cdFx0XHRcdGlmIChmaXJzdCkge1xuXHRcdFx0XHRcdGlmICh0eXBlID09PSAnPDw9Jykge1xuXHRcdFx0XHRcdFx0cmVzdWx0ID0gc2l6ZSA8IHNpemVCO1xuXHRcdFx0XHRcdH0gZWxzZSBpZiAodHlwZSA9PT0gJzw9PScpIHtcblx0XHRcdFx0XHRcdHJlc3VsdCA9IHNpemUgPD0gc2l6ZUJcblx0XHRcdFx0XHR9IGVsc2Uge1xuXHRcdFx0XHRcdFx0cmVzdWx0ID0gc2l6ZSA9PT0gc2l6ZUI7XG5cdFx0XHRcdFx0fVxuXHRcdFx0XHR9IGVsc2Uge1xuXHRcdFx0XHRcdGZpcnN0ID0gZmFsc2U7XG5cdFx0XHRcdFx0cmVzdWx0ID0gc2l6ZSA9PT0gc2l6ZUI7XG5cdFx0XHRcdH1cblx0XHRcdH1cblx0XHR9XG5cdFx0c3RhY2sucG9wKCk7XG5cdFx0cmV0dXJuIHJlc3VsdDtcblx0fVxufSJdfQ==
 },{"./exceptions.js":70,"./gChartLoader.js":71,"./utils.js":86,"jquery":21,"yasgui-utils":31}],73:[function(require,module,exports){
 'use strict';
 module.exports = {
