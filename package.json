@@ -70,14 +70,14 @@
     "bootstrap-contextmenu": "git://github.com/sydcanem/bootstrap-contextmenu",
     "bootstrap-sass": "^3.3.7",
     "jquery": "^2.2.4",
-    "jquery-ui": "^1.10.5",
+    "jquery-ui": "1.10.5",
     "microplugin": "0.0.3",
     "minimist": "^1.2.0",
     "selectize": "git://github.com/brianreavis/selectize.js",
     "underscore": "^1.8.3",
     "yasgui-utils": "^1.6.0",
-    "yasgui-yasqe": "^2.10.4",
-    "yasgui-yasr": "^2.8.0"
+    "yasgui-yasqe": "2.x.x",
+    "yasgui-yasr": "2.x.x"
   },
   "browser": {
     "selectize": "./node_modules/selectize/dist/js/selectize.js"
