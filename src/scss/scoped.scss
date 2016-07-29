@@ -3,13 +3,24 @@
 	@import "mixins.scss";
 	@import "../../node_modules/yasgui-yasqe/src/scss/mixins.scss";
 	@import "bootstrap_full.scss";
-	@import "../../node_modules/jquery-ui/themes/base/jquery.ui.resizable.css";
+	// @import "../../node_modules/jquery-ui/themes/base/jquery.ui.resizable.css";
 	@import "yasqe.scss";
 	@import "yasr.scss";
 	@import "tab.scss";
 	@import "menu.scss";
 	@import "controlbar.scss";
 	@import "tracker.scss";
-	@import "../../node_modules/selectize/dist/css/selectize.css";
-	@import "../../node_modules/selectize/dist/css/selectize.bootstrap3.css";
+	// @import "../../node_modules/selectize/dist/css/selectize.css";
+	// @import "../../node_modules/selectize/dist/css/selectize.bootstrap3.css";
+
+
+	/**used by both YASQE and/or YASR**/
+	@import "cssIncludes/foldgutter";
+	@import "cssIncludes/fullscreen";
+	@import "cssIncludes/codemirror";
+	@import "cssIncludes/jquery.dataTables";
+	@import "cssIncludes/jquery.ui.resizable";
+	@import "cssIncludes/pivot";
+	@import "cssIncludes/selectize.bootstrap3";
+	@import "cssIncludes/selectize";
 }

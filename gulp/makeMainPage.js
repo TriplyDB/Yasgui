@@ -3,7 +3,7 @@ var gulp = require('gulp'),
 	jsValidate = require('gulp-jsvalidate'),
 	source = require('vinyl-source-stream'),
 	embedlr = require('gulp-embedlr'),
-	minifyCSS = require('gulp-minify-css'),
+	minifyCSS = require('gulp-clean-css'),
 	uglify = require("gulp-uglify"),
 	sass = require('gulp-sass'),
 	buffer = require("vinyl-buffer"),
@@ -26,7 +26,7 @@ gulp.task('makeMainPageCss', function() {
   	.pipe(concat('doc.min.css'))
     .pipe(gulp.dest("doc"))
     ;
-	
+
 });
 
 gulp.task('makeMainPage', ['makeMainPageJs', 'makeMainPageCss']);
