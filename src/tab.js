@@ -284,6 +284,7 @@ var Tab = function(yasgui, id, name, endpoint) {
 				yasgui.store();
 			})
 		}
+		YASGUI.YASQE.positionButtons(tab.yasqe)
 	};
 
 	tab.beforeShow = function() {
