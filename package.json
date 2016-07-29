@@ -76,6 +76,7 @@
     "selectize": "git://github.com/brianreavis/selectize.js",
     "underscore": "^1.8.3",
     "yasgui-utils": "^1.6.0",
+    "yasgui-yasqe": "^2.10.4",
     "yasgui-yasr": "^2.8.0"
   },
   "browser": {
