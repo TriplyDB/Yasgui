@@ -2281,7 +2281,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     line-height: 1.42857;
     border-radius: 4px;
     -webkit-user-select: none;
-    -ms-user-select: none;
     user-select: none; }
     .yasgui .btn:focus, .yasgui .btn.focus, .yasgui .btn:active:focus, .yasgui .btn:active.focus, .yasgui .btn.active:focus, .yasgui .btn.active.focus {
       outline: 5px auto -webkit-focus-ring-color;
@@ -4830,9 +4829,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     display: none !important; }
   .yasgui .affix {
     position: fixed; }
-
-@-ms-viewport {
-  width: device-width; }
   .yasgui .visible-xs {
     display: none !important; }
   .yasgui .visible-sm {
@@ -4972,6 +4968,14 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   @media print {
     .yasgui .hidden-print {
       display: none !important; } }
+  .yasgui .yasqe .CodeMirror-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: auto;
+    z-index: 9; }
 
 @-webkit-keyframes spin {
   100% {
@@ -4990,7 +4994,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     padding: 6px 12px;
     border-radius: 4px;
     -webkit-user-select: none;
-    -ms-user-select: none;
     user-select: none;
     -webkit-appearance: button;
     /* margin: 0; */
@@ -5235,7 +5238,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       padding: 6px 12px;
       border-radius: 4px;
       -webkit-user-select: none;
-      -ms-user-select: none;
       user-select: none;
       -webkit-appearance: button;
       /* margin: 0; */
@@ -5395,7 +5397,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       /* Non standard for webkit */
       word-break: break-word;
       -webkit-hyphens: auto;
-      -ms-hyphens: auto;
       hyphens: auto;
       padding: 0px 5px; }
     .yasgui .yasr .sortIcons {
@@ -5626,7 +5627,6 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
           /* Non standard for webkit */
           word-break: break-word;
           -webkit-hyphens: auto;
-          -ms-hyphens: auto;
           hyphens: auto; }
         .yasgui .controlbar .endpointText .endpointOptionRow .endpointTitle {
           font-size: 12px;
@@ -5911,8 +5911,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     z-index: 4; }
   .yasgui .CodeMirror-gutter-wrapper {
     -webkit-user-select: none;
-    -ms-user-select: none;
-        user-select: none; }
+    user-select: none; }
   .yasgui .CodeMirror-lines {
     cursor: text;
     min-height: 1px;
@@ -6988,7 +6987,34 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     opacity: 0.5;
     background-color: #fafafa; }
 
-@import url(../../node_modules/codemirror/addon/hint/show-hint.css);
+.CodeMirror-hints {
+  position: absolute;
+  z-index: 10;
+  overflow: hidden;
+  list-style: none;
+  margin: 0;
+  padding: 2px;
+  box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  border: 1px solid silver;
+  background: white;
+  font-size: 90%;
+  font-family: monospace;
+  max-height: 20em;
+  overflow-y: auto; }
+
+.CodeMirror-hint {
+  margin: 0;
+  padding: 0 4px;
+  border-radius: 2px;
+  white-space: pre;
+  color: black;
+  cursor: pointer; }
+
+li.CodeMirror-hint-active {
+  background: #08f;
+  color: white; }
+
 .CodeMirror-hint {
   max-width: 30em; }
 
