@@ -20,7 +20,7 @@ var gulp = require('gulp'),
 
 gulp.task('browserifyWithDeps', function() {
 	var bundler = browserify({entries: ["./src/entry.js"],standalone: "YASGUI", debug: true});
-	
+
 	return bundler
 		.transform({global:true}, shim)
 		.bundle()
@@ -36,7 +36,7 @@ gulp.task('browserifyWithDeps', function() {
 		.pipe(uglify({
 			compress: {
 				//disable the compressions. Otherwise, breakpoints in minified files don't work (sourcemaped lines get offset w.r.t. original)
-				//minified files does increase from 457 to 459 kb, but can live with that 
+				//minified files does increase from 457 to 459 kb, but can live with that
 	            negate_iife: false,
 	            sequences: false
 	        }
@@ -44,24 +44,26 @@ gulp.task('browserifyWithDeps', function() {
 		.pipe(sourcemaps.write('./'))
 		.pipe(gulp.dest(paths.bundleDir));
 });
-gulp.task('browserify', function() {
-	runSequence('browserifyWithDeps', 'makeBundledCopy');
+gulp.task('browserify', function(cb) {
+	runSequence('browserifyWithDeps', 'makeBundledCopy',cb);
 });
-gulp.task('makeBundledCopy', function() {
-	//keep copy with 'bundled' in name as well (for backwards compatability)
-	gulp.src(paths.bundleDir + '/' + paths.bundleName + '.min.js')
+gulp.task('makeBundleCopyMin', function() {
+	return gulp.src(paths.bundleDir + '/' + paths.bundleName + '.min.js')
 		.pipe(rename(paths.bundleName + '.bundled.min.js'))
 		.pipe(gulp.dest(paths.bundleDir));
-	gulp.src(paths.bundleDir + '/' + paths.bundleName + '.js')
-		.pipe(rename(paths.bundleName + '.bundled.js'))
-		.pipe(gulp.dest(paths.bundleDir));
-});
+})
+gulp.task('makeBundleCopyMain', function() {
+	return gulp.src(paths.bundleDir + '/' + paths.bundleName + '.js')
+			.pipe(rename(paths.bundleName + '.bundled.js'))
+			.pipe(gulp.dest(paths.bundleDir));
+})
+gulp.task('makeBundledCopy', ['makeBundleCopyMin', 'makeBundleCopyMain']);
 /**
  * Faster, because we don't minify, and include source maps in js file (notice we store it with .min.js extension, so we don't have to change the index.html file for debugging)
  */
 gulp.task('browserifyForDebug', function() {
 	var bundler = browserify({entries: ["./src/entry.js"],standalone: "YASGUI", debug: true});
-	
+
 	return bundler
 		.transform({global:true}, shim)
 		.bundle()
@@ -73,4 +75,3 @@ gulp.task('browserifyForDebug', function() {
 		.pipe(gulp.dest(paths.bundleDir))
 		.pipe(connect.reload());
 });
-
