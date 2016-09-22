@@ -143,6 +143,9 @@ module.exports = function(yasgui, tab) {
 				value: 'text/turtle'
 			}).text('Turtle'))
 			.append($("<option>", {
+				value: 'application/rdf+json'
+			}).text('JSON'))
+			.append($("<option>", {
 				value: 'application/rdf+xml'
 			}).text('RDF-XML'))
 			.append($("<option>", {
@@ -457,7 +460,7 @@ module.exports = function(yasgui, tab) {
 			}
 		});
 		options.headers = headers;
-		
+
 		//default graphs
 		var defaultGraphs = [];
 		$defaultGraphsDiv.find('div').each(function(i, el) {
