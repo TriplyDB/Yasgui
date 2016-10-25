@@ -73,14 +73,11 @@
     "jquery-ui": "1.10.5",
     "microplugin": "0.0.3",
     "minimist": "^1.2.0",
-    "selectize": "git://github.com/brianreavis/selectize.js",
+    "selectize": "^0.12.4",
     "underscore": "^1.8.3",
     "yasgui-utils": "^1.6.0",
     "yasgui-yasqe": "2.x.x",
     "yasgui-yasr": "2.x.x"
-  },
-  "browser": {
-    "selectize": "./node_modules/selectize/dist/js/selectize.js"
   },
   "browserify-shim": {
     "jQuery": "jquery"
