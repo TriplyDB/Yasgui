@@ -64446,13 +64446,12 @@ module.exports={
         "spec": ">=1.6.0 <2.0.0",
         "type": "range"
       },
-      "/Users/james/Documents/Playground/YASGUI"
+      "/home/lrd900/yasgui/yasgui"
     ]
   ],
   "_from": "yasgui-utils@>=1.6.0 <2.0.0",
   "_id": "yasgui-utils@1.6.0",
   "_inCache": true,
-  "_installable": true,
   "_location": "/yasgui-utils",
   "_npmUser": {
     "name": "laurens.rietveld",
@@ -64478,7 +64477,7 @@ module.exports={
   "_shasum": "bcb9091109c233e3e82737c94c202e6512389c47",
   "_shrinkwrap": null,
   "_spec": "yasgui-utils@^1.6.0",
-  "_where": "/Users/james/Documents/Playground/YASGUI",
+  "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
   },
@@ -69502,24 +69501,23 @@ module.exports={
         "spec": ">=2.0.0 <3.0.0",
         "type": "range"
       },
-      "/Users/james/Documents/Playground/YASGUI"
+      "/home/lrd900/yasgui/yasgui"
     ]
   ],
   "_from": "yasgui-yasqe@>=2.0.0 <3.0.0",
-  "_id": "yasgui-yasqe@2.11.4",
+  "_id": "yasgui-yasqe@2.11.5",
   "_inCache": true,
-  "_installable": true,
   "_location": "/yasgui-yasqe",
-  "_nodeVersion": "6.8.0",
+  "_nodeVersion": "6.9.1",
   "_npmOperationalInternal": {
     "host": "packages-12-west.internal.npmjs.com",
-    "tmp": "tmp/yasgui-yasqe-2.11.4.tgz_1476362893605_0.5967485189903527"
+    "tmp": "tmp/yasgui-yasqe-2.11.5.tgz_1477471258090_0.6092552647460252"
   },
   "_npmUser": {
     "name": "laurens.rietveld",
     "email": "laurens.rietveld@gmail.com"
   },
-  "_npmVersion": "3.10.8",
+  "_npmVersion": "4.0.1",
   "_phantomChildren": {},
   "_requested": {
     "raw": "yasgui-yasqe@2.x.x",
@@ -69533,11 +69531,11 @@ module.exports={
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.4.tgz",
-  "_shasum": "995e59885fcd9286d651de3b2c2611ff52fd2867",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.5.tgz",
+  "_shasum": "628dd6300202d6c30900c181fbeb165b70447c66",
   "_shrinkwrap": null,
   "_spec": "yasgui-yasqe@2.x.x",
-  "_where": "/Users/james/Documents/Playground/YASGUI",
+  "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
   },
@@ -69547,6 +69545,7 @@ module.exports={
   "dependencies": {
     "bootstrap-sass": "^3.3.7",
     "browserify": "^13.1.0",
+    "browserify-shim": "^3.8.12",
     "browserify-transform-tools": "^1.6.0",
     "codemirror": "5.17.0",
     "exorcist": "^0.4.0",
@@ -69584,10 +69583,10 @@ module.exports={
   },
   "directories": {},
   "dist": {
-    "shasum": "995e59885fcd9286d651de3b2c2611ff52fd2867",
-    "tarball": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.4.tgz"
+    "shasum": "628dd6300202d6c30900c181fbeb165b70447c66",
+    "tarball": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.5.tgz"
   },
-  "gitHead": "835870ed9d882276fc99a2683a2abbaf2192192b",
+  "gitHead": "ac0163e32dcbb7ad88a60ec3b0fd55cd4d19d09b",
   "homepage": "http://yasqe.yasgui.org",
   "keywords": [
     "JavaScript",
@@ -69632,7 +69631,7 @@ module.exports={
     "minor": "gulp minor",
     "patch": "gulp patch"
   },
-  "version": "2.11.4"
+  "version": "2.11.5"
 }
 
 },{}],40:[function(require,module,exports){
@@ -76490,24 +76489,23 @@ module.exports={
         "spec": ">=2.0.0 <3.0.0",
         "type": "range"
       },
-      "/Users/james/Documents/Playground/YASGUI"
+      "/home/lrd900/yasgui/yasgui"
     ]
   ],
   "_from": "yasgui-yasr@>=2.0.0 <3.0.0",
-  "_id": "yasgui-yasr@2.9.0",
+  "_id": "yasgui-yasr@2.9.2",
   "_inCache": true,
-  "_installable": true,
   "_location": "/yasgui-yasr",
-  "_nodeVersion": "6.6.0",
+  "_nodeVersion": "6.9.1",
   "_npmOperationalInternal": {
-    "host": "packages-16-east.internal.npmjs.com",
-    "tmp": "tmp/yasgui-yasr-2.9.0.tgz_1474536620067_0.9668868565931916"
+    "host": "packages-18-east.internal.npmjs.com",
+    "tmp": "tmp/yasgui-yasr-2.9.2.tgz_1477471190296_0.7599615233484656"
   },
   "_npmUser": {
     "name": "laurens.rietveld",
     "email": "laurens.rietveld@gmail.com"
   },
-  "_npmVersion": "3.10.3",
+  "_npmVersion": "4.0.1",
   "_phantomChildren": {},
   "_requested": {
     "raw": "yasgui-yasr@2.x.x",
@@ -76521,11 +76519,11 @@ module.exports={
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.9.0.tgz",
-  "_shasum": "f2fd9a2b04e67b60679934326ae6087e53f14b51",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.9.2.tgz",
+  "_shasum": "85745d89710de57dc162c2f6f9d833925298d7d5",
   "_shrinkwrap": null,
   "_spec": "yasgui-yasr@2.x.x",
-  "_where": "/Users/james/Documents/Playground/YASGUI",
+  "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
   },
@@ -76541,6 +76539,7 @@ module.exports={
     "url": "https://github.com/YASGUI/YASR/issues/"
   },
   "dependencies": {
+    "browserify-shim": "^3.8.12",
     "codemirror": "^5.17.0",
     "d3": "^4.1.1",
     "datatables.net": "^1.10.12",
@@ -76555,7 +76554,6 @@ module.exports={
   "devDependencies": {
     "bootstrap-sass": "^3.3.7",
     "browserify": "^13.1.0",
-    "browserify-shim": "^3.8.12",
     "browserify-transform-tools": "^1.6.0",
     "exorcist": "^0.4.0",
     "gulp": "^3.9.1",
@@ -76590,10 +76588,10 @@ module.exports={
   },
   "directories": {},
   "dist": {
-    "shasum": "f2fd9a2b04e67b60679934326ae6087e53f14b51",
-    "tarball": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.9.0.tgz"
+    "shasum": "85745d89710de57dc162c2f6f9d833925298d7d5",
+    "tarball": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.9.2.tgz"
   },
-  "gitHead": "790c0dfea3476e8a59fbe2a142bdfd3920a97b9b",
+  "gitHead": "39d92078cb3bf5c2591be95ba18dd335b212c57a",
   "homepage": "http://yasr.yasgui.org",
   "keywords": [
     "JavaScript",
@@ -76654,7 +76652,7 @@ module.exports={
     "minor": "gulp minor",
     "patch": "gulp patch"
   },
-  "version": "2.9.0"
+  "version": "2.9.2"
 }
 
 },{}],175:[function(require,module,exports){

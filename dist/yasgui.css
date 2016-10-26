@@ -41,7 +41,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
  * http://jquery.org/license
  */
   /**
- * selectize.bootstrap3.css (v0.12.1) - Bootstrap 3 Theme
+ * selectize.bootstrap3.css (v0.12.4) - Bootstrap 3 Theme
  * Copyright (c) 2013–2015 Brian Reavis & contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
@@ -56,7 +56,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
  * @author Brian Reavis <brian@thirdroute.com>
  */
   /**
- * selectize.css (v0.12.1)
+ * selectize.css (v0.12.4)
  * Copyright (c) 2013–2015 Brian Reavis & contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
@@ -6550,6 +6550,11 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background: none; }
   .yasgui .selectize-control.plugin-remove_button .disabled [data-value] .remove {
     border-left-color: rgba(77, 77, 77, 0); }
+  .yasgui .selectize-control.plugin-remove_button .remove-single {
+    position: absolute;
+    right: 28px;
+    top: 6px;
+    font-size: 23px; }
   .yasgui .selectize-control {
     position: relative; }
   .yasgui .selectize-dropdown,
@@ -6674,7 +6679,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .selectize-dropdown-content {
     overflow-y: auto;
     overflow-x: hidden;
-    max-height: 200px; }
+    max-height: 200px;
+    -webkit-overflow-scrolling: touch; }
   .yasgui .selectize-control.single .selectize-input,
   .yasgui .selectize-control.single .selectize-input input {
     cursor: pointer; }
@@ -6831,6 +6837,11 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background: none; }
   .yasgui .selectize-control.plugin-remove_button .disabled [data-value] .remove {
     border-left-color: #ffffff; }
+  .yasgui .selectize-control.plugin-remove_button .remove-single {
+    position: absolute;
+    right: 28px;
+    top: 6px;
+    font-size: 23px; }
   .yasgui .selectize-control {
     position: relative; }
   .yasgui .selectize-dropdown,
@@ -6955,7 +6966,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .selectize-dropdown-content {
     overflow-y: auto;
     overflow-x: hidden;
-    max-height: 200px; }
+    max-height: 200px;
+    -webkit-overflow-scrolling: touch; }
   .yasgui .selectize-control.single .selectize-input,
   .yasgui .selectize-control.single .selectize-input input {
     cursor: pointer; }
