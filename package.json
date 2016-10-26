@@ -16,7 +16,6 @@
   "devDependencies": {
     "brfs": "^1.4.3",
     "browserify": "^13.1.0",
-    "browserify-shim": "^3.8.12",
     "browserify-transform-tools": "^1.6.0",
     "connect": "^3.4.1",
     "exorcist": "^0.4.0",
@@ -69,6 +68,7 @@
   "dependencies": {
     "bootstrap-contextmenu": "git://github.com/sydcanem/bootstrap-contextmenu",
     "bootstrap-sass": "^3.3.7",
+    "browserify-shim": "^3.8.12",
     "jquery": "^2.2.4",
     "jquery-ui": "1.10.5",
     "microplugin": "0.0.3",
