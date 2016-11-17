@@ -182,6 +182,7 @@ var Tab = function(yasgui,  options) {
 			YASGUI.YASQE.defaults.extraKeys['Cmd-Enter'] = function() {
 				tab.yasqe.query.apply(this, arguments)
 			};
+			console.log(JSON.stringify(yasqeOptions))
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.setSize("100%", persistentOptions.yasqe.height);
 			tab.yasqe.on('blur', function(yasqe) {
