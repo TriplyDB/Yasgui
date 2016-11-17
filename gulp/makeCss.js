@@ -40,6 +40,7 @@ var cssDeps = [
 	"./node_modules/pivottable/dist/pivot.css",
 	"./node_modules/selectize/dist/css/selectize.bootstrap3.css",
 	"./node_modules/selectize/dist/css/selectize.css",
+	"./node_modules/leaflet/dist/leaflet.css",
 
 ]
 gulp.task('copyCssDeps', function() {
