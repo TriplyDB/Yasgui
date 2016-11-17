@@ -1,6 +1,7 @@
 'use strict';
 
 var $ = require('jquery');
+var YASGUI = require('./main.js');
 module.exports = {
 	persistencyPrefix: function(yasgui) {
 		return "yasgui_" + $(yasgui.wrapperElement).closest('[id]').attr('id') + "_";
@@ -14,6 +15,27 @@ module.exports = {
 		googleAnalyticsId: null,
 		askConsent: true,
 	},
+
+	yasqe: $.extend(true, {}, {
+		height: 300,
+		sparql: {
+			endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
+			acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
+			acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
+			args: YASGUI.YASQE.defaults.sparql.args,
+			defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
+			namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
+			requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod,
+			headers: YASGUI.YASQE.defaults.sparql.headers
+		}
+	}),
+	yasr: YASGUI.YASR.defaults,
+	tabs: [
+		{
+			yasqe: module.exports.yasqe,
+			yasr: module.exports.yasr
+		}
+	],
 
 	 /**
 	 * Yes, UGLY as well... Problem is: there is NO public catalogue API or SPARQL endpoint (which is cors enabled and works without api key)

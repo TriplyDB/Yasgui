@@ -156,9 +156,22 @@ var YASGUI = function(parent, options) {
 
 		if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
 			//ah, this is on first load. initialize some stuff
-			persistentOptions.tabOrder = [];
-			persistentOptions.tabs = {};
-			persistentOptions.selected = null;
+			persistentOptions = {
+				tabOrder: [],
+				tabs: {},
+				selected: null
+			}
+			yasgui.options.tabs.forEach(function(tab) {
+				var id = getRandomId();
+				if (!persistentOptions.selected) persistentOptions.selected = id;
+				persistentOptions.tabOrder.push(id);
+				persistentOptions.tabs[id] = $.extend(true, {}, {
+					id: id
+				}, tab)
+
+			})
+			yasgui.persistentOptions = persistentOptions;
+			yasgui.store();
 		}
 		var optionsFromUrl = require('./shareLink.js').getOptionsFromUrl();
 		if (optionsFromUrl) {
@@ -182,12 +195,7 @@ var YASGUI = function(parent, options) {
 			})
 		}
 
-		if (persistentOptions.tabOrder.length > 0) {
-			persistentOptions.tabOrder.forEach(addTab);
-		} else {
-			//hmm, nothing to be drawn. just initiate a single tab
-			addTab();
-		}
+		persistentOptions.tabOrder.forEach(addTab);
 
 		$tabsParent.sortable({
 			placeholder: "tab-sortable-highlight",
@@ -388,7 +396,16 @@ var YASGUI = function(parent, options) {
 
 		if (newItem) persistentOptions.tabOrder.push(tabId);
 		var Tab = require('./tab.js');
-		yasgui.tabs[tabId] = new Tab(yasgui, tabId, name, endpoint);
+		var options = {
+			id: tabId,
+			name: name
+		}
+		if (endpoint) options.yasqe = {
+			sparql: {
+				endpoint: endpoint
+			}
+		}
+		yasgui.tabs[tabId] = new Tab(yasgui,options );
 		if (newItem || persistentOptions.selected == tabId) {
 			yasgui.tabs[tabId].beforeShow();
 			$tabToggle.tab('show');

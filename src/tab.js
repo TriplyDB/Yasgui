@@ -13,39 +13,20 @@ var $ = require('jquery'),
 	YASGUI = require('./main.js');
 //we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 //We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
-var defaultPersistent = {
-	yasqe: {
-		height: 300,
-		sparql: {
-			endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
-			acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
-			acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
-			args: YASGUI.YASQE.defaults.sparql.args,
-			defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
-			namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
-			requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod,
-			headers: YASGUI.YASQE.defaults.sparql.headers
-		}
-	}
-};
 
 
 
-module.exports = function(yasgui, id, name, endpoint) {
-	return new Tab(yasgui, id, name, endpoint);
+module.exports = function(yasgui, options) {
+	return new Tab(yasgui, options);
 }
-var Tab = function(yasgui, id, name, endpoint) {
+var Tab = function(yasgui,  options) {
 	EventEmitter.call(this);
-	if (!yasgui.persistentOptions.tabs[id]) {
-		yasgui.persistentOptions.tabs[id] = $.extend(true, {
-			id: id,
-			name: name
-		}, defaultPersistent);
-	} else {
-		yasgui.persistentOptions.tabs[id] = $.extend(true, {}, defaultPersistent, yasgui.persistentOptions.tabs[id]);
-	}
+	if (!options) options = {};
+	if (!options.yasqe) options.yasqe = {};
+	if (!options.yasr) options.yasr = {};
+	var id = options.id;
+	yasgui.persistentOptions.tabs[id] = $.extend(true, {}, {yasqe: YASGUI.defaults.yasqe, yasr: YASGUI.defaults.yasr}, options, yasgui.persistentOptions.tabs[id] || {});
 	var persistentOptions = yasgui.persistentOptions.tabs[id];
-	if (endpoint) persistentOptions.yasqe.sparql.endpoint = endpoint;
 	var tab = this;
 	tab.persistentOptions = persistentOptions;
 
