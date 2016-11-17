@@ -149,6 +149,15 @@ module.exports = function(yasgui, tab) {
 				value: 'application/rdf+xml'
 			}).text('RDF-XML'))
 			.append($("<option>", {
+				value: 'application/trig'
+			}).text('TriG'))
+			.append($("<option>", {
+				value: 'application/n-triples'
+			}).text('N-Triples'))
+			.append($("<option>", {
+				value: 'application/n-quads'
+			}).text('N-Quads'))
+			.append($("<option>", {
 				value: 'text/csv'
 			}).text('CSV'))
 			.append($("<option>", {
