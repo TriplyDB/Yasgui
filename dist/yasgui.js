@@ -94249,7 +94249,7 @@ $.fn.endpointCombi = function(yasgui, options) {
 		if (!yasgui.corsEnabled) yasgui.corsEnabled = {};
 		if (!(endpoint in yasgui.corsEnabled)) {
 			$.ajax({
-				url: endpoint + '&query=' + encodeURIComponent('ASK {?x ?y ?z}'),
+				url: endpoint + '?query=' + encodeURIComponent('ASK {?x ?y ?z}'),
 				complete: function(jqXHR) {
 					yasgui.corsEnabled[endpoint] = jqXHR.status > 0;
 				}
@@ -95462,7 +95462,6 @@ var Tab = function(yasgui,  options) {
 			YASGUI.YASQE.defaults.extraKeys['Cmd-Enter'] = function() {
 				tab.yasqe.query.apply(this, arguments)
 			};
-			console.log(JSON.stringify(yasqeOptions))
 			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
 			tab.yasqe.setSize("100%", persistentOptions.yasqe.height);
 			tab.yasqe.on('blur', function(yasqe) {
