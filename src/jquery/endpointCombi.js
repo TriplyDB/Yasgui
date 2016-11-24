@@ -40,7 +40,7 @@ $.fn.endpointCombi = function(yasgui, options) {
 		if (!yasgui.corsEnabled) yasgui.corsEnabled = {};
 		if (!(endpoint in yasgui.corsEnabled)) {
 			$.ajax({
-				url: endpoint + '&query=' + encodeURIComponent('ASK {?x ?y ?z}'),
+				url: endpoint + '?query=' + encodeURIComponent('ASK {?x ?y ?z}'),
 				complete: function(jqXHR) {
 					yasgui.corsEnabled[endpoint] = jqXHR.status > 0;
 				}
