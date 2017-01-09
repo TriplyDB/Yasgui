@@ -95043,7 +95043,9 @@ var YASGUI = function(parent, options) {
 		var Tab = require('./tab.js');
 		var options = {
 			id: tabId,
-			name: name
+			name: name,
+			yasqe: yasgui.options.yasqe,
+			yasr: yasgui.options.yasr
 		}
 		if (endpoint) options.yasqe = {
 			sparql: {
