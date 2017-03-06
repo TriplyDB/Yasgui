@@ -92,21 +92,21 @@ var YASGUI = function(parent, options) {
   var getRandomId = function() {
     return Math.random().toString(36).substring(7);
   };
-
-  var $tabRename = $('<div><input type="text"></div>').keydown(function(e) {
-    if (e.which == 27 || e.keyCode == 27) {
-      //esc
-      $(this).closest("li").removeClass("rename");
-    } else if (e.which == 13 || e.keyCode == 13) {
-      //enter
-      storeRename($(this).closest("li"));
-    }
-  });
+  var getTabInputEl = function() {
+    return $('<div><input type="text"></div>').keydown(function(e) {
+      if (e.which == 27 || e.keyCode == 27) {
+        //esc
+        $(this).closest("li").removeClass("rename");
+      } else if (e.which == 13 || e.keyCode == 13) {
+        //enter
+        storeRename($(this).closest("li"));
+      }
+    });
+  };
   var renameStart = function(tabEl) {
     var val = tabEl.find("span").text();
     tabEl.addClass("rename");
-    tabEl.find("input").val(val);
-    $tabRename.find("input").focus();
+    tabEl.find("input").val(val).focus();
     tabEl.onOutsideClick(function() {
       storeRename(tabEl);
     });
@@ -360,7 +360,7 @@ var YASGUI = function(parent, options) {
       role: "presentation"
     })
       .append($tabToggle)
-      .append($tabRename)
+      .append(getTabInputEl())
       .dblclick(function() {
         var el = $(this);
         renameStart(el);
