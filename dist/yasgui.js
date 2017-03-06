@@ -94252,304 +94252,648 @@ var parseXmlSchemaDate = function(dateString) {
 };
 
 },{"./exceptions.js":190,"jquery":22}],209:[function(require,module,exports){
-'use strict';
+"use strict";
 
-var $ = require('jquery');
-var YASGUI = require('./main.js');
+var $ = require("jquery");
+var YASGUI = require("./main.js");
 module.exports = {
-	persistencyPrefix: function(yasgui) {
-		return "yasgui_" + $(yasgui.wrapperElement).closest('[id]').attr('id') + "_";
-	},
-	allowYasqeResize: true,
-	api: {
-		corsProxy: null,
-		collections: null,
-	},
-	tracker: {
-		googleAnalyticsId: null,
-		askConsent: true,
-	},
+  persistencyPrefix: function(yasgui) {
+    return "yasgui_" + $(yasgui.wrapperElement).closest("[id]").attr("id") + "_";
+  },
+  allowYasqeResize: true,
+  api: {
+    corsProxy: null,
+    collections: null
+  },
+  tracker: {
+    googleAnalyticsId: null,
+    askConsent: true
+  },
 
-	yasqe: $.extend(true, {}, {
-		height: 300,
-		sparql: {
-			endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
-			acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
-			acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
-			args: YASGUI.YASQE.defaults.sparql.args,
-			defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
-			namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
-			requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod,
-			headers: YASGUI.YASQE.defaults.sparql.headers
-		}
-	}),
-	yasr: YASGUI.YASR.defaults,
-	tabs: [
-		{
-			yasqe: module.exports.yasqe,
-			yasr: module.exports.yasr
-		}
-	],
+  yasqe: $.extend(
+    true,
+    {},
+    {
+      height: 300,
+      sparql: {
+        endpoint: YASGUI.YASQE.defaults.sparql.endpoint,
+        acceptHeaderGraph: YASGUI.YASQE.defaults.sparql.acceptHeaderGraph,
+        acceptHeaderSelect: YASGUI.YASQE.defaults.sparql.acceptHeaderSelect,
+        args: YASGUI.YASQE.defaults.sparql.args,
+        defaultGraphs: YASGUI.YASQE.defaults.sparql.defaultGraphs,
+        namedGraphs: YASGUI.YASQE.defaults.sparql.namedGraphs,
+        requestMethod: YASGUI.YASQE.defaults.sparql.requestMethod,
+        headers: YASGUI.YASQE.defaults.sparql.headers
+      }
+    }
+  ),
+  yasr: YASGUI.YASR.defaults,
+  tabs: [
+    {
+      yasqe: module.exports.yasqe,
+      yasr: module.exports.yasr
+    }
+  ],
 
-	 /**
+  /**
 	 * Yes, UGLY as well... Problem is: there is NO public catalogue API or SPARQL endpoint (which is cors enabled and works without api key)
 	 * I'm waiting for SPARQLES to make a public SPARQL endpoint of TPF API....
 	 * For now, just store this list (scraped from the SPARQLES website) statically..
 	 */
-	catalogueEndpoints: [{"endpoint":"http://biolit.rkbexplorer.com/sparql","title":"A Short Biographical Dictionary of English Literature (RKBExplorer)"},{"endpoint":"http://aemet.linkeddata.es/sparql","title":"AEMET metereological dataset"},{"endpoint":"http://aksw.org/sparql","title":"aksw.org Research Group dataset"},{"endpoint":"http://data.allie.dbcls.jp/sparql","title":"Allie Abbreviation And Long Form Database in Life Science"},{"endpoint":"http://vocabulary.semantic-web.at/PoolParty/sparql/AustrianSkiTeam","title":"Alpine Ski Racers of Austria"},{"endpoint":"http://semanticweb.cs.vu.nl/europeana/sparql/","title":"Amsterdam Museum as Linked Open Data in the Europeana Data Model"},
-	{"endpoint":"http://opendata.aragon.es/sparql","title":"AragoDBPedia"},{"endpoint":"http://data.archiveshub.ac.uk/sparql","title":"Archives Hub Linked Data"},{"endpoint":"http://www.auth.gr/sparql","title":"Aristotle University"},{"endpoint":"http://sparql.jesandco.org:8890/sparql","title":"ASN:US"},{"endpoint":"http://acm.rkbexplorer.com/sparql/","title":"Association for Computing Machinery (ACM) (RKBExplorer)"},{"endpoint":"http://lab.environment.data.gov.au/sparql","title":"Australian Climate Observations Reference Network - Surface Air Temperature Dataset"},{"endpoint":"http://abs.270a.info/sparql","title":"Australian Bureau of Statistics (ABS) Linked Data"},
-	{"endpoint":"http://lod.b3kat.de/sparql","title":"B3Kat - Library Union Catalogues of Bavaria, Berlin and Brandenburg"},{"endpoint":"http://bis.270a.info/sparql","title":"Bank for International Settlements (BIS) Linked Data"},{"endpoint":"http://www.open-biomed.org.uk/sparql/endpoint/bdgp_20081030","title":"Bdgp"},{"endpoint":"http://affymetrix.bio2rdf.org/sparql","title":"Bio2RDF::Affymetrix"},{"endpoint":"http://biomodels.bio2rdf.org/sparql","title":"Bio2RDF::Biomodels"},{"endpoint":"http://bioportal.bio2rdf.org/sparql","title":"Bio2RDF::Bioportal"},{"endpoint":"http://clinicaltrials.bio2rdf.org/sparql","title":"Bio2RDF::Clinicaltrials"},
-	{"endpoint":"http://ctd.bio2rdf.org/sparql","title":"Bio2RDF::Ctd"},{"endpoint":"http://dbsnp.bio2rdf.org/sparql","title":"Bio2RDF::Dbsnp"},{"endpoint":"http://drugbank.bio2rdf.org/sparql","title":"Bio2RDF::Drugbank"},{"endpoint":"http://genage.bio2rdf.org/sparql","title":"Bio2RDF::Genage"},{"endpoint":"http://gendr.bio2rdf.org/sparql","title":"Bio2RDF::Gendr"},{"endpoint":"http://goa.bio2rdf.org/sparql","title":"Bio2RDF::Goa"},{"endpoint":"http://hgnc.bio2rdf.org/sparql","title":"Bio2RDF::Hgnc"},{"endpoint":"http://homologene.bio2rdf.org/sparql","title":"Bio2RDF::Homologene"},{"endpoint":"http://inoh.bio2rdf.org/sparql","title":"Bio2RDF::INOH"},
-	{"endpoint":"http://interpro.bio2rdf.org/sparql","title":"Bio2RDF::Interpro"},{"endpoint":"http://iproclass.bio2rdf.org/sparql","title":"Bio2RDF::Iproclass"},{"endpoint":"http://irefindex.bio2rdf.org/sparql","title":"Bio2RDF::Irefindex"},{"endpoint":"http://biopax.kegg.bio2rdf.org/sparql","title":"Bio2RDF::KEGG::BioPAX"},{"endpoint":"http://linkedspl.bio2rdf.org/sparql","title":"Bio2RDF::Linkedspl"},{"endpoint":"http://lsr.bio2rdf.org/sparql","title":"Bio2RDF::Lsr"},{"endpoint":"http://mesh.bio2rdf.org/sparql","title":"Bio2RDF::Mesh"},{"endpoint":"http://mgi.bio2rdf.org/sparql","title":"Bio2RDF::Mgi"},
-	{"endpoint":"http://ncbigene.bio2rdf.org/sparql","title":"Bio2RDF::Ncbigene"},{"endpoint":"http://ndc.bio2rdf.org/sparql","title":"Bio2RDF::Ndc"},{"endpoint":"http://netpath.bio2rdf.org/sparql","title":"Bio2RDF::NetPath"},{"endpoint":"http://omim.bio2rdf.org/sparql","title":"Bio2RDF::Omim"},{"endpoint":"http://orphanet.bio2rdf.org/sparql","title":"Bio2RDF::Orphanet"},{"endpoint":"http://pharmgkb.bio2rdf.org/sparql","title":"Bio2RDF::Pharmgkb"},{"endpoint":"http://biopax.pharmgkb.bio2rdf.org/sparql","title":"Bio2RDF::PharmGKB::BioPAX"},{"endpoint":"http://pid.bio2rdf.org/sparql","title":"Bio2RDF::PID"},
-	{"endpoint":"http://pubchem.bio2rdf.org/sparql","title":"Bio2RDF::PubChem"},{"endpoint":"http://rhea.bio2rdf.org/sparql","title":"Bio2RDF::Rhea"},{"endpoint":"http://sabiork.bio2rdf.org/sparql","title":"Bio2RDF::Sabiork"},{"endpoint":"http://sgd.bio2rdf.org/sparql","title":"Bio2RDF::Sgd"},{"endpoint":"http://sider.bio2rdf.org/sparql","title":"Bio2RDF::Sider"},{"endpoint":"http://spike.bio2rdf.org/sparql","title":"Bio2RDF::SPIKE"},{"endpoint":"http://taxonomy.bio2rdf.org/sparql","title":"Bio2RDF::Taxonomy"},{"endpoint":"http://wikipathways.bio2rdf.org/sparql","title":"Bio2RDF::Wikipathways"},
-	{"endpoint":"http://wormbase.bio2rdf.org/sparql","title":"Bio2RDF::Wormbase"},{"endpoint":"https://www.ebi.ac.uk/rdf/services/biomodels/sparql","title":"BioModels RDF"},{"endpoint":"https://www.ebi.ac.uk/rdf/services/biosamples/sparql","title":"BioSamples RDF"},{"endpoint":"http://helheim.deusto.es/bizkaisense/sparql","title":"BizkaiSense"},{"endpoint":"http://budapest.rkbexplorer.com/sparql/","title":"Budapest University of Technology and Economics (RKBExplorer)"},
-	{"endpoint":"http://bfs.270a.info/sparql","title":"Bundesamt für Statistik (BFS) - Swiss Federal Statistical Office (FSO) Linked Data"},{"endpoint":"http://opendata-bundestag.de/sparql","title":"BundestagNebeneinkuenfte"},{"endpoint":"https://www.ebi.ac.uk/rdf/services/chembl/sparql","title":"ChEMBL RDF"},{"endpoint":"http://chebi.bio2rdf.org/sparql","title":"Chemical Entities of Biological Interest (ChEBI)"},
-	{"endpoint":"http://citeseer.rkbexplorer.com/sparql/","title":"CiteSeer (Research Index) (RKBExplorer)"},{"endpoint":"http://data.colinda.org/endpoint.php","title":"COLINDA - Conference Linked Data"},{"endpoint":"http://cordis.rkbexplorer.com/sparql/","title":"Community R&amp;D Information Service (CORDIS) (RKBExplorer)"},
-	{"endpoint":"http://semantic.ckan.net/sparql/","title":"Comprehensive Knowledge Archive Network"},{"endpoint":"http://vocabulary.wolterskluwer.de/PoolParty/sparql/court","title":"Courts thesaurus"},{"endpoint":"http://crm.rkbexplorer.com/sparql","title":"crm"},
-	{"endpoint":"http://crtm.linkeddata.es/sparql","title":"CRTM"},{"endpoint":"http://data.fundacionctic.org/sparql","title":"CTIC Public Dataset Catalogs"},{"endpoint":"http://cultura.linkeddata.es/sparql","title":"CulturaLinkedData"},
-	{"endpoint":"http://data.open.ac.uk/query","title":"data.open.ac.uk, Linked Data from the Open University"},{"endpoint":"http://datos.bcn.cl/sparql","title":"Datos.bcn.cl"},{"endpoint":"http://datos.bne.es/sparql","title":"datos.bne.es"},
-	{"endpoint":"http://dblp.rkbexplorer.com/sparql/","title":"DBLP Computer Science Bibliography (RKBExplorer)"},{"endpoint":"http://dblp.l3s.de/d2r/sparql","title":"DBLP in RDF (L3S)"},{"endpoint":"http://kaiko.getalp.org/sparql","title":"dbnary"},
-	{"endpoint":"http://dbpedia.org/sparql","title":"DBpedia"},{"endpoint":"http://eu.dbpedia.org/sparql","title":"DBpedia in Basque"},{"endpoint":"http://nl.dbpedia.org/sparql","title":"DBpedia in Dutch"},{"endpoint":"http://fr.dbpedia.org/sparql","title":"DBpedia in French"},
-	{"endpoint":"http://de.dbpedia.org/sparql","title":"DBpedia in German"},{"endpoint":"http://ja.dbpedia.org/sparql","title":"DBpedia in Japanese"},{"endpoint":"http://pt.dbpedia.org/sparql","title":"DBpedia in Portuguese"},{"endpoint":"http://es.dbpedia.org/sparql","title":"DBpedia in Spanish"},
-	{"endpoint":"http://live.dbpedia.org/sparql","title":"DBpedia-Live"},{"endpoint":"http://dbtune.org/musicbrainz/sparql","title":"DBTune.org Musicbrainz D2R Server"},{"endpoint":"http://deepblue.rkbexplorer.com/sparql/","title":"Deep Blue (RKBExplorer)"},{"endpoint":"http://deploy.rkbexplorer.com/sparql/","title":"DEPLOY (RKBExplorer)"},
-	{"endpoint":"http://dewey.info/sparql.php","title":"Dewey Decimal Classification (DDC)"},{"endpoint":"http://digitaleconomy.rkbexplorer.com/sparql","title":"digitaleconomy"},{"endpoint":"http://rdf.disgenet.org/sparql/","title":"DisGeNET"},{"endpoint":"http://italy.rkbexplorer.com/sparql","title":"Diverse Italian ReSIST Partner Institutions (RKBExplorer)"},
-	{"endpoint":"http://dotac.rkbexplorer.com/sparql/","title":"dotAC (RKBExplorer)"},{"endpoint":"http://dutchshipsandsailors.nl/data/sparql/","title":"Dutch Ships and Sailors "},{"endpoint":"http://semanticweb.cs.vu.nl/dss/sparql/","title":"Dutch Ships and Sailors "},{"endpoint":"http://www.eclap.eu/sparql","title":"ECLAP"},{"endpoint":"http://services.data.gov.uk/education/sparql","title":"education.data.gov.uk"},
-	{"endpoint":"http://kent.zpr.fer.hr:8080/educationalProgram/sparql","title":"Educational programs - SISVU"},{"endpoint":"http://webenemasuno.linkeddata.es/sparql","title":"El Viajero's tourism dataset"},{"endpoint":"http://www.ida.liu.se/projects/semtech/openrdf-sesame/repositories/energy","title":"Energy efficiency assessments and improvements"},{"endpoint":"http://enipedia.tudelft.nl/sparql","title":"Enipedia - Energy Industry Data"},
-	{"endpoint":"http://environment.data.gov.uk/sparql/bwq/query","title":"Environment Agency Bathing Water Quality"},{"endpoint":"http://foreign.rkbexplorer.com/sparql/","title":"ePrints Harvest (RKBExplorer)"},{"endpoint":"http://eprints.rkbexplorer.com/sparql/","title":"ePrints3 Institutional Archive Collection (RKBExplorer)"},{"endpoint":"http://epsrc.rkbexplorer.com/sparql","title":"epsrc"},
-	{"endpoint":"http://era.rkbexplorer.com/sparql/","title":"ERA - Australian Research Council publication ratings (RKBExplorer)"},{"endpoint":"http://ecb.270a.info/sparql","title":"European Central Bank (ECB) Linked Data"},{"endpoint":"http://eventmedia.eurecom.fr/sparql","title":"EventMedia"},{"endpoint":"http://factforge.net/sparql","title":"Fact Forge"},{"endpoint":"http://frb.270a.info/sparql","title":"Federal Reserve Board (FRB) Linked Data"},
-	{"endpoint":"http://www.open-biomed.org.uk/sparql/endpoint/flyatlas","title":"flyatlas"},{"endpoint":"http://www.open-biomed.org.uk/sparql/endpoint/flybase","title":"Flybase"},{"endpoint":"http://www.open-biomed.org.uk/sparql/endpoint/flyted","title":"Flyted"},{"endpoint":"http://fao.270a.info/sparql","title":"Food and Agriculture Organization of the United Nations (FAO) Linked Data"},
-	{"endpoint":"http://data.linkedu.eu/forge/query","title":"FORGE Course information"},{"endpoint":"http://ft.rkbexplorer.com/sparql/","title":"France Telecom Recherche et Développement (RKBExplorer)"},{"endpoint":"http://lisbon.rkbexplorer.com/sparql","title":"Fundação da Faculdade de Ciencas da Universidade de Lisboa (RKBExplorer)"},
-	{"endpoint":"http://www.ebi.ac.uk/rdf/services/atlas/sparql","title":"Gene Expression Atlas RDF"},{"endpoint":"http://geo.linkeddata.es/sparql","title":"GeoLinkedData"},{"endpoint":"http://resource.geolba.ac.at/PoolParty/sparql/tectonicunit","title":"Geological Survey of Austria (GBA) - Thesaurus"},
-	{"endpoint":"http://resource.geolba.ac.at/PoolParty/sparql/lithology","title":"Geological Survey of Austria (GBA) - Thesaurus"},{"endpoint":"http://resource.geolba.ac.at/PoolParty/sparql/GeologicTimeScale","title":"Geological Survey of Austria (GBA) - Thesaurus"},
-	{"endpoint":"http://resource.geolba.ac.at/PoolParty/sparql/GeologicUnit","title":"Geological Survey of Austria (GBA) - Thesaurus"},{"endpoint":"http://vocabulary.wolterskluwer.de/PoolParty/sparql/arbeitsrecht","title":"German labor law thesaurus"},
-	{"endpoint":"http://data.globalchange.gov/sparql","title":"Global Change Information System"},{"endpoint":"http://wordnet.okfn.gr:8890/sparql/","title":"Greek Wordnet"},{"endpoint":"http://healthdata.tw.rpi.edu/sparql","title":"HealthData.gov Platform (HDP) on the Semantic Web"},
-	{"endpoint":"http://lod.hebis.de/sparql","title":"HeBIS - Bibliographic Resources of the Library Union Catalogues of Hessen and parts of the Rhineland Palatinate"},{"endpoint":"http://helheim.deusto.es/hedatuz/sparql","title":"Hedatuz"},{"endpoint":"http://greek-lod.auth.gr/fire-brigade/sparql","title":"Hellenic Fire Brigade"},
-	{"endpoint":"http://greek-lod.auth.gr/police/sparql","title":"Hellenic Police"},{"endpoint":"http://beta.sparql.uniprot.org"},{"endpoint":"http://bnb.data.bl.uk/sparql"},{"endpoint":"http://cr.eionet.europa.eu/sparql"},{"endpoint":"http://data.oceandrilling.org/sparql"},{"endpoint":"http://data.ox.ac.uk/sparql/"},
-	{"endpoint":"http://data.rism.info/sparql"},{"endpoint":"http://dati.camera.it/sparql"},{"endpoint":"http://europeana.ontotext.com/sparql"},{"endpoint":"http://heritagedata.org/live/sparql"},{"endpoint":"http://lod.xdams.org/sparql"},{"endpoint":"http://logd.tw.rpi.edu/sparql"},
-	{"endpoint":"http://mlode.nlp2rdf.org/sparql"},{"endpoint":"http://opendatacommunities.org/sparql"},{"endpoint":"http://semantic.eea.europa.eu/sparql"},{"endpoint":"http://sparql.data.southampton.ac.uk/"},{"endpoint":"http://visualdataweb.infor.uva.es/sparql"},
-	{"endpoint":"http://vocab.getty.edu/sparql"},{"endpoint":"http://setaria.oszk.hu/sparql","title":"Hungarian National Library (NSZL) catalog"},{"endpoint":"http://semanticweb.cs.vu.nl/iati/sparql/","title":"IATI as Linked Data"},{"endpoint":"http://ibm.rkbexplorer.com/sparql/","title":"IBM Research GmbH (RKBExplorer)"},
-	{"endpoint":"http://www.icane.es/opendata/sparql","title":"ICANE"},{"endpoint":"http://ichoose.tw.rpi.edu/sparql","title":"ichoose"},{"endpoint":"http://ieee.rkbexplorer.com/sparql/","title":"IEEE Papers (RKBExplorer)"},{"endpoint":"http://ieeevis.tw.rpi.edu/sparql","title":"IEEE VIS Source Data"},{"endpoint":"http://www.imagesnippets.com/sparql/images","title":"Imagesnippets Image Descriptions"},
-	{"endpoint":"http://purl.org/twc/hub/sparql","title":"Instance Hub (all)"},{"endpoint":"http://eurecom.rkbexplorer.com/sparql/","title":"Institut Eurécom (RKBExplorer)"},{"endpoint":"http://imf.270a.info/sparql","title":"International Monetary Fund (IMF) Linked Data"},{"endpoint":"http://iserve.kmi.open.ac.uk/iserve/sparql","title":"iServe: Linked Services Registry"},{"endpoint":"http://www.rechercheisidore.fr/sparql","title":"Isidore"},
-	{"endpoint":"http://kdata.kr/sparql/endpoint.jsp","title":"kdata"},{"endpoint":"http://sparql.kupkb.org/sparql","title":"Kidney and Urinary Pathway Knowledge Base"},{"endpoint":"http://kisti.rkbexplorer.com/sparql/","title":"Korean Institute of Science Technology and Information (RKBExplorer)"},{"endpoint":"http://lod.kaist.ac.kr/sparql","title":"Korean Traditional Recipes"},{"endpoint":"http://laas.rkbexplorer.com/sparql/","title":"LAAS-CNRS (RKBExplorer)"},
-	{"endpoint":"http://smartcity.linkeddata.es/sparql","title":"LCC (Leeds City Council Energy Consumption Linked Data)"},{"endpoint":"http://data.linkededucation.org/request/lak-conference/sparql","title":"Learning Analytics and Knowledge (LAK) Dataset"},{"endpoint":"http://sparql.reegle.info/","title":"Linked Clean Energy Data (reegle.info)"},{"endpoint":"http://sparql.contextdatacloud.org","title":"Linked Crowdsourced Data"},
-	{"endpoint":"http://linkedlifedata.com/sparql","title":"Linked Life Data"},{"endpoint":"http://data.logainm.ie/sparql","title":"Linked Logainm"},{"endpoint":"http://data.linkedmdb.org/sparql","title":"Linked Movie DataBase"},{"endpoint":"http://data.aalto.fi/sparql","title":"Linked Open Aalto Data Service"},{"endpoint":"http://dbmi-icode-01.dbmi.pitt.edu/linkedSPLs/sparql","title":"Linked Structured Product Labels"},{"endpoint":"http://linkedgeodata.org/sparql/","title":"LinkedGeoData"},
-	{"endpoint":"http://linkedspending.aksw.org/sparql","title":"LinkedSpending: OpenSpending becomes Linked Open Data"},{"endpoint":"http://helheim.deusto.es/linkedstats/sparql","title":"LinkedStats"},{"endpoint":"http://linkedu.eu/catalogue/sparql/","title":"LinkedUp Catalogue of Educational Datasets"},{"endpoint":"http://www.linklion.org:8890/sparql","title":"LinkLion - A Link Repository for the Web of Data"},{"endpoint":"http://id.sgcb.mcu.es/sparql","title":"Lista de  Encabezamientos de Materia as Linked Open Data"},
-	{"endpoint":"http://lod.ac/bdls/sparql","title":"LODAC BDLS"},{"endpoint":"http://lofd.tw.rpi.edu/sparql","title":"lofd"},{"endpoint":"http://sparql.msc2010.org","title":"Mathematics Subject Classification"},{"endpoint":"http://doc.metalex.eu:8000/sparql/","title":"MetaLex Document Server"},{"endpoint":"http://onto.mondis.cz/openrdf-sesame/repositories/mondis-record-owlim","title":"MONDIS"},{"endpoint":"http://apps.morelab.deusto.es/labman/sparql","title":"MORElab"},
-	{"endpoint":"http://rdf.muninn-project.org/sparql","title":"Muninn World War I"},{"endpoint":"http://lod.sztaki.hu/sparql","title":"National Digital Data Archive of Hungary (partial)"},{"endpoint":"http://nsf.rkbexplorer.com/sparql/","title":"National Science Foundation (RKBExplorer)"},{"endpoint":"http://data.nobelprize.org/sparql","title":"Nobel Prizes"},{"endpoint":"http://data.lenka.no/sparql","title":"Norwegian geo-divisions"},
-	{"endpoint":"http://onto.beef.org.pl/sparql","title":"OntoBeef"},{"endpoint":"http://oai.rkbexplorer.com/sparql/","title":"Open Archive Initiative Harvest over OAI-PMH (RKBExplorer)"},{"endpoint":"http://data.linkedu.eu/ocw/query","title":"Open Courseware Consortium metadata in RDF"},{"endpoint":"http://opendata.ccd.uniroma2.it/LMF/sparql/select","title":"Open Data @ Tor Vergata"},
-	{"endpoint":"http://data.cnr.it/sparql-proxy/","title":"Open Data from the Italian National Research Council"},{"endpoint":"http://data.utpl.edu.ec/ecuadorresearch/lod/sparql","title":"Open Data of Ecuador"},{"endpoint":"http://vocabulary.semantic-web.at/PoolParty/sparql/OpenData","title":"Open Data Thesaurus"},
-	{"endpoint":"http://en.openei.org/sparql","title":"OpenEI - Open Energy Info"},{"endpoint":"http://lod.openlinksw.com/sparql","title":"OpenLink Software LOD Cache"},{"endpoint":"http://sparql.openmobilenetwork.org","title":"OpenMobileNetwork"},
-	{"endpoint":"http://apps.ideaconsult.net:8080/ontology","title":"OpenTox"},{"endpoint":"http://gov.tso.co.uk/coins/sparql","title":"OpenUpLabs COINS"},{"endpoint":"http://gov.tso.co.uk/dclg/sparql","title":"OpenUpLabs DCLG"},
-	{"endpoint":"http://os.services.tso.co.uk/geo/sparql","title":"OpenUpLabs Geographic"},{"endpoint":"http://gov.tso.co.uk/legislation/sparql","title":"OpenUpLabs Legislation"},{"endpoint":"http://gov.tso.co.uk/transport/sparql","title":"OpenUpLabs Transport"},
-	{"endpoint":"http://os.rkbexplorer.com/sparql/","title":"Ordnance Survey (RKBExplorer)"},{"endpoint":"http://data.organic-edunet.eu/sparql","title":"Organic Edunet Linked Open Data"},{"endpoint":"http://oecd.270a.info/sparql","title":"Organisation for Economic Co-operation and Development (OECD) Linked Data"},
-	{"endpoint":"http://spatial.ucd.ie/lod/sparql","title":"OSM Semantic Network"},{"endpoint":"http://data.linkedu.eu/don/query","title":"OUNL DSpace in RDF"},{"endpoint":"https://data.ox.ac.uk/sparql/","title":"OxPoints (University of Oxford)"},{"endpoint":"http://ld.panlex.org/sparql","title":"PanLex"},{"endpoint":"http://linked-data.org/sparql","title":"Phonetics Information Base and Lexicon (PHOIBLE)"},
-	{"endpoint":"http://data.linkedu.eu/prod/query","title":"PROD - JISC Project Directory in RDF"},{"endpoint":"http://provenanceweb.org/sparql","title":"provenanceweb"},{"endpoint":"http://linked.opendata.cz/sparql","title":"Publications of Charles University in Prague"},{"endpoint":"http://linkeddata4.dia.fi.upm.es:8907/sparql","title":"RDFLicense"},{"endpoint":"https://www.ebi.ac.uk/rdf/services/reactome/sparql","title":"Reactome RDF"},
-	{"endpoint":"http://services.data.gov.uk/reference/sparql","title":"reference.data.gov.uk"},{"endpoint":"http://rae2001.rkbexplorer.com/sparql/","title":"Research Assessment Exercise 2001 (RKBExplorer)"},{"endpoint":"http://courseware.rkbexplorer.com/sparql/","title":"Resilient Computing Courseware (RKBExplorer)"},{"endpoint":"http://curriculum.rkbexplorer.com/sparql/","title":"ReSIST MSc in Resilient Computing Curriculum (RKBExplorer)"},
-	{"endpoint":"http://wiki.rkbexplorer.com/sparql/","title":"ReSIST Project Wiki (RKBExplorer)"},{"endpoint":"http://resex.rkbexplorer.com/sparql/","title":"ReSIST Resilience Mechanisms (RKBExplorer.com)"},{"endpoint":"http://risks.rkbexplorer.com/sparql/","title":"RISKS Digest (RKBExplorer)"},{"endpoint":"http://foreign.rkbexplorer.com/sparql","title":"rkb-explorer-foreign"},{"endpoint":"http://ruian.linked.opendata.cz/sparql","title":"RUIAN - Register of territorial identification, addresses and real estates of the Czech Republic"},
-	{"endpoint":"http://link.informatics.stonybrook.edu/sparql/","title":"RxNorm"},{"endpoint":"http://biordf.net/sparql","title":"SADI Semantic Web Services framework registry"},{"endpoint":"http://southampton.rkbexplorer.com/sparql/","title":"School of Electronics and Computer Science, University of Southampton (RKBExplorer)"},{"endpoint":"http://seek.rkbexplorer.com/sparql/","title":"SEEK-AT-WD ICT tools for education - Web-Share"},{"endpoint":"http://serendipity.utpl.edu.ec/lod/sparql","title":"Serendipity"},
-	{"endpoint":"http://data.linkedu.eu/slidewiki/query","title":"Slidewiki (RDF/SPARQL)"},{"endpoint":"http://smartlink.open.ac.uk/smartlink/sparql","title":"SmartLink: Linked Services Non-Functional Properties"},{"endpoint":"http://socialarchive.iath.virginia.edu/sparql/eac","title":"Social Networks and Archival Context Fall 2011"},{"endpoint":"http://socialarchive.iath.virginia.edu/sparql/snac-viaf","title":"Social Networks and Archival Context Fall 2011"},
-	{"endpoint":"http://vocabulary.semantic-web.at/PoolParty/sparql/semweb","title":"Social Semantic Web Thesaurus"},{"endpoint":"http://linguistic.linkeddata.es/sparql","title":"Spanish Linguistic Datasets"},{"endpoint":"http://crashmap.okfn.gr:8890/sparql","title":"Statistics on Fatal Traffic Accidents in greek roads"},{"endpoint":"http://services.data.gov.uk/statistics/sparql","title":"statistics.data.gov.uk"},
-	{"endpoint":"http://crime.rkbexplorer.com/sparql/","title":"Street level crime reports for England and Wales"},{"endpoint":"http://zbw.eu/beta/sparql/stw/query","title":"STW Thesaurus for Economics"},{"endpoint":"http://symbolicdata.org:8890/sparql","title":"SymbolicData"},{"endpoint":"http://agalpha.mathbiol.org/repositories/tcga","title":"TCGA Roadmap"},
-	{"endpoint":"http://www.open-biomed.org.uk/sparql/endpoint/tcm","title":"TCMGeneDIT Dataset"},{"endpoint":"http://darmstadt.rkbexplorer.com/sparql/","title":"Technische Universität Darmstadt (RKBExplorer)"},{"endpoint":"http://data.linkededucation.org/request/ted/sparql","title":"TED Talks"},
-	{"endpoint":"http://linguistic.linkeddata.es/terminesp/sparql-editor","title":"Terminesp Linked Data"},{"endpoint":"http://academia6.poolparty.biz/PoolParty/sparql/Tesauro-Materias-BUPM","title":"Tesauro materias BUPM"},{"endpoint":"http://apps.morelab.deusto.es/teseo/sparql","title":"Teseo"},
-	{"endpoint":"http://ring.ciard.net/sparql1","title":"The CIARD RING"},{"endpoint":"http://digitale.bncf.firenze.sbn.it/openrdf-workbench/repositories/NS/query","title":"Thesaurus BNCF"},{"endpoint":"http://lod.gesis.org/thesoz/sparql","title":"TheSoz Thesaurus for the Social Sciences (GESIS)"},
-	{"endpoint":"http://linkeddata.ge.imati.cnr.it:8890/sparql","title":"ThIST"},{"endpoint":"http://tour-pedia.org/sparql","title":"Tourpedia"},{"endpoint":"http://tkm.kiom.re.kr/ontology/sparql","title":"Traditional Korean Medicine Ontology"},{"endpoint":"http://transparency.270a.info/sparql","title":"Transparency International Linked Data"},
-	{"endpoint":"http://services.data.gov.uk/transport/sparql","title":"transport.data.gov.uk"},{"endpoint":"http://opendap.tw.rpi.edu/sparql","title":"twc-opendap"},{"endpoint":"http://jisc.rkbexplorer.com/sparql/","title":"UK JISC (RKBExplorer)"},{"endpoint":"http://unlocode.rkbexplorer.com/sparql/","title":"UN/LOCODE (RKBExplorer)"},{"endpoint":"http://uis.270a.info/sparql","title":"UNESCO Institute for Statistics (UIS) Linked Data"},
-	{"endpoint":"http://skos.um.es/sparql/","title":"UNESCO Thesaurus"},{"endpoint":"http://data.linkedu.eu/kis1112/query","title":"UNISTAT-KIS 2011/2012 in RDF (Key Information Set - UK Universities)"},{"endpoint":"http://data.linkedu.eu/kis/query","title":"UNISTAT-KIS in RDF (Key Information Set - UK Universities)"},{"endpoint":"http://data.utpl.edu.ec/utpl/lod/sparql","title":"Universidad Técnica Particular de Loja - Linked Open Data"},{"endpoint":"http://roma.rkbexplorer.com/sparql/","title":"Università degli studi di Roma \"La Sapienza\" (RKBExplorer)"},
-	{"endpoint":"http://pisa.rkbexplorer.com/sparql/","title":"Università di Pisa (RKBExplorer)"},{"endpoint":"http://ulm.rkbexplorer.com/sparql/","title":"Universität Ulm (RKBExplorer)"},{"endpoint":"http://irit.rkbexplorer.com/sparql/","title":"Université Paul Sabatier - Toulouse 3 (RKB Explorer)"},{"endpoint":"http://resrev.ilrt.bris.ac.uk/data-server-workshop/sparql","title":"University of Bristol"},{"endpoint":"http://data.linkedu.eu/hud/query","title":"University of Huddersfield -- Circulation and Recommendation Data"},{"endpoint":"http://newcastle.rkbexplorer.com/sparql/","title":"University of Newcastle upon Tyne (RKBExplorer)"},
-	{"endpoint":"http://linkeddata.uriburner.com/sparql","title":"URIBurner"},{"endpoint":"http://semanticweb.cs.vu.nl/verrijktkoninkrijk/sparql/","title":"Verrijkt Koninkrijk"},{"endpoint":"http://kaunas.rkbexplorer.com/sparql","title":"Vytautas Magnus University, Kaunas (RKBExplorer)"},{"endpoint":"http://webscience.rkbexplorer.com/sparql","title":"Web Science Conference (RKBExplorer)"},{"endpoint":"http://webconf.rkbexplorer.com/sparql","title":"webconf"},{"endpoint":"http://sparql.wikipathways.org/","title":"WikiPathways"},
-	{"endpoint":"http://wiktionary.dbpedia.org/sparql","title":"wiktionary.dbpedia.org"},{"endpoint":"http://www.opmw.org/sparql","title":"Wings workflow provenance dataset"},{"endpoint":"http://wordnet.rkbexplorer.com/sparql/","title":"WordNet (RKBExplorer)"},{"endpoint":"http://worldbank.270a.info/sparql","title":"World Bank Linked Data"},{"endpoint":"http://ldf.fi/ww1lod/sparql","title":"World War 1 as Linked Open Data"},{"endpoint":"http://diwis.imis.athena-innovation.gr:8181/sparql","title":"xxxxx"}]
+  catalogueEndpoints: [
+    {
+      endpoint: "http://biolit.rkbexplorer.com/sparql",
+      title: "A Short Biographical Dictionary of English Literature (RKBExplorer)"
+    },
+    { endpoint: "http://aemet.linkeddata.es/sparql", title: "AEMET metereological dataset" },
+    { endpoint: "http://aksw.org/sparql", title: "aksw.org Research Group dataset" },
+    {
+      endpoint: "http://data.allie.dbcls.jp/sparql",
+      title: "Allie Abbreviation And Long Form Database in Life Science"
+    },
+    {
+      endpoint: "http://vocabulary.semantic-web.at/PoolParty/sparql/AustrianSkiTeam",
+      title: "Alpine Ski Racers of Austria"
+    },
+    {
+      endpoint: "http://semanticweb.cs.vu.nl/europeana/sparql/",
+      title: "Amsterdam Museum as Linked Open Data in the Europeana Data Model"
+    },
+    { endpoint: "http://opendata.aragon.es/sparql", title: "AragoDBPedia" },
+    { endpoint: "http://data.archiveshub.ac.uk/sparql", title: "Archives Hub Linked Data" },
+    { endpoint: "http://www.auth.gr/sparql", title: "Aristotle University" },
+    { endpoint: "http://sparql.jesandco.org:8890/sparql", title: "ASN:US" },
+    {
+      endpoint: "http://acm.rkbexplorer.com/sparql/",
+      title: "Association for Computing Machinery (ACM) (RKBExplorer)"
+    },
+    {
+      endpoint: "http://lab.environment.data.gov.au/sparql",
+      title: "Australian Climate Observations Reference Network - Surface Air Temperature Dataset"
+    },
+    { endpoint: "http://abs.270a.info/sparql", title: "Australian Bureau of Statistics (ABS) Linked Data" },
+    {
+      endpoint: "http://lod.b3kat.de/sparql",
+      title: "B3Kat - Library Union Catalogues of Bavaria, Berlin and Brandenburg"
+    },
+    { endpoint: "http://bis.270a.info/sparql", title: "Bank for International Settlements (BIS) Linked Data" },
+    { endpoint: "http://www.open-biomed.org.uk/sparql/endpoint/bdgp_20081030", title: "Bdgp" },
+    { endpoint: "http://affymetrix.bio2rdf.org/sparql", title: "Bio2RDF::Affymetrix" },
+    { endpoint: "http://biomodels.bio2rdf.org/sparql", title: "Bio2RDF::Biomodels" },
+    { endpoint: "http://bioportal.bio2rdf.org/sparql", title: "Bio2RDF::Bioportal" },
+    { endpoint: "http://clinicaltrials.bio2rdf.org/sparql", title: "Bio2RDF::Clinicaltrials" },
+    { endpoint: "http://ctd.bio2rdf.org/sparql", title: "Bio2RDF::Ctd" },
+    { endpoint: "http://dbsnp.bio2rdf.org/sparql", title: "Bio2RDF::Dbsnp" },
+    { endpoint: "http://drugbank.bio2rdf.org/sparql", title: "Bio2RDF::Drugbank" },
+    { endpoint: "http://genage.bio2rdf.org/sparql", title: "Bio2RDF::Genage" },
+    { endpoint: "http://gendr.bio2rdf.org/sparql", title: "Bio2RDF::Gendr" },
+    { endpoint: "http://goa.bio2rdf.org/sparql", title: "Bio2RDF::Goa" },
+    { endpoint: "http://hgnc.bio2rdf.org/sparql", title: "Bio2RDF::Hgnc" },
+    { endpoint: "http://homologene.bio2rdf.org/sparql", title: "Bio2RDF::Homologene" },
+    { endpoint: "http://inoh.bio2rdf.org/sparql", title: "Bio2RDF::INOH" },
+    { endpoint: "http://interpro.bio2rdf.org/sparql", title: "Bio2RDF::Interpro" },
+    { endpoint: "http://iproclass.bio2rdf.org/sparql", title: "Bio2RDF::Iproclass" },
+    { endpoint: "http://irefindex.bio2rdf.org/sparql", title: "Bio2RDF::Irefindex" },
+    { endpoint: "http://biopax.kegg.bio2rdf.org/sparql", title: "Bio2RDF::KEGG::BioPAX" },
+    { endpoint: "http://linkedspl.bio2rdf.org/sparql", title: "Bio2RDF::Linkedspl" },
+    { endpoint: "http://lsr.bio2rdf.org/sparql", title: "Bio2RDF::Lsr" },
+    { endpoint: "http://mesh.bio2rdf.org/sparql", title: "Bio2RDF::Mesh" },
+    { endpoint: "http://mgi.bio2rdf.org/sparql", title: "Bio2RDF::Mgi" },
+    { endpoint: "http://ncbigene.bio2rdf.org/sparql", title: "Bio2RDF::Ncbigene" },
+    { endpoint: "http://ndc.bio2rdf.org/sparql", title: "Bio2RDF::Ndc" },
+    { endpoint: "http://netpath.bio2rdf.org/sparql", title: "Bio2RDF::NetPath" },
+    { endpoint: "http://omim.bio2rdf.org/sparql", title: "Bio2RDF::Omim" },
+    { endpoint: "http://orphanet.bio2rdf.org/sparql", title: "Bio2RDF::Orphanet" },
+    { endpoint: "http://pharmgkb.bio2rdf.org/sparql", title: "Bio2RDF::Pharmgkb" },
+    { endpoint: "http://biopax.pharmgkb.bio2rdf.org/sparql", title: "Bio2RDF::PharmGKB::BioPAX" },
+    { endpoint: "http://pid.bio2rdf.org/sparql", title: "Bio2RDF::PID" },
+    { endpoint: "http://pubchem.bio2rdf.org/sparql", title: "Bio2RDF::PubChem" },
+    { endpoint: "http://rhea.bio2rdf.org/sparql", title: "Bio2RDF::Rhea" },
+    { endpoint: "http://sabiork.bio2rdf.org/sparql", title: "Bio2RDF::Sabiork" },
+    { endpoint: "http://sgd.bio2rdf.org/sparql", title: "Bio2RDF::Sgd" },
+    { endpoint: "http://sider.bio2rdf.org/sparql", title: "Bio2RDF::Sider" },
+    { endpoint: "http://spike.bio2rdf.org/sparql", title: "Bio2RDF::SPIKE" },
+    { endpoint: "http://taxonomy.bio2rdf.org/sparql", title: "Bio2RDF::Taxonomy" },
+    { endpoint: "http://wikipathways.bio2rdf.org/sparql", title: "Bio2RDF::Wikipathways" },
+    { endpoint: "http://wormbase.bio2rdf.org/sparql", title: "Bio2RDF::Wormbase" },
+    { endpoint: "https://www.ebi.ac.uk/rdf/services/biomodels/sparql", title: "BioModels RDF" },
+    { endpoint: "https://www.ebi.ac.uk/rdf/services/biosamples/sparql", title: "BioSamples RDF" },
+    { endpoint: "http://helheim.deusto.es/bizkaisense/sparql", title: "BizkaiSense" },
+    {
+      endpoint: "http://budapest.rkbexplorer.com/sparql/",
+      title: "Budapest University of Technology and Economics (RKBExplorer)"
+    },
+    {
+      endpoint: "http://bfs.270a.info/sparql",
+      title: "Bundesamt für Statistik (BFS) - Swiss Federal Statistical Office (FSO) Linked Data"
+    },
+    { endpoint: "http://opendata-bundestag.de/sparql", title: "BundestagNebeneinkuenfte" },
+    { endpoint: "https://www.ebi.ac.uk/rdf/services/chembl/sparql", title: "ChEMBL RDF" },
+    { endpoint: "http://chebi.bio2rdf.org/sparql", title: "Chemical Entities of Biological Interest (ChEBI)" },
+    { endpoint: "http://citeseer.rkbexplorer.com/sparql/", title: "CiteSeer (Research Index) (RKBExplorer)" },
+    { endpoint: "http://data.colinda.org/endpoint.php", title: "COLINDA - Conference Linked Data" },
+    {
+      endpoint: "http://cordis.rkbexplorer.com/sparql/",
+      title: "Community R&amp;D Information Service (CORDIS) (RKBExplorer)"
+    },
+    { endpoint: "http://semantic.ckan.net/sparql/", title: "Comprehensive Knowledge Archive Network" },
+    { endpoint: "http://vocabulary.wolterskluwer.de/PoolParty/sparql/court", title: "Courts thesaurus" },
+    { endpoint: "http://crm.rkbexplorer.com/sparql", title: "crm" },
+    { endpoint: "http://crtm.linkeddata.es/sparql", title: "CRTM" },
+    { endpoint: "http://data.fundacionctic.org/sparql", title: "CTIC Public Dataset Catalogs" },
+    { endpoint: "http://cultura.linkeddata.es/sparql", title: "CulturaLinkedData" },
+    { endpoint: "http://data.open.ac.uk/query", title: "data.open.ac.uk, Linked Data from the Open University" },
+    { endpoint: "http://datos.bcn.cl/sparql", title: "Datos.bcn.cl" },
+    { endpoint: "http://datos.bne.es/sparql", title: "datos.bne.es" },
+    { endpoint: "http://dblp.rkbexplorer.com/sparql/", title: "DBLP Computer Science Bibliography (RKBExplorer)" },
+    { endpoint: "http://dblp.l3s.de/d2r/sparql", title: "DBLP in RDF (L3S)" },
+    { endpoint: "http://kaiko.getalp.org/sparql", title: "dbnary" },
+    { endpoint: "http://dbpedia.org/sparql", title: "DBpedia" },
+    { endpoint: "http://eu.dbpedia.org/sparql", title: "DBpedia in Basque" },
+    { endpoint: "http://nl.dbpedia.org/sparql", title: "DBpedia in Dutch" },
+    { endpoint: "http://fr.dbpedia.org/sparql", title: "DBpedia in French" },
+    { endpoint: "http://de.dbpedia.org/sparql", title: "DBpedia in German" },
+    { endpoint: "http://ja.dbpedia.org/sparql", title: "DBpedia in Japanese" },
+    { endpoint: "http://pt.dbpedia.org/sparql", title: "DBpedia in Portuguese" },
+    { endpoint: "http://es.dbpedia.org/sparql", title: "DBpedia in Spanish" },
+    { endpoint: "http://live.dbpedia.org/sparql", title: "DBpedia-Live" },
+    { endpoint: "http://dbtune.org/musicbrainz/sparql", title: "DBTune.org Musicbrainz D2R Server" },
+    { endpoint: "http://deepblue.rkbexplorer.com/sparql/", title: "Deep Blue (RKBExplorer)" },
+    { endpoint: "http://deploy.rkbexplorer.com/sparql/", title: "DEPLOY (RKBExplorer)" },
+    { endpoint: "http://dewey.info/sparql.php", title: "Dewey Decimal Classification (DDC)" },
+    { endpoint: "http://digitaleconomy.rkbexplorer.com/sparql", title: "digitaleconomy" },
+    { endpoint: "http://rdf.disgenet.org/sparql/", title: "DisGeNET" },
+    {
+      endpoint: "http://italy.rkbexplorer.com/sparql",
+      title: "Diverse Italian ReSIST Partner Institutions (RKBExplorer)"
+    },
+    { endpoint: "http://dotac.rkbexplorer.com/sparql/", title: "dotAC (RKBExplorer)" },
+    { endpoint: "http://dutchshipsandsailors.nl/data/sparql/", title: "Dutch Ships and Sailors " },
+    { endpoint: "http://semanticweb.cs.vu.nl/dss/sparql/", title: "Dutch Ships and Sailors " },
+    { endpoint: "http://www.eclap.eu/sparql", title: "ECLAP" },
+    { endpoint: "http://services.data.gov.uk/education/sparql", title: "education.data.gov.uk" },
+    { endpoint: "http://kent.zpr.fer.hr:8080/educationalProgram/sparql", title: "Educational programs - SISVU" },
+    { endpoint: "http://webenemasuno.linkeddata.es/sparql", title: "El Viajero's tourism dataset" },
+    {
+      endpoint: "http://www.ida.liu.se/projects/semtech/openrdf-sesame/repositories/energy",
+      title: "Energy efficiency assessments and improvements"
+    },
+    { endpoint: "http://enipedia.tudelft.nl/sparql", title: "Enipedia - Energy Industry Data" },
+    { endpoint: "http://environment.data.gov.uk/sparql/bwq/query", title: "Environment Agency Bathing Water Quality" },
+    { endpoint: "http://foreign.rkbexplorer.com/sparql/", title: "ePrints Harvest (RKBExplorer)" },
+    {
+      endpoint: "http://eprints.rkbexplorer.com/sparql/",
+      title: "ePrints3 Institutional Archive Collection (RKBExplorer)"
+    },
+    { endpoint: "http://epsrc.rkbexplorer.com/sparql", title: "epsrc" },
+    {
+      endpoint: "http://era.rkbexplorer.com/sparql/",
+      title: "ERA - Australian Research Council publication ratings (RKBExplorer)"
+    },
+    { endpoint: "http://ecb.270a.info/sparql", title: "European Central Bank (ECB) Linked Data" },
+    { endpoint: "http://eventmedia.eurecom.fr/sparql", title: "EventMedia" },
+    { endpoint: "http://factforge.net/sparql", title: "Fact Forge" },
+    { endpoint: "http://frb.270a.info/sparql", title: "Federal Reserve Board (FRB) Linked Data" },
+    { endpoint: "http://www.open-biomed.org.uk/sparql/endpoint/flyatlas", title: "flyatlas" },
+    { endpoint: "http://www.open-biomed.org.uk/sparql/endpoint/flybase", title: "Flybase" },
+    { endpoint: "http://www.open-biomed.org.uk/sparql/endpoint/flyted", title: "Flyted" },
+    {
+      endpoint: "http://fao.270a.info/sparql",
+      title: "Food and Agriculture Organization of the United Nations (FAO) Linked Data"
+    },
+    { endpoint: "http://data.linkedu.eu/forge/query", title: "FORGE Course information" },
+    { endpoint: "http://ft.rkbexplorer.com/sparql/", title: "France Telecom Recherche et Développement (RKBExplorer)" },
+    {
+      endpoint: "http://lisbon.rkbexplorer.com/sparql",
+      title: "Fundação da Faculdade de Ciencas da Universidade de Lisboa (RKBExplorer)"
+    },
+    { endpoint: "http://www.ebi.ac.uk/rdf/services/atlas/sparql", title: "Gene Expression Atlas RDF" },
+    { endpoint: "http://geo.linkeddata.es/sparql", title: "GeoLinkedData" },
+    {
+      endpoint: "http://resource.geolba.ac.at/PoolParty/sparql/tectonicunit",
+      title: "Geological Survey of Austria (GBA) - Thesaurus"
+    },
+    {
+      endpoint: "http://resource.geolba.ac.at/PoolParty/sparql/lithology",
+      title: "Geological Survey of Austria (GBA) - Thesaurus"
+    },
+    {
+      endpoint: "http://resource.geolba.ac.at/PoolParty/sparql/GeologicTimeScale",
+      title: "Geological Survey of Austria (GBA) - Thesaurus"
+    },
+    {
+      endpoint: "http://resource.geolba.ac.at/PoolParty/sparql/GeologicUnit",
+      title: "Geological Survey of Austria (GBA) - Thesaurus"
+    },
+    {
+      endpoint: "http://vocabulary.wolterskluwer.de/PoolParty/sparql/arbeitsrecht",
+      title: "German labor law thesaurus"
+    },
+    { endpoint: "http://data.globalchange.gov/sparql", title: "Global Change Information System" },
+    { endpoint: "http://wordnet.okfn.gr:8890/sparql/", title: "Greek Wordnet" },
+    { endpoint: "http://healthdata.tw.rpi.edu/sparql", title: "HealthData.gov Platform (HDP) on the Semantic Web" },
+    {
+      endpoint: "http://lod.hebis.de/sparql",
+      title: "HeBIS - Bibliographic Resources of the Library Union Catalogues of Hessen and parts of the Rhineland Palatinate"
+    },
+    { endpoint: "http://helheim.deusto.es/hedatuz/sparql", title: "Hedatuz" },
+    { endpoint: "http://greek-lod.auth.gr/fire-brigade/sparql", title: "Hellenic Fire Brigade" },
+    { endpoint: "http://greek-lod.auth.gr/police/sparql", title: "Hellenic Police" },
+    { endpoint: "http://beta.sparql.uniprot.org" },
+    { endpoint: "http://bnb.data.bl.uk/sparql" },
+    { endpoint: "http://cr.eionet.europa.eu/sparql" },
+    { endpoint: "http://data.oceandrilling.org/sparql" },
+    { endpoint: "http://data.ox.ac.uk/sparql/" },
+    { endpoint: "http://data.rism.info/sparql" },
+    { endpoint: "http://dati.camera.it/sparql" },
+    { endpoint: "http://europeana.ontotext.com/sparql" },
+    { endpoint: "http://heritagedata.org/live/sparql" },
+    { endpoint: "http://lod.xdams.org/sparql" },
+    { endpoint: "http://logd.tw.rpi.edu/sparql" },
+    { endpoint: "http://mlode.nlp2rdf.org/sparql" },
+    { endpoint: "http://opendatacommunities.org/sparql" },
+    { endpoint: "http://semantic.eea.europa.eu/sparql" },
+    { endpoint: "http://sparql.data.southampton.ac.uk/" },
+    { endpoint: "http://visualdataweb.infor.uva.es/sparql" },
+    { endpoint: "http://vocab.getty.edu/sparql" },
+    { endpoint: "http://setaria.oszk.hu/sparql", title: "Hungarian National Library (NSZL) catalog" },
+    { endpoint: "http://semanticweb.cs.vu.nl/iati/sparql/", title: "IATI as Linked Data" },
+    { endpoint: "http://ibm.rkbexplorer.com/sparql/", title: "IBM Research GmbH (RKBExplorer)" },
+    { endpoint: "http://www.icane.es/opendata/sparql", title: "ICANE" },
+    { endpoint: "http://ichoose.tw.rpi.edu/sparql", title: "ichoose" },
+    { endpoint: "http://ieee.rkbexplorer.com/sparql/", title: "IEEE Papers (RKBExplorer)" },
+    { endpoint: "http://ieeevis.tw.rpi.edu/sparql", title: "IEEE VIS Source Data" },
+    { endpoint: "http://www.imagesnippets.com/sparql/images", title: "Imagesnippets Image Descriptions" },
+    { endpoint: "http://purl.org/twc/hub/sparql", title: "Instance Hub (all)" },
+    { endpoint: "http://eurecom.rkbexplorer.com/sparql/", title: "Institut Eurécom (RKBExplorer)" },
+    { endpoint: "http://imf.270a.info/sparql", title: "International Monetary Fund (IMF) Linked Data" },
+    { endpoint: "http://iserve.kmi.open.ac.uk/iserve/sparql", title: "iServe: Linked Services Registry" },
+    { endpoint: "http://www.rechercheisidore.fr/sparql", title: "Isidore" },
+    { endpoint: "http://kdata.kr/sparql/endpoint.jsp", title: "kdata" },
+    { endpoint: "http://sparql.kupkb.org/sparql", title: "Kidney and Urinary Pathway Knowledge Base" },
+    {
+      endpoint: "http://kisti.rkbexplorer.com/sparql/",
+      title: "Korean Institute of Science Technology and Information (RKBExplorer)"
+    },
+    { endpoint: "http://lod.kaist.ac.kr/sparql", title: "Korean Traditional Recipes" },
+    { endpoint: "http://laas.rkbexplorer.com/sparql/", title: "LAAS-CNRS (RKBExplorer)" },
+    {
+      endpoint: "http://smartcity.linkeddata.es/sparql",
+      title: "LCC (Leeds City Council Energy Consumption Linked Data)"
+    },
+    {
+      endpoint: "http://data.linkededucation.org/request/lak-conference/sparql",
+      title: "Learning Analytics and Knowledge (LAK) Dataset"
+    },
+    { endpoint: "http://sparql.reegle.info/", title: "Linked Clean Energy Data (reegle.info)" },
+    { endpoint: "http://sparql.contextdatacloud.org", title: "Linked Crowdsourced Data" },
+    { endpoint: "http://linkedlifedata.com/sparql", title: "Linked Life Data" },
+    { endpoint: "http://data.logainm.ie/sparql", title: "Linked Logainm" },
+    { endpoint: "http://data.linkedmdb.org/sparql", title: "Linked Movie DataBase" },
+    { endpoint: "http://data.aalto.fi/sparql", title: "Linked Open Aalto Data Service" },
+    { endpoint: "http://dbmi-icode-01.dbmi.pitt.edu/linkedSPLs/sparql", title: "Linked Structured Product Labels" },
+    { endpoint: "http://linkedgeodata.org/sparql/", title: "LinkedGeoData" },
+    {
+      endpoint: "http://linkedspending.aksw.org/sparql",
+      title: "LinkedSpending: OpenSpending becomes Linked Open Data"
+    },
+    { endpoint: "http://helheim.deusto.es/linkedstats/sparql", title: "LinkedStats" },
+    { endpoint: "http://linkedu.eu/catalogue/sparql/", title: "LinkedUp Catalogue of Educational Datasets" },
+    { endpoint: "http://www.linklion.org:8890/sparql", title: "LinkLion - A Link Repository for the Web of Data" },
+    { endpoint: "http://id.sgcb.mcu.es/sparql", title: "Lista de  Encabezamientos de Materia as Linked Open Data" },
+    { endpoint: "http://lod.ac/bdls/sparql", title: "LODAC BDLS" },
+    { endpoint: "http://lofd.tw.rpi.edu/sparql", title: "lofd" },
+    { endpoint: "http://sparql.msc2010.org", title: "Mathematics Subject Classification" },
+    { endpoint: "http://doc.metalex.eu:8000/sparql/", title: "MetaLex Document Server" },
+    { endpoint: "http://onto.mondis.cz/openrdf-sesame/repositories/mondis-record-owlim", title: "MONDIS" },
+    { endpoint: "http://apps.morelab.deusto.es/labman/sparql", title: "MORElab" },
+    { endpoint: "http://rdf.muninn-project.org/sparql", title: "Muninn World War I" },
+    { endpoint: "http://lod.sztaki.hu/sparql", title: "National Digital Data Archive of Hungary (partial)" },
+    { endpoint: "http://nsf.rkbexplorer.com/sparql/", title: "National Science Foundation (RKBExplorer)" },
+    { endpoint: "http://data.nobelprize.org/sparql", title: "Nobel Prizes" },
+    { endpoint: "http://data.lenka.no/sparql", title: "Norwegian geo-divisions" },
+    { endpoint: "http://onto.beef.org.pl/sparql", title: "OntoBeef" },
+    {
+      endpoint: "http://oai.rkbexplorer.com/sparql/",
+      title: "Open Archive Initiative Harvest over OAI-PMH (RKBExplorer)"
+    },
+    { endpoint: "http://data.linkedu.eu/ocw/query", title: "Open Courseware Consortium metadata in RDF" },
+    { endpoint: "http://opendata.ccd.uniroma2.it/LMF/sparql/select", title: "Open Data @ Tor Vergata" },
+    { endpoint: "http://data.cnr.it/sparql-proxy/", title: "Open Data from the Italian National Research Council" },
+    { endpoint: "http://data.utpl.edu.ec/ecuadorresearch/lod/sparql", title: "Open Data of Ecuador" },
+    { endpoint: "http://vocabulary.semantic-web.at/PoolParty/sparql/OpenData", title: "Open Data Thesaurus" },
+    { endpoint: "http://en.openei.org/sparql", title: "OpenEI - Open Energy Info" },
+    { endpoint: "http://lod.openlinksw.com/sparql", title: "OpenLink Software LOD Cache" },
+    { endpoint: "http://sparql.openmobilenetwork.org", title: "OpenMobileNetwork" },
+    { endpoint: "http://apps.ideaconsult.net:8080/ontology", title: "OpenTox" },
+    { endpoint: "http://gov.tso.co.uk/coins/sparql", title: "OpenUpLabs COINS" },
+    { endpoint: "http://gov.tso.co.uk/dclg/sparql", title: "OpenUpLabs DCLG" },
+    { endpoint: "http://os.services.tso.co.uk/geo/sparql", title: "OpenUpLabs Geographic" },
+    { endpoint: "http://gov.tso.co.uk/legislation/sparql", title: "OpenUpLabs Legislation" },
+    { endpoint: "http://gov.tso.co.uk/transport/sparql", title: "OpenUpLabs Transport" },
+    { endpoint: "http://os.rkbexplorer.com/sparql/", title: "Ordnance Survey (RKBExplorer)" },
+    { endpoint: "http://data.organic-edunet.eu/sparql", title: "Organic Edunet Linked Open Data" },
+    {
+      endpoint: "http://oecd.270a.info/sparql",
+      title: "Organisation for Economic Co-operation and Development (OECD) Linked Data"
+    },
+    { endpoint: "http://spatial.ucd.ie/lod/sparql", title: "OSM Semantic Network" },
+    { endpoint: "http://data.linkedu.eu/don/query", title: "OUNL DSpace in RDF" },
+    { endpoint: "https://data.ox.ac.uk/sparql/", title: "OxPoints (University of Oxford)" },
+    { endpoint: "http://ld.panlex.org/sparql", title: "PanLex" },
+    { endpoint: "http://linked-data.org/sparql", title: "Phonetics Information Base and Lexicon (PHOIBLE)" },
+    { endpoint: "http://data.linkedu.eu/prod/query", title: "PROD - JISC Project Directory in RDF" },
+    { endpoint: "http://provenanceweb.org/sparql", title: "provenanceweb" },
+    { endpoint: "http://linked.opendata.cz/sparql", title: "Publications of Charles University in Prague" },
+    { endpoint: "http://linkeddata4.dia.fi.upm.es:8907/sparql", title: "RDFLicense" },
+    { endpoint: "https://www.ebi.ac.uk/rdf/services/reactome/sparql", title: "Reactome RDF" },
+    { endpoint: "http://services.data.gov.uk/reference/sparql", title: "reference.data.gov.uk" },
+    { endpoint: "http://rae2001.rkbexplorer.com/sparql/", title: "Research Assessment Exercise 2001 (RKBExplorer)" },
+    { endpoint: "http://courseware.rkbexplorer.com/sparql/", title: "Resilient Computing Courseware (RKBExplorer)" },
+    {
+      endpoint: "http://curriculum.rkbexplorer.com/sparql/",
+      title: "ReSIST MSc in Resilient Computing Curriculum (RKBExplorer)"
+    },
+    { endpoint: "http://wiki.rkbexplorer.com/sparql/", title: "ReSIST Project Wiki (RKBExplorer)" },
+    { endpoint: "http://resex.rkbexplorer.com/sparql/", title: "ReSIST Resilience Mechanisms (RKBExplorer.com)" },
+    { endpoint: "http://risks.rkbexplorer.com/sparql/", title: "RISKS Digest (RKBExplorer)" },
+    { endpoint: "http://foreign.rkbexplorer.com/sparql", title: "rkb-explorer-foreign" },
+    {
+      endpoint: "http://ruian.linked.opendata.cz/sparql",
+      title: "RUIAN - Register of territorial identification, addresses and real estates of the Czech Republic"
+    },
+    { endpoint: "http://link.informatics.stonybrook.edu/sparql/", title: "RxNorm" },
+    { endpoint: "http://biordf.net/sparql", title: "SADI Semantic Web Services framework registry" },
+    {
+      endpoint: "http://southampton.rkbexplorer.com/sparql/",
+      title: "School of Electronics and Computer Science, University of Southampton (RKBExplorer)"
+    },
+    { endpoint: "http://seek.rkbexplorer.com/sparql/", title: "SEEK-AT-WD ICT tools for education - Web-Share" },
+    { endpoint: "http://serendipity.utpl.edu.ec/lod/sparql", title: "Serendipity" },
+    { endpoint: "http://data.linkedu.eu/slidewiki/query", title: "Slidewiki (RDF/SPARQL)" },
+    {
+      endpoint: "http://smartlink.open.ac.uk/smartlink/sparql",
+      title: "SmartLink: Linked Services Non-Functional Properties"
+    },
+    {
+      endpoint: "http://socialarchive.iath.virginia.edu/sparql/eac",
+      title: "Social Networks and Archival Context Fall 2011"
+    },
+    {
+      endpoint: "http://socialarchive.iath.virginia.edu/sparql/snac-viaf",
+      title: "Social Networks and Archival Context Fall 2011"
+    },
+    { endpoint: "http://vocabulary.semantic-web.at/PoolParty/sparql/semweb", title: "Social Semantic Web Thesaurus" },
+    { endpoint: "http://linguistic.linkeddata.es/sparql", title: "Spanish Linguistic Datasets" },
+    { endpoint: "http://crashmap.okfn.gr:8890/sparql", title: "Statistics on Fatal Traffic Accidents in greek roads" },
+    { endpoint: "http://services.data.gov.uk/statistics/sparql", title: "statistics.data.gov.uk" },
+    { endpoint: "http://crime.rkbexplorer.com/sparql/", title: "Street level crime reports for England and Wales" },
+    { endpoint: "http://zbw.eu/beta/sparql/stw/query", title: "STW Thesaurus for Economics" },
+    { endpoint: "http://symbolicdata.org:8890/sparql", title: "SymbolicData" },
+    { endpoint: "http://agalpha.mathbiol.org/repositories/tcga", title: "TCGA Roadmap" },
+    { endpoint: "http://www.open-biomed.org.uk/sparql/endpoint/tcm", title: "TCMGeneDIT Dataset" },
+    { endpoint: "http://darmstadt.rkbexplorer.com/sparql/", title: "Technische Universität Darmstadt (RKBExplorer)" },
+    { endpoint: "http://data.linkededucation.org/request/ted/sparql", title: "TED Talks" },
+    { endpoint: "http://linguistic.linkeddata.es/terminesp/sparql-editor", title: "Terminesp Linked Data" },
+    {
+      endpoint: "http://academia6.poolparty.biz/PoolParty/sparql/Tesauro-Materias-BUPM",
+      title: "Tesauro materias BUPM"
+    },
+    { endpoint: "http://apps.morelab.deusto.es/teseo/sparql", title: "Teseo" },
+    { endpoint: "http://ring.ciard.net/sparql1", title: "The CIARD RING" },
+    {
+      endpoint: "http://digitale.bncf.firenze.sbn.it/openrdf-workbench/repositories/NS/query",
+      title: "Thesaurus BNCF"
+    },
+    { endpoint: "http://lod.gesis.org/thesoz/sparql", title: "TheSoz Thesaurus for the Social Sciences (GESIS)" },
+    { endpoint: "http://linkeddata.ge.imati.cnr.it:8890/sparql", title: "ThIST" },
+    { endpoint: "http://tour-pedia.org/sparql", title: "Tourpedia" },
+    { endpoint: "http://tkm.kiom.re.kr/ontology/sparql", title: "Traditional Korean Medicine Ontology" },
+    { endpoint: "http://transparency.270a.info/sparql", title: "Transparency International Linked Data" },
+    { endpoint: "http://services.data.gov.uk/transport/sparql", title: "transport.data.gov.uk" },
+    { endpoint: "http://opendap.tw.rpi.edu/sparql", title: "twc-opendap" },
+    { endpoint: "http://jisc.rkbexplorer.com/sparql/", title: "UK JISC (RKBExplorer)" },
+    { endpoint: "http://unlocode.rkbexplorer.com/sparql/", title: "UN/LOCODE (RKBExplorer)" },
+    { endpoint: "http://uis.270a.info/sparql", title: "UNESCO Institute for Statistics (UIS) Linked Data" },
+    { endpoint: "http://skos.um.es/sparql/", title: "UNESCO Thesaurus" },
+    {
+      endpoint: "http://data.linkedu.eu/kis1112/query",
+      title: "UNISTAT-KIS 2011/2012 in RDF (Key Information Set - UK Universities)"
+    },
+    {
+      endpoint: "http://data.linkedu.eu/kis/query",
+      title: "UNISTAT-KIS in RDF (Key Information Set - UK Universities)"
+    },
+    {
+      endpoint: "http://data.utpl.edu.ec/utpl/lod/sparql",
+      title: "Universidad Técnica Particular de Loja - Linked Open Data"
+    },
+    {
+      endpoint: "http://roma.rkbexplorer.com/sparql/",
+      title: 'Università degli studi di Roma "La Sapienza" (RKBExplorer)'
+    },
+    { endpoint: "http://pisa.rkbexplorer.com/sparql/", title: "Università di Pisa (RKBExplorer)" },
+    { endpoint: "http://ulm.rkbexplorer.com/sparql/", title: "Universität Ulm (RKBExplorer)" },
+    { endpoint: "http://irit.rkbexplorer.com/sparql/", title: "Université Paul Sabatier - Toulouse 3 (RKB Explorer)" },
+    { endpoint: "http://resrev.ilrt.bris.ac.uk/data-server-workshop/sparql", title: "University of Bristol" },
+    {
+      endpoint: "http://data.linkedu.eu/hud/query",
+      title: "University of Huddersfield -- Circulation and Recommendation Data"
+    },
+    { endpoint: "http://newcastle.rkbexplorer.com/sparql/", title: "University of Newcastle upon Tyne (RKBExplorer)" },
+    { endpoint: "http://linkeddata.uriburner.com/sparql", title: "URIBurner" },
+    { endpoint: "http://semanticweb.cs.vu.nl/verrijktkoninkrijk/sparql/", title: "Verrijkt Koninkrijk" },
+    { endpoint: "http://kaunas.rkbexplorer.com/sparql", title: "Vytautas Magnus University, Kaunas (RKBExplorer)" },
+    { endpoint: "http://webscience.rkbexplorer.com/sparql", title: "Web Science Conference (RKBExplorer)" },
+    { endpoint: "http://webconf.rkbexplorer.com/sparql", title: "webconf" },
+    { endpoint: "http://sparql.wikipathways.org/", title: "WikiPathways" },
+    { endpoint: "http://wiktionary.dbpedia.org/sparql", title: "wiktionary.dbpedia.org" },
+    { endpoint: "http://www.opmw.org/sparql", title: "Wings workflow provenance dataset" },
+    { endpoint: "http://wordnet.rkbexplorer.com/sparql/", title: "WordNet (RKBExplorer)" },
+    { endpoint: "http://worldbank.270a.info/sparql", title: "World Bank Linked Data" },
+    { endpoint: "http://ldf.fi/ww1lod/sparql", title: "World War 1 as Linked Open Data" },
+    { endpoint: "http://diwis.imis.athena-innovation.gr:8181/sparql", title: "xxxxx" }
+  ]
 };
 
 },{"./main.js":216,"jquery":22}],210:[function(require,module,exports){
 //this is the entry-point for browserify.
 //the current browserify version does not support require-ing js files which are used as entry-point
 //this way, we can still require our main.js file
-module.exports = require('./main.js');
+module.exports = require("./main.js");
+
 },{"./main.js":216}],211:[function(require,module,exports){
-'use strict';
+"use strict";
 module.exports = {
-	yasgui: '<svg   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="0 0 603.99 522.51"   width="100%"   height="100%"      version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="test.svg">  <defs     >    <linearGradient              osb:paint="solid">      <stop         style="stop-color:#3b3b3b;stop-opacity:1;"         offset="0"          />    </linearGradient>    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />  </defs>  <sodipodi:namedview          pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1.0"     inkscape:pageopacity="0.0"     inkscape:pageshadow="2"     inkscape:zoom="0.35"     inkscape:cx="-469.55507"     inkscape:cy="840.5292"     inkscape:document-units="px"     inkscape:current-layer="layer1"     showgrid="false"     inkscape:window-width="1855"     inkscape:window-height="1056"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0" />  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />        <dc:title />      </cc:Work>    </rdf:RDF>  </metadata>  <g     inkscape:label="Layer 1"     inkscape:groupmode="layer"          transform="translate(-50.966817,-280.33262)">    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="478.57324"       x="-374.48849"       y="103.99496"       transform="matrix(-2.679181e-4,-0.99999996,0.99999993,-3.6684387e-4,0,0)" />    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="560"       x="651.37634"       y="-132.06581"       transform="matrix(0.74639582,0.66550228,-0.66550228,0.74639582,0,0)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,92.132758,620.67568)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,457.84706,214.96137)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,-30.152972,219.81853)" />    <g       transform="matrix(0.68747304,-0.7262099,0.7262099,0.68747304,0,0)"       inkscape:transform-center-x="239.86342"       inkscape:transform-center-y="-26.958107"       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#3b3b3b;fill-opacity:1;stroke:none;font-family:Sans"       >      <path         d="m -320.16655,490.61871 33.2,0 -32.4,75.4 0,64.6 -32.2,0 0,-64.6 -32.4,-75.4 33.2,0 15.2,43 15.4,-43 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -177.4603,630.61871 -32.2,0 -21.6,-80.4 -21.6,80.4 -32.2,0 37.4,-140 0.4,0 32,0 0.4,0 37.4,140 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -84.835303,544.41871 c 5.999926,9e-5 11.59992,1.13342 16.8,3.4 5.19991,2.26675 9.733238,5.40008 13.6,9.4 3.866564,3.86674 6.933228,8.40007 9.2,13.6 2.266556,5.20006 3.399889,10.80005 3.4,16.8 -1.11e-4,6.00004 -1.133444,11.60003 -3.4,16.8 -2.266772,5.20002 -5.333436,9.73335 -9.2,13.6 -3.866762,3.86668 -8.40009,6.93334 -13.6,9.2 -5.20008,2.26667 -10.800074,3.4 -16.8,3.4 l -64.599997,0 0,-32.2 64.599997,0 c 3.066595,-0.1333 5.599926,-1.19996 7.6,-3.2 2.133255,-2.13329 3.199921,-4.66662 3.2,-7.6 -7.9e-5,-3.06662 -1.066745,-5.59995 -3.2,-7.6 -2.000074,-2.13328 -4.533405,-3.19994 -7.6,-3.2 l -21.599997,0 c -6.00004,6e-5 -11.60004,-1.13328 -16.8,-3.4 -5.20003,-2.2666 -9.73336,-5.33327 -13.6,-9.2 -3.86668,-3.99993 -6.93335,-8.59992 -9.2,-13.8 -2.26667,-5.19991 -3.40001,-10.79991 -3.4,-16.8 -10e-6,-5.99989 1.13333,-11.59989 3.4,-16.8 2.26665,-5.19988 5.33332,-9.73321 9.2,-13.6 3.86664,-3.86653 8.39997,-6.9332 13.6,-9.2 5.19996,-2.26652 10.79996,-3.39986 16.8,-3.4 l 42.999997,0 0,32.4 -42.999997,0 c -3.06671,1.1e-4 -5.66671,1.06678 -7.8,3.2 -2.00004,2.00011 -3.00004,4.46677 -3,7.4 -4e-5,3.06676 0.99996,5.66676 3,7.8 2.13329,2.00009 4.73329,3.00009 7.8,3 l 21.599997,0 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />    </g>    <g       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Theorem NBP;-inkscape-font-specification:Theorem NBP"       >      <path         d="m 422.17683,677.02126 36.55,0 -5.44,27.54 -1.87,9.18 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 9.18,-45.9 c 1.01998,-5.09991 2.94664,-9.85991 5.78,-14.28 2.8333,-4.4199 6.17663,-8.27323 10.03,-11.56 3.96662,-3.28656 8.32995,-5.89322 13.09,-7.82 4.87328,-1.92655 9.85994,-2.88988 14.96,-2.89 l 18.36,0 c 5.09991,1.2e-4 9.63324,0.96345 13.6,2.89 4.0799,1.92678 7.42323,4.53344 10.03,7.82 2.71989,3.28677 4.58989,7.1401 5.61,11.56 1.01988,4.42009 1.01988,9.18009 0,14.28 l -27.37,0 c 0.45325,-2.49325 -9e-5,-4.58991 -1.36,-6.29 -1.36009,-1.81324 -3.34342,-2.71991 -5.95,-2.72 l -18.36,0 c -2.60673,9e-5 -4.98672,0.90676 -7.14,2.72 -2.15339,1.70009 -3.45672,3.79675 -3.91,6.29 l -9.18,45.9 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 1.87,-9.18 -9.18,0 5.44,-27.54"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 569.69808,713.74126 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 16.49,-82.45 27.37,0 -16.49,82.45 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 16.49,-82.45 27.37,0 -16.49,82.45"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 613.00933,631.29126 27.37,0 -23.8,119 -27.37,0 23.8,-119 0,0"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />    </g>    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.4331683,0,0,0.38716814,381.83246,155.72497)" />  </g></svg>', //svg with letters as paths (solves font issues)
-	cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
-	plus: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   viewBox="5 -10 59.259258 79.999999"   enable-background="new 0 0 100 100"   xml:space="preserve"   height="100%"   width="100%"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_79066_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="6.675088"     inkscape:cx="46.670641"     inkscape:cy="16.037704"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Your_Icon" /><g          transform="translate(-23.47037,-20)"><g       ><g         ><g            /></g><g          /></g></g><path     d="M 67.12963,22.5 H 42.129629 v -25 c 0,-4.142 -3.357,-7.5 -7.5,-7.5 -4.141999,0 -7.5,3.358 -7.5,7.5 v 25 H 2.1296295 c -4.142,0 -7.5,3.358 -7.5,7.5 0,4.143 3.358,7.5 7.5,7.5 H 27.129629 v 25 c 0,4.143 3.358001,7.5 7.5,7.5 4.143,0 7.5,-3.357 7.5,-7.5 v -25 H 67.12963 c 4.143,0 7.5,-3.357 7.5,-7.5 0,-4.142 -3.357,-7.5 -7.5,-7.5 z"          inkscape:connector-curvature="0"     style="fill:#000000" /></svg>',
-	crossMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"  viewBox="3.75 -7.5 43.041089 57.023436"   version="1.1"      inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96505_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="37.14799"     inkscape:cy="24.652776"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2" />  <g          transform="translate(-13.01266,-18.5625)">    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 67.335938,21.40625 60.320312,11.0625 C 50.757812,17.542969 43.875,22.636719 38.28125,27.542969 32.691406,22.636719 25.808594,17.546875 16.242188,11.0625 L 9.230469,21.40625 C 18.03125,27.375 24.3125,31.953125 29.398438,36.351562 23.574219,42.90625 18.523438,50.332031 11.339844,61.183594 l 10.421875,6.902344 C 28.515625,57.886719 33.144531,51.046875 38.28125,45.160156 c 5.140625,5.886719 9.765625,12.726563 16.523438,22.925782 L 65.226562,61.183594 C 58.039062,50.335938 52.988281,42.90625 47.167969,36.351562 52.25,31.953125 58.53125,27.375 67.335938,21.40625 z m 0,0"              inkscape:connector-curvature="0" />  </g></svg>',
-	checkMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 48.269674 56.308594"   version="1.1"      inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="40.78518"     inkscape:cy="24.259259"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2" />  <g          transform="translate(-9.3300051,-18.878906)">    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"              inkscape:connector-curvature="0" />  </g></svg>',
-	checkCrossMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 49.752653 49.990111"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"     showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="41.024355"     inkscape:cy="53.698163"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2"      />  <g     transform="matrix(0.59034297,0,0,0.59034297,12.298561,2.5312719)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"       inkscape:connector-curvature="0"        />  </g>  <g     transform="matrix(0.46036177,0,0,0.46036177,-0.49935505,-12.592753)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 67.335938,21.40625 60.320312,11.0625 C 50.757812,17.542969 43.875,22.636719 38.28125,27.542969 32.691406,22.636719 25.808594,17.546875 16.242188,11.0625 L 9.230469,21.40625 C 18.03125,27.375 24.3125,31.953125 29.398438,36.351562 23.574219,42.90625 18.523438,50.332031 11.339844,61.183594 l 10.421875,6.902344 C 28.515625,57.886719 33.144531,51.046875 38.28125,45.160156 c 5.140625,5.886719 9.765625,12.726563 16.523438,22.925782 L 65.226562,61.183594 C 58.039062,50.335938 52.988281,42.90625 47.167969,36.351562 52.25,31.953125 58.53125,27.375 67.335938,21.40625 z m 0,0"       inkscape:connector-curvature="0"        />  </g></svg>',
+  yasgui: '<svg   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="0 0 603.99 522.51"   width="100%"   height="100%"      version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="test.svg">  <defs     >    <linearGradient              osb:paint="solid">      <stop         style="stop-color:#3b3b3b;stop-opacity:1;"         offset="0"          />    </linearGradient>    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />  </defs>  <sodipodi:namedview          pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1.0"     inkscape:pageopacity="0.0"     inkscape:pageshadow="2"     inkscape:zoom="0.35"     inkscape:cx="-469.55507"     inkscape:cy="840.5292"     inkscape:document-units="px"     inkscape:current-layer="layer1"     showgrid="false"     inkscape:window-width="1855"     inkscape:window-height="1056"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0" />  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />        <dc:title />      </cc:Work>    </rdf:RDF>  </metadata>  <g     inkscape:label="Layer 1"     inkscape:groupmode="layer"          transform="translate(-50.966817,-280.33262)">    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="478.57324"       x="-374.48849"       y="103.99496"       transform="matrix(-2.679181e-4,-0.99999996,0.99999993,-3.6684387e-4,0,0)" />    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="560"       x="651.37634"       y="-132.06581"       transform="matrix(0.74639582,0.66550228,-0.66550228,0.74639582,0,0)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,92.132758,620.67568)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,457.84706,214.96137)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,-30.152972,219.81853)" />    <g       transform="matrix(0.68747304,-0.7262099,0.7262099,0.68747304,0,0)"       inkscape:transform-center-x="239.86342"       inkscape:transform-center-y="-26.958107"       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#3b3b3b;fill-opacity:1;stroke:none;font-family:Sans"       >      <path         d="m -320.16655,490.61871 33.2,0 -32.4,75.4 0,64.6 -32.2,0 0,-64.6 -32.4,-75.4 33.2,0 15.2,43 15.4,-43 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -177.4603,630.61871 -32.2,0 -21.6,-80.4 -21.6,80.4 -32.2,0 37.4,-140 0.4,0 32,0 0.4,0 37.4,140 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -84.835303,544.41871 c 5.999926,9e-5 11.59992,1.13342 16.8,3.4 5.19991,2.26675 9.733238,5.40008 13.6,9.4 3.866564,3.86674 6.933228,8.40007 9.2,13.6 2.266556,5.20006 3.399889,10.80005 3.4,16.8 -1.11e-4,6.00004 -1.133444,11.60003 -3.4,16.8 -2.266772,5.20002 -5.333436,9.73335 -9.2,13.6 -3.866762,3.86668 -8.40009,6.93334 -13.6,9.2 -5.20008,2.26667 -10.800074,3.4 -16.8,3.4 l -64.599997,0 0,-32.2 64.599997,0 c 3.066595,-0.1333 5.599926,-1.19996 7.6,-3.2 2.133255,-2.13329 3.199921,-4.66662 3.2,-7.6 -7.9e-5,-3.06662 -1.066745,-5.59995 -3.2,-7.6 -2.000074,-2.13328 -4.533405,-3.19994 -7.6,-3.2 l -21.599997,0 c -6.00004,6e-5 -11.60004,-1.13328 -16.8,-3.4 -5.20003,-2.2666 -9.73336,-5.33327 -13.6,-9.2 -3.86668,-3.99993 -6.93335,-8.59992 -9.2,-13.8 -2.26667,-5.19991 -3.40001,-10.79991 -3.4,-16.8 -10e-6,-5.99989 1.13333,-11.59989 3.4,-16.8 2.26665,-5.19988 5.33332,-9.73321 9.2,-13.6 3.86664,-3.86653 8.39997,-6.9332 13.6,-9.2 5.19996,-2.26652 10.79996,-3.39986 16.8,-3.4 l 42.999997,0 0,32.4 -42.999997,0 c -3.06671,1.1e-4 -5.66671,1.06678 -7.8,3.2 -2.00004,2.00011 -3.00004,4.46677 -3,7.4 -4e-5,3.06676 0.99996,5.66676 3,7.8 2.13329,2.00009 4.73329,3.00009 7.8,3 l 21.599997,0 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />    </g>    <g       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Theorem NBP;-inkscape-font-specification:Theorem NBP"       >      <path         d="m 422.17683,677.02126 36.55,0 -5.44,27.54 -1.87,9.18 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 9.18,-45.9 c 1.01998,-5.09991 2.94664,-9.85991 5.78,-14.28 2.8333,-4.4199 6.17663,-8.27323 10.03,-11.56 3.96662,-3.28656 8.32995,-5.89322 13.09,-7.82 4.87328,-1.92655 9.85994,-2.88988 14.96,-2.89 l 18.36,0 c 5.09991,1.2e-4 9.63324,0.96345 13.6,2.89 4.0799,1.92678 7.42323,4.53344 10.03,7.82 2.71989,3.28677 4.58989,7.1401 5.61,11.56 1.01988,4.42009 1.01988,9.18009 0,14.28 l -27.37,0 c 0.45325,-2.49325 -9e-5,-4.58991 -1.36,-6.29 -1.36009,-1.81324 -3.34342,-2.71991 -5.95,-2.72 l -18.36,0 c -2.60673,9e-5 -4.98672,0.90676 -7.14,2.72 -2.15339,1.70009 -3.45672,3.79675 -3.91,6.29 l -9.18,45.9 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 1.87,-9.18 -9.18,0 5.44,-27.54"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 569.69808,713.74126 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 16.49,-82.45 27.37,0 -16.49,82.45 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 16.49,-82.45 27.37,0 -16.49,82.45"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 613.00933,631.29126 27.37,0 -23.8,119 -27.37,0 23.8,-119 0,0"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />    </g>    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.4331683,0,0,0.38716814,381.83246,155.72497)" />  </g></svg>', //svg with letters as paths (solves font issues)
+  cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
+  plus: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   viewBox="5 -10 59.259258 79.999999"   enable-background="new 0 0 100 100"   xml:space="preserve"   height="100%"   width="100%"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_79066_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="6.675088"     inkscape:cx="46.670641"     inkscape:cy="16.037704"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Your_Icon" /><g          transform="translate(-23.47037,-20)"><g       ><g         ><g            /></g><g          /></g></g><path     d="M 67.12963,22.5 H 42.129629 v -25 c 0,-4.142 -3.357,-7.5 -7.5,-7.5 -4.141999,0 -7.5,3.358 -7.5,7.5 v 25 H 2.1296295 c -4.142,0 -7.5,3.358 -7.5,7.5 0,4.143 3.358,7.5 7.5,7.5 H 27.129629 v 25 c 0,4.143 3.358001,7.5 7.5,7.5 4.143,0 7.5,-3.357 7.5,-7.5 v -25 H 67.12963 c 4.143,0 7.5,-3.357 7.5,-7.5 0,-4.142 -3.357,-7.5 -7.5,-7.5 z"          inkscape:connector-curvature="0"     style="fill:#000000" /></svg>',
+  crossMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"  viewBox="3.75 -7.5 43.041089 57.023436"   version="1.1"      inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96505_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="37.14799"     inkscape:cy="24.652776"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2" />  <g          transform="translate(-13.01266,-18.5625)">    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 67.335938,21.40625 60.320312,11.0625 C 50.757812,17.542969 43.875,22.636719 38.28125,27.542969 32.691406,22.636719 25.808594,17.546875 16.242188,11.0625 L 9.230469,21.40625 C 18.03125,27.375 24.3125,31.953125 29.398438,36.351562 23.574219,42.90625 18.523438,50.332031 11.339844,61.183594 l 10.421875,6.902344 C 28.515625,57.886719 33.144531,51.046875 38.28125,45.160156 c 5.140625,5.886719 9.765625,12.726563 16.523438,22.925782 L 65.226562,61.183594 C 58.039062,50.335938 52.988281,42.90625 47.167969,36.351562 52.25,31.953125 58.53125,27.375 67.335938,21.40625 z m 0,0"              inkscape:connector-curvature="0" />  </g></svg>',
+  checkMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 48.269674 56.308594"   version="1.1"      inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="40.78518"     inkscape:cy="24.259259"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2" />  <g          transform="translate(-9.3300051,-18.878906)">    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"              inkscape:connector-curvature="0" />  </g></svg>',
+  checkCrossMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 49.752653 49.990111"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"     showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="41.024355"     inkscape:cy="53.698163"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2"      />  <g     transform="matrix(0.59034297,0,0,0.59034297,12.298561,2.5312719)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"       inkscape:connector-curvature="0"        />  </g>  <g     transform="matrix(0.46036177,0,0,0.46036177,-0.49935505,-12.592753)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 67.335938,21.40625 60.320312,11.0625 C 50.757812,17.542969 43.875,22.636719 38.28125,27.542969 32.691406,22.636719 25.808594,17.546875 16.242188,11.0625 L 9.230469,21.40625 C 18.03125,27.375 24.3125,31.953125 29.398438,36.351562 23.574219,42.90625 18.523438,50.332031 11.339844,61.183594 l 10.421875,6.902344 C 28.515625,57.886719 33.144531,51.046875 38.28125,45.160156 c 5.140625,5.886719 9.765625,12.726563 16.523438,22.925782 L 65.226562,61.183594 C 58.039062,50.335938 52.988281,42.90625 47.167969,36.351562 52.25,31.953125 58.53125,27.375 67.335938,21.40625 z m 0,0"       inkscape:connector-curvature="0"        />  </g></svg>'
 };
 
 },{}],212:[function(require,module,exports){
-'use strict';
-var $ = require('jquery'),
-	selectize = require('selectize'),
-	utils = require('yasgui-utils');
+"use strict";
+var $ = require("jquery"), selectize = require("selectize"), utils = require("yasgui-utils");
 
+selectize.define("allowRegularTextInput", function(options) {
+  var self = this;
 
+  this.onMouseDown = (function() {
+    var original = self.onMouseDown;
+    return function(e) {
+      if (!self.$dropdown.is(":visible")) {
+        //receiving focus via mouse click
+        original.apply(this, arguments);
 
-selectize.define('allowRegularTextInput', function(options) {
-	var self = this;
-
-	this.onMouseDown = (function() {
-
-		var original = self.onMouseDown;
-		return function(e) {
-
-
-			if (!self.$dropdown.is(":visible")) {
-				//receiving focus via mouse click
-				original.apply(this, arguments);
-
-				//this is a trick to make each value editable
-				//a bit strange, but the only trick to avoid static values
-				//and, this allows copy-ing (ctrl-c) of endpoints as well now
-				var val = this.getValue();
-				this.clear(true);
-				this.setTextboxValue(val);
-				this.refreshOptions(true);
-			} else {
-				//avoid closing the dropdown on second click. now, we can move the cursor using the mouse
-				e.stopPropagation();
-				e.preventDefault();
-			}
-		}
-	})();
+        //this is a trick to make each value editable
+        //a bit strange, but the only trick to avoid static values
+        //and, this allows copy-ing (ctrl-c) of endpoints as well now
+        var val = this.getValue();
+        this.clear(true);
+        this.setTextboxValue(val);
+        this.refreshOptions(true);
+      } else {
+        //avoid closing the dropdown on second click. now, we can move the cursor using the mouse
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    };
+  })();
 });
 
-
 $.fn.endpointCombi = function(yasgui, options) {
-	var checkCorsEnabled = function(endpoint) {
-		if (!yasgui.corsEnabled) yasgui.corsEnabled = {};
-		if (!(endpoint in yasgui.corsEnabled)) {
-			$.ajax({
-				url: endpoint + '?query=' + encodeURIComponent('ASK {?x ?y ?z}'),
-				complete: function(jqXHR) {
-					yasgui.corsEnabled[endpoint] = jqXHR.status > 0;
-				}
-			});
-		}
-	};
-	var storeEndpoints = function(optGroup) {
-		var persistencyId = null;
-		if (yasgui.persistencyPrefix) {
-			persistencyId = yasgui.persistencyPrefix + 'endpoint_' + optGroup;
-		}
-		var endpoints = [];
-		for (var val in $select[0].selectize.options) {
-			var option = $select[0].selectize.options[val];
-			if (option.optgroup == optGroup) {
-				var endpoint = {
-					endpoint: option.endpoint
-				}
-				if (option.text) endpoint.label = option.text;
-				endpoints.push(endpoint);
-			}
-		};
+  var checkCorsEnabled = function(endpoint) {
+    if (!yasgui.corsEnabled) yasgui.corsEnabled = {};
+    if (!(endpoint in yasgui.corsEnabled)) {
+      $.ajax({
+        url: endpoint + "?query=" + encodeURIComponent("ASK {?x ?y ?z}"),
+        complete: function(jqXHR) {
+          yasgui.corsEnabled[endpoint] = jqXHR.status > 0;
+        }
+      });
+    }
+  };
+  var storeEndpoints = function(optGroup) {
+    var persistencyId = null;
+    if (yasgui.persistencyPrefix) {
+      persistencyId = yasgui.persistencyPrefix + "endpoint_" + optGroup;
+    }
+    var endpoints = [];
+    for (var val in $select[0].selectize.options) {
+      var option = $select[0].selectize.options[val];
+      if (option.optgroup == optGroup) {
+        var endpoint = {
+          endpoint: option.endpoint
+        };
+        if (option.text) endpoint.label = option.text;
+        endpoints.push(endpoint);
+      }
+    }
 
+    utils.storage.set(persistencyId, endpoints);
+  };
 
-		utils.storage.set(persistencyId, endpoints);
+  //support callback
+  var getEndpoints = function(callback, optGroup) {
+    var persistencyId = null;
+    if (yasgui.persistencyPrefix) {
+      persistencyId = yasgui.persistencyPrefix + "endpoint_" + optGroup;
+    }
+    var endpoints = utils.storage.get(persistencyId);
+    if (endpoints) return callback(endpoints, optGroup);
 
+    if (optGroup == "catalogue" && yasgui.options.catalogueEndpoints) {
+      if (typeof yasgui.options.catalogueEndpoints == "function") {
+        return yasgui.options.catalogueEndpoints(yasgui, function(endpoints) {
+          if (endpoints) utils.storage.set(persistencyId, endpoints);
+          callback(endpoints, optGroup);
+        });
+      } else if (typeof yasgui.options.catalogueEndpoints == "object") {
+        endpoints = yasgui.options.catalogueEndpoints;
+        utils.storage.set(persistencyId, endpoints);
+        callback(endpoints, optGroup);
+      }
+    }
+  };
 
+  var $select = this;
 
-	}
+  var onClose = function() {
+    $select.showAll = true;
+  };
 
-	//support callback
-	var getEndpoints = function(callback, optGroup) {
-		var persistencyId = null;
-		if (yasgui.persistencyPrefix) {
-			persistencyId = yasgui.persistencyPrefix + 'endpoint_' + optGroup;
-		}
-		var endpoints = utils.storage.get(persistencyId);
-		if (endpoints) return callback(endpoints, optGroup);
+  var defaults = {
+    selectize: {
+      plugins: ["allowRegularTextInput"],
+      create: function(input, callback) {
+        callback({
+          endpoint: input,
+          optgroup: "own"
+        });
+      },
+      onBlur: onClose,
+      createOnBlur: true,
+      onItemAdd: function(value, $item) {
+        onClose();
+        if (options.onChange) options.onChange(value);
+        if (yasgui.options.api.corsProxy) checkCorsEnabled(value);
+      },
+      onOptionRemove: function(value) {
+        storeEndpoints("own");
+        storeEndpoints("catalogue");
+      },
+      optgroups: [
+        {
+          value: "own",
+          label: "History"
+        },
+        {
+          value: "catalogue",
+          label: "Catalogue"
+        }
+      ],
+      optgroupOrder: ["own", "catalogue"],
+      sortField: "endpoint",
+      valueField: "endpoint",
+      labelField: "endpoint",
+      searchField: ["endpoint", "text"],
+      score: function(search) {
+        if ($select.showAll) {
+          return function() {
+            $select.showAll = false;
+            return 1;
+          };
+        } else {
+          return this.getScoreFunction(search);
+        }
+      },
+      render: {
+        option: function(data, escape) {
+          var remove = '<a href="javascript:void(0)"  class="close pull-right" tabindex="-1" ' +
+            'title="Remove from ' +
+            (data.optgroup == "own" ? "history" : "catalogue") +
+            '">&times;</a>';
+          var url = '<div class="endpointUrl">' + escape(data.endpoint) + "</div>";
+          var label = "";
+          if (data.text) label = '<div class="endpointTitle">' + escape(data.text) + "</div>";
+          return '<div class="endpointOptionRow">' + remove + url + label + "</div>";
+        }
+      }
+    }
+  };
 
-		if (optGroup == 'catalogue' && yasgui.options.catalogueEndpoints) {
-			if (typeof yasgui.options.catalogueEndpoints == 'function') {
-				return yasgui.options.catalogueEndpoints(yasgui, function(endpoints) {
-					if (endpoints) utils.storage.set(persistencyId, endpoints);
-					callback(endpoints, optGroup);
-				});
-			} else if (typeof yasgui.options.catalogueEndpoints == 'object') {
-				endpoints = yasgui.options.catalogueEndpoints;
-				utils.storage.set(persistencyId, endpoints);
-				callback(endpoints, optGroup);
-			}
-		}
-	};
+  if (options) {
+    options = $.extend(true, {}, defaults, options);
+  } else {
+    options = defaults;
+  }
 
+  this.addClass("endpointText form-control");
+  this.selectize(options.selectize);
 
-
-	var $select = this;
-
-	var onClose = function() {
-		$select.showAll = true;
-	}
-
-	var defaults = {
-		selectize: {
-			plugins: ['allowRegularTextInput'],
-			create: function(input, callback) {
-				callback({
-					'endpoint': input,
-					optgroup: 'own'
-				});
-			},
-			onBlur: onClose,
-			createOnBlur: true,
-			onItemAdd: function(value, $item) {
-				onClose();
-				if (options.onChange) options.onChange(value);
-				if (yasgui.options.api.corsProxy) checkCorsEnabled(value);
-			},
-			onOptionRemove: function(value) {
-				storeEndpoints('own');
-				storeEndpoints('catalogue');
-			},
-			optgroups: [{
-				value: 'own',
-				label: 'History'
-			}, {
-				value: 'catalogue',
-				label: 'Catalogue'
-			}, ],
-			optgroupOrder: ['own', 'catalogue'],
-			sortField: 'endpoint',
-			valueField: 'endpoint',
-			labelField: 'endpoint',
-			searchField: ['endpoint', 'text'],
-			score: function(search) {
-				if ($select.showAll) {
-					return function() {
-						$select.showAll = false;
-						return 1
-					};
-				} else {
-					return this.getScoreFunction(search);
-				}
-			},
-			render: {
-				option: function(data, escape) {
-					var remove = '<a href="javascript:void(0)"  class="close pull-right" tabindex="-1" ' +
-						'title="Remove from ' + (data.optgroup == 'own' ? 'history' : 'catalogue') + '">&times;</a>';
-					var url = '<div class="endpointUrl">' + escape(data.endpoint) + '</div>';
-					var label = '';
-					if (data.text) label = '<div class="endpointTitle">' + escape(data.text) + '</div>';
-					return '<div class="endpointOptionRow">' + remove + url + label + '</div>';
-				}
-			}
-		},
-	};
-
-
-	if (options) {
-		options = $.extend(true, {}, defaults, options);
-	} else {
-		options = defaults;
-	}
-
-
-	this.addClass('endpointText form-control');
-	this.selectize(options.selectize);
-
-	/**
+  /**
 	 * THIS IS UGLY!!!!
 	 * Problem: the original option handler from selectize executes the preventDefault and stopPropagation functions
 	 * I.e., I cannot add my own handler to a sub-element of the option (such as a 'deleteOption' button)
@@ -94558,1906 +94902,1924 @@ $.fn.endpointCombi = function(yasgui, options) {
 	 * I'll keep the stopPropagation in there to keep it as consistent as possible with the original code
 	 * But I'll add some logic which executed whenever the delete button is pressed...
 	 */
-	$select[0].selectize.$dropdown.off('mousedown', '[data-selectable]'); //disable handler set by selectize
-	//add same handler (but slightly extended) myself:
-	$select[0].selectize.$dropdown.on('mousedown', '[data-selectable]', function(e) {
-		var value, $target, $option, self = $select[0].selectize;
+  $select[0].selectize.$dropdown.off("mousedown", "[data-selectable]"); //disable handler set by selectize
+  //add same handler (but slightly extended) myself:
+  $select[0].selectize.$dropdown.on("mousedown", "[data-selectable]", function(e) {
+    var value, $target, $option, self = $select[0].selectize;
 
-		if (e.preventDefault) {
-			e.preventDefault();
-			e.stopPropagation();
-		}
+    if (e.preventDefault) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
-		$target = $(e.currentTarget);
-		if ($(e.target).hasClass('close')) {
-			$select[0].selectize.removeOption($target.attr('data-value'));
-			$select[0].selectize.refreshOptions();
-		} else if ($target.hasClass('create')) {
-			self.createItem();
-		} else {
-			value = $target.attr('data-value');
-			if (typeof value !== 'undefined') {
-				self.lastQuery = null;
-				self.setTextboxValue('');
-				self.addItem(value);
-				if (!self.settings.hideSelected && e.type && /mouse/.test(e.type)) {
-					self.setActiveOption(self.getOption(value));
-				}
-			}
-		}
-	});
+    $target = $(e.currentTarget);
+    if ($(e.target).hasClass("close")) {
+      $select[0].selectize.removeOption($target.attr("data-value"));
+      $select[0].selectize.refreshOptions();
+    } else if ($target.hasClass("create")) {
+      self.createItem();
+    } else {
+      value = $target.attr("data-value");
+      if (typeof value !== "undefined") {
+        self.lastQuery = null;
+        self.setTextboxValue("");
+        self.addItem(value);
+        if (!self.settings.hideSelected && e.type && /mouse/.test(e.type)) {
+          self.setActiveOption(self.getOption(value));
+        }
+      }
+    }
+  });
 
+  var optionAddCallback = function(val, option) {
+    if (option.optgroup) {
+      storeEndpoints(option.optgroup);
+    }
+  };
 
-	var optionAddCallback = function(val, option) {
-		if (option.optgroup) {
-			storeEndpoints(option.optgroup);
-		}
-	};
+  var storeEndpointsInSelectize = function(endpointArray, optgroup) {
+    if (endpointArray) {
+      //first disable callback. don't want to run this for endpoints fetched from local storage and ckan
+      $select[0].selectize.off("option_add", optionAddCallback);
 
-	var storeEndpointsInSelectize = function(endpointArray, optgroup) {
-		if (endpointArray) {
-			//first disable callback. don't want to run this for endpoints fetched from local storage and ckan
-			$select[0].selectize.off('option_add', optionAddCallback);
+      endpointArray.forEach(function(val) {
+        $select[0].selectize.addOption({
+          endpoint: val.endpoint,
+          text: val.title,
+          optgroup: optgroup
+        });
+      });
 
-			endpointArray.forEach(function(val) {
-				$select[0].selectize.addOption({
-					endpoint: val.endpoint,
-					text: val.title,
-					optgroup: optgroup
-				});
-			});
+      //re-enable it again
+      $select[0].selectize.on("option_add", optionAddCallback);
+    }
+  };
 
-			//re-enable it again
-			$select[0].selectize.on('option_add', optionAddCallback);
-		}
-	}
+  getEndpoints(storeEndpointsInSelectize, "catalogue");
+  getEndpoints(storeEndpointsInSelectize, "own");
 
-	getEndpoints(storeEndpointsInSelectize, 'catalogue');
-	getEndpoints(storeEndpointsInSelectize, 'own');
+  if (options.value) {
+    if (!(options.value in $select[0].selectize.options)) {
+      $select[0].selectize.addOption({
+        endpoint: options.value,
+        optgroup: "own"
+      });
+    }
+    $select[0].selectize.addItem(options.value);
+  }
 
-
-	if (options.value) {
-		if (!(options.value in $select[0].selectize.options)) {
-			$select[0].selectize.addOption({
-				endpoint: options.value,
-				optgroup: 'own'
-			});
-		}
-		$select[0].selectize.addItem(options.value);
-	}
-
-
-
-
-	return this;
-
+  return this;
 };
 
 },{"jquery":22,"selectize":28,"yasgui-utils":35}],213:[function(require,module,exports){
 //extend jquery
-require('jquery-ui/resizable.js');
-require('./outsideclick.js');
-require('./tab.js');
-require('./endpointCombi.js');
-require('jquery-ui/position');
-require('jquery-ui/sortable');
+require("jquery-ui/resizable.js");
+require("./outsideclick.js");
+require("./tab.js");
+require("./endpointCombi.js");
+require("jquery-ui/position");
+require("jquery-ui/sortable");
 
 },{"./endpointCombi.js":212,"./outsideclick.js":214,"./tab.js":215,"jquery-ui/position":18,"jquery-ui/resizable.js":19,"jquery-ui/sortable":20}],214:[function(require,module,exports){
-'use strict';
-var $ = require('jquery');
+"use strict";
+var $ = require("jquery");
 
 $.fn.onOutsideClick = function(onOutsideClick, config) {
-	config = $.extend({
-		skipFirst: false,
-		allowedElements: $()
-	}, config)
-	var el = $(this);
+  config = $.extend(
+    {
+      skipFirst: false,
+      allowedElements: $()
+    },
+    config
+  );
+  var el = $(this);
 
-	var handler = function(e) {
-		var clickOutsideIssued = function(elCheck) {
-			return !elCheck.is(e.target) // if the target of the click isn't the container...
-				&& elCheck.has(e.target).length === 0 // ... nor a descendant of the container
-		};
+  var handler = function(e) {
+    var clickOutsideIssued = function(elCheck) {
+      return !elCheck.is(e.target) && // if the target of the click isn't the container...
+        elCheck.has(e.target).length === 0; // ... nor a descendant of the container
+    };
 
-		if (clickOutsideIssued(el) && clickOutsideIssued(config.allowedElements)) {
-			if (config.skipFirst) {
-				config.skipFirst = false;
-			} else {
-				onOutsideClick();
-				$(document).off('mousedown', handler);
-			}
-		}
-	};
-	$(document).mousedown(handler);
+    if (clickOutsideIssued(el) && clickOutsideIssued(config.allowedElements)) {
+      if (config.skipFirst) {
+        config.skipFirst = false;
+      } else {
+        onOutsideClick();
+        $(document).off("mousedown", handler);
+      }
+    }
+  };
+  $(document).mousedown(handler);
 
-	return this;
-}
+  return this;
+};
+
 },{"jquery":22}],215:[function(require,module,exports){
 //Based on Bootstrap: tab.js v3.3.1
-var $ = require('jquery');
-'use strict';
+var $ = require("jquery");
+("use strict");
 
 // TAB CLASS DEFINITION
 // ====================
 
 var Tab = function(element) {
-	this.element = $(element)
-}
+  this.element = $(element);
+};
 
-Tab.VERSION = '3.3.1'
+Tab.VERSION = "3.3.1";
 
-Tab.TRANSITION_DURATION = 150
+Tab.TRANSITION_DURATION = 150;
 
 Tab.prototype.show = function() {
-	var $this = this.element
-	var $ul = $this.closest('ul:not(.dropdown-menu)')
-	var selector = $this.data('target')
+  var $this = this.element;
+  var $ul = $this.closest("ul:not(.dropdown-menu)");
+  var selector = $this.data("target");
 
-	if (!selector) {
-		selector = $this.attr('href')
-		selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
-	}
+  if (!selector) {
+    selector = $this.attr("href");
+    selector = selector && selector.replace(/.*(?=#[^\s]*$)/, ""); // strip for ie7
+  }
 
-	if ($this.parent('li').hasClass('active')) return
+  if ($this.parent("li").hasClass("active")) return;
 
-	var $previous = $ul.find('.active:last a')
-	var hideEvent = $.Event('hide.bs.tab', {
-		relatedTarget: $this[0]
-	})
-	var showEvent = $.Event('show.bs.tab', {
-		relatedTarget: $previous[0]
-	})
+  var $previous = $ul.find(".active:last a");
+  var hideEvent = $.Event("hide.bs.tab", {
+    relatedTarget: $this[0]
+  });
+  var showEvent = $.Event("show.bs.tab", {
+    relatedTarget: $previous[0]
+  });
 
-	$previous.trigger(hideEvent)
-	$this.trigger(showEvent)
+  $previous.trigger(hideEvent);
+  $this.trigger(showEvent);
 
-	if (showEvent.isDefaultPrevented() || hideEvent.isDefaultPrevented()) return
+  if (showEvent.isDefaultPrevented() || hideEvent.isDefaultPrevented()) return;
 
-	var $target = $(selector)
+  var $target = $(selector);
 
-	this.activate($this.closest('li'), $ul)
-	this.activate($target, $target.parent(), function() {
-		$previous.trigger({
-			type: 'hidden.bs.tab',
-			relatedTarget: $this[0]
-		})
-		$this.trigger({
-			type: 'shown.bs.tab',
-			relatedTarget: $previous[0]
-		})
-	})
-}
+  this.activate($this.closest("li"), $ul);
+  this.activate($target, $target.parent(), function() {
+    $previous.trigger({
+      type: "hidden.bs.tab",
+      relatedTarget: $this[0]
+    });
+    $this.trigger({
+      type: "shown.bs.tab",
+      relatedTarget: $previous[0]
+    });
+  });
+};
 
 Tab.prototype.activate = function(element, container, callback) {
-	var $active = container.find('> .active')
-	var transition = callback && $.support.transition && (($active.length && $active.hasClass('fade')) || !!container.find('> .fade').length)
+  var $active = container.find("> .active");
+  var transition = callback &&
+    $.support.transition &&
+    (($active.length && $active.hasClass("fade")) || !!container.find("> .fade").length);
 
-	function next() {
-		$active
-			.removeClass('active')
-			.find('> .dropdown-menu > .active')
-			.removeClass('active')
-			.end()
-			.find('[data-toggle="tab"]')
-			.attr('aria-expanded', false)
+  function next() {
+    $active
+      .removeClass("active")
+      .find("> .dropdown-menu > .active")
+      .removeClass("active")
+      .end()
+      .find('[data-toggle="tab"]')
+      .attr("aria-expanded", false);
 
-		element
-			.addClass('active')
-			.find('[data-toggle="tab"]')
-			.attr('aria-expanded', true)
+    element.addClass("active").find('[data-toggle="tab"]').attr("aria-expanded", true);
 
-		if (transition) {
-			element[0].offsetWidth // reflow for transition
-			element.addClass('in')
-		} else {
-			element.removeClass('fade')
-		}
+    if (transition) {
+      element[0].offsetWidth; // reflow for transition
+      element.addClass("in");
+    } else {
+      element.removeClass("fade");
+    }
 
-		if (element.parent('.dropdown-menu')) {
-			element
-				.closest('li.dropdown')
-				.addClass('active')
-				.end()
-				.find('[data-toggle="tab"]')
-				.attr('aria-expanded', true)
-		}
+    if (element.parent(".dropdown-menu")) {
+      element.closest("li.dropdown").addClass("active").end().find('[data-toggle="tab"]').attr("aria-expanded", true);
+    }
 
-		callback && callback()
-	}
+    callback && callback();
+  }
 
-	$active.length && transition ?
-		$active
-		.one('bsTransitionEnd', next)
-		.emulateTransitionEnd(Tab.TRANSITION_DURATION) :
-		next()
+  $active.length && transition
+    ? $active.one("bsTransitionEnd", next).emulateTransitionEnd(Tab.TRANSITION_DURATION)
+    : next();
 
-	$active.removeClass('in')
-}
-
+  $active.removeClass("in");
+};
 
 // TAB PLUGIN DEFINITION
 // =====================
 
 function Plugin(option) {
-	return this.each(function() {
-		var $this = $(this)
-		var data = $this.data('bs.tab')
+  return this.each(function() {
+    var $this = $(this);
+    var data = $this.data("bs.tab");
 
-		if (!data) $this.data('bs.tab', (data = new Tab(this)))
-		if (typeof option == 'string') data[option]()
-	})
+    if (!data) $this.data("bs.tab", data = new Tab(this));
+    if (typeof option == "string") data[option]();
+  });
 }
 
-var old = $.fn.tab
+var old = $.fn.tab;
 
-$.fn.tab = Plugin
-$.fn.tab.Constructor = Tab
-
+$.fn.tab = Plugin;
+$.fn.tab.Constructor = Tab;
 
 // TAB NO CONFLICT
 // ===============
 
 $.fn.tab.noConflict = function() {
-	$.fn.tab = old
-	return this
-}
-
+  $.fn.tab = old;
+  return this;
+};
 
 // TAB DATA-API
 // ============
 
 var clickHandler = function(e) {
-	e.preventDefault()
-	Plugin.call($(this), 'show')
-}
+  e.preventDefault();
+  Plugin.call($(this), "show");
+};
 
 $(document)
-	.on('click.bs.tab.data-api', '[data-toggle="tab"]', clickHandler)
-	.on('click.bs.tab.data-api', '[data-toggle="pill"]', clickHandler)
+  .on("click.bs.tab.data-api", '[data-toggle="tab"]', clickHandler)
+  .on("click.bs.tab.data-api", '[data-toggle="pill"]', clickHandler);
+
 },{"jquery":22}],216:[function(require,module,exports){
 "use strict";
-var $ = require('jquery'),
-	EventEmitter = require('events').EventEmitter,
-	utils = require('yasgui-utils'),
-	imgs = require('./imgs.js');
-require('./jquery/extendJquery.js'); //extend some own jquery plugins
+var $ = require("jquery"),
+  EventEmitter = require("events").EventEmitter,
+  utils = require("yasgui-utils"),
+  imgs = require("./imgs.js");
+require("./jquery/extendJquery.js"); //extend some own jquery plugins
 
 /**
  * set this dynamically on instantiation: this YASR setting is dependent on the corsProxy yasgui setting
  */
 var setYasrOptions = function(options) {
-	var corsLiHtml = 'Endpoint is not <a href="http://enable-cors.org/" target="_blank">CORS-enabled</a>';
-	if (options.api.corsProxy) {
-		//We have a proxy. only possible reason CORS is still an issue, is when endpoints runs on localhost, different port, and cors enabled
-		corsLiHtml = 'Endpoint is not accessible from the YASGUI server and website, and the endpoint is not <a href="http://enable-cors.org/" target="_blank">CORS-enabled</a>';
-	}
-	module.exports.YASR.plugins.error.defaults.corsMessage = $('<div>')
-		.append($('<p>').append('Unable to get response from endpoint. Possible reasons:'))
-		.append($('<ul>')
-			.append($('<li>').text('Incorrect endpoint URL'))
-			.append($('<li>').text('Endpoint is down'))
-			.append($('<li>').html(corsLiHtml))
-		);
-
-}
+  var corsLiHtml = 'Endpoint is not <a href="http://enable-cors.org/" target="_blank">CORS-enabled</a>';
+  if (options.api.corsProxy) {
+    //We have a proxy. only possible reason CORS is still an issue, is when endpoints runs on localhost, different port, and cors enabled
+    corsLiHtml = 'Endpoint is not accessible from the YASGUI server and website, and the endpoint is not <a href="http://enable-cors.org/" target="_blank">CORS-enabled</a>';
+  }
+  module.exports.YASR.plugins.error.defaults.corsMessage = $("<div>")
+    .append($("<p>").append("Unable to get response from endpoint. Possible reasons:"))
+    .append(
+      $("<ul>")
+        .append($("<li>").text("Incorrect endpoint URL"))
+        .append($("<li>").text("Endpoint is down"))
+        .append($("<li>").html(corsLiHtml))
+    );
+};
 var YASGUI = function(parent, options) {
-	EventEmitter.call(this);
-	var yasgui = this;
-	yasgui.wrapperElement = $('<div class="yasgui"></div>').appendTo($(parent));
-	yasgui.options = $.extend(true, {}, module.exports.defaults, options);
-	setYasrOptions(yasgui.options);
-	yasgui.history = [];
+  EventEmitter.call(this);
+  var yasgui = this;
+  yasgui.wrapperElement = $('<div class="yasgui"></div>').appendTo($(parent));
+  yasgui.options = $.extend(true, {}, module.exports.defaults, options);
+  setYasrOptions(yasgui.options);
+  yasgui.history = [];
 
-	yasgui.persistencyPrefix = null;
-	if (yasgui.options.persistencyPrefix) {
-		yasgui.persistencyPrefix = (typeof yasgui.options.persistencyPrefix == 'function' ? yasgui.options.persistencyPrefix(yasgui) : yasgui.options.persistencyPrefix);
-	}
+  yasgui.persistencyPrefix = null;
+  if (yasgui.options.persistencyPrefix) {
+    yasgui.persistencyPrefix = typeof yasgui.options.persistencyPrefix == "function"
+      ? yasgui.options.persistencyPrefix(yasgui)
+      : yasgui.options.persistencyPrefix;
+  }
 
-	if (yasgui.persistencyPrefix) {
-		var histFromStorage = utils.storage.get(yasgui.persistencyPrefix + 'history');
-		if (histFromStorage) yasgui.history = histFromStorage;
-	}
+  if (yasgui.persistencyPrefix) {
+    var histFromStorage = utils.storage.get(yasgui.persistencyPrefix + "history");
+    if (histFromStorage) yasgui.history = histFromStorage;
+  }
 
+  yasgui.store = function() {
+    if (yasgui.persistentOptions) {
+      utils.storage.set(yasgui.persistencyPrefix, yasgui.persistentOptions);
+    }
+  };
 
-	yasgui.store = function() {
-		if (yasgui.persistentOptions) {
-			utils.storage.set(yasgui.persistencyPrefix, yasgui.persistentOptions);
-		}
-	};
+  var getSettingsFromStorage = function() {
+    var settings = utils.storage.get(yasgui.persistencyPrefix);
+    if (!settings) settings = {}; //initialize blank. Default vals will be set as we go
+    return settings;
+  };
 
-	var getSettingsFromStorage = function() {
-		var settings = utils.storage.get(yasgui.persistencyPrefix);
-		if (!settings) settings = {}; //initialize blank. Default vals will be set as we go
-		return settings;
-	}
+  yasgui.persistentOptions = getSettingsFromStorage();
 
-	yasgui.persistentOptions = getSettingsFromStorage();
+  if (yasgui.persistentOptions.tabManager) yasgui.persistentOptions = yasgui.persistentOptions.tabManager; //for backwards compatability
+  var persistentOptions = yasgui.persistentOptions;
 
-	if (yasgui.persistentOptions.tabManager) yasgui.persistentOptions = yasgui.persistentOptions.tabManager; //for backwards compatability
-	var persistentOptions = yasgui.persistentOptions;
+  //tab object (containing e.g. yasqe/yasr)
+  yasgui.tabs = {};
 
-	//tab object (containing e.g. yasqe/yasr)
-	yasgui.tabs = {};
+  //the actual tabs parent containing the ul of tab buttons
+  var $tabsParent;
 
-	//the actual tabs parent containing the ul of tab buttons
-	var $tabsParent;
+  //contains the tabs and panes
+  var $tabPanel = null;
 
-	//contains the tabs and panes
-	var $tabPanel = null;
+  //context menu for the tab context menu
+  var $contextMenu = null;
 
-	//context menu for the tab context menu
-	var $contextMenu = null;
+  var getTabName = function(name, i) {
+    if (!name) name = "Query";
+    if (!i) i = 0;
+    var fullName = name + (i > 0 ? " " + i : "");
 
-	var getTabName = function(name, i) {
-		if (!name) name = "Query";
-		if (!i) i = 0;
-		var fullName = name + (i > 0 ? " " + i : "");
+    if (tabNameTaken(fullName)) fullName = getTabName(name, i + 1);
+    return fullName;
+  };
+  var tabNameTaken = function(name) {
+    for (var tabId in yasgui.tabs) {
+      if (yasgui.tabs[tabId].persistentOptions.name == name) {
+        return true;
+      }
+    }
+    return false;
+  };
 
-		if (tabNameTaken(fullName)) fullName = getTabName(name, i + 1);
-		return fullName;
-	}
-	var tabNameTaken = function(name) {
-		for (var tabId in yasgui.tabs) {
-			if (yasgui.tabs[tabId].persistentOptions.name == name) {
-				return true;
-			}
-		}
-		return false;
-	};
+  var getRandomId = function() {
+    return Math.random().toString(36).substring(7);
+  };
+  var getTabInputEl = function() {
+    return $('<div><input type="text"></div>').keydown(function(e) {
+      if (e.which == 27 || e.keyCode == 27) {
+        //esc
+        $(this).closest("li").removeClass("rename");
+      } else if (e.which == 13 || e.keyCode == 13) {
+        //enter
+        storeRename($(this).closest("li"));
+      }
+    });
+  };
+  var renameStart = function(tabEl) {
+    var val = tabEl.find("span").text();
+    tabEl.addClass("rename");
+    tabEl.find("input").val(val).focus();
+    tabEl.onOutsideClick(function() {
+      storeRename(tabEl);
+    });
+  };
+  var storeRename = function($liEl) {
+    var tabId = $liEl.find('a[role="tab"]').attr("aria-controls");
+    var val = $liEl.find("input").val();
+    // console.log($liEl)
+    $liEl.find("span").text($liEl.find("input").val());
+    persistentOptions.tabs[tabId].name = val;
+    yasgui.store();
+    $liEl.removeClass("rename");
+  };
+  yasgui.init = function() {
+    //tab panel contains tabs and panes
+    $tabPanel = $("<div>", {
+      role: "tabpanel"
+    }).appendTo(yasgui.wrapperElement);
 
-	var getRandomId = function() {
-		return Math.random().toString(36).substring(7);
-	};
+    //init tabs
+    $tabsParent = $("<ul>", {
+      class: "nav nav-tabs mainTabs",
+      role: "tablist"
+    }).appendTo($tabPanel);
+    yasgui.$tabsParent = $tabsParent;
 
-	var $tabRename = $('<div><input type="text"></div>')
-		.keydown(function(e) {
-			if (e.which == 27 || e.keyCode == 27) {
-				//esc
-				$(this).closest('li').removeClass('rename');
-			} else if (e.which == 13 || e.keyCode == 13) {
-				//enter
-				storeRename($(this).closest('li'));
-			}
-		})
-	var renameStart = function(tabEl) {
-		var val = tabEl.find('span').text();
-		tabEl.addClass('rename');
-		tabEl.find('input').val(val);
-		$tabRename.find('input').focus();
-		tabEl.onOutsideClick(function() {
-			storeRename(tabEl);
-		})
-	}
-	var storeRename = function($liEl) {
-		var tabId = $liEl.find('a[role="tab"]').attr('aria-controls');
-		var val = $liEl.find('input').val();
-		// console.log($liEl)
-		$liEl.find('span').text($liEl.find('input').val());
-		persistentOptions.tabs[tabId].name = val;
-		yasgui.store();
-		$liEl.removeClass('rename');
-	};
-	yasgui.init = function() {
+    //init add button
+    var $addTab = $("<a>", {
+      role: "addTab"
+    })
+      .click(function(e) {
+        addTab();
+      })
+      .text("+");
+    $tabsParent.append(
+      $("<li>", {
+        role: "presentation"
+      }).append($addTab)
+    );
 
-		//tab panel contains tabs and panes
-		$tabPanel = $('<div>', {
-			role: 'tabpanel'
-		}).appendTo(yasgui.wrapperElement);
+    //init panes
+    yasgui.$tabPanesParent = $("<div>", {
+      class: "tab-content"
+    }).appendTo($tabPanel);
 
-		//init tabs
-		$tabsParent = $('<ul>', {
-			class: 'nav nav-tabs mainTabs',
-			role: 'tablist'
-		}).appendTo($tabPanel);
-		yasgui.$tabsParent = $tabsParent;
+    if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
+      //ah, this is on first load. initialize some stuff
+      persistentOptions = {
+        tabOrder: [],
+        tabs: {},
+        selected: null
+      };
+      yasgui.options.tabs.forEach(function(tab) {
+        var id = getRandomId();
+        if (!persistentOptions.selected) persistentOptions.selected = id;
+        persistentOptions.tabOrder.push(id);
+        persistentOptions.tabs[id] = $.extend(
+          true,
+          {},
+          {
+            id: id
+          },
+          tab
+        );
+      });
+      yasgui.persistentOptions = persistentOptions;
+      yasgui.store();
+    }
+    var optionsFromUrl = require("./shareLink.js").getOptionsFromUrl();
+    if (optionsFromUrl) {
+      //hmm, we have options from the url. make sure we initialize everything using this tab
+      //the one thing we don't have is the ID. generate it.
+      var tabId = getRandomId();
+      optionsFromUrl.id = tabId;
+      persistentOptions.tabs[tabId] = optionsFromUrl;
+      persistentOptions.tabOrder.push(tabId);
+      persistentOptions.selected = tabId;
+      yasgui.once("ready", function() {
+        if (persistentOptions.tabs[tabId].yasr.outputSettings) {
+          var plugin = yasgui.current().yasr.plugins[persistentOptions.tabs[tabId].yasr.output];
+          if (plugin.options) {
+            $.extend(plugin.options, persistentOptions.tabs[tabId].yasr.outputSettings);
+          }
+          delete persistentOptions.tabs[tabId]["yasr"]["outputSettings"];
+        }
 
-		//init add button
-		var $addTab = $('<a>', {
-				role: 'addTab'
-			})
-			.click(function(e) {
-				addTab();
-			})
-			.text('+');
-		$tabsParent.append(
-			$("<li>", {
-				role: "presentation"
-			})
-			.append($addTab)
-		);
+        yasgui.current().query();
+      });
+    }
 
-		//init panes
-		yasgui.$tabPanesParent = $('<div>', {
-			class: 'tab-content'
-		}).appendTo($tabPanel);
+    persistentOptions.tabOrder.forEach(addTab);
 
-		if (!persistentOptions || $.isEmptyObject(persistentOptions)) {
-			//ah, this is on first load. initialize some stuff
-			persistentOptions = {
-				tabOrder: [],
-				tabs: {},
-				selected: null
-			}
-			yasgui.options.tabs.forEach(function(tab) {
-				var id = getRandomId();
-				if (!persistentOptions.selected) persistentOptions.selected = id;
-				persistentOptions.tabOrder.push(id);
-				persistentOptions.tabs[id] = $.extend(true, {}, {
-					id: id
-				}, tab)
+    $tabsParent.sortable({
+      placeholder: "tab-sortable-highlight",
+      items: 'li:has([data-toggle="tab"])', //don't allow sorting after ('+') icon
+      forcePlaceholderSize: true,
+      update: function() {
+        var newTabOrder = [];
+        $tabsParent.find('a[data-toggle="tab"]').each(function() {
+          newTabOrder.push($(this).attr("aria-controls"));
+        });
+        persistentOptions.tabOrder = newTabOrder;
+        yasgui.store();
+      }
+    });
 
-			})
-			yasgui.persistentOptions = persistentOptions;
-			yasgui.store();
-		}
-		var optionsFromUrl = require('./shareLink.js').getOptionsFromUrl();
-		if (optionsFromUrl) {
-			//hmm, we have options from the url. make sure we initialize everything using this tab
-			//the one thing we don't have is the ID. generate it.
-			var tabId = getRandomId();
-			optionsFromUrl.id = tabId;
-			persistentOptions.tabs[tabId] = optionsFromUrl;
-			persistentOptions.tabOrder.push(tabId);
-			persistentOptions.selected = tabId;
-			yasgui.once('ready', function() {
-				if (persistentOptions.tabs[tabId].yasr.outputSettings) {
-					var plugin = yasgui.current().yasr.plugins[persistentOptions.tabs[tabId].yasr.output];
-					if (plugin.options) {
-						$.extend(plugin.options, persistentOptions.tabs[tabId].yasr.outputSettings);
-					}
-					delete persistentOptions.tabs[tabId]['yasr']['outputSettings'];
-				}
-
-				yasgui.current().query();
-			})
-		}
-
-		persistentOptions.tabOrder.forEach(addTab);
-
-		$tabsParent.sortable({
-			placeholder: "tab-sortable-highlight",
-			items: 'li:has([data-toggle="tab"])', //don't allow sorting after ('+') icon
-			forcePlaceholderSize: true,
-			update: function() {
-				var newTabOrder = [];
-				$tabsParent.find('a[data-toggle="tab"]').each(function() {
-					newTabOrder.push($(this).attr('aria-controls'));
-				});
-				persistentOptions.tabOrder = newTabOrder;
-				yasgui.store();
-			}
-
-		});
-
-		//Add context menu
-		$contextMenu = $('<div>', {
-			class: 'tabDropDown'
-		}).appendTo(yasgui.wrapperElement);
-		var $contextMenuList = $('<ul>', {
-			class: 'dropdown-menu',
-			role: 'menu'
-		}).appendTo($contextMenu);
-		var addMenuItem = function(name, onClick) {
-			var $listItem = $('<li>', {
-				role: 'presentation'
-			}).appendTo($contextMenuList);
-			if (name) {
-				$listItem.append($('<a>', {
-						role: 'menuitem',
-						href: '#'
-					}).text(name))
-					.click(function(event) {
-						$contextMenu.hide();
-						event.preventDefault();
-						if (onClick) onClick($contextMenu.attr('target-tab'));
-					})
-			} else {
-				$listItem.addClass('divider');
-			}
-		};
-		addMenuItem('Add new Tab', function(tabId) {
-			addTab();
-		});
-		addMenuItem('Rename', function(tabId) {
-			renameStart($tabsParent.find('a[href="#' + tabId + '"]').parent())
-		});
-		addMenuItem('Copy', function(tabId) {
-			var newTabId = getRandomId();
-			var copiedSettings = $.extend(true, {}, persistentOptions.tabs[tabId]);
-			copiedSettings.id = newTabId;
-			persistentOptions.tabs[newTabId] = copiedSettings;
-			addTab(newTabId);
-			selectTab(newTabId);
-		});
-		addMenuItem();
-		addMenuItem('Close', closeTab);
-		addMenuItem('Close others', function(tabId) {
-			$tabsParent.find('a[role="tab"]').each(function() {
-				var currentId = $(this).attr('aria-controls');
-				if (currentId != tabId) closeTab(currentId);
-			})
-		});
-		addMenuItem('Close all', function() {
-			$tabsParent.find('a[role="tab"]').each(function() {
-				closeTab($(this).attr('aria-controls'));
-			})
-		});
-	};
-	var selectTab = function(id) {
-		$tabsParent.find('a[aria-controls="' + id + '"]').tab('show');
-		return yasgui.current();
-	}
-	yasgui.selectTab = selectTab;
-	var closeTab = function(id) {
-		/**
+    //Add context menu
+    $contextMenu = $("<div>", {
+      class: "tabDropDown"
+    }).appendTo(yasgui.wrapperElement);
+    var $contextMenuList = $("<ul>", {
+      class: "dropdown-menu",
+      role: "menu"
+    }).appendTo($contextMenu);
+    var addMenuItem = function(name, onClick) {
+      var $listItem = $("<li>", {
+        role: "presentation"
+      }).appendTo($contextMenuList);
+      if (name) {
+        $listItem
+          .append(
+            $("<a>", {
+              role: "menuitem",
+              href: "#"
+            }).text(name)
+          )
+          .click(function(event) {
+            $contextMenu.hide();
+            event.preventDefault();
+            if (onClick) onClick($contextMenu.attr("target-tab"));
+          });
+      } else {
+        $listItem.addClass("divider");
+      }
+    };
+    addMenuItem("Add new Tab", function(tabId) {
+      addTab();
+    });
+    addMenuItem("Rename", function(tabId) {
+      renameStart($tabsParent.find('a[href="#' + tabId + '"]').parent());
+    });
+    addMenuItem("Copy", function(tabId) {
+      var newTabId = getRandomId();
+      var copiedSettings = $.extend(true, {}, persistentOptions.tabs[tabId]);
+      copiedSettings.id = newTabId;
+      persistentOptions.tabs[newTabId] = copiedSettings;
+      addTab(newTabId);
+      selectTab(newTabId);
+    });
+    addMenuItem();
+    addMenuItem("Close", closeTab);
+    addMenuItem("Close others", function(tabId) {
+      $tabsParent.find('a[role="tab"]').each(function() {
+        var currentId = $(this).attr("aria-controls");
+        if (currentId != tabId) closeTab(currentId);
+      });
+    });
+    addMenuItem("Close all", function() {
+      $tabsParent.find('a[role="tab"]').each(function() {
+        closeTab($(this).attr("aria-controls"));
+      });
+    });
+  };
+  var selectTab = function(id) {
+    $tabsParent.find('a[aria-controls="' + id + '"]').tab("show");
+    return yasgui.current();
+  };
+  yasgui.selectTab = selectTab;
+  var closeTab = function(id) {
+    /**
 		 * cleanup local storage
 		 */
-		yasgui.tabs[id].destroy();
+    yasgui.tabs[id].destroy();
 
-		/**cleanup variables**/
-		delete yasgui.tabs[id];
-		delete persistentOptions.tabs[id];
-		var orderIndex = persistentOptions.tabOrder.indexOf(id);
-		if (orderIndex > -1) persistentOptions.tabOrder.splice(orderIndex, 1);
+    /**cleanup variables**/
+    delete yasgui.tabs[id];
+    delete persistentOptions.tabs[id];
+    var orderIndex = persistentOptions.tabOrder.indexOf(id);
+    if (orderIndex > -1) persistentOptions.tabOrder.splice(orderIndex, 1);
 
-		/**
+    /**
 		 * select new tab
 		 */
-		var newSelectedIndex = null;
-		if (persistentOptions.tabOrder[orderIndex]) {
-			//use the tab now in position of the old one
-			newSelectedIndex = orderIndex;
-		} else if (persistentOptions.tabOrder[orderIndex - 1]) {
-			//use the tab in the previous position
-			newSelectedIndex = orderIndex - 1;
-		}
-		if (newSelectedIndex !== null) selectTab(persistentOptions.tabOrder[newSelectedIndex]);
+    var newSelectedIndex = null;
+    if (persistentOptions.tabOrder[orderIndex]) {
+      //use the tab now in position of the old one
+      newSelectedIndex = orderIndex;
+    } else if (persistentOptions.tabOrder[orderIndex - 1]) {
+      //use the tab in the previous position
+      newSelectedIndex = orderIndex - 1;
+    }
+    if (newSelectedIndex !== null) selectTab(persistentOptions.tabOrder[newSelectedIndex]);
 
-		/**
+    /**
 		 * cleanup dom
 		 */
-		$tabsParent.find('a[href="#' + id + '"]').closest('li').remove();
-		$("#" + id).remove();
+    $tabsParent.find('a[href="#' + id + '"]').closest("li").remove();
+    $("#" + id).remove();
 
+    yasgui.store();
+    return yasgui.current();
+  };
+  yasgui.closeTab = closeTab;
+  var addTab = function(tabId) {
+    var newItem = !tabId;
+    if (!tabId) tabId = getRandomId();
+    if (!("tabs" in persistentOptions)) persistentOptions.tabs = {};
+    var name = null;
+    if (persistentOptions.tabs[tabId] && persistentOptions.tabs[tabId].name) {
+      name = persistentOptions.tabs[tabId].name;
+    }
+    if (!name) name = getTabName();
 
-		yasgui.store();
-		return yasgui.current();
-	};
-	yasgui.closeTab = closeTab;
-	var addTab = function(tabId) {
-		var newItem = !tabId;
-		if (!tabId) tabId = getRandomId();
-		if (!('tabs' in persistentOptions)) persistentOptions.tabs = {};
-		var name = null;
-		if (persistentOptions.tabs[tabId] && persistentOptions.tabs[tabId].name) {
-			name = persistentOptions.tabs[tabId].name
-		}
-		if (!name) name = getTabName();
+    //Initialize new tab with endpoint from currently selected tab (if there is one)
+    var endpoint = null;
+    if (yasgui.current() && yasgui.current().getEndpoint()) {
+      endpoint = yasgui.current().getEndpoint();
+    }
 
+    //first add tab
+    var $tabToggle = $("<a>", {
+      href: "#" + tabId,
+      "aria-controls": tabId,
+      role: "tab",
+      "data-toggle": "tab"
+    })
+      .click(function(e) {
+        e.preventDefault();
+        $(this).tab("show");
+        if (yasgui.tabs[tabId].yasqe) yasgui.tabs[tabId].yasqe.refresh();
+      })
+      .on("shown.bs.tab", function(e) {
+        persistentOptions.selected = $(this).attr("aria-controls");
+        yasgui.tabs[tabId].onShow();
+        yasgui.store();
+      })
+      .append($("<div>", { class: "loader" }))
+      .append($("<span>").text(name))
+      .append(
+        $("<button>", {
+          class: "close",
+          type: "button"
+        })
+          .text("x")
+          .click(function() {
+            closeTab(tabId);
+          })
+      );
 
-		//Initialize new tab with endpoint from currently selected tab (if there is one)
-		var endpoint = null;
-		if (yasgui.current() && yasgui.current().getEndpoint()) {
-			endpoint = yasgui.current().getEndpoint();
-		}
+    var $tabItem = $("<li>", {
+      role: "presentation"
+    })
+      .append($tabToggle)
+      .append(getTabInputEl())
+      .dblclick(function() {
+        var el = $(this);
+        renameStart(el);
+      })
+      .mousedown(function(e) {
+        if (e.which == 2) {
+          //middle Click
+          closeTab(tabId);
+        }
+      })
+      .bind("contextmenu", function(e) {
+        e.preventDefault();
+        $contextMenu
+          .show()
+          .onOutsideClick(
+            function() {
+              $contextMenu.hide();
+            },
+            {
+              allowedElements: $(this).closest("li")
+            }
+          )
+          .addClass("open")
+          .attr("target-tab", $tabItem.find('a[role="tab"]').attr("aria-controls"))
+          .position({
+            my: "left top-3",
+            at: "left bottom",
+            of: $(this)
+          });
+      });
 
-		//first add tab
-		var $tabToggle = $('<a>', {
-				href: '#' + tabId,
-				'aria-controls': tabId,
-				role: 'tab',
-				'data-toggle': 'tab'
-			})
-			.click(function(e) {
-				e.preventDefault();
-				$(this).tab('show');
-				if (yasgui.tabs[tabId].yasqe) yasgui.tabs[tabId].yasqe.refresh();
-			})
-			.on('shown.bs.tab', function(e) {
-				persistentOptions.selected = $(this).attr('aria-controls');
-				yasgui.tabs[tabId].onShow();
-				yasgui.store();
-			})
-			.append($('<div>', {class: 'loader'}))
-			.append($('<span>').text(name))
-			.append(
-				$('<button>', {
-					class: "close",
-					type: "button"
-				})
-				.text('x')
-				.click(function() {
-					closeTab(tabId);
-				})
-			);
+    $tabsParent.find('li:has(a[role="addTab"])').before($tabItem);
 
+    if (newItem) persistentOptions.tabOrder.push(tabId);
+    var Tab = require("./tab.js");
+    var options = {
+      id: tabId,
+      name: name,
+      yasqe: yasgui.options.yasqe,
+      yasr: yasgui.options.yasr
+    };
+    if (endpoint)
+      options.yasqe = {
+        sparql: {
+          endpoint: endpoint
+        }
+      };
+    yasgui.tabs[tabId] = new Tab(yasgui, options);
+    if (newItem || persistentOptions.selected == tabId) {
+      yasgui.tabs[tabId].beforeShow();
+      $tabToggle.tab("show");
+    }
+    return yasgui.tabs[tabId];
+  };
 
+  yasgui.current = function() {
+    return yasgui.tabs[persistentOptions.selected];
+  };
+  yasgui.addTab = addTab;
 
+  yasgui.init();
 
-		var $tabItem = $("<li>", {
-				role: "presentation"
-			})
-			.append($tabToggle)
-			.append($tabRename)
-			.dblclick(function() {
-				var el = $(this);
-				renameStart(el);
-			})
-			.mousedown(function(e){
-		    if (e.which == 2) {
-            //middle Click
-						closeTab(tabId);
-		    }
-			})
-			.bind('contextmenu', function(e) {
-				e.preventDefault();
-				$contextMenu
-					.show()
-					.onOutsideClick(function() {
-						$contextMenu.hide();
-					}, {
-						allowedElements: $(this).closest('li')
-					})
-					.addClass('open')
-					.attr('target-tab', $tabItem.find('a[role="tab"]').attr('aria-controls'))
-					.position({
-						my: "left top-3",
-						at: "left bottom",
-						of: $(this),
-					});
+  yasgui.tracker = require("./tracker.js")(yasgui);
 
-			});
-
-
-		$tabsParent.find('li:has(a[role="addTab"])').before($tabItem);
-
-		if (newItem) persistentOptions.tabOrder.push(tabId);
-		var Tab = require('./tab.js');
-		var options = {
-			id: tabId,
-			name: name,
-			yasqe: yasgui.options.yasqe,
-			yasr: yasgui.options.yasr
-		}
-		if (endpoint) options.yasqe = {
-			sparql: {
-				endpoint: endpoint
-			}
-		}
-		yasgui.tabs[tabId] = new Tab(yasgui,options );
-		if (newItem || persistentOptions.selected == tabId) {
-			yasgui.tabs[tabId].beforeShow();
-			$tabToggle.tab('show');
-		}
-		return yasgui.tabs[tabId];
-	};
-
-
-	yasgui.current = function() {
-		return yasgui.tabs[persistentOptions.selected];
-	}
-	yasgui.addTab = addTab;
-
-	yasgui.init();
-
-	yasgui.tracker = require('./tracker.js')(yasgui);
-
-	yasgui.emit('ready');
-	return yasgui;
+  yasgui.emit("ready");
+  return yasgui;
 };
-YASGUI.prototype = new EventEmitter;
+YASGUI.prototype = new EventEmitter();
 
 module.exports = function(parent, options) {
-	return new YASGUI(parent, options);
-}
-
-module.exports.YASQE = require('./yasqe.js');
-module.exports.YASR = require('./yasr.js');
-module.exports.$ = $;
-module.exports.defaults = require('./defaults.js');
-
-},{"./defaults.js":209,"./imgs.js":211,"./jquery/extendJquery.js":213,"./shareLink.js":217,"./tab.js":218,"./tracker.js":220,"./yasqe.js":222,"./yasr.js":223,"events":15,"jquery":22,"yasgui-utils":35}],217:[function(require,module,exports){
-var $ = require('jquery');
-var deparam = function(queryString) {
-	var params = [];
-	if (queryString && queryString.length > 0) {
-		var vars = queryString.split("&");
-		for (var i = 0; i < vars.length; i++) {
-			var pair = vars[i].split("=");
-			var key = pair[0];
-			var val = pair[1];
-			if (key.length > 0 && val && val.length > 0) {
-				//we at least need a key right
-
-				//do the decoding. Do plus sign separately (not done by the native decode function)
-				val = val.replace(/\+/g, ' ');
-				val = decodeURIComponent(val);
-				params.push({
-					name: pair[0],
-					value: val
-				});
-			}
-		}
-	}
-	return params;
+  return new YASGUI(parent, options);
 };
 
+module.exports.YASQE = require("./yasqe.js");
+module.exports.YASR = require("./yasr.js");
+module.exports.$ = $;
+module.exports.defaults = require("./defaults.js");
+
+},{"./defaults.js":209,"./imgs.js":211,"./jquery/extendJquery.js":213,"./shareLink.js":217,"./tab.js":218,"./tracker.js":220,"./yasqe.js":222,"./yasr.js":223,"events":15,"jquery":22,"yasgui-utils":35}],217:[function(require,module,exports){
+var $ = require("jquery");
+var deparam = function(queryString) {
+  var params = [];
+  if (queryString && queryString.length > 0) {
+    var vars = queryString.split("&");
+    for (var i = 0; i < vars.length; i++) {
+      var pair = vars[i].split("=");
+      var key = pair[0];
+      var val = pair[1];
+      if (key.length > 0 && val && val.length > 0) {
+        //we at least need a key right
+
+        //do the decoding. Do plus sign separately (not done by the native decode function)
+        val = val.replace(/\+/g, " ");
+        val = decodeURIComponent(val);
+        params.push({
+          name: pair[0],
+          value: val
+        });
+      }
+    }
+  }
+  return params;
+};
 
 var getUrlParams = function() {
-	//first try hash
-	var urlParams = [];
-	if (window.location.hash.length > 1) {
-		//firefox does some decoding if we're using window.location.hash (e.g. the + sign in contentType settings)
-		//Don't want this. So simply get the hash string ourselves
-		urlParams = deparam(location.href.split("#")[1])
-		window.location.hash = ""; //clear hash
-	} else if (window.location.search.length > 1) {
-		//ok, then just try regular url params
-		urlParams = deparam(window.location.search.substring(1));
-	}
-	return urlParams;
+  //first try hash
+  var urlParams = [];
+  if (window.location.hash.length > 1) {
+    //firefox does some decoding if we're using window.location.hash (e.g. the + sign in contentType settings)
+    //Don't want this. So simply get the hash string ourselves
+    urlParams = deparam(location.href.split("#")[1]);
+    window.location.hash = ""; //clear hash
+  } else if (window.location.search.length > 1) {
+    //ok, then just try regular url params
+    urlParams = deparam(window.location.search.substring(1));
+  }
+  return urlParams;
 };
 
 module.exports = {
-	getShortLinkHandler: function(yasgui) {
-		return function(url, callback) {
-			$.ajax({
-				url: yasgui.options.api.urlShortener,
-				data: {
-					url: url
-				},
-				error: function(jqXhr, textStatus, errorThrown){
-					callback(jqXhr.responseText);
-				},
-				success: function(data) {
-					callback(null, data);
-				}
-			})
-		}
-	},
-	getCreateLinkHandler: function(tab) {
-		return function() {
-			/**
+  getShortLinkHandler: function(yasgui) {
+    return function(url, callback) {
+      $.ajax({
+        url: yasgui.options.api.urlShortener,
+        data: {
+          url: url
+        },
+        error: function(jqXhr, textStatus, errorThrown) {
+          callback(jqXhr.responseText);
+        },
+        success: function(data) {
+          callback(null, data);
+        }
+      });
+    };
+  },
+  getCreateLinkHandler: function(tab) {
+    return function() {
+      /**
 			 * First set YASQE settings
 			 */
-			var params = [{
-				name: 'query',
-				value: tab.yasqe.getValue()
-			}, {
-				name: 'contentTypeConstruct',
-				value: tab.persistentOptions.yasqe.sparql.acceptHeaderGraph
-			}, {
-				name: 'contentTypeSelect',
-				value: tab.persistentOptions.yasqe.sparql.acceptHeaderSelect
-			}, {
-				name: 'endpoint',
-				value: tab.persistentOptions.yasqe.sparql.endpoint
-			}, {
-				name: 'requestMethod',
-				value: tab.persistentOptions.yasqe.sparql.requestMethod
-			}, {
-				name: 'tabTitle',
-				value: tab.persistentOptions.name
-			}, {
-				name: 'headers',
-				value: JSON.stringify(tab.persistentOptions.yasqe.sparql.headers)
-			}];
+      var params = [
+        {
+          name: "query",
+          value: tab.yasqe.getValue()
+        },
+        {
+          name: "contentTypeConstruct",
+          value: tab.persistentOptions.yasqe.sparql.acceptHeaderGraph
+        },
+        {
+          name: "contentTypeSelect",
+          value: tab.persistentOptions.yasqe.sparql.acceptHeaderSelect
+        },
+        {
+          name: "endpoint",
+          value: tab.persistentOptions.yasqe.sparql.endpoint
+        },
+        {
+          name: "requestMethod",
+          value: tab.persistentOptions.yasqe.sparql.requestMethod
+        },
+        {
+          name: "tabTitle",
+          value: tab.persistentOptions.name
+        },
+        {
+          name: "headers",
+          value: JSON.stringify(tab.persistentOptions.yasqe.sparql.headers)
+        }
+      ];
 
-			tab.persistentOptions.yasqe.sparql.args.forEach(function(paramPair) {
-				params.push(paramPair);
-			});
-			tab.persistentOptions.yasqe.sparql.namedGraphs.forEach(function(ng) {
-				params.push({
-					name: 'namedGraph',
-					value: ng
-				});
-			});
-			tab.persistentOptions.yasqe.sparql.defaultGraphs.forEach(function(dg) {
-				params.push({
-					name: 'defaultGraph',
-					value: dg
-				});
-			});
+      tab.persistentOptions.yasqe.sparql.args.forEach(function(paramPair) {
+        params.push(paramPair);
+      });
+      tab.persistentOptions.yasqe.sparql.namedGraphs.forEach(function(ng) {
+        params.push({
+          name: "namedGraph",
+          value: ng
+        });
+      });
+      tab.persistentOptions.yasqe.sparql.defaultGraphs.forEach(function(dg) {
+        params.push({
+          name: "defaultGraph",
+          value: dg
+        });
+      });
 
-			/**
+      /**
 			 * Now set YASR settings
 			 */
-			params.push({
-				name: 'outputFormat',
-				value: tab.yasr.options.output
-			});
-			if (tab.yasr.plugins[tab.yasr.options.output].getPersistentSettings) {
-				var persistentPluginSettings = tab.yasr.plugins[tab.yasr.options.output].getPersistentSettings();
-				if (typeof persistentPluginSettings == "object") {
-					persistentPluginSettings = JSON.stringify(persistentPluginSettings);
-				}
-				params.push({
-					name: 'outputSettings',
-					value: persistentPluginSettings
-				});
-			}
+      params.push({
+        name: "outputFormat",
+        value: tab.yasr.options.output
+      });
+      if (tab.yasr.plugins[tab.yasr.options.output].getPersistentSettings) {
+        var persistentPluginSettings = tab.yasr.plugins[tab.yasr.options.output].getPersistentSettings();
+        if (typeof persistentPluginSettings == "object") {
+          persistentPluginSettings = JSON.stringify(persistentPluginSettings);
+        }
+        params.push({
+          name: "outputSettings",
+          value: persistentPluginSettings
+        });
+      }
 
-			//extend existing link, so first fetch current arguments. But: make sure we don't include items already used in share link
-			if (window.location.hash.length > 1) {
-				var keys = [];
-				params.forEach(function(paramPair) {
-					keys.push(paramPair.name)
-				});
-				var currentParams = deparam(window.location.hash.substring(1))
-				currentParams.forEach(function(paramPair) {
-					if (keys.indexOf(paramPair.name) == -1) {
-						params.push(paramPair);
-					}
-				});
-			}
+      //extend existing link, so first fetch current arguments. But: make sure we don't include items already used in share link
+      if (window.location.hash.length > 1) {
+        var keys = [];
+        params.forEach(function(paramPair) {
+          keys.push(paramPair.name);
+        });
+        var currentParams = deparam(window.location.hash.substring(1));
+        currentParams.forEach(function(paramPair) {
+          if (keys.indexOf(paramPair.name) == -1) {
+            params.push(paramPair);
+          }
+        });
+      }
 
-			return params;
-		}
-	},
-	getOptionsFromUrl: function() {
-		var options = {
-			yasqe: {
-				sparql: {}
-			},
-			yasr: {}
-		};
+      return params;
+    };
+  },
+  getOptionsFromUrl: function() {
+    var options = {
+      yasqe: {
+        sparql: {}
+      },
+      yasr: {}
+    };
 
-		var params = getUrlParams();
-		var validYasguiOptions = false;
+    var params = getUrlParams();
+    var validYasguiOptions = false;
 
-		params.forEach(function(paramPair) {
-			if (paramPair.name == 'query') {
-				validYasguiOptions = true;
-				options.yasqe.value = paramPair.value;
-			} else if (paramPair.name == 'outputFormat') {
-				var output = paramPair.value;
-				if (output == 'simpleTable') output = 'table'; //this query link is from v1. don't have this plugin anymore
-				options.yasr.output = output;
-			} else if (paramPair.name == 'outputSettings') {
-				options.yasr.outputSettings = JSON.parse(paramPair.value);
-			} else if (paramPair.name == 'contentTypeConstruct') {
-				options.yasqe.sparql.acceptHeaderGraph = paramPair.value;
-			} else if (paramPair.name == 'contentTypeSelect') {
-				options.yasqe.sparql.acceptHeaderSelect = paramPair.value;
-			} else if (paramPair.name == 'endpoint') {
-				options.yasqe.sparql.endpoint = paramPair.value;
-			} else if (paramPair.name == 'requestMethod') {
-				options.yasqe.sparql.requestMethod = paramPair.value;
-			} else if (paramPair.name == 'tabTitle') {
-				options.name = paramPair.value;
-			} else if (paramPair.name == 'namedGraph') {
-				if (!options.yasqe.sparql.namedGraphs) options.yasqe.sparql.namedGraphs = [];
-				options.yasqe.sparql.namedGraphs.push(paramPair.value);
-			} else if (paramPair.name == 'defaultGraph') {
-				if (!options.yasqe.sparql.defaultGraphs) options.yasqe.sparql.defaultGraphs = [];
-				options.yasqe.sparql.defaultGraphs.push(paramPair.value);
-			} else if (paramPair.name == 'headers') {
-				if (!options.yasqe.sparql.headers) options.yasqe.sparql.headers = {};
-				var headers = JSON.parse(paramPair.value);
-				if ($.isPlainObject(headers)) {
-					options.yasqe.sparql.headers = headers;
-				}
-			} else {
-				if (!options.yasqe.sparql.args) options.yasqe.sparql.args = [];
-				//regular arguments. So store them as regular arguments
-				options.yasqe.sparql.args.push(paramPair);
-			}
-		});
-		if (validYasguiOptions) {
-			return options;
-		} else {
-			return null;
-		}
-	}
-}
+    params.forEach(function(paramPair) {
+      if (paramPair.name == "query") {
+        validYasguiOptions = true;
+        options.yasqe.value = paramPair.value;
+      } else if (paramPair.name == "outputFormat") {
+        var output = paramPair.value;
+        if (output == "simpleTable") output = "table"; //this query link is from v1. don't have this plugin anymore
+        options.yasr.output = output;
+      } else if (paramPair.name == "outputSettings") {
+        options.yasr.outputSettings = JSON.parse(paramPair.value);
+      } else if (paramPair.name == "contentTypeConstruct") {
+        options.yasqe.sparql.acceptHeaderGraph = paramPair.value;
+      } else if (paramPair.name == "contentTypeSelect") {
+        options.yasqe.sparql.acceptHeaderSelect = paramPair.value;
+      } else if (paramPair.name == "endpoint") {
+        options.yasqe.sparql.endpoint = paramPair.value;
+      } else if (paramPair.name == "requestMethod") {
+        options.yasqe.sparql.requestMethod = paramPair.value;
+      } else if (paramPair.name == "tabTitle") {
+        options.name = paramPair.value;
+      } else if (paramPair.name == "namedGraph") {
+        if (!options.yasqe.sparql.namedGraphs) options.yasqe.sparql.namedGraphs = [];
+        options.yasqe.sparql.namedGraphs.push(paramPair.value);
+      } else if (paramPair.name == "defaultGraph") {
+        if (!options.yasqe.sparql.defaultGraphs) options.yasqe.sparql.defaultGraphs = [];
+        options.yasqe.sparql.defaultGraphs.push(paramPair.value);
+      } else if (paramPair.name == "headers") {
+        if (!options.yasqe.sparql.headers) options.yasqe.sparql.headers = {};
+        var headers = JSON.parse(paramPair.value);
+        if ($.isPlainObject(headers)) {
+          options.yasqe.sparql.headers = headers;
+        }
+      } else {
+        if (!options.yasqe.sparql.args) options.yasqe.sparql.args = [];
+        //regular arguments. So store them as regular arguments
+        options.yasqe.sparql.args.push(paramPair);
+      }
+    });
+    if (validYasguiOptions) {
+      return options;
+    } else {
+      return null;
+    }
+  }
+};
 
 },{"jquery":22}],218:[function(require,module,exports){
-'use strict';
+"use strict";
 
 //		mod.emit('initError')
 //		mod.once('initDone', load);
 
-
-
-var $ = require('jquery'),
-	EventEmitter = require('events').EventEmitter,
-	utils = require('./utils.js'),
-	yUtils = require('yasgui-utils'),
-	_ = require('underscore'),
-	YASGUI = require('./main.js');
+var $ = require("jquery"),
+  EventEmitter = require("events").EventEmitter,
+  utils = require("./utils.js"),
+  yUtils = require("yasgui-utils"),
+  _ = require("underscore"),
+  YASGUI = require("./main.js");
 //we only generate the settings for YASQE, as we modify lots of YASQE settings via the YASGUI interface
 //We leave YASR to store its settings separately, as this is all handled directly from the YASR controls
 
-
-
 module.exports = function(yasgui, options) {
-	return new Tab(yasgui, options);
-}
-var Tab = function(yasgui,  options) {
-	EventEmitter.call(this);
-	if (!options) options = {};
-	if (!options.yasqe) options.yasqe = {};
-	if (!options.yasr) options.yasr = {};
-	var id = options.id;
-	yasgui.persistentOptions.tabs[id] = $.extend(true, {}, {yasqe: YASGUI.defaults.yasqe, yasr: YASGUI.defaults.yasr}, options, yasgui.persistentOptions.tabs[id] || {});
-	var persistentOptions = yasgui.persistentOptions.tabs[id];
-	var tab = this;
-	tab.persistentOptions = persistentOptions;
+  return new Tab(yasgui, options);
+};
+var Tab = function(yasgui, options) {
+  EventEmitter.call(this);
+  if (!options) options = {};
+  if (!options.yasqe) options.yasqe = {};
+  if (!options.yasr) options.yasr = {};
+  var id = options.id;
+  yasgui.persistentOptions.tabs[id] = $.extend(
+    true,
+    {},
+    { yasqe: YASGUI.defaults.yasqe, yasr: YASGUI.defaults.yasr },
+    options,
+    yasgui.persistentOptions.tabs[id] || {}
+  );
+  var persistentOptions = yasgui.persistentOptions.tabs[id];
+  var tab = this;
+  tab.persistentOptions = persistentOptions;
 
-	var menu = require('./tabPaneMenu.js')(yasgui, tab);
-	var $pane = $('<div>', {
-		id: persistentOptions.id,
-		style: 'position:relative',
-		class: 'tab-pane',
-		role: 'tabpanel'
-	}).appendTo(yasgui.$tabPanesParent);
+  var menu = require("./tabPaneMenu.js")(yasgui, tab);
+  var $pane = $("<div>", {
+    id: persistentOptions.id,
+    style: "position:relative",
+    class: "tab-pane",
+    role: "tabpanel"
+  }).appendTo(yasgui.$tabPanesParent);
 
-	var $paneContent = $('<div>', {
-		class: 'wrapper'
-	}).appendTo($pane);
-	var $controlBar = $('<div>', {
-		class: 'controlbar'
-	}).appendTo($paneContent);
-	var $paneMenu = menu.initWrapper().appendTo($pane);
-	var $endpointInput;
-	var addControlBar = function() {
-		$('<button>', {
-				type: 'button',
-				class: 'menuButton btn btn-default'
-			})
-			.on('click', function(e) {
-				if ($pane.hasClass('menu-open')) {
-					$pane.removeClass('menu-open');
-					menu.store();
-				} else {
-					menu.updateWrapper();
-					$pane.addClass('menu-open');
-					//					utils.onOutsideClick($(".menu-slide,.menuButton"), function() {$pane.removeClass('menu-open'); menu.store();});
-					$(".menu-slide,.menuButton").onOutsideClick(function() {
-						$pane.removeClass('menu-open');
-						menu.store();
-					});
+  var $paneContent = $("<div>", {
+    class: "wrapper"
+  }).appendTo($pane);
+  var $controlBar = $("<div>", {
+    class: "controlbar"
+  }).appendTo($paneContent);
+  var $paneMenu = menu.initWrapper().appendTo($pane);
+  var $endpointInput;
+  var addControlBar = function() {
+    $("<button>", {
+      type: "button",
+      class: "menuButton btn btn-default"
+    })
+      .on("click", function(e) {
+        if ($pane.hasClass("menu-open")) {
+          $pane.removeClass("menu-open");
+          menu.store();
+        } else {
+          menu.updateWrapper();
+          $pane.addClass("menu-open");
+          //					utils.onOutsideClick($(".menu-slide,.menuButton"), function() {$pane.removeClass('menu-open'); menu.store();});
+          $(".menu-slide,.menuButton").onOutsideClick(function() {
+            $pane.removeClass("menu-open");
+            menu.store();
+          });
+        }
+      })
+      .append(
+        $("<span>", {
+          class: "icon-bar"
+        })
+      )
+      .append(
+        $("<span>", {
+          class: "icon-bar"
+        })
+      )
+      .append(
+        $("<span>", {
+          class: "icon-bar"
+        })
+      )
+      .appendTo($controlBar);
 
-				}
-			})
-			.append($('<span>', {
-				class: 'icon-bar'
-			}))
-			.append($('<span>', {
-				class: 'icon-bar'
-			}))
-			.append($('<span>', {
-				class: 'icon-bar'
-			}))
-			.appendTo($controlBar);
+    //add endpoint text input
+    $endpointInput = $("<select>").appendTo($controlBar).endpointCombi(yasgui, {
+      value: persistentOptions.yasqe.sparql.endpoint,
+      onChange: function(val) {
+        persistentOptions.yasqe.sparql.endpoint = val;
+        tab.refreshYasqe();
+        yasgui.store();
+      }
+    });
+  };
 
-		//add endpoint text input
-		$endpointInput = $('<select>')
-			.appendTo($controlBar)
-			.endpointCombi(yasgui, {
-				value: persistentOptions.yasqe.sparql.endpoint,
-				onChange: function(val) {
-					persistentOptions.yasqe.sparql.endpoint = val;
-					tab.refreshYasqe();
-					yasgui.store();
+  var yasqeContainer = $("<div>", {
+    id: "yasqe_" + persistentOptions.id
+  }).appendTo($paneContent);
+  var yasrContainer = $("<div>", {
+    id: "yasq_" + persistentOptions.id
+  }).appendTo($paneContent);
 
-				}
-			});
+  var yasqeOptions = {
+    createShareLink: require("./shareLink").getCreateLinkHandler(tab)
+  };
+  if (yasgui.options.api.urlShortener) {
+    yasqeOptions.createShortLink = require("./shareLink").getShortLinkHandler(yasgui);
+  }
+  var storeInHist = function() {
+    persistentOptions.yasqe.value = tab.yasqe.getValue(); //in case the onblur hasnt happened yet
+    var resultSize = null;
+    if (tab.yasr.results.getBindings()) {
+      resultSize = tab.yasr.results.getBindings().length;
+    }
+    var histObject = {
+      options: $.extend(true, {}, persistentOptions), //create copy
+      resultSize: resultSize
+    };
+    delete histObject.options.name; //don't store this one
+    yasgui.history.unshift(histObject);
 
-	};
+    var maxHistSize = 50;
+    if (yasgui.history.length > maxHistSize) {
+      yasgui.history = yasgui.history.slice(0, maxHistSize);
+    }
 
+    //store in localstorage as well
+    if (yasgui.persistencyPrefix) {
+      yUtils.storage.set(yasgui.persistencyPrefix + "history", yasgui.history);
+    }
+  };
 
-	var yasqeContainer = $('<div>', {
-		id: 'yasqe_' + persistentOptions.id
-	}).appendTo($paneContent);
-	var yasrContainer = $('<div>', {
-		id: 'yasq_' + persistentOptions.id
-	}).appendTo($paneContent);
+  tab.setPersistentInYasqe = function() {
+    if (tab.yasqe) {
+      $.extend(tab.yasqe.options.sparql, persistentOptions.yasqe.sparql);
+      //set value manualy, as this triggers a refresh
+      if (persistentOptions.yasqe.value) tab.yasqe.setValue(persistentOptions.yasqe.value);
+    }
+  };
+  $.extend(yasqeOptions, persistentOptions.yasqe);
 
+  var initYasr = function() {
+    if (!tab.yasr) {
+      if (!tab.yasqe) initYasqe(); //we need this one to initialize yasr
+      var getQueryString = function() {
+        return persistentOptions.yasqe.sparql.endpoint +
+          "?" +
+          $.param(tab.yasqe.getUrlArguments(persistentOptions.yasqe.sparql));
+      };
+      YASGUI.YASR.plugins.error.defaults.tryQueryLink = getQueryString;
 
+      tab.yasr = new YASGUI.YASR(
+        yasrContainer[0],
+        $.extend(
+          {
+            //this way, the URLs in the results are prettified using the defined prefixes in the query
+            getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
+          },
+          persistentOptions.yasr
+        )
+      );
+      tab.yasr.on("drawn", function(yasr, plugin) {
+        if (tab.yasqe.lastQueryDuration && plugin.name == "Table" && yasr === tab.yasr) {
+          var tableInfo = tab.yasr.resultsContainer.find(".dataTables_info");
+          if (tableInfo.length > 0) {
+            var text = tableInfo.first().text();
+            tableInfo.text(text + " (in " + tab.yasqe.lastQueryDuration / 1000 + " seconds)");
+          }
+        }
+      });
+    }
+  };
+  tab.query = function() {
+    tab.yasqe.query();
+  };
 
-	var yasqeOptions = {
-		createShareLink: require('./shareLink').getCreateLinkHandler(tab)
-	};
-	if (yasgui.options.api.urlShortener) {
-		yasqeOptions.createShortLink = require('./shareLink').getShortLinkHandler(yasgui)
-	}
-	var storeInHist = function() {
-		persistentOptions.yasqe.value = tab.yasqe.getValue(); //in case the onblur hasnt happened yet
-		var resultSize = null;
-		if (tab.yasr.results.getBindings()) {
-			resultSize = tab.yasr.results.getBindings().length;
-		}
-		var histObject = {
-			options: $.extend(true, {}, persistentOptions), //create copy
-			resultSize: resultSize
-		};
-		delete histObject.options.name; //don't store this one
-		yasgui.history.unshift(histObject);
+  var initYasqe = function() {
+    if (!tab.yasqe) {
+      addControlBar();
+      YASGUI.YASQE.defaults.extraKeys["Ctrl-Enter"] = function() {
+        tab.yasqe.query.apply(this, arguments);
+      };
+      YASGUI.YASQE.defaults.extraKeys["Cmd-Enter"] = function() {
+        tab.yasqe.query.apply(this, arguments);
+      };
+      tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
+      tab.yasqe.setSize("100%", persistentOptions.yasqe.height);
+      tab.yasqe.on("blur", function(yasqe) {
+        persistentOptions.yasqe.value = yasqe.getValue();
+        yasgui.store();
+      });
+      tab.yasqe.on("query", function() {
+        yasgui.$tabsParent.find('a[href="#' + id + '"]').closest("li").addClass("querying");
+        yasgui.emit("query", yasgui, tab);
+      });
+      tab.yasqe.on("queryFinish", function() {
+        yasgui.$tabsParent.find('a[href="#' + id + '"]').closest("li").removeClass("querying");
+        yasgui.emit("queryFinish", yasgui, tab);
+      });
+      var beforeSend = null;
+      tab.yasqe.options.sparql.callbacks.beforeSend = function() {
+        beforeSend = +new Date();
+      };
+      tab.yasqe.options.sparql.callbacks.complete = function() {
+        var end = +new Date();
+        yasgui.tracker.track(
+          persistentOptions.yasqe.sparql.endpoint,
+          tab.yasqe.getValueWithoutComments(),
+          end - beforeSend
+        );
+        tab.yasr.setResponse.apply(this, arguments);
+        storeInHist();
+      };
 
-		var maxHistSize = 50;
-		if (yasgui.history.length > maxHistSize) {
-			yasgui.history = yasgui.history.slice(0, maxHistSize);
-		}
+      tab.yasqe.query = function() {
+        var options = {};
+        options = $.extend(true, options, tab.yasqe.options.sparql);
 
+        if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
+          if (!yasgui.corsEnabled[persistentOptions.yasqe.sparql.endpoint]) {
+            //use the proxy //name value
 
-		//store in localstorage as well
-		if (yasgui.persistencyPrefix) {
-			yUtils.storage.set(yasgui.persistencyPrefix + 'history', yasgui.history);
-		}
+            options.args.push({
+              name: "endpoint",
+              value: options.endpoint
+            });
+            options.args.push({
+              name: "requestMethod",
+              value: options.requestMethod
+            });
+            options.requestMethod = "POST";
+            options.endpoint = yasgui.options.api.corsProxy;
+            YASGUI.YASQE.executeQuery(tab.yasqe, options);
+          } else {
+            YASGUI.YASQE.executeQuery(tab.yasqe, options);
+          }
+        } else {
+          YASGUI.YASQE.executeQuery(tab.yasqe, options);
+        }
+      };
+    }
+  };
+  tab.onShow = function() {
+    initYasqe();
+    tab.yasqe.refresh();
+    initYasr();
+    if (yasgui.options.allowYasqeResize) {
+      $(tab.yasqe.getWrapperElement()).resizable({
+        minHeight: 150,
+        handles: "s",
+        resize: function() {
+          _.debounce(
+            function() {
+              tab.yasqe.setSize("100%", $(this).height());
+              tab.yasqe.refresh();
+            },
+            500
+          );
+        },
+        stop: function() {
+          persistentOptions.yasqe.height = $(this).height();
+          tab.yasqe.refresh();
+          yasgui.store();
+        }
+      });
+      $(tab.yasqe.getWrapperElement()).find(".ui-resizable-s").click(function() {
+        $(tab.yasqe.getWrapperElement()).css("height", "auto");
+        persistentOptions.yasqe.height = "auto";
+        yasgui.store();
+      });
+    }
+    YASGUI.YASQE.positionButtons(tab.yasqe);
+  };
 
+  tab.beforeShow = function() {
+    initYasqe();
+  };
+  tab.refreshYasqe = function() {
+    if (tab.yasqe) {
+      $.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
+      if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
+    }
+  };
+  tab.destroy = function() {
+    if (!tab.yasr) {
+      //instantiate yasr (without rendering results, to avoid load)
+      //this way, we can clear the yasr persistent results
+      tab.yasr = YASGUI.YASR(
+        yasrContainer[0],
+        {
+          outputPlugins: []
+        },
+        ""
+      );
+    }
+    yUtils.storage.removeAll(function(key, val) {
+      return key.indexOf(tab.yasr.getPersistencyId("")) == 0;
+    });
+  };
+  tab.getEndpoint = function() {
+    var endpoint = null;
+    if (yUtils.nestedExists(tab.persistentOptions, "yasqe", "sparql", "endpoint")) {
+      endpoint = tab.persistentOptions.yasqe.sparql.endpoint;
+    }
+    return endpoint;
+  };
 
-	};
+  return tab;
+};
 
-	tab.setPersistentInYasqe = function() {
-		if (tab.yasqe) {
-			$.extend(tab.yasqe.options.sparql, persistentOptions.yasqe.sparql);
-			//set value manualy, as this triggers a refresh
-			if (persistentOptions.yasqe.value) tab.yasqe.setValue(persistentOptions.yasqe.value);
-		}
-	}
-	$.extend(yasqeOptions, persistentOptions.yasqe);
-
-	var initYasr = function() {
-		if (!tab.yasr) {
-			if (!tab.yasqe) initYasqe(); //we need this one to initialize yasr
-			var getQueryString = function() {
-				return persistentOptions.yasqe.sparql.endpoint + "?" +
-					$.param(tab.yasqe.getUrlArguments(persistentOptions.yasqe.sparql));
-			};
-			YASGUI.YASR.plugins.error.defaults.tryQueryLink = getQueryString;
-
-			tab.yasr = new YASGUI.YASR(yasrContainer[0], $.extend({
-				//this way, the URLs in the results are prettified using the defined prefixes in the query
-				getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
-			}, persistentOptions.yasr));
-			tab.yasr.on('drawn', function(yasr, plugin) {
-				if (tab.yasqe.lastQueryDuration && plugin.name == "Table" && yasr === tab.yasr) {
-					var tableInfo = tab.yasr.resultsContainer.find('.dataTables_info');
-					if (tableInfo.length > 0) {
-						var text = tableInfo.first().text();
-						tableInfo.text(text + ' (in ' + (tab.yasqe.lastQueryDuration / 1000) + ' seconds)');
-					}
-				}
-			})
-		}
-
-	};
-	tab.query = function() {
-		tab.yasqe.query();
-	};
-
-	var initYasqe = function() {
-		if (!tab.yasqe) {
-			addControlBar();
-			YASGUI.YASQE.defaults.extraKeys['Ctrl-Enter'] = function() {
-				tab.yasqe.query.apply(this, arguments)
-			};
-			YASGUI.YASQE.defaults.extraKeys['Cmd-Enter'] = function() {
-				tab.yasqe.query.apply(this, arguments)
-			};
-			tab.yasqe = YASGUI.YASQE(yasqeContainer[0], yasqeOptions);
-			tab.yasqe.setSize("100%", persistentOptions.yasqe.height);
-			tab.yasqe.on('blur', function(yasqe) {
-				persistentOptions.yasqe.value = yasqe.getValue();
-				yasgui.store();
-			});
-			tab.yasqe.on('query', function() {
-
-				yasgui.$tabsParent.find('a[href="#' + id + '"]').closest('li').addClass('querying');
-				yasgui.emit('query', yasgui, tab);
-			});
-			tab.yasqe.on('queryFinish', function() {
-				yasgui.$tabsParent.find('a[href="#' + id + '"]').closest('li').removeClass('querying');
-				yasgui.emit('queryFinish', yasgui, tab);
-			});
-			var beforeSend = null;
-			tab.yasqe.options.sparql.callbacks.beforeSend = function() {
-				beforeSend = +new Date();
-			}
-			tab.yasqe.options.sparql.callbacks.complete = function() {
-				var end = +new Date();
-				yasgui.tracker.track(persistentOptions.yasqe.sparql.endpoint, tab.yasqe.getValueWithoutComments(), end - beforeSend);
-				tab.yasr.setResponse.apply(this, arguments);
-				storeInHist();
-			}
-
-			tab.yasqe.query = function() {
-				var options = {}
-				options = $.extend(true, options, tab.yasqe.options.sparql);
-
-				if (yasgui.options.api.corsProxy && yasgui.corsEnabled) {
-					if (!yasgui.corsEnabled[persistentOptions.yasqe.sparql.endpoint]) {
-						//use the proxy //name value
-
-						options.args.push({
-							name: 'endpoint',
-							value: options.endpoint
-						});
-						options.args.push({
-							name: 'requestMethod',
-							value: options.requestMethod
-						});
-						options.requestMethod = "POST";
-						options.endpoint = yasgui.options.api.corsProxy;
-						YASGUI.YASQE.executeQuery(tab.yasqe, options);
-					} else {
-						YASGUI.YASQE.executeQuery(tab.yasqe, options);
-					}
-				} else {
-					YASGUI.YASQE.executeQuery(tab.yasqe, options);
-				}
-			};
-
-
-
-		}
-	};
-	tab.onShow = function() {
-		initYasqe();
-		tab.yasqe.refresh();
-		initYasr();
-		if (yasgui.options.allowYasqeResize) {
-			$(tab.yasqe.getWrapperElement()).resizable({
-				minHeight: 150,
-				handles: 's',
-				resize: function() {
-					_.debounce(function() {
-						tab.yasqe.setSize("100%", $(this).height());
-						tab.yasqe.refresh()
-					}, 500);
-				},
-				stop: function() {
-					persistentOptions.yasqe.height = $(this).height();
-					tab.yasqe.refresh()
-					yasgui.store();
-				}
-			});
-			$(tab.yasqe.getWrapperElement()).find('.ui-resizable-s').click(function() {
-				$(tab.yasqe.getWrapperElement()).css('height', 'auto');
-				persistentOptions.yasqe.height = 'auto';
-				yasgui.store();
-			})
-		}
-		YASGUI.YASQE.positionButtons(tab.yasqe)
-	};
-
-	tab.beforeShow = function() {
-		initYasqe();
-	}
-	tab.refreshYasqe = function() {
-		if (tab.yasqe) {
-			$.extend(true, tab.yasqe.options, tab.persistentOptions.yasqe);
-			if (tab.persistentOptions.yasqe.value) tab.yasqe.setValue(tab.persistentOptions.yasqe.value);
-		}
-	};
-	tab.destroy = function() {
-		if (!tab.yasr) {
-			//instantiate yasr (without rendering results, to avoid load)
-			//this way, we can clear the yasr persistent results
-			tab.yasr = YASGUI.YASR(yasrContainer[0], {
-				outputPlugins: []
-			}, '');
-		}
-		yUtils.storage.removeAll(function(key, val) {
-			return key.indexOf(tab.yasr.getPersistencyId('')) == 0;
-		})
-	}
-	tab.getEndpoint = function() {
-		var endpoint = null;
-		if (yUtils.nestedExists(tab.persistentOptions, 'yasqe', 'sparql', 'endpoint')) {
-			endpoint = tab.persistentOptions.yasqe.sparql.endpoint;
-		}
-		return endpoint;
-	}
-
-	return tab;
-}
-
-Tab.prototype = new EventEmitter;
+Tab.prototype = new EventEmitter();
 
 },{"./main.js":216,"./shareLink":217,"./tabPaneMenu.js":219,"./utils.js":221,"events":15,"jquery":22,"underscore":31,"yasgui-utils":35}],219:[function(require,module,exports){
-'use strict';
-var $ = require('jquery'),
-	imgs = require('./imgs.js'),
-	selectize = require('selectize'),
-	utils = require('yasgui-utils');
-
+"use strict";
+var $ = require("jquery"),
+  imgs = require("./imgs.js"),
+  selectize = require("selectize"),
+  utils = require("yasgui-utils");
 
 module.exports = function(yasgui, tab) {
-	var $menu = null;
-	var $tabPanel = null;
-	var $tabsParent = null;
-	var $tabPanesParent = null;
-	var $paneReqConfig = null;
-	var $histList = null;
+  var $menu = null;
+  var $tabPanel = null;
+  var $tabsParent = null;
+  var $tabPanesParent = null;
+  var $paneReqConfig = null;
+  var $histList = null;
 
-	var $btnPost;
-	var $btnGet;
-	var $acceptSelect;
-	var $acceptGraph;
-	var $urlArgsDiv;
-	var $httpHeadersDiv;
-	var $defaultGraphsDiv;
-	var $namedGraphsDiv;
-	var initWrapper = function() {
-		$menu = $('<nav>', {
-			class: 'menu-slide',
-			id: 'navmenu'
-		});
-		$menu.append(
-			$(utils.svg.getElement(imgs.yasgui))
-			.addClass('yasguiLogo')
-			.attr('title', 'About YASGUI')
-			.click(function() {
-				window.open('http://about.yasgui.org', '_blank');
-			})
-		);
+  var $btnPost;
+  var $btnGet;
+  var $acceptSelect;
+  var $acceptGraph;
+  var $urlArgsDiv;
+  var $httpHeadersDiv;
+  var $defaultGraphsDiv;
+  var $namedGraphsDiv;
+  var initWrapper = function() {
+    $menu = $("<nav>", {
+      class: "menu-slide",
+      id: "navmenu"
+    });
+    $menu.append(
+      $(utils.svg.getElement(imgs.yasgui)).addClass("yasguiLogo").attr("title", "About YASGUI").click(function() {
+        window.open("http://about.yasgui.org", "_blank");
+      })
+    );
 
-		//tab panel contains tabs and panes
-		$tabPanel = $('<div>', {
-			role: 'tabpanel'
-		}).appendTo($menu);
+    //tab panel contains tabs and panes
+    $tabPanel = $("<div>", {
+      role: "tabpanel"
+    }).appendTo($menu);
 
-		//init tabs
-		$tabsParent = $('<ul>', {
-				class: 'nav nav-pills tabPaneMenuTabs',
-				role: 'tablist'
-			})
-			.appendTo($tabPanel);
+    //init tabs
+    $tabsParent = $("<ul>", {
+      class: "nav nav-pills tabPaneMenuTabs",
+      role: "tablist"
+    }).appendTo($tabPanel);
 
-		//init panes
-		$tabPanesParent = $('<div>', {
-			class: 'tab-content'
-		}).appendTo($tabPanel);
+    //init panes
+    $tabPanesParent = $("<div>", {
+      class: "tab-content"
+    }).appendTo($tabPanel);
 
-
-		/**
+    /**
 		 * Init request tab
 		 */
-		var li = $("<li>", {
-			role: "presentation"
-		}).appendTo($tabsParent);
-		var reqPaneId = 'yasgui_reqConfig_' + tab.persistentOptions.id;
-		li.append(
-			$('<a>', {
-				href: '#' + reqPaneId,
-				'aria-controls': reqPaneId,
-				role: 'tab',
-				'data-toggle': 'tab'
-			})
-			.text("Configure Request")
-			.click(function(e) {
-				e.preventDefault()
-				$(this).tab('show')
-			})
-		);
-		var $reqPanel = $('<div>', {
-			id: reqPaneId,
-			role: 'tabpanel',
-			class: 'tab-pane requestConfig container-fluid'
-		}).appendTo($tabPanesParent);
+    var li = $("<li>", {
+      role: "presentation"
+    }).appendTo($tabsParent);
+    var reqPaneId = "yasgui_reqConfig_" + tab.persistentOptions.id;
+    li.append(
+      $("<a>", {
+        href: "#" + reqPaneId,
+        "aria-controls": reqPaneId,
+        role: "tab",
+        "data-toggle": "tab"
+      })
+        .text("Configure Request")
+        .click(function(e) {
+          e.preventDefault();
+          $(this).tab("show");
+        })
+    );
+    var $reqPanel = $("<div>", {
+      id: reqPaneId,
+      role: "tabpanel",
+      class: "tab-pane requestConfig container-fluid"
+    }).appendTo($tabPanesParent);
 
-		//request method
-		var $reqRow = $('<div>', {
-			class: 'reqRow'
-		}).appendTo($reqPanel);
-		$('<div>', {
-			class: 'rowLabel'
-		}).appendTo($reqRow).append($('<span>').text('Request Method'));
-		$btnPost = $('<button>', {
-			class: 'btn btn-default ',
-			'data-toggle': "button"
-		}).text('POST').click(function() {
-			$btnPost.addClass('active');
-			$btnGet.removeClass('active');
-		});
-		$btnGet = $('<button>', {
-			class: 'btn btn-default',
-			'data-toggle': "button"
-		}).text('GET').click(function() {
-			$btnGet.addClass('active');
-			$btnPost.removeClass('active');
-		});
-		$('<div>', {
-			class: 'btn-group col-md-8',
-			role: 'group'
-		}).append($btnGet).append($btnPost).appendTo($reqRow);
+    //request method
+    var $reqRow = $("<div>", {
+      class: "reqRow"
+    }).appendTo($reqPanel);
+    $("<div>", {
+      class: "rowLabel"
+    })
+      .appendTo($reqRow)
+      .append($("<span>").text("Request Method"));
+    $btnPost = $("<button>", {
+      class: "btn btn-default ",
+      "data-toggle": "button"
+    })
+      .text("POST")
+      .click(function() {
+        $btnPost.addClass("active");
+        $btnGet.removeClass("active");
+      });
+    $btnGet = $("<button>", {
+      class: "btn btn-default",
+      "data-toggle": "button"
+    })
+      .text("GET")
+      .click(function() {
+        $btnGet.addClass("active");
+        $btnPost.removeClass("active");
+      });
+    $("<div>", {
+      class: "btn-group col-md-8",
+      role: "group"
+    })
+      .append($btnGet)
+      .append($btnPost)
+      .appendTo($reqRow);
 
-		//Accept headers
-		var $acceptRow = $('<div>', {
-			class: 'reqRow'
-		}).appendTo($reqPanel);
-		$('<div>', {
-			class: 'rowLabel'
-		}).appendTo($acceptRow).text('Accept Headers');
+    //Accept headers
+    var $acceptRow = $("<div>", {
+      class: "reqRow"
+    }).appendTo($reqPanel);
+    $("<div>", {
+      class: "rowLabel"
+    })
+      .appendTo($acceptRow)
+      .text("Accept Headers");
 
+    $acceptSelect = $("<select>", {
+      class: "acceptHeader"
+    })
+      .append(
+        $("<option>", {
+          value: "application/sparql-results+json"
+        }).text("JSON")
+      )
+      .append(
+        $("<option>", {
+          value: "application/sparql-results+xml"
+        }).text("XML")
+      )
+      .append(
+        $("<option>", {
+          value: "text/csv"
+        }).text("CSV")
+      )
+      .append(
+        $("<option>", {
+          value: "text/tab-separated-values"
+        }).text("TSV")
+      );
+    $("<div>", {
+      class: "col-md-4",
+      role: "group"
+    })
+      .append($("<label>").text("SELECT").append($acceptSelect))
+      .appendTo($acceptRow);
+    $acceptSelect.selectize();
 
+    $acceptGraph = $("<select>", {
+      class: "acceptHeader"
+    })
+      .append(
+        $("<option>", {
+          value: "text/turtle"
+        }).text("Turtle")
+      )
+      .append(
+        $("<option>", {
+          value: "application/rdf+json"
+        }).text("JSON")
+      )
+      .append(
+        $("<option>", {
+          value: "application/rdf+xml"
+        }).text("RDF-XML")
+      )
+      .append(
+        $("<option>", {
+          value: "application/trig"
+        }).text("TriG")
+      )
+      .append(
+        $("<option>", {
+          value: "application/n-triples"
+        }).text("N-Triples")
+      )
+      .append(
+        $("<option>", {
+          value: "application/n-quads"
+        }).text("N-Quads")
+      )
+      .append(
+        $("<option>", {
+          value: "text/csv"
+        }).text("CSV")
+      )
+      .append(
+        $("<option>", {
+          value: "text/tab-separated-values"
+        }).text("TSV")
+      );
+    $("<div>", {
+      class: "col-md-4",
+      role: "group"
+    })
+      .append($("<label>").text("Graph").append($acceptGraph))
+      .appendTo($acceptRow);
+    $acceptGraph.selectize();
 
-		$acceptSelect = $('<select>', {
-				class: 'acceptHeader'
-			})
-			.append($("<option>", {
-				value: 'application/sparql-results+json'
-			}).text('JSON'))
-			.append($("<option>", {
-				value: 'application/sparql-results+xml'
-			}).text('XML'))
-			.append($("<option>", {
-				value: 'text/csv'
-			}).text('CSV'))
-			.append($("<option>", {
-				value: 'text/tab-separated-values'
-			}).text('TSV'));
-		$('<div>', {
-			class: 'col-md-4',
-			role: 'group'
-		}).append($('<label>').text('SELECT').append($acceptSelect)).appendTo($acceptRow);
-		$acceptSelect.selectize();
+    //URL args headers
+    var $urlArgsRow = $("<div>", {
+      class: "reqRow"
+    }).appendTo($reqPanel);
+    $("<div>", {
+      class: "rowLabel"
+    })
+      .appendTo($urlArgsRow)
+      .text("URL Arguments");
+    $urlArgsDiv = $("<div>", {
+      class: "col-md-8",
+      role: "group"
+    }).appendTo($urlArgsRow);
 
-		$acceptGraph = $('<select>', {
-				class: 'acceptHeader'
-			})
-			.append($("<option>", {
-				value: 'text/turtle'
-			}).text('Turtle'))
-			.append($("<option>", {
-				value: 'application/rdf+json'
-			}).text('JSON'))
-			.append($("<option>", {
-				value: 'application/rdf+xml'
-			}).text('RDF-XML'))
-			.append($("<option>", {
-				value: 'application/trig'
-			}).text('TriG'))
-			.append($("<option>", {
-				value: 'application/n-triples'
-			}).text('N-Triples'))
-			.append($("<option>", {
-				value: 'application/n-quads'
-			}).text('N-Quads'))
-			.append($("<option>", {
-				value: 'text/csv'
-			}).text('CSV'))
-			.append($("<option>", {
-				value: 'text/tab-separated-values'
-			}).text('TSV'));
-		$('<div>', {
-			class: 'col-md-4',
-			role: 'group'
-		}).append($('<label>').text('Graph').append($acceptGraph)).appendTo($acceptRow);
-		$acceptGraph.selectize();
+    //HTTP headers
+    var $headersRow = $("<div>", {
+      class: "reqRow"
+    }).appendTo($reqPanel);
+    $("<div>", {
+      class: "rowLabel"
+    })
+      .appendTo($headersRow)
+      .text("HTTP Headers");
+    $httpHeadersDiv = $("<div>", {
+      class: "col-md-8",
+      role: "group"
+    }).appendTo($headersRow);
 
+    //Default graphs
+    var $defaultGraphsRow = $("<div>", {
+      class: "reqRow"
+    }).appendTo($reqPanel);
+    $("<div>", {
+      class: "rowLabel"
+    })
+      .appendTo($defaultGraphsRow)
+      .text("Default graphs");
+    $defaultGraphsDiv = $("<div>", {
+      class: "col-md-8",
+      role: "group"
+    }).appendTo($defaultGraphsRow);
 
+    //Named graphs
+    var $namedGraphsRow = $("<div>", {
+      class: "reqRow"
+    }).appendTo($reqPanel);
+    $("<div>", {
+      class: "rowLabel"
+    })
+      .appendTo($namedGraphsRow)
+      .text("Named graphs");
+    $namedGraphsDiv = $("<div>", {
+      class: "col-md-8",
+      role: "group"
+    }).appendTo($namedGraphsRow);
 
-		//URL args headers
-		var $urlArgsRow = $('<div>', {
-			class: 'reqRow'
-		}).appendTo($reqPanel);
-		$('<div>', {
-			class: 'rowLabel'
-		}).appendTo($urlArgsRow).text('URL Arguments');
-		$urlArgsDiv = $('<div>', {
-			class: 'col-md-8',
-			role: 'group'
-		}).appendTo($urlArgsRow);
-
-		//HTTP headers
-		var $headersRow = $('<div>', {
-			class: 'reqRow'
-		}).appendTo($reqPanel);
-		$('<div>', {
-			class: 'rowLabel'
-		}).appendTo($headersRow).text('HTTP Headers');
-		$httpHeadersDiv = $('<div>', {
-			class: 'col-md-8',
-			role: 'group'
-		}).appendTo($headersRow);
-
-		//Default graphs
-		var $defaultGraphsRow = $('<div>', {
-			class: 'reqRow'
-		}).appendTo($reqPanel);
-		$('<div>', {
-			class: 'rowLabel'
-		}).appendTo($defaultGraphsRow).text('Default graphs');
-		$defaultGraphsDiv = $('<div>', {
-			class: 'col-md-8',
-			role: 'group'
-		}).appendTo($defaultGraphsRow);
-
-
-		//Named graphs
-		var $namedGraphsRow = $('<div>', {
-			class: 'reqRow'
-		}).appendTo($reqPanel);
-		$('<div>', {
-			class: 'rowLabel'
-		}).appendTo($namedGraphsRow).text('Named graphs');
-		$namedGraphsDiv = $('<div>', {
-			class: 'col-md-8',
-			role: 'group'
-		}).appendTo($namedGraphsRow);
-
-
-
-		/**
+    /**
 		 * Init history tab
 		 */
-		var li = $("<li>", {
-			role: "presentation"
-		}).appendTo($tabsParent);
-		var historyPaneId = 'yasgui_history_' + tab.persistentOptions.id;
-		li.append(
-			$('<a>', {
-				href: '#' + historyPaneId,
-				'aria-controls': historyPaneId,
-				role: 'tab',
-				'data-toggle': 'tab'
-			})
-			.text("History")
-			.click(function(e) {
-				e.preventDefault();
-				$(this).tab('show')
-			})
-		);
+    var li = $("<li>", {
+      role: "presentation"
+    }).appendTo($tabsParent);
+    var historyPaneId = "yasgui_history_" + tab.persistentOptions.id;
+    li.append(
+      $("<a>", {
+        href: "#" + historyPaneId,
+        "aria-controls": historyPaneId,
+        role: "tab",
+        "data-toggle": "tab"
+      })
+        .text("History")
+        .click(function(e) {
+          e.preventDefault();
+          $(this).tab("show");
+        })
+    );
 
-		var $histPanel = $('<div>', {
-			id: historyPaneId,
-			role: 'tabpanel',
-			class: 'tab-pane history container-fluid'
-		}).appendTo($tabPanesParent);
-		$histList = $('<ul>', {
-			class: 'list-group'
-		}).appendTo($histPanel);
+    var $histPanel = $("<div>", {
+      id: historyPaneId,
+      role: "tabpanel",
+      class: "tab-pane history container-fluid"
+    }).appendTo($tabPanesParent);
+    $histList = $("<ul>", {
+      class: "list-group"
+    }).appendTo($histPanel);
 
-
-
-		/**
+    /**
 		 * Init collections tab
 		 */
-		if (yasgui.options.api.collections) {
-			var li = $("<li>", {
-				role: "presentation"
-			}).appendTo($tabsParent);
-			var collectionsPaneId = 'yasgui_collections_' + tab.persistentOptions.id;
-			li.append(
-				$('<a>', {
-					href: '#' + collectionsPaneId,
-					'aria-controls': collectionsPaneId,
-					role: 'tab',
-					'data-toggle': 'tab'
-				})
-				.text("Collections")
-				.click(function(e) {
-					e.preventDefault()
-					$(this).tab('show')
-				})
-			);
-			var $reqPanel = $('<div>', {
-				id: collectionsPaneId,
-				role: 'tabpanel',
-				class: 'tab-pane collections container-fluid'
-			}).appendTo($tabPanesParent);
-		}
+    if (yasgui.options.api.collections) {
+      var li = $("<li>", {
+        role: "presentation"
+      }).appendTo($tabsParent);
+      var collectionsPaneId = "yasgui_collections_" + tab.persistentOptions.id;
+      li.append(
+        $("<a>", {
+          href: "#" + collectionsPaneId,
+          "aria-controls": collectionsPaneId,
+          role: "tab",
+          "data-toggle": "tab"
+        })
+          .text("Collections")
+          .click(function(e) {
+            e.preventDefault();
+            $(this).tab("show");
+          })
+      );
+      var $reqPanel = $("<div>", {
+        id: collectionsPaneId,
+        role: "tabpanel",
+        class: "tab-pane collections container-fluid"
+      }).appendTo($tabPanesParent);
+    }
 
-		return $menu;
-	};
+    return $menu;
+  };
 
-	var addTextInputsTo = function($el, num, animate, vals) {
-		var $inputsAndTogglesContainer = $('<div>', {
-			class: 'textInputsRow'
-		});
-		for (var i = 0; i < num; i++) {
-			var val = (vals && vals[i] ? vals[i] : "");
-			$('<input>', {
-					type: 'text'
-				})
-				.val(val)
-				.keyup(function() {
-					var lastHasContent = false;
-					$el.find('.textInputsRow:last input').each(function(i, input) {
-						if ($(input).val().trim().length > 0) lastHasContent = true;
-					});
-					if (lastHasContent) addTextInputsTo($el, num, true);
-				})
-				.css('width', (92 / num) + '%')
-				.appendTo($inputsAndTogglesContainer);
-		}
-		$inputsAndTogglesContainer.append(
-			$('<button>', {
-				class: "close",
-				type: "button"
-			})
-			.text('x')
-			.click(function() {
-				$(this).closest('.textInputsRow').remove();
-			})
-			//				$(utils.svg.getElement(imgs.cross, {width: '14px', height: '14px'}))
-			//				.addClass('closeBtn')
-			//				.css('display', '')//let our style sheets do the work here
-			//				.click(function(){
-			//					$(this).closest('.textInputsRow').remove();
-			//				})
-		);
-		if (animate) {
-			$inputsAndTogglesContainer.hide().appendTo($el).show('fast');
-		} else {
-			$inputsAndTogglesContainer.appendTo($el);
-		}
-	};
+  var addTextInputsTo = function($el, num, animate, vals) {
+    var $inputsAndTogglesContainer = $("<div>", {
+      class: "textInputsRow"
+    });
+    for (var i = 0; i < num; i++) {
+      var val = vals && vals[i] ? vals[i] : "";
+      $("<input>", {
+        type: "text"
+      })
+        .val(val)
+        .keyup(function() {
+          var lastHasContent = false;
+          $el.find(".textInputsRow:last input").each(function(i, input) {
+            if ($(input).val().trim().length > 0) lastHasContent = true;
+          });
+          if (lastHasContent) addTextInputsTo($el, num, true);
+        })
+        .css("width", 92 / num + "%")
+        .appendTo($inputsAndTogglesContainer);
+    }
+    $inputsAndTogglesContainer.append(
+      $("<button>", {
+        class: "close",
+        type: "button"
+      })
+        .text("x")
+        .click(function() {
+          $(this).closest(".textInputsRow").remove();
+        })
+      //				$(utils.svg.getElement(imgs.cross, {width: '14px', height: '14px'}))
+      //				.addClass('closeBtn')
+      //				.css('display', '')//let our style sheets do the work here
+      //				.click(function(){
+      //					$(this).closest('.textInputsRow').remove();
+      //				})
+    );
+    if (animate) {
+      $inputsAndTogglesContainer.hide().appendTo($el).show("fast");
+    } else {
+      $inputsAndTogglesContainer.appendTo($el);
+    }
+  };
 
-	var updateWrapper = function() {
-		/**
+  var updateWrapper = function() {
+    /**
 		 * update request tab
 		 */
-		//if no tab is active, select first one
-		if ($menu.find('.tabPaneMenuTabs li.active').length == 0) $menu.find('.tabPaneMenuTabs a:first').tab('show');
+    //if no tab is active, select first one
+    if ($menu.find(".tabPaneMenuTabs li.active").length == 0) $menu.find(".tabPaneMenuTabs a:first").tab("show");
 
-		//we got most of the html. Now set the values in the html
-		var options = tab.persistentOptions.yasqe;
+    //we got most of the html. Now set the values in the html
+    var options = tab.persistentOptions.yasqe;
 
+    //Request method
+    if (options.sparql.requestMethod.toUpperCase() == "POST") {
+      $btnPost.addClass("active");
+    } else {
+      $btnGet.addClass("active");
+    }
+    //Request method
+    $acceptGraph[0].selectize.setValue(options.sparql.acceptHeaderGraph);
+    $acceptSelect[0].selectize.setValue(options.sparql.acceptHeaderSelect);
 
-		//Request method
-		if (options.sparql.requestMethod.toUpperCase() == "POST") {
-			$btnPost.addClass('active');
-		} else {
-			$btnGet.addClass('active');
-		}
-		//Request method
-		$acceptGraph[0].selectize.setValue(options.sparql.acceptHeaderGraph);
-		$acceptSelect[0].selectize.setValue(options.sparql.acceptHeaderSelect);
+    //url args
+    $urlArgsDiv.empty();
+    if (options.sparql.args && options.sparql.args.length > 0) {
+      options.sparql.args.forEach(function(el) {
+        var vals = [el.name, el.value];
+        addTextInputsTo($urlArgsDiv, 2, false, vals);
+      });
+    }
+    addTextInputsTo($urlArgsDiv, 2, false); //and, always add one item
 
-		//url args
-		$urlArgsDiv.empty();
-		if (options.sparql.args && options.sparql.args.length > 0) {
-			options.sparql.args.forEach(function(el) {
-				var vals = [el.name, el.value];
-				addTextInputsTo($urlArgsDiv, 2, false, vals)
-			});
-		}
-		addTextInputsTo($urlArgsDiv, 2, false); //and, always add one item
+    //http headers
+    $httpHeadersDiv.empty();
+    if (!$.isEmptyObject(options.sparql.headers)) {
+      $.each(options.sparql.headers, function(key, val) {
+        addTextInputsTo($httpHeadersDiv, 2, false, [key, val]);
+      });
+    }
+    addTextInputsTo($httpHeadersDiv, 2, false); //and, always add one item
 
-		//http headers
-		$httpHeadersDiv.empty();
-		if (! $.isEmptyObject(options.sparql.headers)) {
-			$.each(options.sparql.headers, function(key, val) {
-				addTextInputsTo($httpHeadersDiv, 2, false, [key, val]);
-			});
-		}
-		addTextInputsTo($httpHeadersDiv, 2, false); //and, always add one item
+    //default graphs
+    $defaultGraphsDiv.empty();
+    if (options.sparql.defaultGraphs && options.sparql.defaultGraphs.length > 0) {
+      addTextInputsTo($defaultGraphsDiv, 1, false, options.sparql.defaultGraphs);
+    }
+    addTextInputsTo($defaultGraphsDiv, 1, false); //and, always add one item
 
-		//default graphs
-		$defaultGraphsDiv.empty();
-		if (options.sparql.defaultGraphs && options.sparql.defaultGraphs.length > 0) {
-			addTextInputsTo($defaultGraphsDiv, 1, false, options.sparql.defaultGraphs)
-		}
-		addTextInputsTo($defaultGraphsDiv, 1, false); //and, always add one item
+    //default graphs
+    $namedGraphsDiv.empty();
+    if (options.sparql.namedGraphs && options.sparql.namedGraphs.length > 0) {
+      addTextInputsTo($namedGraphsDiv, 1, false, options.sparql.namedGraphs);
+    }
+    addTextInputsTo($namedGraphsDiv, 1, false); //and, always add one item
 
-		//default graphs
-		$namedGraphsDiv.empty();
-		if (options.sparql.namedGraphs && options.sparql.namedGraphs.length > 0) {
-			addTextInputsTo($namedGraphsDiv, 1, false, options.sparql.namedGraphs)
-		}
-		addTextInputsTo($namedGraphsDiv, 1, false); //and, always add one item
-
-
-
-		/**
+    /**
 		 * update history tab
 		 */
-		$histList.empty();
-		if (yasgui.history.length == 0) {
-			$histList.append(
-				$('<a>', {
-					class: 'list-group-item disabled',
-					href: '#'
-				})
-				.text("No items in history yet")
-				.click(function(e) {
-					e.preventDefault()
-				})
-			)
-		} else {
-			yasgui.history.forEach(function(histObject) {
+    $histList.empty();
+    if (yasgui.history.length == 0) {
+      $histList.append(
+        $("<a>", {
+          class: "list-group-item disabled",
+          href: "#"
+        })
+          .text("No items in history yet")
+          .click(function(e) {
+            e.preventDefault();
+          })
+      );
+    } else {
+      yasgui.history.forEach(function(histObject) {
+        var text = histObject.options.yasqe.sparql.endpoint;
+        if (histObject.resultSize) text += " (" + histObject.resultSize + " results)";
+        $histList.append(
+          $("<a>", {
+            class: "list-group-item",
+            href: "#",
+            title: histObject.options.yasqe.value
+          })
+            .text(text)
+            .click(function(e) {
+              //update tab
+              var tab = yasgui.tabs[histObject.options.id];
+              $.extend(true, tab.persistentOptions, histObject.options);
+              tab.refreshYasqe();
 
-				var text = histObject.options.yasqe.sparql.endpoint;
-				if (histObject.resultSize) text += ' (' + histObject.resultSize + ' results)';
-				$histList.append(
-					$('<a>', {
-						class: 'list-group-item',
-						href: '#',
-						title: histObject.options.yasqe.value
-					})
-					.text(text)
-					.click(function(e) {
-						//update tab
-						var tab = yasgui.tabs[histObject.options.id];
-						$.extend(true, tab.persistentOptions, histObject.options);
-						tab.refreshYasqe();
+              yasgui.store();
 
-						yasgui.store();
+              //and close menu
+              $menu.closest(".tab-pane").removeClass("menu-open");
+              e.preventDefault();
+            })
+        );
+      });
+    }
+  };
 
-						//and close menu
-						$menu.closest('.tab-pane').removeClass('menu-open');
-						e.preventDefault();
-					})
-				)
-			});
-		}
-	};
+  var store = function() {
+    var options = tab.persistentOptions.yasqe.sparql;
+    if ($btnPost.hasClass("active")) {
+      options.requestMethod = "POST";
+    } else if ($btnGet.hasClass("active")) {
+      options.requestMethod = "GET";
+    }
 
-	var store = function() {
-		var options = tab.persistentOptions.yasqe.sparql;
-		if ($btnPost.hasClass('active')) {
-			options.requestMethod = "POST";
-		} else if ($btnGet.hasClass('active')) {
-			options.requestMethod = "GET";
-		}
+    //Request method
+    options.acceptHeaderGraph = $acceptGraph[0].selectize.getValue();
+    options.acceptHeaderSelect = $acceptSelect[0].selectize.getValue();
 
-		//Request method
-		options.acceptHeaderGraph = $acceptGraph[0].selectize.getValue();
-		options.acceptHeaderSelect = $acceptSelect[0].selectize.getValue();
+    //url args
+    var args = [];
+    $urlArgsDiv.find("div").each(function(i, el) {
+      var inputVals = [];
+      $(el).find("input").each(function(i, input) {
+        inputVals.push($(input).val());
+      });
+      if (inputVals[0] && inputVals[0].trim().length > 0) {
+        args.push({
+          name: inputVals[0],
+          value: inputVals[1] ? inputVals[1] : ""
+        });
+      }
+    });
+    options.args = args;
 
-		//url args
-		var args = [];
-		$urlArgsDiv.find('div').each(function(i, el) {
-			var inputVals = [];
-			$(el).find('input').each(function(i, input) {
-				inputVals.push($(input).val());
-			});
-			if (inputVals[0] && inputVals[0].trim().length > 0) {
-				args.push({
-					name: inputVals[0],
-					value: (inputVals[1] ? inputVals[1] : "")
-				});
-			}
-		});
-		options.args = args;
+    //http headers
+    var headers = {};
+    $httpHeadersDiv.find("div").each(function(i, el) {
+      var inputVals = [];
+      $(el).find("input").each(function(i, input) {
+        inputVals.push($(input).val());
+      });
+      if (inputVals[0] && inputVals[0].trim().length > 0) {
+        headers[inputVals[0]] = inputVals[1] ? inputVals[1] : "";
+      }
+    });
+    options.headers = headers;
 
+    //default graphs
+    var defaultGraphs = [];
+    $defaultGraphsDiv.find("div").each(function(i, el) {
+      var inputVals = [];
+      $(el).find("input").each(function(i, input) {
+        inputVals.push($(input).val());
+      });
+      if (inputVals[0] && inputVals[0].trim().length > 0) defaultGraphs.push(inputVals[0]);
+    });
+    options.defaultGraphs = defaultGraphs;
 
-		//http headers
-		var headers = {};
-		$httpHeadersDiv.find('div').each(function(i, el) {
-			var inputVals = [];
-			$(el).find('input').each(function(i, input) {
-				inputVals.push($(input).val());
-			});
-			if (inputVals[0] && inputVals[0].trim().length > 0) {
-				headers[inputVals[0]] = (inputVals[1] ? inputVals[1] : "");
-			}
-		});
-		options.headers = headers;
+    //named graphs
+    var namedGraphs = [];
+    $namedGraphsDiv.find("div").each(function(i, el) {
+      var inputVals = [];
+      $(el).find("input").each(function(i, input) {
+        inputVals.push($(input).val());
+      });
+      if (inputVals[0] && inputVals[0].trim().length > 0) namedGraphs.push(inputVals[0]);
+    });
+    options.namedGraphs = namedGraphs;
+    yasgui.store();
+    tab.setPersistentInYasqe();
+  };
 
-		//default graphs
-		var defaultGraphs = [];
-		$defaultGraphsDiv.find('div').each(function(i, el) {
-			var inputVals = [];
-			$(el).find('input').each(function(i, input) {
-				inputVals.push($(input).val());
-			});
-			if (inputVals[0] && inputVals[0].trim().length > 0) defaultGraphs.push(inputVals[0]);
-		});
-		options.defaultGraphs = defaultGraphs;
-
-		//named graphs
-		var namedGraphs = [];
-		$namedGraphsDiv.find('div').each(function(i, el) {
-			var inputVals = [];
-			$(el).find('input').each(function(i, input) {
-				inputVals.push($(input).val());
-			});
-			if (inputVals[0] && inputVals[0].trim().length > 0) namedGraphs.push(inputVals[0]);
-		});
-		options.namedGraphs = namedGraphs;
-		yasgui.store();
-		tab.setPersistentInYasqe();
-	};
-
-
-
-	return {
-		initWrapper: initWrapper,
-		updateWrapper: updateWrapper,
-		store: store
-	};
+  return {
+    initWrapper: initWrapper,
+    updateWrapper: updateWrapper,
+    store: store
+  };
 };
 
 },{"./imgs.js":211,"jquery":22,"selectize":28,"yasgui-utils":35}],220:[function(require,module,exports){
-var yUtils = require('yasgui-utils'),
-	imgs = require('./imgs.js'),
-	$ = require('jquery');
+var yUtils = require("yasgui-utils"), imgs = require("./imgs.js"), $ = require("jquery");
 module.exports = function(yasgui) {
+  var enabled = !!yasgui.options.tracker.googleAnalyticsId;
+  var trackEvents = true;
+  var cookieId = "yasgui_" + $(yasgui.wrapperElement).closest("[id]").attr("id") + "_trackerId";
 
-	var enabled = !!(yasgui.options.tracker.googleAnalyticsId);
-	var trackEvents = true;
-	var cookieId = "yasgui_" + $(yasgui.wrapperElement).closest('[id]').attr('id') + '_trackerId';
-
-	var updateStatus = function() {
-		/*
+  var updateStatus = function() {
+    /*
 		 * Load settings. What can we track?
 		 */
-		var trackId = yUtils.storage.get(cookieId);
-		if (trackId === null) {
-			//don't know! show consent window
-			drawConsentWindow();
-		} else {
-			trackId = +trackId;
-			if (trackId === 0) { // don't track
-				enabled = false;
-				trackEvents = false;
-			} else if (trackId === 1) { // track visits
-				enabled = true;
-				trackEvents = false;
-			} else if (trackId == 2) { //track everything
-				enabled = true;
-				trackEvents = true;
-			}
-		}
-	}
-	var init = function() {
-		if (yasgui.options.tracker.googleAnalyticsId) {
+    var trackId = yUtils.storage.get(cookieId);
+    if (trackId === null) {
+      //don't know! show consent window
+      drawConsentWindow();
+    } else {
+      trackId = +trackId;
+      if (trackId === 0) {
+        // don't track
+        enabled = false;
+        trackEvents = false;
+      } else if (trackId === 1) {
+        // track visits
+        enabled = true;
+        trackEvents = false;
+      } else if (trackId == 2) {
+        //track everything
+        enabled = true;
+        trackEvents = true;
+      }
+    }
+  };
+  var init = function() {
+    if (yasgui.options.tracker.googleAnalyticsId) {
+      updateStatus();
 
-			updateStatus();
+      //load script
+      (function(i, s, o, g, r, a, m) {
+        i["GoogleAnalyticsObject"] = r;
+        i[r] = i[r] ||
+          function() {
+            (i[r].q = i[r].q || []).push(arguments);
+          }, i[r].l = 1 * new Date();
+        a = s.createElement(o), m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m);
+      })(window, document, "script", "//www.google-analytics.com/analytics.js", "ga");
 
-			//load script
-			(function(i, s, o, g, r, a, m) {
-				i['GoogleAnalyticsObject'] = r;
-				i[r] = i[r] || function() {
-					(i[r].q = i[r].q || []).push(arguments)
-				}, i[r].l = 1 * new Date();
-				a = s.createElement(o),
-					m = s.getElementsByTagName(o)[0];
-				a.async = 1;
-				a.src = g;
-				m.parentNode.insertBefore(a, m)
-			})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+      ga("create", yasgui.options.tracker.googleAnalyticsId, "auto");
+      ga("send", "pageview");
+    }
+  };
 
-			ga('create', yasgui.options.tracker.googleAnalyticsId, 'auto');
-			ga('send', 'pageview');
+  var drawConsentWindow = function() {
+    var consentDiv = $("<div>", {
+      class: "consentWindow"
+    }).appendTo(yasgui.wrapperElement);
+    var hide = function() {
+      consentDiv.hide(400);
+    };
+    var storeConsent = function(id) {
+      var action = "no";
+      if (id == 2) {
+        action = "yes";
+      } else if (id == 1) {
+        action = "yes/no";
+      }
+      track("consent", action);
+      yUtils.storage.set(cookieId, id);
+      updateStatus();
+    };
+    consentDiv.append(
+      $("<div>", {
+        class: "consentMsg"
+      }).html(
+        "We track user actions (including used endpoints and queries). This data is solely used for research purposes and to get insight into how users use the site. <i>We would appreciate your consent!</i>"
+      )
+    );
 
-		}
-	};
+    var buttonDiv = $("<div>", {
+      class: "buttons"
+    })
+      .appendTo(consentDiv)
+      .append(
+        $("<button>", {
+          type: "button",
+          class: "btn btn-default"
+        })
+          .append($(yUtils.svg.getElement(imgs.checkMark)).height(11).width(11))
+          .append($("<span>").text(" Yes, allow"))
+          .click(function() {
+            storeConsent(2);
+            hide();
+          })
+      )
+      .append(
+        $("<button>", {
+          type: "button",
+          class: "btn btn-default"
+        })
+          .append($(yUtils.svg.getElement(imgs.checkCrossMark)).height(13).width(13))
+          .append($("<span>").html(" Yes, track site usage, but not<br>the queries/endpoints I use"))
+          .click(function() {
+            storeConsent(1);
+            hide();
+          })
+      )
+      .append(
+        $("<button>", {
+          type: "button",
+          class: "btn btn-default"
+        })
+          .append($(yUtils.svg.getElement(imgs.crossMark)).height(9).width(9))
+          .append($("<span>").text(" No, disable tracking"))
+          .click(function() {
+            storeConsent(0);
+            hide();
+          })
+      )
+      .append(
+        $("<button>", {
+          type: "button",
+          class: "btn btn-default"
+        })
+          .text("Ask me later")
+          .click(function() {
+            hide();
+          })
+      );
+  };
 
-
-
-	var drawConsentWindow = function() {
-		var consentDiv = $('<div>', {
-			class: 'consentWindow'
-		}).appendTo(yasgui.wrapperElement);
-		var hide = function() {
-			consentDiv.hide(400);
-		};
-		var storeConsent = function(id) {
-			var action = 'no';
-			if (id == 2) {
-				action = 'yes';
-			} else if (id == 1) {
-				action = 'yes/no';
-			}
-			track('consent', action);
-			yUtils.storage.set(cookieId, id);
-			updateStatus();
-
-		}
-		consentDiv.append(
-			$('<div>', {
-				class: 'consentMsg'
-			}).html('We track user actions (including used endpoints and queries). This data is solely used for research purposes and to get insight into how users use the site. <i>We would appreciate your consent!</i>')
-		);
-
-		var buttonDiv = $('<div>', {
-				class: 'buttons'
-			})
-			.appendTo(consentDiv)
-			.append(
-				$('<button>', {
-					type: 'button',
-					class: 'btn btn-default'
-				})
-				.append(
-					$(yUtils.svg.getElement(imgs.checkMark))
-					.height(11)
-					.width(11)
-				)
-				.append($('<span>').text(' Yes, allow'))
-				.click(function() {
-					storeConsent(2)
-					hide();
-				})
-			)
-			.append(
-				$('<button>', {
-					type: 'button',
-					class: 'btn btn-default'
-				})
-				.append(
-					$(yUtils.svg.getElement(imgs.checkCrossMark))
-					.height(13)
-					.width(13)
-				)
-				.append($('<span>').html(' Yes, track site usage, but not<br>the queries/endpoints I use'))
-				.click(function() {
-					storeConsent(1);
-					hide();
-				})
-			)
-			.append(
-				$('<button>', {
-					type: 'button',
-					class: 'btn btn-default'
-				})
-				.append(
-					$(yUtils.svg.getElement(imgs.crossMark))
-					.height(9)
-					.width(9)
-				)
-				.append($('<span>').text(' No, disable tracking'))
-				.click(function() {
-					storeConsent(0);
-					hide();
-				})
-			)
-			.append(
-				$('<button>', {
-					type: 'button',
-					class: 'btn btn-default'
-				})
-				.text('Ask me later')
-				.click(function() {
-					hide();
-				})
-			);
-	};
-
-	var track = function(category, action, label, value, nonInteraction) {
-		if (enabled && ga) ga('send', 'event', category, action, label, value, {
-			'nonInteraction': !!nonInteraction
-		});
-	};
-	init();
-	return {
-		enabled: enabled,
-		track: track,
-		drawConsentWindow: drawConsentWindow,
-	}
+  var track = function(category, action, label, value, nonInteraction) {
+    if (enabled && ga)
+      ga("send", "event", category, action, label, value, {
+        nonInteraction: !!nonInteraction
+      });
+  };
+  init();
+  return {
+    enabled: enabled,
+    track: track,
+    drawConsentWindow: drawConsentWindow
+  };
 };
+
 },{"./imgs.js":211,"jquery":22,"yasgui-utils":35}],221:[function(require,module,exports){
-var $ = require('jquery');
+var $ = require("jquery");
 module.exports = {
-	escapeHtmlEntities: function(unescapedString) {
-		var tagsToReplace = {
-			'&': '&amp;',
-			'<': '&lt;',
-			'>': '&gt;'
-		};
+  escapeHtmlEntities: function(unescapedString) {
+    var tagsToReplace = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;"
+    };
 
-		var replaceTag = function(tag) {
-			return tagsToReplace[tag] || tag;
-		}
+    var replaceTag = function(tag) {
+      return tagsToReplace[tag] || tag;
+    };
 
-		return unescapedString.replace(/[&<>]/g, replaceTag);
-	},
+    return unescapedString.replace(/[&<>]/g, replaceTag);
+  }
+};
 
-}
 },{"jquery":22}],222:[function(require,module,exports){
-var $ = require('jquery');
-var root = module.exports = require('yasgui-yasqe');
+var $ = require("jquery");
+var root = module.exports = require("yasgui-yasqe");
 
 root.defaults = $.extend(true, root.defaults, {
-	persistent: null, //handled in YASGUI directly
-	consumeShareLink: null,
-	createShareLink: null,
-	sparql: {
-		showQueryButton: true,
-		acceptHeaderGraph: "text/turtle",
-		acceptHeaderSelect: "application/sparql-results+json"
-	}
+  persistent: null, //handled in YASGUI directly
+  consumeShareLink: null,
+  createShareLink: null,
+  sparql: {
+    showQueryButton: true,
+    acceptHeaderGraph: "text/turtle",
+    acceptHeaderSelect: "application/sparql-results+json"
+  }
 });
+
 },{"jquery":22,"yasgui-yasqe":52}],223:[function(require,module,exports){
-var $ = require('jquery'),
-	YASGUI = require('./main.js');
-var root = module.exports = require('yasgui-yasr');
+var $ = require("jquery"), YASGUI = require("./main.js");
+var root = module.exports = require("yasgui-yasr");
+
 },{"./main.js":216,"jquery":22,"yasgui-yasr":197}]},{},[210])(210)
 });
 //# sourceMappingURL=yasgui.js.map
