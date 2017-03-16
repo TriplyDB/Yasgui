@@ -5681,7 +5681,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
         border-radius: 1px; }
   .yasgui .menu-open .controlbar {
     border-left: 0;
-    left: 600px; }
+    left: 600px;
+    width: calc(100% - 600px); }
   .yasgui .consentWindow {
     position: absolute;
     bottom: 0;
