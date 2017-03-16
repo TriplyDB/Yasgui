@@ -22,7 +22,7 @@ $controlbarPadding: 5px;
 				 vertical-align:middle;
 			 }
 			vertical-align: middle;
-			
+
 			.endpointUrl {
 				font-weight: bold;
 				font-size: 0.9;
@@ -30,10 +30,10 @@ $controlbarPadding: 5px;
 				/* Warning: Needed for oldIE support, but words are broken up letter-by-letter */
 				-ms-word-break: break-all;
 				    word-break: break-all;
-				
+
 				    /* Non standard for webkit */
 				     word-break: break-word;
-				
+
 				-webkit-hyphens: auto;
 				   -moz-hyphens: auto;
 				    -ms-hyphens: auto;
@@ -50,7 +50,7 @@ $controlbarPadding: 5px;
 		margin-right: $controlbarPadding;
 		display:inline-block;
 	}
-	
+
 	.menuButton {
 		display: inline-block;
 	  	vertical-align:middle;
@@ -78,5 +78,6 @@ $controlbarPadding: 5px;
 	.controlbar {
 		border-left: 0;
 		left: $menuWidth;
+		width: calc(100% - 600px);
 	}
 }
