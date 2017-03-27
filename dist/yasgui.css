@@ -7458,6 +7458,17 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     margin-left: -12px;
     border-right-color: #fff; }
 
+/**
+Some classes so we can easily show/hide element using classes from parent
+Use by SPARQL stories
+**/
+.stories {
+  margin: 15px 0; }
+  .stories.hideTabs .yasgui .mainTabs {
+    display: none; }
+  .stories.hideYasqe .yasgui .controlbar, .stories.hideYasqe .yasgui .yasqe {
+    display: none; }
+
 .CodeMirror-hints {
   position: absolute;
   z-index: 10;
