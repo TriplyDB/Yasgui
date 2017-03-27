@@ -75,6 +75,7 @@
     "minimist": "^1.2.0",
     "selectize": "^0.12.4",
     "underscore": "^1.8.3",
+    "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.0",
     "yasgui-yasqe": "2.x.x",
     "yasgui-yasr": "2.x.x"

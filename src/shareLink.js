@@ -1,4 +1,5 @@
 var $ = require("jquery");
+var urlParse = require('url-parse')
 var deparam = function(queryString) {
   var params = [];
   if (queryString && queryString.length > 0) {
@@ -23,17 +24,21 @@ var deparam = function(queryString) {
   return params;
 };
 
-var getUrlParams = function() {
-  //first try hash
+var getUrlParams = function(_url) {
+  var urlFromWindow = false;
+  if (!_url) urlFromWindow = true;
+  var url = urlParse(_url || window.location.href);
   var urlParams = [];
-  if (window.location.hash.length > 1) {
+  //first try hash
+  if (url.hash.length > 1) {
     //firefox does some decoding if we're using window.location.hash (e.g. the + sign in contentType settings)
     //Don't want this. So simply get the hash string ourselves
-    urlParams = deparam(location.href.split("#")[1]);
-    window.location.hash = ""; //clear hash
-  } else if (window.location.search.length > 1) {
+    urlParams = deparam(url.hash.split("#")[1]);
+
+    if (urlFromWindow) window.location.hash = ""; //clear hash
+  } else if (url.query.length > 1) {
     //ok, then just try regular url params
-    urlParams = deparam(window.location.search.substring(1));
+    urlParams = deparam(url.query.substring(1));
   }
   return urlParams;
 };
@@ -142,7 +147,7 @@ module.exports = {
       return params;
     };
   },
-  getOptionsFromUrl: function() {
+  getOptionsFromUrl: function(url) {
     var options = {
       yasqe: {
         sparql: {}
@@ -150,7 +155,7 @@ module.exports = {
       yasr: {}
     };
 
-    var params = getUrlParams();
+    var params = getUrlParams(url);
     var validYasguiOptions = false;
 
     params.forEach(function(paramPair) {

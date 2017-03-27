@@ -24,4 +24,22 @@
 	@import "cssIncludes/selectize.bootstrap3";
 	@import "cssIncludes/selectize";
 	@import "cssIncludes/leaflet";
+
+
+}
+/**
+Some classes so we can easily show/hide element using classes from parent
+Use by SPARQL stories
+**/
+
+.stories {
+	&.hideTabs .yasgui .mainTabs {
+		display:none;
+	}
+	&.hideYasqe .yasgui {
+		.controlbar, .yasqe {
+			display:none;
+		}
+	}
+	margin: 15px 0;
 }
