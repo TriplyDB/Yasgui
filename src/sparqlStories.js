@@ -23,7 +23,9 @@ module.exports = function() {
 });
 
 }
-function loadDiv(el) {
+function loadDiv(el, retryCount) {
+  if (!retryCount) retryCount = 0;
+
   var $this = $(el)
   const url = $this.attr('data-yasgui');
   return getFullUrl(url)
@@ -32,16 +34,18 @@ function loadDiv(el) {
       return cleanConfig(options,url)
     })
     .then(function(config) {
+      // config.yasqe.value += 'b;la'
       initializeWrapper($this)
       window.$el = $this;
       var yasgui = YASGUI($this, $.extend(config, {
         //use persistencyPrefix so there are no conflicts between
         //different yasgui instances
           persistencyPrefix: function() {
-            return 'yasgui_stories_' + url
+            return 'yasgui_stories_' + url + Math.random()
           }
         })
       )
+
       $this.extend({yasgui:yasgui})
       window.yasgui.push($this.yasgui);
       if (!yasgui.current().yasr.results) {
@@ -55,7 +59,15 @@ function loadDiv(el) {
       }
       return Promise.resolve($this.yasgui);
     })
-    .catch(console.error)
+    .catch(function(e) {
+      if (retryCount < 3) {
+        console.warn('failed request, retrying');
+        return loadDiv(el, retryCount+1)
+      } else {
+        // console.log($this.yasgui.current().yasr.results)
+        console.error(e);
+      }
+    })
 }
 function cleanConfig(config, originalUrl) {
   if (config.yasqe.sparql && config.yasqe.sparql.endpoint && config.yasqe.sparql.endpoint.indexOf('http') !== 0) {
@@ -93,9 +105,7 @@ function initializeWrapper($el, yasgui) {
     })
     .appendTo($el)
 }
-function getConfigFromUrl(url) {
-  return linkUtils.getOptionsFromUrl(url);
-}
+
 
 function getFullUrl(url) {
   if (url.indexOf('/short') >= 0) {
