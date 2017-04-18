@@ -4,6 +4,7 @@ var Promise = require('promise-polyfill');
 var urlParse = require('url-parse');
 module.exports = function() {
   $( document ).ready(function() {
+    window.yasgui = []
     var yasguiDivs = $('div[data-yasgui]');
     var count = 0;
     function loadDivs() {
@@ -23,7 +24,6 @@ module.exports = function() {
 
 }
 function loadDiv(el) {
-  console.log('loading el',el)
   var $this = $(el)
   const url = $this.attr('data-yasgui');
   return getFullUrl(url)
@@ -43,10 +43,17 @@ function loadDiv(el) {
         })
       )
       $this.extend({yasgui:yasgui})
+      window.yasgui.push($this.yasgui);
       if (!yasgui.current().yasr.results) {
-        yasgui.current().query()
+        return new Promise(function(resolve,reject) {
+          yasgui.current().yasqe.options.sparql.callbacks.error = reject
+          yasgui.current().yasqe.options.sparql.callbacks.success = function() {
+            resolve($this.yasgui);
+          }
+          yasgui.current().query()
+        })
       }
-      window.yasgui = $this.yasgui;
+      return Promise.resolve($this.yasgui);
     })
     .catch(console.error)
 }

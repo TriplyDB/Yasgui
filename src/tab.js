@@ -172,8 +172,8 @@ var Tab = function(yasgui, options) {
       });
     }
   };
-  tab.query = function() {
-    tab.yasqe.query();
+  tab.query = function(callbackOrConfig) {
+    tab.yasqe.query(callbackOrConfig);
   };
 
   var initYasqe = function() {
