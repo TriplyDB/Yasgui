@@ -35,7 +35,7 @@ function loadDiv(el, retryCount) {
     })
     .then(function(config) {
       // config.yasqe.value += 'b;la'
-      initializeWrapper($this)
+      if (!retryCount) initializeWrapper($this)
       window.$el = $this;
       var yasgui = YASGUI($this, $.extend(config, {
         //use persistencyPrefix so there are no conflicts between
@@ -64,7 +64,6 @@ function loadDiv(el, retryCount) {
         console.warn('failed request, retrying');
         return loadDiv(el, retryCount+1)
       } else {
-        // console.log($this.yasgui.current().yasr.results)
         console.error(e);
       }
     })
