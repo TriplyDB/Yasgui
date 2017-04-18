@@ -96560,37 +96560,70 @@ var Promise = require('promise-polyfill');
 var urlParse = require('url-parse');
 module.exports = function() {
   $( document ).ready(function() {
-    $('div[data-yasgui]').each(function(i) {
-      var $this = $(this)
-      const url = $this.attr('data-yasgui');
-      getFullUrl(url)
-        .then(linkUtils.getOptionsFromUrl)
-        .then(function(options) {
-          return cleanConfig(options,url)
-        })
-        .then(function(config) {
-          initializeWrapper($this)
-          window.$el = $this;
-          var yasgui = YASGUI($this, $.extend(config, {
-            //use persistencyPrefix so there are no conflicts between
-            //different yasgui instances
-              persistencyPrefix: function() {
-                return 'yasgui_stories_' + url
-              }
-            })
-          )
-          $this.extend({yasgui:yasgui})
-          if (!yasgui.current().yasr.results) {
-            yasgui.current().query()
-          }
-          window.yasgui = $this.yasgui;
-        })
-        .catch(console.error)
-    })
+    window.yasgui = []
+    var yasguiDivs = $('div[data-yasgui]');
+    var count = 0;
+    function loadDivs() {
+
+      if (count >= yasguiDivs.length) {
+        //loaded everything, so we're done
+      } else {
+        loadDiv(yasguiDivs[count]).then(function() {
+          count++;
+          loadDivs();
+        });
+      }
+
+    }
+    loadDivs();
 });
 
 }
+function loadDiv(el, retryCount) {
+  if (!retryCount) retryCount = 0;
 
+  var $this = $(el)
+  const url = $this.attr('data-yasgui');
+  return getFullUrl(url)
+    .then(linkUtils.getOptionsFromUrl)
+    .then(function(options) {
+      return cleanConfig(options,url)
+    })
+    .then(function(config) {
+      // config.yasqe.value += 'b;la'
+      if (!retryCount) initializeWrapper($this)
+      window.$el = $this;
+      var yasgui = YASGUI($this, $.extend(config, {
+        //use persistencyPrefix so there are no conflicts between
+        //different yasgui instances
+          persistencyPrefix: function() {
+            return 'yasgui_stories_' + url + Math.random()
+          }
+        })
+      )
+
+      $this.extend({yasgui:yasgui})
+      window.yasgui.push($this.yasgui);
+      if (!yasgui.current().yasr.results) {
+        return new Promise(function(resolve,reject) {
+          yasgui.current().yasqe.options.sparql.callbacks.error = reject
+          yasgui.current().yasqe.options.sparql.callbacks.success = function() {
+            resolve($this.yasgui);
+          }
+          yasgui.current().query()
+        })
+      }
+      return Promise.resolve($this.yasgui);
+    })
+    .catch(function(e) {
+      if (retryCount < 3) {
+        console.warn('failed request, retrying');
+        return loadDiv(el, retryCount+1)
+      } else {
+        console.error(e);
+      }
+    })
+}
 function cleanConfig(config, originalUrl) {
   if (config.yasqe.sparql && config.yasqe.sparql.endpoint && config.yasqe.sparql.endpoint.indexOf('http') !== 0) {
     //hmm, a relative path, do some magic to rewrite the endpoint
@@ -96627,9 +96660,7 @@ function initializeWrapper($el, yasgui) {
     })
     .appendTo($el)
 }
-function getConfigFromUrl(url) {
-  return linkUtils.getOptionsFromUrl(url);
-}
+
 
 function getFullUrl(url) {
   if (url.indexOf('/short') >= 0) {
@@ -96822,8 +96853,8 @@ var Tab = function(yasgui, options) {
       });
     }
   };
-  tab.query = function() {
-    tab.yasqe.query();
+  tab.query = function(callbackOrConfig) {
+    tab.yasqe.query(callbackOrConfig);
   };
 
   var initYasqe = function() {
