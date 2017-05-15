@@ -13,7 +13,8 @@ var setYasrOptions = function(options) {
   var corsLiHtml = 'Endpoint is not <a href="http://enable-cors.org/" target="_blank">CORS-enabled</a>';
   if (options.api.corsProxy) {
     //We have a proxy. only possible reason CORS is still an issue, is when endpoints runs on localhost, different port, and cors enabled
-    corsLiHtml = 'Endpoint is not accessible from the YASGUI server and website, and the endpoint is not <a href="http://enable-cors.org/" target="_blank">CORS-enabled</a>';
+    corsLiHtml =
+      'Endpoint is not accessible from the YASGUI server and website, and the endpoint is not <a href="http://enable-cors.org/" target="_blank">CORS-enabled</a>';
   }
   module.exports.YASR.plugins.error.defaults.corsMessage = $("<div>")
     .append($("<p>").append("Unable to get response from endpoint. Possible reasons:"))
@@ -437,5 +438,12 @@ module.exports = function(parent, options) {
 module.exports.sparqlStories = stories;
 module.exports.YASQE = require("./yasqe.js");
 module.exports.YASR = require("./yasr.js");
+module.exports.version = {
+  YASGUI: require("../package.json").version,
+  jquery: $.fn.jquery,
+  "yasgui-utils": require("yasgui-utils").version,
+  YASQE: module.exports.YASQE.version,
+  YASR: module.exports.YASR.version
+};
 module.exports.$ = $;
 module.exports.defaults = require("./defaults.js");
