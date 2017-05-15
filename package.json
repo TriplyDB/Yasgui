@@ -73,6 +73,7 @@
     "jquery-ui": "1.10.5",
     "microplugin": "0.0.3",
     "minimist": "^1.2.0",
+    "promise-polyfill": "^6.0.2",
     "selectize": "^0.12.4",
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
