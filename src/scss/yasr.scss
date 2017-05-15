@@ -3,5 +3,8 @@
 	.CodeMirror {
 		border-color: $nav-tabs-border-color;
 	}
-
+	.leaflet-marker-icon.leaflet-div-icon {
+		background-color:transparent;
+		border:0;
+	}
 }
