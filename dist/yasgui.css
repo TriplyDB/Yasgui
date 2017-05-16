@@ -5405,7 +5405,10 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
         margin-left: 10px; }
         .yasgui .yasr .dataTables_wrapper .dataTables_length label, .yasgui .yasr .dataTables_wrapper .dataTables_length select {
           vertical-align: middle; }
+    .yasgui .yasr table.dataTable.no-footer.resultsTable {
+      border-bottom: 1px solid #ddd; }
     .yasgui .yasr table.dataTable thead th {
+      border-bottom: 2px solid #ddd;
       background: none !important;
       border-right: 1px dotted gray;
       padding: 7px 0px; }
@@ -5413,14 +5416,18 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
         border-right: 0; }
       .yasgui .yasr table.dataTable thead th span {
         margin-left: 5px; }
-    .yasgui .yasr table.dataTable td div {
-      -ms-word-break: break-all;
-      word-break: break-all;
-      /* Non standard for webkit */
-      word-break: break-word;
-      -webkit-hyphens: auto;
-      hyphens: auto;
-      padding: 0px 5px; }
+    .yasgui .yasr table.dataTable tr:nth-child(even) {
+      background-color: #f9f9f9; }
+    .yasgui .yasr table.dataTable td {
+      border-top: 1px solid #ddd; }
+      .yasgui .yasr table.dataTable td div {
+        -ms-word-break: break-all;
+        word-break: break-all;
+        /* Non standard for webkit */
+        word-break: break-word;
+        -webkit-hyphens: auto;
+        hyphens: auto;
+        padding: 0px 5px; }
     .yasgui .yasr .sortIcons {
       float: right;
       width: 8px;
@@ -5490,8 +5497,14 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       height: 800px;
       width: 100%;
       margin-top: 10px; }
+      .yasgui .yasr .yasr_results .leaflet .leaflet-marker-icon.leaflet-div-icon {
+        background-color: transparent;
+        border: 0; }
   .yasgui .yasr .CodeMirror {
     border-color: #ddd; }
+  .yasgui .yasr .leaflet-marker-icon.leaflet-div-icon {
+    background-color: transparent;
+    border: 0; }
   .yasgui .nav-tabs li.tab-sortable-highlight {
     border: 3px dashed #ddd;
     border-bottom: 0; }
@@ -6057,7 +6070,9 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     border-top: 1px solid #111111; }
   .yasgui table.dataTable thead .sorting,
   .yasgui table.dataTable thead .sorting_asc,
-  .yasgui table.dataTable thead .sorting_desc {
+  .yasgui table.dataTable thead .sorting_desc,
+  .yasgui table.dataTable thead .sorting_asc_disabled,
+  .yasgui table.dataTable thead .sorting_desc_disabled {
     cursor: pointer;
     *cursor: hand; }
   .yasgui table.dataTable thead .sorting,
@@ -6334,18 +6349,19 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody {
     *margin-top: -1px;
     -webkit-overflow-scrolling: touch; }
-  .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody th, .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody td {
+  .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody > table > thead > tr > th, .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody > table > thead > tr > td, .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody > table > tbody > tr > th, .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody > table > tbody > tr > td {
     vertical-align: middle; }
-  .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody th > div.dataTables_sizing,
-  .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody td > div.dataTables_sizing {
+  .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody > table > thead > tr > th > div.dataTables_sizing,
+  .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody > table > thead > tr > td > div.dataTables_sizing, .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody > table > tbody > tr > th > div.dataTables_sizing,
+  .yasgui .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody > table > tbody > tr > td > div.dataTables_sizing {
     height: 0;
     overflow: hidden;
     margin: 0 !important;
     padding: 0 !important; }
   .yasgui .dataTables_wrapper.no-footer .dataTables_scrollBody {
     border-bottom: 1px solid #111111; }
-  .yasgui .dataTables_wrapper.no-footer div.dataTables_scrollHead table,
-  .yasgui .dataTables_wrapper.no-footer div.dataTables_scrollBody table {
+  .yasgui .dataTables_wrapper.no-footer div.dataTables_scrollHead > table,
+  .yasgui .dataTables_wrapper.no-footer div.dataTables_scrollBody > table {
     border-bottom: none; }
   .yasgui .dataTables_wrapper:after {
     visibility: hidden;
@@ -6449,7 +6465,13 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .pvtTotal, .yasgui .pvtGrandTotal {
     font-weight: bold; }
   .yasgui .pvtVals {
-    text-align: center; }
+    text-align: center;
+    white-space: nowrap; }
+  .yasgui .pvtRowOrder, .yasgui .pvtColOrder {
+    cursor: pointer;
+    width: 15px;
+    margin-left: 5px;
+    display: inline-block; }
   .yasgui .pvtAggregator {
     margin-bottom: 5px; }
   .yasgui .pvtAxisContainer, .yasgui .pvtVals {
@@ -6485,25 +6507,35 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     font-style: italic; }
   .yasgui .pvtFilterBox {
     z-index: 100;
-    width: 280px;
+    width: 300px;
     border: 1px solid gray;
     background-color: #fff;
     position: absolute;
-    padding: 20px;
     text-align: center; }
   .yasgui .pvtFilterBox h4 {
-    margin: 0; }
+    margin: 15px; }
   .yasgui .pvtFilterBox p {
-    margin: 1em auto; }
+    margin: 10px auto; }
   .yasgui .pvtFilterBox label {
     font-weight: normal; }
   .yasgui .pvtFilterBox input[type='checkbox'] {
-    margin-right: 5px; }
+    margin-right: 10px;
+    margin-left: 10px; }
+  .yasgui .pvtFilterBox input[type='text'] {
+    width: 230px; }
+  .yasgui .pvtFilterBox .count {
+    color: gray;
+    font-weight: normal;
+    margin-left: 3px; }
   .yasgui .pvtCheckContainer {
     text-align: left;
-    overflow: scroll;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow-y: scroll;
     width: 100%;
-    max-height: 200px; }
+    max-height: 250px;
+    border-top: 1px solid lightgrey;
+    border-bottom: 1px solid lightgrey; }
   .yasgui .pvtCheckContainer p {
     margin: 5px; }
   .yasgui .pvtRendererArea {
@@ -7030,8 +7062,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .leaflet-marker-icon,
   .yasgui .leaflet-marker-shadow,
   .yasgui .leaflet-tile-container,
-  .yasgui .leaflet-map-pane svg,
-  .yasgui .leaflet-map-pane canvas,
+  .yasgui .leaflet-pane > svg,
+  .yasgui .leaflet-pane > canvas,
   .yasgui .leaflet-zoom-box,
   .yasgui .leaflet-image-layer,
   .yasgui .leaflet-layer {
@@ -7057,6 +7089,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     display: block; }
   .yasgui .leaflet-container .leaflet-overlay-pane svg,
   .yasgui .leaflet-container .leaflet-marker-pane img,
+  .yasgui .leaflet-container .leaflet-shadow-pane img,
   .yasgui .leaflet-container .leaflet-tile-pane img,
   .yasgui .leaflet-container img.leaflet-image-layer {
     max-width: none !important; }
@@ -7064,7 +7097,7 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     touch-action: pan-x pan-y; }
   .yasgui .leaflet-container.leaflet-touch-drag {
     -ms-touch-action: pinch-zoom; }
-  .yasgui .leaflet-container.leaflet-touch-drag.leaflet-touch-drag {
+  .yasgui .leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
     touch-action: none; }
   .yasgui .leaflet-tile {
     -webkit-filter: inherit;
