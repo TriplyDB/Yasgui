@@ -15,8 +15,9 @@ module.exports = {
     googleAnalyticsId: null,
     askConsent: true
   },
-  onQuotaExceeded: function() {
+  onQuotaExceeded: function(e) {
     //fail silently
+    console.warn("Could not store in localstorage. Skipping..", e);
   },
   yasqe: $.extend(
     true,

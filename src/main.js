@@ -26,6 +26,7 @@ var setYasrOptions = function(options) {
         .append($("<li>").html(corsLiHtml))
     );
 };
+
 var YASGUI = function(parent, options) {
   EventEmitter.call(this);
   var yasgui = this;
@@ -438,6 +439,14 @@ module.exports = function(parent, options) {
 };
 module.exports.sparqlStories = stories;
 module.exports.stories = stories;
+module.exports.shouldResetStorage = function() {
+  return document.location.search.substring(1).split("&").indexOf("_resetYasgui") >= 0;
+};
+
+//Before we start initializing, check whether we need to reset our storage layer
+if (module.exports.shouldResetStorage()) {
+  utils.storage.removeAll();
+}
 module.exports.YASQE = require("./yasqe.js");
 module.exports.YASR = require("./yasr.js");
 module.exports.version = {

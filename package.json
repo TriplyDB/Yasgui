@@ -76,10 +76,11 @@
     "minimist": "^1.2.0",
     "promise-polyfill": "^6.0.2",
     "selectize": "^0.12.4",
+    "store": "^2.0.4",
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
-    "yasgui-utils": "^1.6.4",
-    "yasgui-yasqe": "^2.11.10",
+    "yasgui-utils": "^1.6.6",
+    "yasgui-yasqe": "^2.11.11",
     "yasgui-yasr": "^2.11.1"
   },
   "browserify-shim": {
