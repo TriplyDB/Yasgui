@@ -56,7 +56,7 @@ $.fn.endpointCombi = function(yasgui, options) {
       }
     }
 
-    utils.storage.set(persistencyId, endpoints);
+    utils.storage.set(persistencyId, endpoints,null, yasgui.options.onQuotaExceeded);
   };
 
   //support callback
@@ -71,12 +71,12 @@ $.fn.endpointCombi = function(yasgui, options) {
     if (optGroup == "catalogue" && yasgui.options.catalogueEndpoints) {
       if (typeof yasgui.options.catalogueEndpoints == "function") {
         return yasgui.options.catalogueEndpoints(yasgui, function(endpoints) {
-          if (endpoints) utils.storage.set(persistencyId, endpoints);
+          if (endpoints) utils.storage.set(persistencyId, endpoints,null, yasgui.options.onQuotaExceeded);
           callback(endpoints, optGroup);
         });
       } else if (typeof yasgui.options.catalogueEndpoints == "object") {
         endpoints = yasgui.options.catalogueEndpoints;
-        utils.storage.set(persistencyId, endpoints);
+        utils.storage.set(persistencyId, endpoints,null, yasgui.options.onQuotaExceeded);
         callback(endpoints, optGroup);
       }
     }

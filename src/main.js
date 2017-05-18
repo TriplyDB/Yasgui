@@ -49,7 +49,7 @@ var YASGUI = function(parent, options) {
 
   yasgui.store = function() {
     if (yasgui.persistentOptions) {
-      utils.storage.set(yasgui.persistencyPrefix, yasgui.persistentOptions);
+      utils.storage.set(yasgui.persistencyPrefix, yasgui.persistentOptions, null, yasgui.options.onQuotaExceeded);
     }
   };
 

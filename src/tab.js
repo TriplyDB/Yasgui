@@ -103,7 +103,8 @@ var Tab = function(yasgui, options) {
   }).appendTo($paneContent);
 
   var yasqeOptions = {
-    createShareLink: require("./shareLink").getCreateLinkHandler(tab)
+    createShareLink: require("./shareLink").getCreateLinkHandler(tab),
+    onQuotaExceeded: yasgui.options.onQuotaExceeded
   };
   if (yasgui.options.api.urlShortener) {
     yasqeOptions.createShortLink = require("./shareLink").getShortLinkHandler(yasgui);
@@ -128,7 +129,7 @@ var Tab = function(yasgui, options) {
 
     //store in localstorage as well
     if (yasgui.persistencyPrefix) {
-      yUtils.storage.set(yasgui.persistencyPrefix + "history", yasgui.history);
+      yUtils.storage.set(yasgui.persistencyPrefix + "history", yasgui.history, null, yasgui.options.onQuotaExceeded);
     }
   };
 
@@ -145,9 +146,11 @@ var Tab = function(yasgui, options) {
     if (!tab.yasr) {
       if (!tab.yasqe) initYasqe(); //we need this one to initialize yasr
       var getQueryString = function() {
-        return persistentOptions.yasqe.sparql.endpoint +
+        return (
+          persistentOptions.yasqe.sparql.endpoint +
           "?" +
-          $.param(tab.yasqe.getUrlArguments(persistentOptions.yasqe.sparql));
+          $.param(tab.yasqe.getUrlArguments(persistentOptions.yasqe.sparql))
+        );
       };
       YASGUI.YASR.plugins.error.defaults.tryQueryLink = getQueryString;
 
@@ -158,7 +161,10 @@ var Tab = function(yasgui, options) {
             //this way, the URLs in the results are prettified using the defined prefixes in the query
             getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
           },
-          persistentOptions.yasr
+          persistentOptions.yasr,
+          {
+            onQuotaExceeded: yasgui.options.onQuotaExceeded
+          }
         )
       );
       tab.yasr.on("drawn", function(yasr, plugin) {
@@ -251,13 +257,10 @@ var Tab = function(yasgui, options) {
         minHeight: 150,
         handles: "s",
         resize: function() {
-          _.debounce(
-            function() {
-              tab.yasqe.setSize("100%", $(this).height());
-              tab.yasqe.refresh();
-            },
-            500
-          );
+          _.debounce(function() {
+            tab.yasqe.setSize("100%", $(this).height());
+            tab.yasqe.refresh();
+          }, 500);
         },
         stop: function() {
           persistentOptions.yasqe.height = $(this).height();

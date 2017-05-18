@@ -15,7 +15,9 @@ module.exports = {
     googleAnalyticsId: null,
     askConsent: true
   },
-
+  onQuotaExceeded: function() {
+    //fail silently
+  },
   yasqe: $.extend(
     true,
     {},
