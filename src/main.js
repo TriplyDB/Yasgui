@@ -3,7 +3,8 @@ var $ = require("jquery"),
   EventEmitter = require("events").EventEmitter,
   utils = require("yasgui-utils"),
   imgs = require("./imgs.js"),
-  stories = require("./stories.js");
+  stories = require("./stories.js"),
+  md5 = require("blueimp-md5");
 require("./jquery/extendJquery.js"); //extend some own jquery plugins
 
 /**
@@ -38,6 +39,7 @@ var YASGUI = function(parent, options) {
     yasgui.persistencyPrefix = typeof yasgui.options.persistencyPrefix == "function"
       ? yasgui.options.persistencyPrefix(yasgui)
       : yasgui.options.persistencyPrefix;
+    yasgui.persistencyPrefix = md5(yasgui.persistencyPrefix);
   }
 
   if (yasgui.persistencyPrefix) {
@@ -116,7 +118,6 @@ var YASGUI = function(parent, options) {
   var storeRename = function($liEl) {
     var tabId = $liEl.find('a[role="tab"]').attr("aria-controls");
     var val = $liEl.find("input").val();
-    // console.log($liEl)
     $liEl.find("span").text($liEl.find("input").val());
     persistentOptions.tabs[tabId].name = val;
     yasgui.store();

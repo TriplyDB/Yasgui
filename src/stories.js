@@ -1,7 +1,3 @@
-window.addEventListener("unhandledrejection", function(e) {
-  console.log("unhandled rejections!!!");
-  console.log(e);
-});
 var ATTRS = {
   URL_LINK: "data-query",
   SPARQL_REF: "data-query-sparql",
@@ -94,8 +90,6 @@ function loadEl(el, retryCount, index) {
 
   return getConfigForEl($this).then(
     function(config) {
-      console.log("config?", config);
-      // config.yasqe.value += 'b;la'
       if (!retryCount) initializeWrapper($this);
       window.$el = $this;
       var yasgui = YASGUI(
@@ -106,7 +100,14 @@ function loadEl(el, retryCount, index) {
           persistencyPrefix: function() {
             //if we're changing one of the attributes (e.g. output, query, endpoint) we don't want the cached value
             //so take these into account for the persistencyPrefix
-            return "yasgui_stories_" + config.yasqe.value + config.yasqe.sparql.endpoint + config.yasr.output + index;
+            return (
+              "yasgui_stories_" +
+              config.yasqe.value +
+              config.yasqe.sparql.endpoint +
+              config.yasr.output +
+              index +
+              Math.random()
+            );
           }
         })
       );

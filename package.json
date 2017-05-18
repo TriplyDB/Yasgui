@@ -66,6 +66,7 @@
     "url": "https://github.com/YASGUI/YASGUI.git"
   },
   "dependencies": {
+    "blueimp-md5": "^2.7.0",
     "bootstrap-contextmenu": "git://github.com/sydcanem/bootstrap-contextmenu",
     "bootstrap-sass": "^3.3.7",
     "browserify-shim": "^3.8.12",
