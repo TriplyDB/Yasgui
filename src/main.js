@@ -3,7 +3,7 @@ var $ = require("jquery"),
   EventEmitter = require("events").EventEmitter,
   utils = require("yasgui-utils"),
   imgs = require("./imgs.js"),
-  stories = require("./sparqlStories.js");
+  stories = require("./stories.js");
 require("./jquery/extendJquery.js"); //extend some own jquery plugins
 
 /**
@@ -436,6 +436,7 @@ module.exports = function(parent, options) {
   return new YASGUI(parent, options);
 };
 module.exports.sparqlStories = stories;
+module.exports.stories = stories;
 module.exports.YASQE = require("./yasqe.js");
 module.exports.YASR = require("./yasr.js");
 module.exports.version = {
