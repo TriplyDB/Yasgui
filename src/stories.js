@@ -161,6 +161,8 @@ module.exports = function(yasguiOptions) {
   }
 
   function initializeWrapper($el, yasgui) {
+    //first clear content. Need this because for a 'retry' we might be adding duplicate els
+    $el.empty();
     //  $el.addClass('hideYasqe');
     $el.addClass("hideTabs").addClass("stories");
     if ($el.attr("data-showQuery") === undefined) {
