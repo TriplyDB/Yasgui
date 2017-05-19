@@ -1,4 +1,287 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.YASGUI = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*
+ * JavaScript MD5
+ * https://github.com/blueimp/JavaScript-MD5
+ *
+ * Copyright 2011, Sebastian Tschan
+ * https://blueimp.net
+ *
+ * Licensed under the MIT license:
+ * https://opensource.org/licenses/MIT
+ *
+ * Based on
+ * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
+ * Digest Algorithm, as defined in RFC 1321.
+ * Version 2.2 Copyright (C) Paul Johnston 1999 - 2009
+ * Other contributors: Greg Holt, Andrew Kepert, Ydnar, Lostinet
+ * Distributed under the BSD License
+ * See http://pajhome.org.uk/crypt/md5 for more info.
+ */
+
+/* global define */
+
+;(function ($) {
+  'use strict'
+
+  /*
+  * Add integers, wrapping at 2^32. This uses 16-bit operations internally
+  * to work around bugs in some JS interpreters.
+  */
+  function safeAdd (x, y) {
+    var lsw = (x & 0xFFFF) + (y & 0xFFFF)
+    var msw = (x >> 16) + (y >> 16) + (lsw >> 16)
+    return (msw << 16) | (lsw & 0xFFFF)
+  }
+
+  /*
+  * Bitwise rotate a 32-bit number to the left.
+  */
+  function bitRotateLeft (num, cnt) {
+    return (num << cnt) | (num >>> (32 - cnt))
+  }
+
+  /*
+  * These functions implement the four basic operations the algorithm uses.
+  */
+  function md5cmn (q, a, b, x, s, t) {
+    return safeAdd(bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b)
+  }
+  function md5ff (a, b, c, d, x, s, t) {
+    return md5cmn((b & c) | ((~b) & d), a, b, x, s, t)
+  }
+  function md5gg (a, b, c, d, x, s, t) {
+    return md5cmn((b & d) | (c & (~d)), a, b, x, s, t)
+  }
+  function md5hh (a, b, c, d, x, s, t) {
+    return md5cmn(b ^ c ^ d, a, b, x, s, t)
+  }
+  function md5ii (a, b, c, d, x, s, t) {
+    return md5cmn(c ^ (b | (~d)), a, b, x, s, t)
+  }
+
+  /*
+  * Calculate the MD5 of an array of little-endian words, and a bit length.
+  */
+  function binlMD5 (x, len) {
+    /* append padding */
+    x[len >> 5] |= 0x80 << (len % 32)
+    x[(((len + 64) >>> 9) << 4) + 14] = len
+
+    var i
+    var olda
+    var oldb
+    var oldc
+    var oldd
+    var a = 1732584193
+    var b = -271733879
+    var c = -1732584194
+    var d = 271733878
+
+    for (i = 0; i < x.length; i += 16) {
+      olda = a
+      oldb = b
+      oldc = c
+      oldd = d
+
+      a = md5ff(a, b, c, d, x[i], 7, -680876936)
+      d = md5ff(d, a, b, c, x[i + 1], 12, -389564586)
+      c = md5ff(c, d, a, b, x[i + 2], 17, 606105819)
+      b = md5ff(b, c, d, a, x[i + 3], 22, -1044525330)
+      a = md5ff(a, b, c, d, x[i + 4], 7, -176418897)
+      d = md5ff(d, a, b, c, x[i + 5], 12, 1200080426)
+      c = md5ff(c, d, a, b, x[i + 6], 17, -1473231341)
+      b = md5ff(b, c, d, a, x[i + 7], 22, -45705983)
+      a = md5ff(a, b, c, d, x[i + 8], 7, 1770035416)
+      d = md5ff(d, a, b, c, x[i + 9], 12, -1958414417)
+      c = md5ff(c, d, a, b, x[i + 10], 17, -42063)
+      b = md5ff(b, c, d, a, x[i + 11], 22, -1990404162)
+      a = md5ff(a, b, c, d, x[i + 12], 7, 1804603682)
+      d = md5ff(d, a, b, c, x[i + 13], 12, -40341101)
+      c = md5ff(c, d, a, b, x[i + 14], 17, -1502002290)
+      b = md5ff(b, c, d, a, x[i + 15], 22, 1236535329)
+
+      a = md5gg(a, b, c, d, x[i + 1], 5, -165796510)
+      d = md5gg(d, a, b, c, x[i + 6], 9, -1069501632)
+      c = md5gg(c, d, a, b, x[i + 11], 14, 643717713)
+      b = md5gg(b, c, d, a, x[i], 20, -373897302)
+      a = md5gg(a, b, c, d, x[i + 5], 5, -701558691)
+      d = md5gg(d, a, b, c, x[i + 10], 9, 38016083)
+      c = md5gg(c, d, a, b, x[i + 15], 14, -660478335)
+      b = md5gg(b, c, d, a, x[i + 4], 20, -405537848)
+      a = md5gg(a, b, c, d, x[i + 9], 5, 568446438)
+      d = md5gg(d, a, b, c, x[i + 14], 9, -1019803690)
+      c = md5gg(c, d, a, b, x[i + 3], 14, -187363961)
+      b = md5gg(b, c, d, a, x[i + 8], 20, 1163531501)
+      a = md5gg(a, b, c, d, x[i + 13], 5, -1444681467)
+      d = md5gg(d, a, b, c, x[i + 2], 9, -51403784)
+      c = md5gg(c, d, a, b, x[i + 7], 14, 1735328473)
+      b = md5gg(b, c, d, a, x[i + 12], 20, -1926607734)
+
+      a = md5hh(a, b, c, d, x[i + 5], 4, -378558)
+      d = md5hh(d, a, b, c, x[i + 8], 11, -2022574463)
+      c = md5hh(c, d, a, b, x[i + 11], 16, 1839030562)
+      b = md5hh(b, c, d, a, x[i + 14], 23, -35309556)
+      a = md5hh(a, b, c, d, x[i + 1], 4, -1530992060)
+      d = md5hh(d, a, b, c, x[i + 4], 11, 1272893353)
+      c = md5hh(c, d, a, b, x[i + 7], 16, -155497632)
+      b = md5hh(b, c, d, a, x[i + 10], 23, -1094730640)
+      a = md5hh(a, b, c, d, x[i + 13], 4, 681279174)
+      d = md5hh(d, a, b, c, x[i], 11, -358537222)
+      c = md5hh(c, d, a, b, x[i + 3], 16, -722521979)
+      b = md5hh(b, c, d, a, x[i + 6], 23, 76029189)
+      a = md5hh(a, b, c, d, x[i + 9], 4, -640364487)
+      d = md5hh(d, a, b, c, x[i + 12], 11, -421815835)
+      c = md5hh(c, d, a, b, x[i + 15], 16, 530742520)
+      b = md5hh(b, c, d, a, x[i + 2], 23, -995338651)
+
+      a = md5ii(a, b, c, d, x[i], 6, -198630844)
+      d = md5ii(d, a, b, c, x[i + 7], 10, 1126891415)
+      c = md5ii(c, d, a, b, x[i + 14], 15, -1416354905)
+      b = md5ii(b, c, d, a, x[i + 5], 21, -57434055)
+      a = md5ii(a, b, c, d, x[i + 12], 6, 1700485571)
+      d = md5ii(d, a, b, c, x[i + 3], 10, -1894986606)
+      c = md5ii(c, d, a, b, x[i + 10], 15, -1051523)
+      b = md5ii(b, c, d, a, x[i + 1], 21, -2054922799)
+      a = md5ii(a, b, c, d, x[i + 8], 6, 1873313359)
+      d = md5ii(d, a, b, c, x[i + 15], 10, -30611744)
+      c = md5ii(c, d, a, b, x[i + 6], 15, -1560198380)
+      b = md5ii(b, c, d, a, x[i + 13], 21, 1309151649)
+      a = md5ii(a, b, c, d, x[i + 4], 6, -145523070)
+      d = md5ii(d, a, b, c, x[i + 11], 10, -1120210379)
+      c = md5ii(c, d, a, b, x[i + 2], 15, 718787259)
+      b = md5ii(b, c, d, a, x[i + 9], 21, -343485551)
+
+      a = safeAdd(a, olda)
+      b = safeAdd(b, oldb)
+      c = safeAdd(c, oldc)
+      d = safeAdd(d, oldd)
+    }
+    return [a, b, c, d]
+  }
+
+  /*
+  * Convert an array of little-endian words to a string
+  */
+  function binl2rstr (input) {
+    var i
+    var output = ''
+    var length32 = input.length * 32
+    for (i = 0; i < length32; i += 8) {
+      output += String.fromCharCode((input[i >> 5] >>> (i % 32)) & 0xFF)
+    }
+    return output
+  }
+
+  /*
+  * Convert a raw string to an array of little-endian words
+  * Characters >255 have their high-byte silently ignored.
+  */
+  function rstr2binl (input) {
+    var i
+    var output = []
+    output[(input.length >> 2) - 1] = undefined
+    for (i = 0; i < output.length; i += 1) {
+      output[i] = 0
+    }
+    var length8 = input.length * 8
+    for (i = 0; i < length8; i += 8) {
+      output[i >> 5] |= (input.charCodeAt(i / 8) & 0xFF) << (i % 32)
+    }
+    return output
+  }
+
+  /*
+  * Calculate the MD5 of a raw string
+  */
+  function rstrMD5 (s) {
+    return binl2rstr(binlMD5(rstr2binl(s), s.length * 8))
+  }
+
+  /*
+  * Calculate the HMAC-MD5, of a key and some data (raw strings)
+  */
+  function rstrHMACMD5 (key, data) {
+    var i
+    var bkey = rstr2binl(key)
+    var ipad = []
+    var opad = []
+    var hash
+    ipad[15] = opad[15] = undefined
+    if (bkey.length > 16) {
+      bkey = binlMD5(bkey, key.length * 8)
+    }
+    for (i = 0; i < 16; i += 1) {
+      ipad[i] = bkey[i] ^ 0x36363636
+      opad[i] = bkey[i] ^ 0x5C5C5C5C
+    }
+    hash = binlMD5(ipad.concat(rstr2binl(data)), 512 + data.length * 8)
+    return binl2rstr(binlMD5(opad.concat(hash), 512 + 128))
+  }
+
+  /*
+  * Convert a raw string to a hex string
+  */
+  function rstr2hex (input) {
+    var hexTab = '0123456789abcdef'
+    var output = ''
+    var x
+    var i
+    for (i = 0; i < input.length; i += 1) {
+      x = input.charCodeAt(i)
+      output += hexTab.charAt((x >>> 4) & 0x0F) +
+      hexTab.charAt(x & 0x0F)
+    }
+    return output
+  }
+
+  /*
+  * Encode a string as utf-8
+  */
+  function str2rstrUTF8 (input) {
+    return unescape(encodeURIComponent(input))
+  }
+
+  /*
+  * Take string arguments and return either raw or hex encoded strings
+  */
+  function rawMD5 (s) {
+    return rstrMD5(str2rstrUTF8(s))
+  }
+  function hexMD5 (s) {
+    return rstr2hex(rawMD5(s))
+  }
+  function rawHMACMD5 (k, d) {
+    return rstrHMACMD5(str2rstrUTF8(k), str2rstrUTF8(d))
+  }
+  function hexHMACMD5 (k, d) {
+    return rstr2hex(rawHMACMD5(k, d))
+  }
+
+  function md5 (string, key, raw) {
+    if (!key) {
+      if (!raw) {
+        return hexMD5(string)
+      }
+      return rawMD5(string)
+    }
+    if (!raw) {
+      return hexHMACMD5(key, string)
+    }
+    return rawHMACMD5(key, string)
+  }
+
+  if (typeof define === 'function' && define.amd) {
+    define(function () {
+      return md5
+    })
+  } else if (typeof module === 'object' && module.exports) {
+    module.exports = md5
+  } else {
+    $.md5 = md5
+  }
+}(this))
+
+},{}],2:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -41,7 +324,7 @@
   }
 });
 
-},{"../../lib/codemirror":10}],2:[function(require,module,exports){
+},{"../../lib/codemirror":11}],3:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -163,7 +446,7 @@
   });
 });
 
-},{"../../lib/codemirror":10}],3:[function(require,module,exports){
+},{"../../lib/codemirror":11}],4:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -270,7 +553,7 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
 
 });
 
-},{"../../lib/codemirror":10}],4:[function(require,module,exports){
+},{"../../lib/codemirror":11}],5:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -422,7 +705,7 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
   });
 });
 
-},{"../../lib/codemirror":10}],5:[function(require,module,exports){
+},{"../../lib/codemirror":11}],6:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -570,7 +853,7 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
   }
 });
 
-},{"../../lib/codemirror":10,"./foldcode":4}],6:[function(require,module,exports){
+},{"../../lib/codemirror":11,"./foldcode":5}],7:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -754,7 +1037,7 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
   };
 });
 
-},{"../../lib/codemirror":10}],7:[function(require,module,exports){
+},{"../../lib/codemirror":11}],8:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -1194,7 +1477,7 @@ CodeMirror.registerHelper("fold", "include", function(cm, start) {
   CodeMirror.defineOption("hintOptions", null);
 });
 
-},{"../../lib/codemirror":10}],8:[function(require,module,exports){
+},{"../../lib/codemirror":11}],9:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -1268,7 +1551,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
 
 });
 
-},{"../../lib/codemirror":10}],9:[function(require,module,exports){
+},{"../../lib/codemirror":11}],10:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -1459,7 +1742,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   });
 });
 
-},{"../../lib/codemirror":10}],10:[function(require,module,exports){
+},{"../../lib/codemirror":11}],11:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -10397,7 +10680,7 @@ CodeMirror.runMode = function(string, modespec, callback, options) {
   return CodeMirror;
 });
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -11142,7 +11425,7 @@ CodeMirror.defineMIME("application/typescript", { name: "javascript", typescript
 
 });
 
-},{"../../lib/codemirror":10}],12:[function(require,module,exports){
+},{"../../lib/codemirror":11}],13:[function(require,module,exports){
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
@@ -11538,7 +11821,7 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
 
 });
 
-},{"../../lib/codemirror":10}],13:[function(require,module,exports){
+},{"../../lib/codemirror":11}],14:[function(require,module,exports){
 /* MIT license */
 var cssKeywords = require('color-name');
 
@@ -12181,12 +12464,20 @@ convert.rgb.hex = function (args) {
 };
 
 convert.hex.rgb = function (args) {
-	var match = args.toString(16).match(/[a-f0-9]{6}/i);
+	var match = args.toString(16).match(/[a-f0-9]{6}|[a-f0-9]{3}/i);
 	if (!match) {
 		return [0, 0, 0];
 	}
 
-	var integer = parseInt(match[0], 16);
+	var colorString = match[0];
+
+	if (match[0].length === 3) {
+		colorString = colorString.split('').map(function (char) {
+			return char + char;
+		}).join('');
+	}
+
+	var integer = parseInt(colorString, 16);
 	var r = (integer >> 16) & 0xFF;
 	var g = (integer >> 8) & 0xFF;
 	var b = integer & 0xFF;
@@ -12393,7 +12684,7 @@ convert.rgb.gray = function (rgb) {
 	return [val / 255 * 100];
 };
 
-},{"color-name":16}],14:[function(require,module,exports){
+},{"color-name":17}],15:[function(require,module,exports){
 var conversions = require('./conversions');
 var route = require('./route');
 
@@ -12473,7 +12764,7 @@ models.forEach(function (fromModel) {
 
 module.exports = convert;
 
-},{"./conversions":13,"./route":15}],15:[function(require,module,exports){
+},{"./conversions":14,"./route":16}],16:[function(require,module,exports){
 var conversions = require('./conversions');
 
 /*
@@ -12573,7 +12864,7 @@ module.exports = function (fromModel) {
 };
 
 
-},{"./conversions":13}],16:[function(require,module,exports){
+},{"./conversions":14}],17:[function(require,module,exports){
 module.exports = {
 	"aliceblue": [240, 248, 255],
 	"antiquewhite": [250, 235, 215],
@@ -12724,15 +13015,731 @@ module.exports = {
 	"yellow": [255, 255, 0],
 	"yellowgreen": [154, 205, 50]
 };
-},{}],17:[function(require,module,exports){
-// https://d3js.org Version 4.8.0. Copyright 2017 Mike Bostock.
+},{}],18:[function(require,module,exports){
+/* MIT license */
+var colorNames = require('color-name');
+var swizzle = require('simple-swizzle');
+
+var reverseNames = {};
+
+// create a list of reverse color names
+for (var name in colorNames) {
+	if (colorNames.hasOwnProperty(name)) {
+		reverseNames[colorNames[name]] = name;
+	}
+}
+
+var cs = module.exports = {
+	to: {}
+};
+
+cs.get = function (string) {
+	var prefix = string.substring(0, 3).toLowerCase();
+	var val;
+	var model;
+	switch (prefix) {
+		case 'hsl':
+			val = cs.get.hsl(string);
+			model = 'hsl';
+			break;
+		case 'hwb':
+			val = cs.get.hwb(string);
+			model = 'hwb';
+			break;
+		default:
+			val = cs.get.rgb(string);
+			model = 'rgb';
+			break;
+	}
+
+	if (!val) {
+		return null;
+	}
+
+	return {model: model, value: val};
+};
+
+cs.get.rgb = function (string) {
+	if (!string) {
+		return null;
+	}
+
+	var abbr = /^#([a-f0-9]{3,4})$/i;
+	var hex = /^#([a-f0-9]{6})([a-f0-9]{2})?$/i;
+	var rgba = /^rgba?\(\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
+	var per = /^rgba?\(\s*([+-]?[\d\.]+)\%\s*,\s*([+-]?[\d\.]+)\%\s*,\s*([+-]?[\d\.]+)\%\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
+	var keyword = /(\D+)/;
+
+	var rgb = [0, 0, 0, 1];
+	var match;
+	var i;
+	var hexAlpha;
+
+	if (match = string.match(hex)) {
+		hexAlpha = match[2];
+		match = match[1];
+
+		for (i = 0; i < 3; i++) {
+			// https://jsperf.com/slice-vs-substr-vs-substring-methods-long-string/19
+			var i2 = i * 2;
+			rgb[i] = parseInt(match.slice(i2, i2 + 2), 16);
+		}
+
+		if (hexAlpha) {
+			rgb[3] = Math.round((parseInt(hexAlpha, 16) / 255) * 100) / 100;
+		}
+	} else if (match = string.match(abbr)) {
+		match = match[1];
+		hexAlpha = match[3];
+
+		for (i = 0; i < 3; i++) {
+			rgb[i] = parseInt(match[i] + match[i], 16);
+		}
+
+		if (hexAlpha) {
+			rgb[3] = Math.round((parseInt(hexAlpha + hexAlpha, 16) / 255) * 100) / 100;
+		}
+	} else if (match = string.match(rgba)) {
+		for (i = 0; i < 3; i++) {
+			rgb[i] = parseInt(match[i + 1], 0);
+		}
+
+		if (match[4]) {
+			rgb[3] = parseFloat(match[4]);
+		}
+	} else if (match = string.match(per)) {
+		for (i = 0; i < 3; i++) {
+			rgb[i] = Math.round(parseFloat(match[i + 1]) * 2.55);
+		}
+
+		if (match[4]) {
+			rgb[3] = parseFloat(match[4]);
+		}
+	} else if (match = string.match(keyword)) {
+		if (match[1] === 'transparent') {
+			return [0, 0, 0, 0];
+		}
+
+		rgb = colorNames[match[1]];
+
+		if (!rgb) {
+			return null;
+		}
+
+		rgb[3] = 1;
+
+		return rgb;
+	} else {
+		return null;
+	}
+
+	for (i = 0; i < 3; i++) {
+		rgb[i] = clamp(rgb[i], 0, 255);
+	}
+	rgb[3] = clamp(rgb[3], 0, 1);
+
+	return rgb;
+};
+
+cs.get.hsl = function (string) {
+	if (!string) {
+		return null;
+	}
+
+	var hsl = /^hsla?\(\s*([+-]?\d*[\.]?\d+)(?:deg)?\s*,\s*([+-]?[\d\.]+)%\s*,\s*([+-]?[\d\.]+)%\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
+	var match = string.match(hsl);
+
+	if (match) {
+		var alpha = parseFloat(match[4]);
+		var h = ((parseFloat(match[1]) % 360) + 360) % 360;
+		var s = clamp(parseFloat(match[2]), 0, 100);
+		var l = clamp(parseFloat(match[3]), 0, 100);
+		var a = clamp(isNaN(alpha) ? 1 : alpha, 0, 1);
+
+		return [h, s, l, a];
+	}
+
+	return null;
+};
+
+cs.get.hwb = function (string) {
+	if (!string) {
+		return null;
+	}
+
+	var hwb = /^hwb\(\s*([+-]?\d*[\.]?\d+)(?:deg)?\s*,\s*([+-]?[\d\.]+)%\s*,\s*([+-]?[\d\.]+)%\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
+	var match = string.match(hwb);
+
+	if (match) {
+		var alpha = parseFloat(match[4]);
+		var h = ((parseFloat(match[1]) % 360) + 360) % 360;
+		var w = clamp(parseFloat(match[2]), 0, 100);
+		var b = clamp(parseFloat(match[3]), 0, 100);
+		var a = clamp(isNaN(alpha) ? 1 : alpha, 0, 1);
+		return [h, w, b, a];
+	}
+
+	return null;
+};
+
+cs.to.hex = function () {
+	var rgba = swizzle(arguments);
+
+	return (
+		'#' +
+		hexDouble(rgba[0]) +
+		hexDouble(rgba[1]) +
+		hexDouble(rgba[2]) +
+		(rgba[3] < 1
+			? (hexDouble(Math.round(rgba[3] * 255)))
+			: '')
+	);
+};
+
+cs.to.rgb = function () {
+	var rgba = swizzle(arguments);
+
+	return rgba.length < 4 || rgba[3] === 1
+		? 'rgb(' + Math.round(rgba[0]) + ', ' + Math.round(rgba[1]) + ', ' + Math.round(rgba[2]) + ')'
+		: 'rgba(' + Math.round(rgba[0]) + ', ' + Math.round(rgba[1]) + ', ' + Math.round(rgba[2]) + ', ' + rgba[3] + ')';
+};
+
+cs.to.rgb.percent = function () {
+	var rgba = swizzle(arguments);
+
+	var r = Math.round(rgba[0] / 255 * 100);
+	var g = Math.round(rgba[1] / 255 * 100);
+	var b = Math.round(rgba[2] / 255 * 100);
+
+	return rgba.length < 4 || rgba[3] === 1
+		? 'rgb(' + r + '%, ' + g + '%, ' + b + '%)'
+		: 'rgba(' + r + '%, ' + g + '%, ' + b + '%, ' + rgba[3] + ')';
+};
+
+cs.to.hsl = function () {
+	var hsla = swizzle(arguments);
+	return hsla.length < 4 || hsla[3] === 1
+		? 'hsl(' + hsla[0] + ', ' + hsla[1] + '%, ' + hsla[2] + '%)'
+		: 'hsla(' + hsla[0] + ', ' + hsla[1] + '%, ' + hsla[2] + '%, ' + hsla[3] + ')';
+};
+
+// hwb is a bit different than rgb(a) & hsl(a) since there is no alpha specific syntax
+// (hwb have alpha optional & 1 is default value)
+cs.to.hwb = function () {
+	var hwba = swizzle(arguments);
+
+	var a = '';
+	if (hwba.length >= 4 && hwba[3] !== 1) {
+		a = ', ' + hwba[3];
+	}
+
+	return 'hwb(' + hwba[0] + ', ' + hwba[1] + '%, ' + hwba[2] + '%' + a + ')';
+};
+
+cs.to.keyword = function (rgb) {
+	return reverseNames[rgb.slice(0, 3)];
+};
+
+// helpers
+function clamp(num, min, max) {
+	return Math.min(Math.max(min, num), max);
+}
+
+function hexDouble(num) {
+	var str = num.toString(16).toUpperCase();
+	return (str.length < 2) ? '0' + str : str;
+}
+
+},{"color-name":17,"simple-swizzle":42}],19:[function(require,module,exports){
+'use strict';
+
+var colorString = require('color-string');
+var convert = require('color-convert');
+
+var _slice = [].slice;
+
+var skippedModels = [
+	// to be honest, I don't really feel like keyword belongs in color convert, but eh.
+	'keyword',
+
+	// gray conflicts with some method names, and has its own method defined.
+	'gray',
+
+	// shouldn't really be in color-convert either...
+	'hex'
+];
+
+var hashedModelKeys = {};
+Object.keys(convert).forEach(function (model) {
+	hashedModelKeys[_slice.call(convert[model].labels).sort().join('')] = model;
+});
+
+var limiters = {};
+
+function Color(obj, model) {
+	if (!(this instanceof Color)) {
+		return new Color(obj, model);
+	}
+
+	if (model && model in skippedModels) {
+		model = null;
+	}
+
+	if (model && !(model in convert)) {
+		throw new Error('Unknown model: ' + model);
+	}
+
+	var i;
+	var channels;
+
+	if (!obj) {
+		this.model = 'rgb';
+		this.color = [0, 0, 0];
+		this.valpha = 1;
+	} else if (obj instanceof Color) {
+		this.model = obj.model;
+		this.color = obj.color.slice();
+		this.valpha = obj.valpha;
+	} else if (typeof obj === 'string') {
+		var result = colorString.get(obj);
+		if (result === null) {
+			throw new Error('Unable to parse color from string: ' + obj);
+		}
+
+		this.model = result.model;
+		channels = convert[this.model].channels;
+		this.color = result.value.slice(0, channels);
+		this.valpha = typeof result.value[channels] === 'number' ? result.value[channels] : 1;
+	} else if (obj.length) {
+		this.model = model || 'rgb';
+		channels = convert[this.model].channels;
+		var newArr = _slice.call(obj, 0, channels);
+		this.color = zeroArray(newArr, channels);
+		this.valpha = typeof obj[channels] === 'number' ? obj[channels] : 1;
+	} else if (typeof obj === 'number') {
+		// this is always RGB - can be converted later on.
+		obj &= 0xFFFFFF;
+		this.model = 'rgb';
+		this.color = [
+			(obj >> 16) & 0xFF,
+			(obj >> 8) & 0xFF,
+			obj & 0xFF
+		];
+		this.valpha = 1;
+	} else {
+		this.valpha = 1;
+
+		var keys = Object.keys(obj);
+		if ('alpha' in obj) {
+			keys.splice(keys.indexOf('alpha'), 1);
+			this.valpha = typeof obj.alpha === 'number' ? obj.alpha : 0;
+		}
+
+		var hashedKeys = keys.sort().join('');
+		if (!(hashedKeys in hashedModelKeys)) {
+			throw new Error('Unable to parse color from object: ' + JSON.stringify(obj));
+		}
+
+		this.model = hashedModelKeys[hashedKeys];
+
+		var labels = convert[this.model].labels;
+		var color = [];
+		for (i = 0; i < labels.length; i++) {
+			color.push(obj[labels[i]]);
+		}
+
+		this.color = zeroArray(color);
+	}
+
+	// perform limitations (clamping, etc.)
+	if (limiters[this.model]) {
+		channels = convert[this.model].channels;
+		for (i = 0; i < channels; i++) {
+			var limit = limiters[this.model][i];
+			if (limit) {
+				this.color[i] = limit(this.color[i]);
+			}
+		}
+	}
+
+	this.valpha = Math.max(0, Math.min(1, this.valpha));
+
+	if (Object.freeze) {
+		Object.freeze(this);
+	}
+}
+
+Color.prototype = {
+	toString: function () {
+		return this.string();
+	},
+
+	toJSON: function () {
+		return this[this.model]();
+	},
+
+	string: function (places) {
+		var self = this.model in colorString.to ? this : this.rgb();
+		self = self.round(typeof places === 'number' ? places : 1);
+		var args = self.valpha === 1 ? self.color : self.color.concat(this.valpha);
+		return colorString.to[self.model](args);
+	},
+
+	percentString: function (places) {
+		var self = this.rgb().round(typeof places === 'number' ? places : 1);
+		var args = self.valpha === 1 ? self.color : self.color.concat(this.valpha);
+		return colorString.to.rgb.percent(args);
+	},
+
+	array: function () {
+		return this.valpha === 1 ? this.color.slice() : this.color.concat(this.valpha);
+	},
+
+	object: function () {
+		var result = {};
+		var channels = convert[this.model].channels;
+		var labels = convert[this.model].labels;
+
+		for (var i = 0; i < channels; i++) {
+			result[labels[i]] = this.color[i];
+		}
+
+		if (this.valpha !== 1) {
+			result.alpha = this.valpha;
+		}
+
+		return result;
+	},
+
+	unitArray: function () {
+		var rgb = this.rgb().color;
+		rgb[0] /= 255;
+		rgb[1] /= 255;
+		rgb[2] /= 255;
+
+		if (this.valpha !== 1) {
+			rgb.push(this.valpha);
+		}
+
+		return rgb;
+	},
+
+	unitObject: function () {
+		var rgb = this.rgb().object();
+		rgb.r /= 255;
+		rgb.g /= 255;
+		rgb.b /= 255;
+
+		if (this.valpha !== 1) {
+			rgb.alpha = this.valpha;
+		}
+
+		return rgb;
+	},
+
+	round: function (places) {
+		places = Math.max(places || 0, 0);
+		return new Color(this.color.map(roundToPlace(places)).concat(this.valpha), this.model);
+	},
+
+	alpha: function (val) {
+		if (arguments.length) {
+			return new Color(this.color.concat(Math.max(0, Math.min(1, val))), this.model);
+		}
+
+		return this.valpha;
+	},
+
+	// rgb
+	red: getset('rgb', 0, maxfn(255)),
+	green: getset('rgb', 1, maxfn(255)),
+	blue: getset('rgb', 2, maxfn(255)),
+
+	hue: getset(['hsl', 'hsv', 'hsl', 'hwb', 'hcg'], 0, function (val) { return ((val % 360) + 360) % 360; }), // eslint-disable-line brace-style
+
+	saturationl: getset('hsl', 1, maxfn(100)),
+	lightness: getset('hsl', 2, maxfn(100)),
+
+	saturationv: getset('hsv', 1, maxfn(100)),
+	value: getset('hsv', 2, maxfn(100)),
+
+	chroma: getset('hcg', 1, maxfn(100)),
+	gray: getset('hcg', 2, maxfn(100)),
+
+	white: getset('hwb', 1, maxfn(100)),
+	wblack: getset('hwb', 2, maxfn(100)),
+
+	cyan: getset('cmyk', 0, maxfn(100)),
+	magenta: getset('cmyk', 1, maxfn(100)),
+	yellow: getset('cmyk', 2, maxfn(100)),
+	black: getset('cmyk', 3, maxfn(100)),
+
+	x: getset('xyz', 0, maxfn(100)),
+	y: getset('xyz', 1, maxfn(100)),
+	z: getset('xyz', 2, maxfn(100)),
+
+	l: getset('lab', 0, maxfn(100)),
+	a: getset('lab', 1),
+	b: getset('lab', 2),
+
+	keyword: function (val) {
+		if (arguments.length) {
+			return new Color(val);
+		}
+
+		return convert[this.model].keyword(this.color);
+	},
+
+	hex: function (val) {
+		if (arguments.length) {
+			return new Color(val);
+		}
+
+		return colorString.to.hex(this.rgb().round().color);
+	},
+
+	rgbNumber: function () {
+		var rgb = this.rgb().color;
+		return ((rgb[0] & 0xFF) << 16) | ((rgb[1] & 0xFF) << 8) | (rgb[2] & 0xFF);
+	},
+
+	luminosity: function () {
+		// http://www.w3.org/TR/WCAG20/#relativeluminancedef
+		var rgb = this.rgb().color;
+
+		var lum = [];
+		for (var i = 0; i < rgb.length; i++) {
+			var chan = rgb[i] / 255;
+			lum[i] = (chan <= 0.03928) ? chan / 12.92 : Math.pow(((chan + 0.055) / 1.055), 2.4);
+		}
+
+		return 0.2126 * lum[0] + 0.7152 * lum[1] + 0.0722 * lum[2];
+	},
+
+	contrast: function (color2) {
+		// http://www.w3.org/TR/WCAG20/#contrast-ratiodef
+		var lum1 = this.luminosity();
+		var lum2 = color2.luminosity();
+
+		if (lum1 > lum2) {
+			return (lum1 + 0.05) / (lum2 + 0.05);
+		}
+
+		return (lum2 + 0.05) / (lum1 + 0.05);
+	},
+
+	level: function (color2) {
+		var contrastRatio = this.contrast(color2);
+		if (contrastRatio >= 7.1) {
+			return 'AAA';
+		}
+
+		return (contrastRatio >= 4.5) ? 'AA' : '';
+	},
+
+	dark: function () {
+		// YIQ equation from http://24ways.org/2010/calculating-color-contrast
+		var rgb = this.rgb().color;
+		var yiq = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
+		return yiq < 128;
+	},
+
+	light: function () {
+		return !this.dark();
+	},
+
+	negate: function () {
+		var rgb = this.rgb();
+		for (var i = 0; i < 3; i++) {
+			rgb.color[i] = 255 - rgb.color[i];
+		}
+		return rgb;
+	},
+
+	lighten: function (ratio) {
+		var hsl = this.hsl();
+		hsl.color[2] += hsl.color[2] * ratio;
+		return hsl;
+	},
+
+	darken: function (ratio) {
+		var hsl = this.hsl();
+		hsl.color[2] -= hsl.color[2] * ratio;
+		return hsl;
+	},
+
+	saturate: function (ratio) {
+		var hsl = this.hsl();
+		hsl.color[1] += hsl.color[1] * ratio;
+		return hsl;
+	},
+
+	desaturate: function (ratio) {
+		var hsl = this.hsl();
+		hsl.color[1] -= hsl.color[1] * ratio;
+		return hsl;
+	},
+
+	whiten: function (ratio) {
+		var hwb = this.hwb();
+		hwb.color[1] += hwb.color[1] * ratio;
+		return hwb;
+	},
+
+	blacken: function (ratio) {
+		var hwb = this.hwb();
+		hwb.color[2] += hwb.color[2] * ratio;
+		return hwb;
+	},
+
+	grayscale: function () {
+		// http://en.wikipedia.org/wiki/Grayscale#Converting_color_to_grayscale
+		var rgb = this.rgb().color;
+		var val = rgb[0] * 0.3 + rgb[1] * 0.59 + rgb[2] * 0.11;
+		return Color.rgb(val, val, val);
+	},
+
+	fade: function (ratio) {
+		return this.alpha(this.valpha - (this.valpha * ratio));
+	},
+
+	opaquer: function (ratio) {
+		return this.alpha(this.valpha + (this.valpha * ratio));
+	},
+
+	rotate: function (degrees) {
+		var hsl = this.hsl();
+		var hue = hsl.color[0];
+		hue = (hue + degrees) % 360;
+		hue = hue < 0 ? 360 + hue : hue;
+		hsl.color[0] = hue;
+		return hsl;
+	},
+
+	mix: function (mixinColor, weight) {
+		// ported from sass implementation in C
+		// https://github.com/sass/libsass/blob/0e6b4a2850092356aa3ece07c6b249f0221caced/functions.cpp#L209
+		var color1 = this.rgb();
+		var color2 = mixinColor.rgb();
+		var p = weight === undefined ? 0.5 : weight;
+
+		var w = 2 * p - 1;
+		var a = color1.alpha() - color2.alpha();
+
+		var w1 = (((w * a === -1) ? w : (w + a) / (1 + w * a)) + 1) / 2.0;
+		var w2 = 1 - w1;
+
+		return Color.rgb(
+				w1 * color1.red() + w2 * color2.red(),
+				w1 * color1.green() + w2 * color2.green(),
+				w1 * color1.blue() + w2 * color2.blue(),
+				color1.alpha() * p + color2.alpha() * (1 - p));
+	}
+};
+
+// model conversion methods and static constructors
+Object.keys(convert).forEach(function (model) {
+	if (skippedModels.indexOf(model) !== -1) {
+		return;
+	}
+
+	var channels = convert[model].channels;
+
+	// conversion methods
+	Color.prototype[model] = function () {
+		if (this.model === model) {
+			return new Color(this);
+		}
+
+		if (arguments.length) {
+			return new Color(arguments, model);
+		}
+
+		var newAlpha = typeof arguments[channels] === 'number' ? channels : this.valpha;
+		return new Color(assertArray(convert[this.model][model].raw(this.color)).concat(newAlpha), model);
+	};
+
+	// 'static' construction methods
+	Color[model] = function (color) {
+		if (typeof color === 'number') {
+			color = zeroArray(_slice.call(arguments), channels);
+		}
+		return new Color(color, model);
+	};
+});
+
+function roundTo(num, places) {
+	return Number(num.toFixed(places));
+}
+
+function roundToPlace(places) {
+	return function (num) {
+		return roundTo(num, places);
+	};
+}
+
+function getset(model, channel, modifier) {
+	model = Array.isArray(model) ? model : [model];
+
+	model.forEach(function (m) {
+		(limiters[m] || (limiters[m] = []))[channel] = modifier;
+	});
+
+	model = model[0];
+
+	return function (val) {
+		var result;
+
+		if (arguments.length) {
+			if (modifier) {
+				val = modifier(val);
+			}
+
+			result = this[model]();
+			result.color[channel] = val;
+			return result;
+		}
+
+		result = this[model]().color[channel];
+		if (modifier) {
+			result = modifier(result);
+		}
+
+		return result;
+	};
+}
+
+function maxfn(max) {
+	return function (v) {
+		return Math.max(0, Math.min(max, v));
+	};
+}
+
+function assertArray(val) {
+	return Array.isArray(val) ? val : [val];
+}
+
+function zeroArray(arr, length) {
+	for (var i = 0; i < length; i++) {
+		if (typeof arr[i] !== 'number') {
+			arr[i] = 0;
+		}
+	}
+
+	return arr;
+}
+
+module.exports = Color;
+
+},{"color-convert":15,"color-string":18}],20:[function(require,module,exports){
+// https://d3js.org Version 4.9.1. Copyright 2017 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
 	(factory((global.d3 = global.d3 || {})));
 }(this, (function (exports) { 'use strict';
 
-var version = "4.8.0";
+var version = "4.9.1";
 
 var ascending = function(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
@@ -13294,15 +14301,15 @@ var left = 4;
 var epsilon = 1e-6;
 
 function translateX(x) {
-  return "translate(" + x + ",0)";
+  return "translate(" + (x + 0.5) + ",0)";
 }
 
 function translateY(y) {
-  return "translate(0," + y + ")";
+  return "translate(0," + (y + 0.5) + ")";
 }
 
 function center(scale) {
-  var offset = scale.bandwidth() / 2;
+  var offset = Math.max(0, scale.bandwidth() - 1) / 2; // Adjust for 0.5px offset.
   if (scale.round()) offset = Math.round(offset);
   return function(d) {
     return scale(d) + offset;
@@ -13321,7 +14328,7 @@ function axis(orient, scale) {
       tickSizeOuter = 6,
       tickPadding = 3,
       k = orient === top || orient === left ? -1 : 1,
-      x, y = orient === left || orient === right ? (x = "x", "y") : (x = "y", "x"),
+      x = orient === left || orient === right ? "x" : "y",
       transform = orient === top || orient === bottom ? translateX : translateY;
 
   function axis(context) {
@@ -13348,14 +14355,11 @@ function axis(orient, scale) {
 
     line = line.merge(tickEnter.append("line")
         .attr("stroke", "#000")
-        .attr(x + "2", k * tickSizeInner)
-        .attr(y + "1", 0.5)
-        .attr(y + "2", 0.5));
+        .attr(x + "2", k * tickSizeInner));
 
     text = text.merge(tickEnter.append("text")
         .attr("fill", "#000")
         .attr(x, k * spacing)
-        .attr(y, 0.5)
         .attr("dy", orient === top ? "0em" : orient === bottom ? "0.71em" : "0.32em"));
 
     if (context !== selection) {
@@ -14130,7 +15134,7 @@ var selection_attr = function(name, value) {
       : (fullname.local ? attrConstantNS : attrConstant)))(fullname, value));
 };
 
-var window = function(node) {
+var defaultView = function(node) {
   return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
       || (node.document && node) // node is a Window
       || node.defaultView; // node is a Document
@@ -14157,16 +15161,18 @@ function styleFunction(name, value, priority) {
 }
 
 var selection_style = function(name, value, priority) {
-  var node;
   return arguments.length > 1
       ? this.each((value == null
             ? styleRemove : typeof value === "function"
             ? styleFunction
             : styleConstant)(name, value, priority == null ? "" : priority))
-      : window(node = this.node())
-          .getComputedStyle(node, null)
-          .getPropertyValue(name);
+      : styleValue(this.node(), name);
 };
+
+function styleValue(node, name) {
+  return node.style.getPropertyValue(name)
+      || defaultView(node).getComputedStyle(node, null).getPropertyValue(name);
+}
 
 function propertyRemove(name) {
   return function() {
@@ -14376,13 +15382,13 @@ var selection_datum = function(value) {
 };
 
 function dispatchEvent(node, type, params) {
-  var window$$1 = window(node),
-      event = window$$1.CustomEvent;
+  var window = defaultView(node),
+      event = window.CustomEvent;
 
-  if (event) {
+  if (typeof event === "function") {
     event = new event(type, params);
   } else {
-    event = window$$1.document.createEvent("Event");
+    event = window.document.createEvent("Event");
     if (params) event.initEvent(type, params.bubbles, params.cancelable), event.detail = params.detail;
     else event.initEvent(type, false, false);
   }
@@ -14565,8 +15571,11 @@ var drag = function() {
       gestures = {},
       listeners = dispatch("start", "drag", "end"),
       active = 0,
+      mousedownx,
+      mousedowny,
       mousemoving,
-      touchending;
+      touchending,
+      clickDistance2 = 0;
 
   function drag(selection$$1) {
     selection$$1
@@ -14585,12 +15594,17 @@ var drag = function() {
     dragDisable(exports.event.view);
     nopropagation();
     mousemoving = false;
+    mousedownx = exports.event.clientX;
+    mousedowny = exports.event.clientY;
     gesture("start");
   }
 
   function mousemoved() {
     noevent();
-    mousemoving = true;
+    if (!mousemoving) {
+      var dx = exports.event.clientX - mousedownx, dy = exports.event.clientY - mousedowny;
+      mousemoving = dx * dx + dy * dy > clickDistance2;
+    }
     gestures.mouse("drag");
   }
 
@@ -14678,6 +15692,10 @@ var drag = function() {
   drag.on = function() {
     var value = listeners.on.apply(listeners, arguments);
     return value === listeners ? drag : value;
+  };
+
+  drag.clickDistance = function(_) {
+    return arguments.length ? (clickDistance2 = (_ = +_) * _, drag) : Math.sqrt(clickDistance2);
   };
 
   return drag;
@@ -15428,7 +16446,7 @@ var interpolateValue = function(a, b) {
       : b instanceof color ? interpolateRgb
       : b instanceof Date ? date
       : Array.isArray(b) ? array$1
-      : isNaN(b) ? object
+      : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object
       : reinterpolate)(a, b);
 };
 
@@ -16391,9 +17409,8 @@ function styleRemove$1(name, interpolate$$2) {
       value10,
       interpolate0;
   return function() {
-    var style = window(this).getComputedStyle(this, null),
-        value0 = style.getPropertyValue(name),
-        value1 = (this.style.removeProperty(name), style.getPropertyValue(name));
+    var value0 = styleValue(this, name),
+        value1 = (this.style.removeProperty(name), styleValue(this, name));
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
         : interpolate0 = interpolate$$2(value00 = value0, value10 = value1);
@@ -16410,7 +17427,7 @@ function styleConstant$1(name, interpolate$$2, value1) {
   var value00,
       interpolate0;
   return function() {
-    var value0 = window(this).getComputedStyle(this, null).getPropertyValue(name);
+    var value0 = styleValue(this, name);
     return value0 === value1 ? null
         : value0 === value00 ? interpolate0
         : interpolate0 = interpolate$$2(value00 = value0, value1);
@@ -16422,10 +17439,9 @@ function styleFunction$1(name, interpolate$$2, value) {
       value10,
       interpolate0;
   return function() {
-    var style = window(this).getComputedStyle(this, null),
-        value0 = style.getPropertyValue(name),
+    var value0 = styleValue(this, name),
         value1 = value(this);
-    if (value1 == null) value1 = (this.style.removeProperty(name), style.getPropertyValue(name));
+    if (value1 == null) value1 = (this.style.removeProperty(name), styleValue(this, name));
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
         : interpolate0 = interpolate$$2(value00 = value0, value10 = value1);
@@ -21093,9 +22109,11 @@ function PathString() {
 }
 
 PathString.prototype = {
+  _radius: 4.5,
   _circle: circle$1(4.5),
   pointRadius: function(_) {
-    return this._circle = circle$1(_), this;
+    if ((_ = +_) !== this._radius) this._radius = _, this._circle = null;
+    return this;
   },
   polygonStart: function() {
     this._line = 0;
@@ -21122,6 +22140,7 @@ PathString.prototype = {
         break;
       }
       default: {
+        if (this._circle == null) this._circle = circle$1(this._radius);
         this._string.push("M", x, ",", y, this._circle);
         break;
       }
@@ -21132,6 +22151,8 @@ PathString.prototype = {
       var result = this._string.join("");
       this._string = [];
       return result;
+    } else {
+      return null;
     }
   }
 };
@@ -21456,7 +22477,7 @@ var clipCircle = function(radius, delta) {
         // TODO ignore if not clipping polygons.
         if (v !== v0) {
           point2 = intersect(point0, point1);
-          if (pointEqual(point0, point2) || pointEqual(point1, point2)) {
+          if (!point2 || pointEqual(point0, point2) || pointEqual(point1, point2)) {
             point1[0] += epsilon$2;
             point1[1] += epsilon$2;
             v = visible(point1[0], point1[1]);
@@ -23693,7 +24714,6 @@ var slice$3 = [].slice;
 var noabort = {};
 
 function Queue(size) {
-  if (!(size >= 1)) throw new Error;
   this._size = size;
   this._call =
   this._error = null;
@@ -23708,7 +24728,8 @@ function Queue(size) {
 Queue.prototype = queue.prototype = {
   constructor: Queue,
   defer: function(callback) {
-    if (typeof callback !== "function" || this._call) throw new Error;
+    if (typeof callback !== "function") throw new Error("invalid callback");
+    if (this._call) throw new Error("defer after await");
     if (this._error != null) return this;
     var t = slice$3.call(arguments, 1);
     t.push(callback);
@@ -23721,13 +24742,15 @@ Queue.prototype = queue.prototype = {
     return this;
   },
   await: function(callback) {
-    if (typeof callback !== "function" || this._call) throw new Error;
+    if (typeof callback !== "function") throw new Error("invalid callback");
+    if (this._call) throw new Error("multiple await");
     this._call = function(error, results) { callback.apply(null, [error].concat(results)); };
     maybeNotify(this);
     return this;
   },
   awaitAll: function(callback) {
-    if (typeof callback !== "function" || this._call) throw new Error;
+    if (typeof callback !== "function") throw new Error("invalid callback");
+    if (this._call) throw new Error("multiple await");
     this._call = callback;
     maybeNotify(this);
     return this;
@@ -23803,66 +24826,108 @@ function maybeNotify(q) {
 }
 
 function queue(concurrency) {
-  return new Queue(arguments.length ? +concurrency : Infinity);
+  if (concurrency == null) concurrency = Infinity;
+  else if (!((concurrency = +concurrency) >= 1)) throw new Error("invalid concurrency");
+  return new Queue(concurrency);
 }
 
-var uniform = function(min, max) {
-  min = min == null ? 0 : +min;
-  max = max == null ? 1 : +max;
-  if (arguments.length === 1) max = min, min = 0;
-  else max -= min;
-  return function() {
-    return Math.random() * max + min;
-  };
+var defaultSource$1 = function() {
+  return Math.random();
 };
 
-var normal = function(mu, sigma) {
-  var x, r;
-  mu = mu == null ? 0 : +mu;
-  sigma = sigma == null ? 1 : +sigma;
-  return function() {
-    var y;
+var uniform = ((function sourceRandomUniform(source) {
+  function randomUniform(min, max) {
+    min = min == null ? 0 : +min;
+    max = max == null ? 1 : +max;
+    if (arguments.length === 1) max = min, min = 0;
+    else max -= min;
+    return function() {
+      return source() * max + min;
+    };
+  }
 
-    // If available, use the second previously-generated uniform random.
-    if (x != null) y = x, x = null;
+  randomUniform.source = sourceRandomUniform;
 
-    // Otherwise, generate a new x and y.
-    else do {
-      x = Math.random() * 2 - 1;
-      y = Math.random() * 2 - 1;
-      r = x * x + y * y;
-    } while (!r || r > 1);
+  return randomUniform;
+}))(defaultSource$1);
 
-    return mu + sigma * y * Math.sqrt(-2 * Math.log(r) / r);
-  };
-};
+var normal = ((function sourceRandomNormal(source) {
+  function randomNormal(mu, sigma) {
+    var x, r;
+    mu = mu == null ? 0 : +mu;
+    sigma = sigma == null ? 1 : +sigma;
+    return function() {
+      var y;
 
-var logNormal = function() {
-  var randomNormal = normal.apply(this, arguments);
-  return function() {
-    return Math.exp(randomNormal());
-  };
-};
+      // If available, use the second previously-generated uniform random.
+      if (x != null) y = x, x = null;
 
-var irwinHall = function(n) {
-  return function() {
-    for (var sum = 0, i = 0; i < n; ++i) sum += Math.random();
-    return sum;
-  };
-};
+      // Otherwise, generate a new x and y.
+      else do {
+        x = source() * 2 - 1;
+        y = source() * 2 - 1;
+        r = x * x + y * y;
+      } while (!r || r > 1);
 
-var bates = function(n) {
-  var randomIrwinHall = irwinHall(n);
-  return function() {
-    return randomIrwinHall() / n;
-  };
-};
+      return mu + sigma * y * Math.sqrt(-2 * Math.log(r) / r);
+    };
+  }
 
-var exponential$1 = function(lambda) {
-  return function() {
-    return -Math.log(1 - Math.random()) / lambda;
-  };
-};
+  randomNormal.source = sourceRandomNormal;
+
+  return randomNormal;
+}))(defaultSource$1);
+
+var logNormal = ((function sourceRandomLogNormal(source) {
+  function randomLogNormal() {
+    var randomNormal = normal.source(source).apply(this, arguments);
+    return function() {
+      return Math.exp(randomNormal());
+    };
+  }
+
+  randomLogNormal.source = sourceRandomLogNormal;
+
+  return randomLogNormal;
+}))(defaultSource$1);
+
+var irwinHall = ((function sourceRandomIrwinHall(source) {
+  function randomIrwinHall(n) {
+    return function() {
+      for (var sum = 0, i = 0; i < n; ++i) sum += source();
+      return sum;
+    };
+  }
+
+  randomIrwinHall.source = sourceRandomIrwinHall;
+
+  return randomIrwinHall;
+}))(defaultSource$1);
+
+var bates = ((function sourceRandomBates(source) {
+  function randomBates(n) {
+    var randomIrwinHall = irwinHall.source(source)(n);
+    return function() {
+      return randomIrwinHall() / n;
+    };
+  }
+
+  randomBates.source = sourceRandomBates;
+
+  return randomBates;
+}))(defaultSource$1);
+
+var exponential$1 = ((function sourceRandomExponential(source) {
+  function randomExponential(lambda) {
+    return function() {
+      return -Math.log(1 - source()) / lambda;
+    };
+  }
+
+  randomExponential.source = sourceRandomExponential;
+
+  return randomExponential;
+}))(defaultSource$1);
 
 var request = function(url, callback) {
   var request,
@@ -24370,17 +25435,39 @@ function linearish(scale) {
   };
 
   scale.nice = function(count) {
-    var d = domain(),
-        i = d.length - 1,
-        n = count == null ? 10 : count,
-        start = d[0],
-        stop = d[i],
-        step = tickStep(start, stop, n);
+    if (count == null) count = 10;
 
-    if (step) {
-      step = tickStep(Math.floor(start / step) * step, Math.ceil(stop / step) * step, n);
-      d[0] = Math.floor(start / step) * step;
-      d[i] = Math.ceil(stop / step) * step;
+    var d = domain(),
+        i0 = 0,
+        i1 = d.length - 1,
+        start = d[i0],
+        stop = d[i1],
+        step;
+
+    if (stop < start) {
+      step = start, start = stop, stop = step;
+      step = i0, i0 = i1, i1 = step;
+    }
+
+    step = tickIncrement(start, stop, count);
+
+    if (step > 0) {
+      start = Math.floor(start / step) * step;
+      stop = Math.ceil(stop / step) * step;
+      step = tickIncrement(start, stop, count);
+    } else if (step < 0) {
+      start = Math.ceil(start * step) / step;
+      stop = Math.floor(stop * step) / step;
+      step = tickIncrement(start, stop, count);
+    }
+
+    if (step > 0) {
+      d[i0] = Math.floor(start / step) * step;
+      d[i1] = Math.ceil(stop / step) * step;
+      domain(d);
+    } else if (step < 0) {
+      d[i0] = Math.ceil(start * step) / step;
+      d[i1] = Math.floor(stop * step) / step;
       domain(d);
     }
 
@@ -26445,6 +27532,91 @@ var radialArea = function() {
   return a;
 };
 
+var slice$5 = Array.prototype.slice;
+
+var radialPoint = function(x, y) {
+  return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)];
+};
+
+function linkSource(d) {
+  return d.source;
+}
+
+function linkTarget(d) {
+  return d.target;
+}
+
+function link$2(curve) {
+  var source = linkSource,
+      target = linkTarget,
+      x$$1 = x$3,
+      y$$1 = y$3,
+      context = null;
+
+  function link() {
+    var buffer, argv = slice$5.call(arguments), s = source.apply(this, argv), t = target.apply(this, argv);
+    if (!context) context = buffer = path();
+    curve(context, +x$$1.apply(this, (argv[0] = s, argv)), +y$$1.apply(this, argv), +x$$1.apply(this, (argv[0] = t, argv)), +y$$1.apply(this, argv));
+    if (buffer) return context = null, buffer + "" || null;
+  }
+
+  link.source = function(_) {
+    return arguments.length ? (source = _, link) : source;
+  };
+
+  link.target = function(_) {
+    return arguments.length ? (target = _, link) : target;
+  };
+
+  link.x = function(_) {
+    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$10(+_), link) : x$$1;
+  };
+
+  link.y = function(_) {
+    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$10(+_), link) : y$$1;
+  };
+
+  link.context = function(_) {
+    return arguments.length ? ((context = _ == null ? null : _), link) : context;
+  };
+
+  return link;
+}
+
+function curveHorizontal(context, x0, y0, x1, y1) {
+  context.moveTo(x0, y0);
+  context.bezierCurveTo(x0 = (x0 + x1) / 2, y0, x0, y1, x1, y1);
+}
+
+function curveVertical(context, x0, y0, x1, y1) {
+  context.moveTo(x0, y0);
+  context.bezierCurveTo(x0, y0 = (y0 + y1) / 2, x1, y0, x1, y1);
+}
+
+function curveRadial$1(context, x0, y0, x1, y1) {
+  var p0 = radialPoint(x0, y0),
+      p1 = radialPoint(x0, y0 = (y0 + y1) / 2),
+      p2 = radialPoint(x1, y0),
+      p3 = radialPoint(x1, y1);
+  context.moveTo(p0[0], p0[1]);
+  context.bezierCurveTo(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
+}
+
+function linkHorizontal() {
+  return link$2(curveHorizontal);
+}
+
+function linkVertical() {
+  return link$2(curveVertical);
+}
+
+function linkRadial() {
+  var l = link$2(curveRadial$1);
+  l.angle = l.x, delete l.x;
+  l.radius = l.y, delete l.y;
+  return l;
+}
+
 var circle$2 = {
   draw: function(context, size) {
     var r = Math.sqrt(size / pi$4);
@@ -27426,13 +28598,11 @@ function stepAfter(context) {
   return new Step(context, 1);
 }
 
-var slice$5 = Array.prototype.slice;
-
 var none$1 = function(series, order) {
   if (!((n = series.length) > 1)) return;
-  for (var i = 1, s0, s1 = series[order[0]], n, m = s1.length; i < n; ++i) {
+  for (var i = 1, j, s0, s1 = series[order[0]], n, m = s1.length; i < n; ++i) {
     s0 = s1, s1 = series[order[i]];
-    for (var j = 0; j < m; ++j) {
+    for (j = 0; j < m; ++j) {
       s1[j][1] += s1[j][0] = isNaN(s0[j][1]) ? s0[j][0] : s0[j][1];
     }
   }
@@ -27504,6 +28674,21 @@ var expand = function(series, order) {
     if (y) for (i = 0; i < n; ++i) series[i][j][1] /= y;
   }
   none$1(series, order);
+};
+
+var diverging = function(series, order) {
+  if (!((n = series.length) > 1)) return;
+  for (var i, j = 0, d, dy, yp, yn, n, m = series[order[0]].length; j < m; ++j) {
+    for (yp = yn = 0, i = 0; i < n; ++i) {
+      if ((dy = (d = series[order[i]][j])[1] - d[0]) >= 0) {
+        d[0] = yp, d[1] = yp += dy;
+      } else if (dy < 0) {
+        d[1] = yn, d[0] = yn += dy;
+      } else {
+        d[0] = yp;
+      }
+    }
+  }
 };
 
 var silhouette = function(series, order) {
@@ -28679,7 +29864,8 @@ var zoom = function() {
       touchstarting,
       touchending,
       touchDelay = 500,
-      wheelDelay = 150;
+      wheelDelay = 150,
+      clickDistance2 = 0;
 
   function zoom(selection$$1) {
     selection$$1
@@ -28869,7 +30055,9 @@ var zoom = function() {
     if (touchending || !filter.apply(this, arguments)) return;
     var g = gesture(this, arguments),
         v = select(exports.event.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true),
-        p = mouse(this);
+        p = mouse(this),
+        x0 = exports.event.clientX,
+        y0 = exports.event.clientY;
 
     dragDisable(exports.event.view);
     nopropagation$2();
@@ -28879,7 +30067,10 @@ var zoom = function() {
 
     function mousemoved() {
       noevent$2();
-      g.moved = true;
+      if (!g.moved) {
+        var dx = exports.event.clientX - x0, dy = exports.event.clientY - y0;
+        g.moved = dx * dx + dy * dy > clickDistance2;
+      }
       g.zoom("mouse", constrain(translate(g.that.__zoom, g.mouse[0] = mouse(g.that), g.mouse[1]), g.extent));
     }
 
@@ -29011,6 +30202,10 @@ var zoom = function() {
     return value === listeners ? zoom : value;
   };
 
+  zoom.clickDistance = function(_) {
+    return arguments.length ? (clickDistance2 = (_ = +_) * _, zoom) : Math.sqrt(clickDistance2);
+  };
+    
   return zoom;
 };
 
@@ -29270,9 +30465,10 @@ exports.selectAll = selectAll;
 exports.selection = selection;
 exports.selector = selector;
 exports.selectorAll = selectorAll;
+exports.style = styleValue;
 exports.touch = touch;
 exports.touches = touches;
-exports.window = window;
+exports.window = defaultView;
 exports.customEvent = customEvent;
 exports.arc = arc;
 exports.area = area$2;
@@ -29280,6 +30476,9 @@ exports.line = line;
 exports.pie = pie;
 exports.radialArea = radialArea;
 exports.radialLine = radialLine$1;
+exports.linkHorizontal = linkHorizontal;
+exports.linkVertical = linkVertical;
+exports.linkRadial = linkRadial;
 exports.symbol = symbol;
 exports.symbols = symbols;
 exports.symbolCircle = circle$2;
@@ -29309,6 +30508,7 @@ exports.curveStepAfter = stepAfter;
 exports.curveStepBefore = stepBefore;
 exports.stack = stack;
 exports.stackOffsetExpand = expand;
+exports.stackOffsetDiverging = diverging;
 exports.stackOffsetNone = none$1;
 exports.stackOffsetSilhouette = silhouette;
 exports.stackOffsetWiggle = wiggle;
@@ -29399,7 +30599,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],18:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /*! DataTables 1.10.15
  * ©2008-2017 SpryMedia Ltd - datatables.net/license
  */
@@ -44745,7 +45945,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 	return $.fn.dataTable;
 }));
 
-},{"jquery":26}],19:[function(require,module,exports){
+},{"jquery":29}],22:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -45049,7 +46249,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],20:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var jQuery = require('jquery');
 
 /*!
@@ -45373,7 +46573,7 @@ $.extend( $.ui, {
 
 })( jQuery );
 
-},{"jquery":26}],21:[function(require,module,exports){
+},{"jquery":29}],24:[function(require,module,exports){
 var jQuery = require('jquery');
 require('./widget');
 
@@ -45547,7 +46747,7 @@ $.widget("ui.mouse", {
 
 })(jQuery);
 
-},{"./widget":25,"jquery":26}],22:[function(require,module,exports){
+},{"./widget":28,"jquery":29}],25:[function(require,module,exports){
 var jQuery = require('jquery');
 
 /*!
@@ -46052,7 +47252,7 @@ $.ui.position = {
 
 }( jQuery ) );
 
-},{"jquery":26}],23:[function(require,module,exports){
+},{"jquery":29}],26:[function(require,module,exports){
 var jQuery = require('jquery');
 require('./core');
 require('./mouse');
@@ -47037,7 +48237,7 @@ $.ui.plugin.add("resizable", "grid", {
 
 })(jQuery);
 
-},{"./core":20,"./mouse":21,"./widget":25,"jquery":26}],24:[function(require,module,exports){
+},{"./core":23,"./mouse":24,"./widget":28,"jquery":29}],27:[function(require,module,exports){
 var jQuery = require('jquery');
 require('./core');
 require('./mouse');
@@ -48333,7 +49533,7 @@ $.widget("ui.sortable", $.ui.mouse, {
 
 })(jQuery);
 
-},{"./core":20,"./mouse":21,"./widget":25,"jquery":26}],25:[function(require,module,exports){
+},{"./core":23,"./mouse":24,"./widget":28,"jquery":29}],28:[function(require,module,exports){
 var jQuery = require('jquery');
 
 /*!
@@ -48858,7 +50058,7 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 
 })( jQuery );
 
-},{"jquery":26}],26:[function(require,module,exports){
+},{"jquery":29}],29:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.2.4
  * http://jquery.com/
@@ -58674,7 +59874,7 @@ if ( !noGlobal ) {
 return jQuery;
 }));
 
-},{}],27:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 /*
  Leaflet 1.0.3, a JS library for interactive maps. http://leafletjs.com
  (c) 2010-2016 Vladimir Agafonkin, (c) 2010-2011 CloudMade
@@ -71926,7 +73126,7 @@ L.control.layers = function (baseLayers, overlays, options) {
 
 }(window, document));
 
-},{}],28:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 /**
  * microplugin.js
  * Copyright (c) 2013 Brian Reavis & contributors
@@ -72062,7 +73262,7 @@ L.control.layers = function (baseLayers, overlays, options) {
 
 	return MicroPlugin;
 }));
-},{}],29:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 (function() {
   var callWithJQuery;
 
@@ -72168,7 +73368,7 @@ L.control.layers = function (baseLayers, overlays, options) {
 }).call(this);
 
 
-},{"d3":17,"jquery":26}],30:[function(require,module,exports){
+},{"d3":20,"jquery":29}],33:[function(require,module,exports){
 (function() {
   var callWithJQuery;
 
@@ -72352,7 +73552,7 @@ L.control.layers = function (baseLayers, overlays, options) {
 }).call(this);
 
 
-},{"jquery":26}],31:[function(require,module,exports){
+},{"jquery":29}],34:[function(require,module,exports){
 (function() {
   var callWithJQuery,
     indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
@@ -74140,7 +75340,7 @@ L.control.layers = function (baseLayers, overlays, options) {
 }).call(this);
 
 
-},{"jquery":26}],32:[function(require,module,exports){
+},{"jquery":29}],35:[function(require,module,exports){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
@@ -80059,7 +81259,7 @@ L.control.layers = function (baseLayers, overlays, options) {
 
 })));
 
-},{}],33:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 (function (factory) {
 	var L, proj4;
 	if (typeof define === 'function' && define.amd) {
@@ -80324,7 +81524,7 @@ L.control.layers = function (baseLayers, overlays, options) {
 	return L.Proj;
 }));
 
-},{"leaflet":27,"proj4":32}],34:[function(require,module,exports){
+},{"leaflet":30,"proj4":35}],37:[function(require,module,exports){
 (function (root) {
 
   // Store setTimeout reference so promise-polyfill will be unaffected by
@@ -80559,7 +81759,7 @@ L.control.layers = function (baseLayers, overlays, options) {
 
 })(this);
 
-},{}],35:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty;
@@ -80622,7 +81822,7 @@ function querystringify(obj, prefix) {
 exports.stringify = querystringify;
 exports.parse = querystring;
 
-},{}],36:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 'use strict';
 
 /**
@@ -80662,7 +81862,7 @@ module.exports = function required(port, protocol) {
   return port !== 0;
 };
 
-},{}],37:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 /**
  * selectize.js (v0.12.4)
  * Copyright (c) 2013–2015 Brian Reavis & contributors
@@ -83856,7 +85056,7 @@ module.exports = function required(port, protocol) {
 
 	return Selectize;
 }));
-},{"jquery":26,"microplugin":28,"sifter":38}],38:[function(require,module,exports){
+},{"jquery":29,"microplugin":31,"sifter":41}],41:[function(require,module,exports){
 /**
  * sifter.js
  * Copyright (c) 2013 Brian Reavis & contributors
@@ -84356,7 +85556,7 @@ module.exports = function required(port, protocol) {
 }));
 
 
-},{}],39:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 'use strict';
 
 var isArrayish = require('is-arrayish');
@@ -84387,7 +85587,7 @@ swizzle.wrap = function (fn) {
 	};
 };
 
-},{"is-arrayish":40}],40:[function(require,module,exports){
+},{"is-arrayish":43}],43:[function(require,module,exports){
 'use strict';
 
 module.exports = function isArrayish(obj) {
@@ -84400,203 +85600,1239 @@ module.exports = function isArrayish(obj) {
 			(Object.getOwnPropertyDescriptor(obj, (obj.length - 1)) && obj.constructor.name !== 'String')));
 };
 
-},{}],41:[function(require,module,exports){
-(function (global){
-"use strict"
-// Module export pattern from
-// https://github.com/umdjs/umd/blob/master/returnExports.js
-;(function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define([], factory);
-    } else if (typeof exports === 'object') {
-        // Node. Does not work with strict CommonJS, but
-        // only CommonJS-like environments that support module.exports,
-        // like Node.
-        module.exports = factory();
-    } else {
-        // Browser globals (root is window)
-        root.store = factory();
-  }
-}(this, function () {
-	
-	// Store.js
-	var store = {},
-		win = (typeof window != 'undefined' ? window : global),
-		doc = win.document,
-		localStorageName = 'localStorage',
-		scriptTag = 'script',
-		storage
+},{}],44:[function(require,module,exports){
+var engine = require('../src/store-engine')
 
-	store.disabled = false
-	store.version = '1.3.20'
-	store.set = function(key, value) {}
-	store.get = function(key, defaultVal) {}
-	store.has = function(key) { return store.get(key) !== undefined }
-	store.remove = function(key) {}
-	store.clear = function() {}
-	store.transact = function(key, defaultVal, transactionFn) {
-		if (transactionFn == null) {
-			transactionFn = defaultVal
-			defaultVal = null
-		}
-		if (defaultVal == null) {
-			defaultVal = {}
-		}
-		var val = store.get(key, defaultVal)
-		transactionFn(val)
-		store.set(key, val)
-	}
-	store.getAll = function() {}
-	store.forEach = function() {}
+var storages = require('../storages/all')
+var plugins = [require('../plugins/json2')]
 
-	store.serialize = function(value) {
-		return JSON.stringify(value)
-	}
-	store.deserialize = function(value) {
-		if (typeof value != 'string') { return undefined }
-		try { return JSON.parse(value) }
-		catch(e) { return value || undefined }
-	}
+module.exports = engine.createStore(storages, plugins)
 
-	// Functions to encapsulate questionable FireFox 3.6.13 behavior
-	// when about.config::dom.storage.enabled === false
-	// See https://github.com/marcuswestin/store.js/issues#issue/13
-	function isLocalStorageNameSupported() {
-		try { return (localStorageName in win && win[localStorageName]) }
-		catch(err) { return false }
-	}
+},{"../plugins/json2":45,"../src/store-engine":47,"../storages/all":49}],45:[function(require,module,exports){
+module.exports = json2Plugin
 
-	if (isLocalStorageNameSupported()) {
-		storage = win[localStorageName]
-		store.set = function(key, val) {
-			if (val === undefined) { return store.remove(key) }
-			storage.setItem(key, store.serialize(val))
-			return val
+function json2Plugin() {
+	require('./lib/json2')
+	return {}
+}
+
+},{"./lib/json2":46}],46:[function(require,module,exports){
+//  json2.js
+//  2016-10-28
+//  Public Domain.
+//  NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
+//  See http://www.JSON.org/js.html
+//  This code should be minified before deployment.
+//  See http://javascript.crockford.com/jsmin.html
+
+//  USE YOUR OWN COPY. IT IS EXTREMELY UNWISE TO LOAD CODE FROM SERVERS YOU DO
+//  NOT CONTROL.
+
+//  This file creates a global JSON object containing two methods: stringify
+//  and parse. This file provides the ES5 JSON capability to ES3 systems.
+//  If a project might run on IE8 or earlier, then this file should be included.
+//  This file does nothing on ES5 systems.
+
+//      JSON.stringify(value, replacer, space)
+//          value       any JavaScript value, usually an object or array.
+//          replacer    an optional parameter that determines how object
+//                      values are stringified for objects. It can be a
+//                      function or an array of strings.
+//          space       an optional parameter that specifies the indentation
+//                      of nested structures. If it is omitted, the text will
+//                      be packed without extra whitespace. If it is a number,
+//                      it will specify the number of spaces to indent at each
+//                      level. If it is a string (such as "\t" or "&nbsp;"),
+//                      it contains the characters used to indent at each level.
+//          This method produces a JSON text from a JavaScript value.
+//          When an object value is found, if the object contains a toJSON
+//          method, its toJSON method will be called and the result will be
+//          stringified. A toJSON method does not serialize: it returns the
+//          value represented by the name/value pair that should be serialized,
+//          or undefined if nothing should be serialized. The toJSON method
+//          will be passed the key associated with the value, and this will be
+//          bound to the value.
+
+//          For example, this would serialize Dates as ISO strings.
+
+//              Date.prototype.toJSON = function (key) {
+//                  function f(n) {
+//                      // Format integers to have at least two digits.
+//                      return (n < 10)
+//                          ? "0" + n
+//                          : n;
+//                  }
+//                  return this.getUTCFullYear()   + "-" +
+//                       f(this.getUTCMonth() + 1) + "-" +
+//                       f(this.getUTCDate())      + "T" +
+//                       f(this.getUTCHours())     + ":" +
+//                       f(this.getUTCMinutes())   + ":" +
+//                       f(this.getUTCSeconds())   + "Z";
+//              };
+
+//          You can provide an optional replacer method. It will be passed the
+//          key and value of each member, with this bound to the containing
+//          object. The value that is returned from your method will be
+//          serialized. If your method returns undefined, then the member will
+//          be excluded from the serialization.
+
+//          If the replacer parameter is an array of strings, then it will be
+//          used to select the members to be serialized. It filters the results
+//          such that only members with keys listed in the replacer array are
+//          stringified.
+
+//          Values that do not have JSON representations, such as undefined or
+//          functions, will not be serialized. Such values in objects will be
+//          dropped; in arrays they will be replaced with null. You can use
+//          a replacer function to replace those with JSON values.
+
+//          JSON.stringify(undefined) returns undefined.
+
+//          The optional space parameter produces a stringification of the
+//          value that is filled with line breaks and indentation to make it
+//          easier to read.
+
+//          If the space parameter is a non-empty string, then that string will
+//          be used for indentation. If the space parameter is a number, then
+//          the indentation will be that many spaces.
+
+//          Example:
+
+//          text = JSON.stringify(["e", {pluribus: "unum"}]);
+//          // text is '["e",{"pluribus":"unum"}]'
+
+//          text = JSON.stringify(["e", {pluribus: "unum"}], null, "\t");
+//          // text is '[\n\t"e",\n\t{\n\t\t"pluribus": "unum"\n\t}\n]'
+
+//          text = JSON.stringify([new Date()], function (key, value) {
+//              return this[key] instanceof Date
+//                  ? "Date(" + this[key] + ")"
+//                  : value;
+//          });
+//          // text is '["Date(---current time---)"]'
+
+//      JSON.parse(text, reviver)
+//          This method parses a JSON text to produce an object or array.
+//          It can throw a SyntaxError exception.
+
+//          The optional reviver parameter is a function that can filter and
+//          transform the results. It receives each of the keys and values,
+//          and its return value is used instead of the original value.
+//          If it returns what it received, then the structure is not modified.
+//          If it returns undefined then the member is deleted.
+
+//          Example:
+
+//          // Parse the text. Values that look like ISO date strings will
+//          // be converted to Date objects.
+
+//          myData = JSON.parse(text, function (key, value) {
+//              var a;
+//              if (typeof value === "string") {
+//                  a =
+//   /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
+//                  if (a) {
+//                      return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4],
+//                          +a[5], +a[6]));
+//                  }
+//              }
+//              return value;
+//          });
+
+//          myData = JSON.parse('["Date(09/09/2001)"]', function (key, value) {
+//              var d;
+//              if (typeof value === "string" &&
+//                      value.slice(0, 5) === "Date(" &&
+//                      value.slice(-1) === ")") {
+//                  d = new Date(value.slice(5, -1));
+//                  if (d) {
+//                      return d;
+//                  }
+//              }
+//              return value;
+//          });
+
+//  This is a reference implementation. You are free to copy, modify, or
+//  redistribute.
+
+/*jslint
+    eval, for, this
+*/
+
+/*property
+    JSON, apply, call, charCodeAt, getUTCDate, getUTCFullYear, getUTCHours,
+    getUTCMinutes, getUTCMonth, getUTCSeconds, hasOwnProperty, join,
+    lastIndex, length, parse, prototype, push, replace, slice, stringify,
+    test, toJSON, toString, valueOf
+*/
+
+
+// Create a JSON object only if one does not already exist. We create the
+// methods in a closure to avoid creating global variables.
+
+if (typeof JSON !== "object") {
+    JSON = {};
+}
+
+(function () {
+    "use strict";
+
+    var rx_one = /^[\],:{}\s]*$/;
+    var rx_two = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g;
+    var rx_three = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
+    var rx_four = /(?:^|:|,)(?:\s*\[)+/g;
+    var rx_escapable = /[\\"\u0000-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+    var rx_dangerous = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+
+    function f(n) {
+        // Format integers to have at least two digits.
+        return n < 10
+            ? "0" + n
+            : n;
+    }
+
+    function this_value() {
+        return this.valueOf();
+    }
+
+    if (typeof Date.prototype.toJSON !== "function") {
+
+        Date.prototype.toJSON = function () {
+
+            return isFinite(this.valueOf())
+                ? this.getUTCFullYear() + "-" +
+                        f(this.getUTCMonth() + 1) + "-" +
+                        f(this.getUTCDate()) + "T" +
+                        f(this.getUTCHours()) + ":" +
+                        f(this.getUTCMinutes()) + ":" +
+                        f(this.getUTCSeconds()) + "Z"
+                : null;
+        };
+
+        Boolean.prototype.toJSON = this_value;
+        Number.prototype.toJSON = this_value;
+        String.prototype.toJSON = this_value;
+    }
+
+    var gap;
+    var indent;
+    var meta;
+    var rep;
+
+
+    function quote(string) {
+
+// If the string contains no control characters, no quote characters, and no
+// backslash characters, then we can safely slap some quotes around it.
+// Otherwise we must also replace the offending characters with safe escape
+// sequences.
+
+        rx_escapable.lastIndex = 0;
+        return rx_escapable.test(string)
+            ? "\"" + string.replace(rx_escapable, function (a) {
+                var c = meta[a];
+                return typeof c === "string"
+                    ? c
+                    : "\\u" + ("0000" + a.charCodeAt(0).toString(16)).slice(-4);
+            }) + "\""
+            : "\"" + string + "\"";
+    }
+
+
+    function str(key, holder) {
+
+// Produce a string from holder[key].
+
+        var i;          // The loop counter.
+        var k;          // The member key.
+        var v;          // The member value.
+        var length;
+        var mind = gap;
+        var partial;
+        var value = holder[key];
+
+// If the value has a toJSON method, call it to obtain a replacement value.
+
+        if (value && typeof value === "object" &&
+                typeof value.toJSON === "function") {
+            value = value.toJSON(key);
+        }
+
+// If we were called with a replacer function, then call the replacer to
+// obtain a replacement value.
+
+        if (typeof rep === "function") {
+            value = rep.call(holder, key, value);
+        }
+
+// What happens next depends on the value's type.
+
+        switch (typeof value) {
+        case "string":
+            return quote(value);
+
+        case "number":
+
+// JSON numbers must be finite. Encode non-finite numbers as null.
+
+            return isFinite(value)
+                ? String(value)
+                : "null";
+
+        case "boolean":
+        case "null":
+
+// If the value is a boolean or null, convert it to a string. Note:
+// typeof null does not produce "null". The case is included here in
+// the remote chance that this gets fixed someday.
+
+            return String(value);
+
+// If the type is "object", we might be dealing with an object or an array or
+// null.
+
+        case "object":
+
+// Due to a specification blunder in ECMAScript, typeof null is "object",
+// so watch out for that case.
+
+            if (!value) {
+                return "null";
+            }
+
+// Make an array to hold the partial results of stringifying this object value.
+
+            gap += indent;
+            partial = [];
+
+// Is the value an array?
+
+            if (Object.prototype.toString.apply(value) === "[object Array]") {
+
+// The value is an array. Stringify every element. Use null as a placeholder
+// for non-JSON values.
+
+                length = value.length;
+                for (i = 0; i < length; i += 1) {
+                    partial[i] = str(i, value) || "null";
+                }
+
+// Join all of the elements together, separated with commas, and wrap them in
+// brackets.
+
+                v = partial.length === 0
+                    ? "[]"
+                    : gap
+                        ? "[\n" + gap + partial.join(",\n" + gap) + "\n" + mind + "]"
+                        : "[" + partial.join(",") + "]";
+                gap = mind;
+                return v;
+            }
+
+// If the replacer is an array, use it to select the members to be stringified.
+
+            if (rep && typeof rep === "object") {
+                length = rep.length;
+                for (i = 0; i < length; i += 1) {
+                    if (typeof rep[i] === "string") {
+                        k = rep[i];
+                        v = str(k, value);
+                        if (v) {
+                            partial.push(quote(k) + (
+                                gap
+                                    ? ": "
+                                    : ":"
+                            ) + v);
+                        }
+                    }
+                }
+            } else {
+
+// Otherwise, iterate through all of the keys in the object.
+
+                for (k in value) {
+                    if (Object.prototype.hasOwnProperty.call(value, k)) {
+                        v = str(k, value);
+                        if (v) {
+                            partial.push(quote(k) + (
+                                gap
+                                    ? ": "
+                                    : ":"
+                            ) + v);
+                        }
+                    }
+                }
+            }
+
+// Join all of the member texts together, separated with commas,
+// and wrap them in braces.
+
+            v = partial.length === 0
+                ? "{}"
+                : gap
+                    ? "{\n" + gap + partial.join(",\n" + gap) + "\n" + mind + "}"
+                    : "{" + partial.join(",") + "}";
+            gap = mind;
+            return v;
+        }
+    }
+
+// If the JSON object does not yet have a stringify method, give it one.
+
+    if (typeof JSON.stringify !== "function") {
+        meta = {    // table of character substitutions
+            "\b": "\\b",
+            "\t": "\\t",
+            "\n": "\\n",
+            "\f": "\\f",
+            "\r": "\\r",
+            "\"": "\\\"",
+            "\\": "\\\\"
+        };
+        JSON.stringify = function (value, replacer, space) {
+
+// The stringify method takes a value and an optional replacer, and an optional
+// space parameter, and returns a JSON text. The replacer can be a function
+// that can replace values, or an array of strings that will select the keys.
+// A default replacer method can be provided. Use of the space parameter can
+// produce text that is more easily readable.
+
+            var i;
+            gap = "";
+            indent = "";
+
+// If the space parameter is a number, make an indent string containing that
+// many spaces.
+
+            if (typeof space === "number") {
+                for (i = 0; i < space; i += 1) {
+                    indent += " ";
+                }
+
+// If the space parameter is a string, it will be used as the indent string.
+
+            } else if (typeof space === "string") {
+                indent = space;
+            }
+
+// If there is a replacer, it must be a function or an array.
+// Otherwise, throw an error.
+
+            rep = replacer;
+            if (replacer && typeof replacer !== "function" &&
+                    (typeof replacer !== "object" ||
+                    typeof replacer.length !== "number")) {
+                throw new Error("JSON.stringify");
+            }
+
+// Make a fake root object containing our value under the key of "".
+// Return the result of stringifying the value.
+
+            return str("", {"": value});
+        };
+    }
+
+
+// If the JSON object does not yet have a parse method, give it one.
+
+    if (typeof JSON.parse !== "function") {
+        JSON.parse = function (text, reviver) {
+
+// The parse method takes a text and an optional reviver function, and returns
+// a JavaScript value if the text is a valid JSON text.
+
+            var j;
+
+            function walk(holder, key) {
+
+// The walk method is used to recursively walk the resulting structure so
+// that modifications can be made.
+
+                var k;
+                var v;
+                var value = holder[key];
+                if (value && typeof value === "object") {
+                    for (k in value) {
+                        if (Object.prototype.hasOwnProperty.call(value, k)) {
+                            v = walk(value, k);
+                            if (v !== undefined) {
+                                value[k] = v;
+                            } else {
+                                delete value[k];
+                            }
+                        }
+                    }
+                }
+                return reviver.call(holder, key, value);
+            }
+
+
+// Parsing happens in four stages. In the first stage, we replace certain
+// Unicode characters with escape sequences. JavaScript handles many characters
+// incorrectly, either silently deleting them, or treating them as line endings.
+
+            text = String(text);
+            rx_dangerous.lastIndex = 0;
+            if (rx_dangerous.test(text)) {
+                text = text.replace(rx_dangerous, function (a) {
+                    return "\\u" +
+                            ("0000" + a.charCodeAt(0).toString(16)).slice(-4);
+                });
+            }
+
+// In the second stage, we run the text against regular expressions that look
+// for non-JSON patterns. We are especially concerned with "()" and "new"
+// because they can cause invocation, and "=" because it can cause mutation.
+// But just to be safe, we want to reject all unexpected forms.
+
+// We split the second stage into 4 regexp operations in order to work around
+// crippling inefficiencies in IE's and Safari's regexp engines. First we
+// replace the JSON backslash pairs with "@" (a non-JSON character). Second, we
+// replace all simple value tokens with "]" characters. Third, we delete all
+// open brackets that follow a colon or comma or that begin the text. Finally,
+// we look to see that the remaining characters are only whitespace or "]" or
+// "," or ":" or "{" or "}". If that is so, then the text is safe for eval.
+
+            if (
+                rx_one.test(
+                    text
+                        .replace(rx_two, "@")
+                        .replace(rx_three, "]")
+                        .replace(rx_four, "")
+                )
+            ) {
+
+// In the third stage we use the eval function to compile the text into a
+// JavaScript structure. The "{" operator is subject to a syntactic ambiguity
+// in JavaScript: it can begin a block or an object literal. We wrap the text
+// in parens to eliminate the ambiguity.
+
+                j = eval("(" + text + ")");
+
+// In the optional fourth stage, we recursively walk the new structure, passing
+// each name/value pair to a reviver function for possible transformation.
+
+                return (typeof reviver === "function")
+                    ? walk({"": j}, "")
+                    : j;
+            }
+
+// If the text is not JSON parseable, then a SyntaxError is thrown.
+
+            throw new SyntaxError("JSON.parse");
+        };
+    }
+}());
+},{}],47:[function(require,module,exports){
+var util = require('./util')
+var slice = util.slice
+var pluck = util.pluck
+var each = util.each
+var create = util.create
+var isList = util.isList
+var isFunction = util.isFunction
+var isObject = util.isObject
+
+module.exports = {
+	createStore: createStore,
+}
+
+var storeAPI = {
+	version: '2.0.4',
+	enabled: false,
+	storage: null,
+
+	// addStorage adds another storage to this store. The store
+	// will use the first storage it receives that is enabled, so
+	// call addStorage in the order of preferred storage.
+	addStorage: function(storage) {
+		if (this.enabled) { return }
+		if (this._testStorage(storage)) {
+			this._storage.resolved = storage
+			this.enabled = true
+			this.storage = storage.name
 		}
-		store.get = function(key, defaultVal) {
-			var val = store.deserialize(storage.getItem(key))
-			return (val === undefined ? defaultVal : val)
-		}
-		store.remove = function(key) { storage.removeItem(key) }
-		store.clear = function() { storage.clear() }
-		store.getAll = function() {
-			var ret = {}
-			store.forEach(function(key, val) {
-				ret[key] = val
+	},
+
+	// addPlugin will add a plugin to this store.
+	addPlugin: function(plugin) {
+		var self = this
+
+		// If the plugin is an array, then add all plugins in the array.
+		// This allows for a plugin to depend on other plugins.
+		if (isList(plugin)) {
+			each(plugin, function(plugin) {
+				self.addPlugin(plugin)
 			})
-			return ret
-		}
-		store.forEach = function(callback) {
-			for (var i=0; i<storage.length; i++) {
-				var key = storage.key(i)
-				callback(key, store.get(key))
-			}
-		}
-	} else if (doc && doc.documentElement.addBehavior) {
-		var storageOwner,
-			storageContainer
-		// Since #userData storage applies only to specific paths, we need to
-		// somehow link our data to a specific path.  We choose /favicon.ico
-		// as a pretty safe option, since all browsers already make a request to
-		// this URL anyway and being a 404 will not hurt us here.  We wrap an
-		// iframe pointing to the favicon in an ActiveXObject(htmlfile) object
-		// (see: http://msdn.microsoft.com/en-us/library/aa752574(v=VS.85).aspx)
-		// since the iframe access rules appear to allow direct access and
-		// manipulation of the document element, even for a 404 page.  This
-		// document can be used instead of the current document (which would
-		// have been limited to the current path) to perform #userData storage.
-		try {
-			storageContainer = new ActiveXObject('htmlfile')
-			storageContainer.open()
-			storageContainer.write('<'+scriptTag+'>document.w=window</'+scriptTag+'><iframe src="/favicon.ico"></iframe>')
-			storageContainer.close()
-			storageOwner = storageContainer.w.frames[0].document
-			storage = storageOwner.createElement('div')
-		} catch(e) {
-			// somehow ActiveXObject instantiation failed (perhaps some special
-			// security settings or otherwse), fall back to per-path storage
-			storage = doc.createElement('div')
-			storageOwner = doc.body
-		}
-		var withIEStorage = function(storeFunction) {
-			return function() {
-				var args = Array.prototype.slice.call(arguments, 0)
-				args.unshift(storage)
-				// See http://msdn.microsoft.com/en-us/library/ms531081(v=VS.85).aspx
-				// and http://msdn.microsoft.com/en-us/library/ms531424(v=VS.85).aspx
-				storageOwner.appendChild(storage)
-				storage.addBehavior('#default#userData')
-				storage.load(localStorageName)
-				var result = storeFunction.apply(store, args)
-				storageOwner.removeChild(storage)
-				return result
-			}
+			return
 		}
 
-		// In IE7, keys cannot start with a digit or contain certain chars.
-		// See https://github.com/marcuswestin/store.js/issues/40
-		// See https://github.com/marcuswestin/store.js/issues/83
-		var forbiddenCharsRegex = new RegExp("[!\"#$%&'()*+,/\\\\:;<=>?@[\\]^`{|}~]", "g")
-		var ieKeyFix = function(key) {
-			return key.replace(/^d/, '___$&').replace(forbiddenCharsRegex, '___')
+		// Keep track of all plugins we've seen so far, so that we
+		// don't add any of them twice.
+		var seenPlugin = pluck(this._seenPlugins, function(seenPlugin) { return (plugin === seenPlugin) })
+		if (seenPlugin) {
+			return
 		}
-		store.set = withIEStorage(function(storage, key, val) {
-			key = ieKeyFix(key)
-			if (val === undefined) { return store.remove(key) }
-			storage.setAttribute(key, store.serialize(val))
-			storage.save(localStorageName)
-			return val
-		})
-		store.get = withIEStorage(function(storage, key, defaultVal) {
-			key = ieKeyFix(key)
-			var val = store.deserialize(storage.getAttribute(key))
-			return (val === undefined ? defaultVal : val)
-		})
-		store.remove = withIEStorage(function(storage, key) {
-			key = ieKeyFix(key)
-			storage.removeAttribute(key)
-			storage.save(localStorageName)
-		})
-		store.clear = withIEStorage(function(storage) {
-			var attributes = storage.XMLDocument.documentElement.attributes
-			storage.load(localStorageName)
-			for (var i=attributes.length-1; i>=0; i--) {
-				storage.removeAttribute(attributes[i].name)
-			}
-			storage.save(localStorageName)
-		})
-		store.getAll = function(storage) {
-			var ret = {}
-			store.forEach(function(key, val) {
-				ret[key] = val
-			})
-			return ret
+		this._seenPlugins.push(plugin)
+
+		// Check that the plugin is properly formed
+		if (!isFunction(plugin)) {
+			throw new Error('Plugins must be function values that return objects')
 		}
-		store.forEach = withIEStorage(function(storage, callback) {
-			var attributes = storage.XMLDocument.documentElement.attributes
-			for (var i=0, attr; attr=attributes[i]; ++i) {
-				callback(attr.name, store.deserialize(storage.getAttribute(attr.name)))
+
+		var pluginProperties = plugin.call(this)
+		if (!isObject(pluginProperties)) {
+			throw new Error('Plugins must return an object of function properties')
+		}
+
+		// Add the plugin function properties to this store instance.
+		each(pluginProperties, function(pluginFnProp, propName) {
+			if (!isFunction(pluginFnProp)) {
+				throw new Error('Bad plugin property: '+propName+' from plugin '+plugin.name+'. Plugins should only return functions.')
 			}
+			self._assignPluginFnProp(pluginFnProp, propName)
 		})
+	},
+
+	// get returns the value of the given key. If that value
+	// is undefined, it returns optionalDefaultValue instead.
+	get: function(key, optionalDefaultValue) {
+		var data = this._storage().read(this._namespacePrefix + key)
+		return this._deserialize(data, optionalDefaultValue)
+	},
+
+	// set will store the given value at key and returns value.
+	// Calling set with value === undefined is equivalent to calling remove.
+	set: function(key, value) {
+		if (value === undefined) {
+			return this.remove(key)
+		}
+		this._storage().write(this._namespacePrefix + key, this._serialize(value))
+		return value
+	},
+
+	// remove deletes the key and value stored at the given key.
+	remove: function(key) {
+		this._storage().remove(this._namespacePrefix + key)
+	},
+
+	// each will call the given callback once for each key-value pair
+	// in this store.
+	each: function(callback) {
+		var self = this
+		this._storage().each(function(val, namespacedKey) {
+			callback(self._deserialize(val), namespacedKey.replace(self._namespaceRegexp, ''))
+		})
+	},
+
+	// clearAll will remove all the stored key-value pairs in this store.
+	clearAll: function() {
+		this._storage().clearAll()
+	},
+
+	// additional functionality that can't live in plugins
+	// ---------------------------------------------------
+
+	// hasNamespace returns true if this store instance has the given namespace.
+	hasNamespace: function(namespace) {
+		return (this._namespacePrefix == '__storejs_'+namespace+'_')
+	},
+
+	// namespace clones the current store and assigns it the given namespace
+	namespace: function(namespace) {
+		if (!this._legalNamespace.test(namespace)) {
+			throw new Error('store.js namespaces can only have alhpanumerics + underscores and dashes')
+		}
+		// create a prefix that is very unlikely to collide with un-namespaced keys
+		var namespacePrefix = '__storejs_'+namespace+'_'
+		return create(this, {
+			_namespacePrefix: namespacePrefix,
+			_namespaceRegexp: namespacePrefix ? new RegExp('^'+namespacePrefix) : null
+		})
+	},
+
+	// createStore creates a store.js instance with the first
+	// functioning storage in the list of storage candidates,
+	// and applies the the given mixins to the instance.
+	createStore: function(storages, plugins) {
+		return createStore(storages, plugins)
+	},
+}
+
+function createStore(storages, plugins) {
+	var _privateStoreProps = {
+		_seenPlugins: [],
+		_namespacePrefix: '',
+		_namespaceRegexp: null,
+		_legalNamespace: /^[a-zA-Z0-9_\-]+$/, // alpha-numeric + underscore and dash
+
+		_storage: function() {
+			if (!this.enabled) {
+				throw new Error("store.js: No supported storage has been added! "+
+					"Add one (e.g store.addStorage(require('store/storages/cookieStorage')) "+
+					"or use a build with more built-in storages (e.g "+
+					"https://github.com/marcuswestin/store.js/tree/master/dist/store.legacy.min.js)")
+			}
+			return this._storage.resolved
+		},
+
+		_testStorage: function(storage) {
+			try {
+				var testStr = '__storejs__test__'
+				storage.write(testStr, testStr)
+				var ok = (storage.read(testStr) === testStr)
+				storage.remove(testStr)
+				return ok
+			} catch(e) {
+				return false
+			}
+		},
+
+		_assignPluginFnProp: function(pluginFnProp, propName) {
+			var oldFn = this[propName]
+			this[propName] = function pluginFn() {
+				var args = slice(arguments, 0)
+				var self = this
+
+				// super_fn calls the old function which was overwritten by
+				// this mixin.
+				function super_fn() {
+					if (!oldFn) { return }
+					each(arguments, function(arg, i) {
+						args[i] = arg
+					})
+					return oldFn.apply(self, args)
+				}
+
+				// Give mixing function access to super_fn by prefixing all mixin function
+				// arguments with super_fn.
+				var newFnArgs = [super_fn].concat(args)
+
+				return pluginFnProp.apply(self, newFnArgs)
+			}
+		},
+
+		_serialize: function(obj) {
+			return JSON.stringify(obj)
+		},
+
+		_deserialize: function(strVal, defaultVal) {
+			if (!strVal) { return defaultVal }
+			// It is possible that a raw string value has been previously stored
+			// in a storage without using store.js, meaning it will be a raw
+			// string value instead of a JSON serialized string. By defaulting
+			// to the raw string value in case of a JSON parse error, we allow
+			// for past stored values to be forwards-compatible with store.js
+			var val = ''
+			try { val = JSON.parse(strVal) }
+			catch(e) { val = strVal }
+
+			return (val !== undefined ? val : defaultVal)
+		},
 	}
 
-	try {
-		var testKey = '__storejs__'
-		store.set(testKey, testKey)
-		if (store.get(testKey) != testKey) { store.disabled = true }
-		store.remove(testKey)
-	} catch(e) {
-		store.disabled = true
-	}
-	store.enabled = !store.disabled
-	
+	var store = create(_privateStoreProps, storeAPI)
+	each(storages, function(storage) {
+		store.addStorage(storage)
+	})
+	each(plugins, function(plugin) {
+		store.addPlugin(plugin)
+	})
 	return store
-}));
+}
+
+},{"./util":48}],48:[function(require,module,exports){
+(function (global){
+var assign = make_assign()
+var create = make_create()
+var trim = make_trim()
+var Global = (typeof window !== 'undefined' ? window : global)
+
+module.exports = {
+	assign: assign,
+	create: create,
+	trim: trim,
+	bind: bind,
+	slice: slice,
+	each: each,
+	map: map,
+	pluck: pluck,
+	isList: isList,
+	isFunction: isFunction,
+	isObject: isObject,
+	Global: Global,
+}
+
+function make_assign() {
+	if (Object.assign) {
+		return Object.assign
+	} else {
+		return function shimAssign(obj, props1, props2, etc) {
+			for (var i = 1; i < arguments.length; i++) {
+				each(Object(arguments[i]), function(val, key) {
+					obj[key] = val
+				})
+			}			
+			return obj
+		}
+	}
+}
+
+function make_create() {
+	if (Object.create) {
+		return function create(obj, assignProps1, assignProps2, etc) {
+			var assignArgsList = slice(arguments, 1)
+			return assign.apply(this, [Object.create(obj)].concat(assignArgsList))
+		}
+	} else {
+		function F() {} // eslint-disable-line no-inner-declarations
+		return function create(obj, assignProps1, assignProps2, etc) {
+			var assignArgsList = slice(arguments, 1)
+			F.prototype = obj
+			return assign.apply(this, [new F()].concat(assignArgsList))
+		}
+	}
+}
+
+function make_trim() {
+	if (String.prototype.trim) {
+		return function trim(str) {
+			return String.prototype.trim.call(str)
+		}
+	} else {
+		return function trim(str) {
+			return str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '')
+		}
+	}
+}
+
+function bind(obj, fn) {
+	return function() {
+		return fn.apply(obj, Array.prototype.slice.call(arguments, 0))
+	}
+}
+
+function slice(arr, index) {
+	return Array.prototype.slice.call(arr, index || 0)
+}
+
+function each(obj, fn) {
+	pluck(obj, function(key, val) {
+		fn(key, val)
+		return false
+	})
+}
+
+function map(obj, fn) {
+	var res = (isList(obj) ? [] : {})
+	pluck(obj, function(v, k) {
+		res[k] = fn(v, k)
+		return false
+	})
+	return res
+}
+
+function pluck(obj, fn) {
+	if (isList(obj)) {
+		for (var i=0; i<obj.length; i++) {
+			if (fn(obj[i], i)) {
+				return obj[i]
+			}
+		}
+	} else {
+		for (var key in obj) {
+			if (obj.hasOwnProperty(key)) {
+				if (fn(obj[key], key)) {
+					return obj[key]
+				}
+			}
+		}
+	}
+}
+
+function isList(val) {
+	return (val != null && typeof val != 'function' && typeof val.length == 'number')
+}
+
+function isFunction(val) {
+	return val && {}.toString.call(val) === '[object Function]'
+}
+
+function isObject(val) {
+	return val && {}.toString.call(val) === '[object Object]'
+}
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],42:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
+module.exports = {
+	// Listed in order of usage preference
+	'localStorage': require('./localStorage'),
+	'oldFF-globalStorage': require('./oldFF-globalStorage'),
+	'oldIE-userDataStorage': require('./oldIE-userDataStorage'),
+	'cookieStorage': require('./cookieStorage'),
+	'sessionStorage': require('./sessionStorage'),
+	'memoryStorage': require('./memoryStorage'),
+}
+
+},{"./cookieStorage":50,"./localStorage":51,"./memoryStorage":52,"./oldFF-globalStorage":53,"./oldIE-userDataStorage":54,"./sessionStorage":55}],50:[function(require,module,exports){
+// cookieStorage is useful Safari private browser mode, where localStorage
+// doesn't work but cookies do. This implementation is adopted from
+// https://developer.mozilla.org/en-US/docs/Web/API/Storage/LocalStorage
+
+var util = require('../src/util')
+var Global = util.Global
+var trim = util.trim
+
+module.exports = {
+	name: 'cookieStorage',
+	read: read,
+	write: write,
+	each: each,
+	remove: remove,
+	clearAll: clearAll,
+}
+
+var doc = Global.document
+
+function read(key) {
+	if (!key || !_has(key)) { return null }
+	var regexpStr = "(?:^|.*;\\s*)" +
+		escape(key).replace(/[\-\.\+\*]/g, "\\$&") +
+		"\\s*\\=\\s*((?:[^;](?!;))*[^;]?).*"
+	return unescape(doc.cookie.replace(new RegExp(regexpStr), "$1"))
+}
+
+function each(callback) {
+	var cookies = doc.cookie.split(/; ?/g)
+	for (var i = cookies.length - 1; i >= 0; i--) {
+		if (!trim(cookies[i])) {
+			continue
+		}
+		var kvp = cookies[i].split('=')
+		var key = unescape(kvp[0])
+		var val = unescape(kvp[1])
+		callback(val, key)
+	}
+}
+
+function write(key, data) {
+	if(!key) { return }
+	doc.cookie = escape(key) + "=" + escape(data) + "; expires=Tue, 19 Jan 2038 03:14:07 GMT; path=/"
+}
+
+function remove(key) {
+	if (!key || !_has(key)) {
+		return
+	}
+	doc.cookie = escape(key) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/"
+}
+
+function clearAll() {
+	each(function(_, key) {
+		remove(key)
+	})
+}
+
+function _has(key) {
+	return (new RegExp("(?:^|;\\s*)" + escape(key).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(doc.cookie)
+}
+
+},{"../src/util":48}],51:[function(require,module,exports){
+var util = require('../src/util')
+var Global = util.Global
+
+module.exports = {
+	name: 'localStorage',
+	read: read,
+	write: write,
+	each: each,
+	remove: remove,
+	clearAll: clearAll,
+}
+
+function localStorage() {
+	return Global.localStorage
+}
+
+function read(key) {
+	return localStorage().getItem(key)
+}
+
+function write(key, data) {
+	return localStorage().setItem(key, data)
+}
+
+function each(fn) {
+	for (var i = localStorage().length - 1; i >= 0; i--) {
+		var key = localStorage().key(i)
+		fn(read(key), key)
+	}
+}
+
+function remove(key) {
+	return localStorage().removeItem(key)
+}
+
+function clearAll() {
+	return localStorage().clear()
+}
+
+},{"../src/util":48}],52:[function(require,module,exports){
+// memoryStorage is a useful last fallback to ensure that the store
+// is functions (meaning store.get(), store.set(), etc will all function).
+// However, stored values will not persist when the browser navigates to
+// a new page or reloads the current page.
+
+module.exports = {
+	name: 'memoryStorage',
+	read: read,
+	write: write,
+	each: each,
+	remove: remove,
+	clearAll: clearAll,
+}
+
+var memoryStorage = {}
+
+function read(key) {
+	return memoryStorage[key]
+}
+
+function write(key, data) {
+	memoryStorage[key] = data
+}
+
+function each(callback) {
+	for (var key in memoryStorage) {
+		if (memoryStorage.hasOwnProperty(key)) {
+			callback(memoryStorage[key], key)
+		}
+	}
+}
+
+function remove(key) {
+	delete memoryStorage[key]
+}
+
+function clearAll(key) {
+	memoryStorage = {}
+}
+
+},{}],53:[function(require,module,exports){
+// oldFF-globalStorage provides storage for Firefox
+// versions 6 and 7, where no localStorage, etc
+// is available.
+
+var util = require('../src/util')
+var Global = util.Global
+
+module.exports = {
+	name: 'oldFF-globalStorage',
+	read: read,
+	write: write,
+	each: each,
+	remove: remove,
+	clearAll: clearAll,
+}
+
+var globalStorage = Global.globalStorage
+
+function read(key) {
+	return globalStorage[key]
+}
+
+function write(key, data) {
+	globalStorage[key] = data
+}
+
+function each(fn) {
+	for (var i = globalStorage.length - 1; i >= 0; i--) {
+		var key = globalStorage.key(i)
+		fn(globalStorage[key], key)
+	}
+}
+
+function remove(key) {
+	return globalStorage.removeItem(key)
+}
+
+function clearAll() {
+	each(function(key, _) {
+		delete globalStorage[key]
+	})
+}
+
+},{"../src/util":48}],54:[function(require,module,exports){
+// oldIE-userDataStorage provides storage for Internet Explorer
+// versions 6 and 7, where no localStorage, sessionStorage, etc
+// is available.
+
+var util = require('../src/util')
+var Global = util.Global
+
+module.exports = {
+	name: 'oldIE-userDataStorage',
+	write: write,
+	read: read,
+	each: each,
+	remove: remove,
+	clearAll: clearAll,
+}
+
+var storageName = 'storejs'
+var doc = Global.document
+var _withStorageEl = _makeIEStorageElFunction()
+var disable = (Global.navigator ? Global.navigator.userAgent : '').match(/ (MSIE 8|MSIE 9|MSIE 10)\./) // MSIE 9.x, MSIE 10.x
+
+function write(unfixedKey, data) {
+	if (disable) { return }
+	var fixedKey = fixKey(unfixedKey)
+	_withStorageEl(function(storageEl) {
+		storageEl.setAttribute(fixedKey, data)
+		storageEl.save(storageName)
+	})
+}
+
+function read(unfixedKey) {
+	if (disable) { return }
+	var fixedKey = fixKey(unfixedKey)
+	var res = null
+	_withStorageEl(function(storageEl) {
+		res = storageEl.getAttribute(fixedKey)
+	})
+	return res
+}
+
+function each(callback) {
+	_withStorageEl(function(storageEl) {
+		var attributes = storageEl.XMLDocument.documentElement.attributes
+		for (var i=attributes.length-1; i>=0; i--) {
+			var attr = attributes[i]
+			callback(storageEl.getAttribute(attr.name), attr.name)
+		}
+	})
+}
+
+function remove(unfixedKey) {
+	var fixedKey = fixKey(unfixedKey)
+	_withStorageEl(function(storageEl) {
+		storageEl.removeAttribute(fixedKey)
+		storageEl.save(storageName)
+	})
+}
+
+function clearAll() {
+	_withStorageEl(function(storageEl) {
+		var attributes = storageEl.XMLDocument.documentElement.attributes
+		storageEl.load(storageName)
+		for (var i=attributes.length-1; i>=0; i--) {
+			storageEl.removeAttribute(attributes[i].name)
+		}
+		storageEl.save(storageName)
+	})
+}
+
+// Helpers
+//////////
+
+// In IE7, keys cannot start with a digit or contain certain chars.
+// See https://github.com/marcuswestin/store.js/issues/40
+// See https://github.com/marcuswestin/store.js/issues/83
+var forbiddenCharsRegex = new RegExp("[!\"#$%&'()*+,/\\\\:;<=>?@[\\]^`{|}~]", "g")
+function fixKey(key) {
+	return key.replace(/^\d/, '___$&').replace(forbiddenCharsRegex, '___')
+}
+
+function _makeIEStorageElFunction() {
+	if (!doc || !doc.documentElement || !doc.documentElement.addBehavior) {
+		return null
+	}
+	var scriptTag = 'script',
+		storageOwner,
+		storageContainer,
+		storageEl
+
+	// Since #userData storage applies only to specific paths, we need to
+	// somehow link our data to a specific path.  We choose /favicon.ico
+	// as a pretty safe option, since all browsers already make a request to
+	// this URL anyway and being a 404 will not hurt us here.  We wrap an
+	// iframe pointing to the favicon in an ActiveXObject(htmlfile) object
+	// (see: http://msdn.microsoft.com/en-us/library/aa752574(v=VS.85).aspx)
+	// since the iframe access rules appear to allow direct access and
+	// manipulation of the document element, even for a 404 page.  This
+	// document can be used instead of the current document (which would
+	// have been limited to the current path) to perform #userData storage.
+	try {
+		/* global ActiveXObject */
+		storageContainer = new ActiveXObject('htmlfile')
+		storageContainer.open()
+		storageContainer.write('<'+scriptTag+'>document.w=window</'+scriptTag+'><iframe src="/favicon.ico"></iframe>')
+		storageContainer.close()
+		storageOwner = storageContainer.w.frames[0].document
+		storageEl = storageOwner.createElement('div')
+	} catch(e) {
+		// somehow ActiveXObject instantiation failed (perhaps some special
+		// security settings or otherwse), fall back to per-path storage
+		storageEl = doc.createElement('div')
+		storageOwner = doc.body
+	}
+
+	return function(storeFunction) {
+		var args = [].slice.call(arguments, 0)
+		args.unshift(storageEl)
+		// See http://msdn.microsoft.com/en-us/library/ms531081(v=VS.85).aspx
+		// and http://msdn.microsoft.com/en-us/library/ms531424(v=VS.85).aspx
+		storageOwner.appendChild(storageEl)
+		storageEl.addBehavior('#default#userData')
+		storageEl.load(storageName)
+		storeFunction.apply(this, args)
+		storageOwner.removeChild(storageEl)
+		return
+	}
+}
+
+},{"../src/util":48}],55:[function(require,module,exports){
+var util = require('../src/util')
+var Global = util.Global
+
+module.exports = {
+	name: 'sessionStorage',
+	read: read,
+	write: write,
+	each: each,
+	remove: remove,
+	clearAll: clearAll,
+}
+
+function sessionStorage() {
+	return Global.sessionStorage
+}
+
+function read(key) {
+	return sessionStorage().getItem(key)
+}
+
+function write(key, data) {
+	return sessionStorage().setItem(key, data)
+}
+
+function each(fn) {
+	for (var i = sessionStorage().length - 1; i >= 0; i--) {
+		var key = sessionStorage().key(i)
+		fn(read(key), key)
+	}
+}
+
+function remove(key) {
+	return sessionStorage().removeItem(key)
+}
+
+function clearAll() {
+	return sessionStorage().clear()
+}
+
+},{"../src/util":48}],56:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -86146,7 +88382,7 @@ module.exports = function isArrayish(obj) {
   }
 }.call(this));
 
-},{}],43:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 'use strict';
 
 var required = require('requires-port')
@@ -86507,7 +88743,7 @@ URL.qs = qs;
 
 module.exports = URL;
 
-},{"./lolcation":44,"querystringify":35,"requires-port":36}],44:[function(require,module,exports){
+},{"./lolcation":58,"querystringify":38,"requires-port":39}],58:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -86565,7 +88801,7 @@ module.exports = function lolcation(loc) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./":43}],45:[function(require,module,exports){
+},{"./":57}],59:[function(require,module,exports){
 /** @license
  *
  *  Copyright (C) 2012 K. Arthur Endsley (kaendsle@mtu.edu)
@@ -86985,7 +89221,7 @@ Wkt.Wkt.prototype.deconstruct = function (obj) {
 
 };
 
-},{}],46:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 /** @license
  *
  *  Copyright (C) 2012 K. Arthur Endsley (kaendsle@mtu.edu)
@@ -87868,50 +90104,56 @@ Wkt.Wkt.prototype.deconstruct = function (obj) {
     return Wkt;
 }));
 
-},{}],47:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 module.exports={
   "_args": [
     [
       {
-        "raw": "yasgui-utils@^1.6.0",
+        "raw": "yasgui-utils@1.6.6",
         "scope": null,
         "escapedName": "yasgui-utils",
         "name": "yasgui-utils",
-        "rawSpec": "^1.6.0",
-        "spec": ">=1.6.0 <2.0.0",
-        "type": "range"
+        "rawSpec": "1.6.6",
+        "spec": "1.6.6",
+        "type": "version"
       },
       "/home/lrd900/yasgui/yasgui"
     ]
   ],
-  "_from": "yasgui-utils@>=1.6.0 <2.0.0",
-  "_id": "yasgui-utils@1.6.0",
+  "_from": "yasgui-utils@1.6.6",
+  "_id": "yasgui-utils@1.6.6",
   "_inCache": true,
   "_location": "/yasgui-utils",
+  "_nodeVersion": "7.10.0",
+  "_npmOperationalInternal": {
+    "host": "packages-18-east.internal.npmjs.com",
+    "tmp": "tmp/yasgui-utils-1.6.6.tgz_1495121422173_0.9096360339317471"
+  },
   "_npmUser": {
     "name": "laurens.rietveld",
     "email": "laurens.rietveld@gmail.com"
   },
-  "_npmVersion": "1.4.3",
+  "_npmVersion": "4.2.0",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "yasgui-utils@^1.6.0",
+    "raw": "yasgui-utils@1.6.6",
     "scope": null,
     "escapedName": "yasgui-utils",
     "name": "yasgui-utils",
-    "rawSpec": "^1.6.0",
-    "spec": ">=1.6.0 <2.0.0",
-    "type": "range"
+    "rawSpec": "1.6.6",
+    "spec": "1.6.6",
+    "type": "version"
   },
   "_requiredBy": [
+    "#USER",
     "/",
     "/yasgui-yasqe",
     "/yasgui-yasr"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-utils/-/yasgui-utils-1.6.0.tgz",
-  "_shasum": "bcb9091109c233e3e82737c94c202e6512389c47",
+  "_resolved": "https://registry.npmjs.org/yasgui-utils/-/yasgui-utils-1.6.6.tgz",
+  "_shasum": "90d0756b7c4d6159be601760438d76501f371046",
   "_shrinkwrap": null,
-  "_spec": "yasgui-utils@^1.6.0",
+  "_spec": "yasgui-utils@1.6.6",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -87920,15 +90162,16 @@ module.exports={
     "url": "https://github.com/YASGUI/Utils/issues"
   },
   "dependencies": {
-    "store": "^1.3.14"
+    "store": "^2.0.4"
   },
   "description": "Utils for YASGUI libs",
   "devDependencies": {},
   "directories": {},
   "dist": {
-    "shasum": "bcb9091109c233e3e82737c94c202e6512389c47",
-    "tarball": "https://registry.npmjs.org/yasgui-utils/-/yasgui-utils-1.6.0.tgz"
+    "shasum": "90d0756b7c4d6159be601760438d76501f371046",
+    "tarball": "https://registry.npmjs.org/yasgui-utils/-/yasgui-utils-1.6.6.tgz"
   },
+  "gitHead": "839f9ee378a7dada8b4a0467f6394fb7f38cc4c9",
   "homepage": "https://github.com/YASGUI/Utils",
   "licenses": [
     {
@@ -87950,10 +90193,11 @@ module.exports={
     "type": "git",
     "url": "git://github.com/YASGUI/Utils.git"
   },
-  "version": "1.6.0"
+  "scripts": {},
+  "version": "1.6.6"
 }
 
-},{}],48:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 window.console = window.console || {"log":function(){}};//make sure any console statements don't break IE
 module.exports = {
 	storage: require("./storage.js"),
@@ -87974,67 +90218,98 @@ module.exports = {
 	}
 };
 
-},{"../package.json":47,"./storage.js":49,"./svg.js":50}],49:[function(require,module,exports){
+},{"../package.json":61,"./storage.js":63,"./svg.js":64}],63:[function(require,module,exports){
 var store = require("store");
 var times = {
-	day: function() {
-		return 1000 * 3600 * 24;//millis to day
-	},
-	month: function() {
-		times.day() * 30;
-	},
-	year: function() {
-		times.month() * 12;
-	}
+  day: function() {
+    return 1000 * 3600 * 24; //millis to day
+  },
+  month: function() {
+    times.day() * 30;
+  },
+  year: function() {
+    times.month() * 12;
+  }
 };
+function isQuotaExceeded(e) {
+  var quotaExceeded = false;
+  if (e) {
+    if (e.code) {
+      switch (e.code) {
+        case 22:
+          quotaExceeded = true;
+          break;
+        case 1014:
+          // Firefox
+          if (e.name === "NS_ERROR_DOM_QUOTA_REACHED") {
+            quotaExceeded = true;
+          }
+          break;
+      }
+    } else if (e.number === -2147024882) {
+      // Internet Explorer 8
+      quotaExceeded = true;
+    }
+  }
+  return quotaExceeded;
+}
+var root = (module.exports = {
+  set: function(key, val, exp, onQuotaExceeded) {
+    if (!store.enabled) return; //this is probably in private mode. Don't run, as we might get Js errors
+    if (key && val !== undefined) {
+      if (typeof exp == "string") {
+        exp = times[exp]();
+      }
+      //try to store string for dom objects (e.g. XML result). Otherwise, we might get a circular reference error when stringifying this
+      if (val.documentElement) val = new XMLSerializer().serializeToString(val.documentElement);
+      try {
+        store.set(key, {
+          val: val,
+          exp: exp,
+          time: new Date().getTime()
+        });
+      } catch (e) {
+        e.quotaExceeded = isQuotaExceeded(e);
+        if (e.quotaExceeded && onQuotaExceeded) {
+          onQuotaExceeded(e);
+        } else {
+          throw e;
+        }
+      }
+    }
+  },
+  remove: function(key) {
+    if (!store.enabled) return; //this is probably in private mode. Don't run, as we might get Js errors
+    if (key) store.remove(key);
+  },
+  removeAll: function(filter) {
+    if (!store.enabled) return; //this is probably in private mode. Don't run, as we might get Js errors
+    if (!filter) {
+      store.clearAll();
+    } else if (typeof filter === "function") {
+      for (var key in store.getAll()) {
+        if (filter(key, root.get(key))) root.remove(key);
+      }
+    }
+  },
+  get: function(key) {
+    if (!store.enabled) return null; //this is probably in private mode. Don't run, as we might get Js errors
+    if (key) {
+      var info = store.get(key);
+      if (!info) {
+        return null;
+      }
+      if (info.exp && new Date().getTime() - info.time > info.exp) {
+        return null;
+      }
+      return info.val;
+    } else {
+      return null;
+    }
+  }
+});
 
-var root = module.exports = {
-	set : function(key, val, exp) {
-    if (!store.enabled) return;//this is probably in private mode. Don't run, as we might get Js errors
-		if (key && val !== undefined) {
-			if (typeof exp == "string") {
-				exp = times[exp]();
-			}
-			//try to store string for dom objects (e.g. XML result). Otherwise, we might get a circular reference error when stringifying this
-			if (val.documentElement) val = new XMLSerializer().serializeToString(val.documentElement);
-			store.set(key, {
-				val : val,
-				exp : exp,
-				time : new Date().getTime()
-			});
-		}
-	},
-	remove: function(key) {
-		if (!store.enabled) return;//this is probably in private mode. Don't run, as we might get Js errors
-		if (key) store.remove(key)
-	},
-	removeAll: function(filter) {
-		if (!store.enabled) return;//this is probably in private mode. Don't run, as we might get Js errors
-		if (typeof filter === 'function') {
-			for (var key in store.getAll()) {
-				if (filter(key, root.get(key))) root.remove(key);
-			}
-		}
-	},
-	get : function(key) {
-    if (!store.enabled) return null;//this is probably in private mode. Don't run, as we might get Js errors
-		if (key) {
-			var info = store.get(key);
-			if (!info) {
-				return null;
-			}
-			if (info.exp && new Date().getTime() - info.time > info.exp) {
-				return null;
-			}
-			return info.val;
-		} else {
-			return null;
-		}
-	}
-
-};
-
-},{"store":41}],50:[function(require,module,exports){
+},{"store":44}],64:[function(require,module,exports){
 module.exports = {
 	draw: function(parent, svgString) {
 		if (!parent) return;
@@ -88063,4605 +90338,5548 @@ module.exports = {
 		return false;
 	}
 };
-},{}],51:[function(require,module,exports){
-'use strict';
+},{}],65:[function(require,module,exports){
+"use strict";
 /*
   jQuery deparam is an extraction of the deparam method from Ben Alman's jQuery BBQ
   http://benalman.com/projects/jquery-bbq-plugin/
 */
 var $ = require("jquery");
-$.deparam = function (params, coerce) {
-var obj = {},
-	coerce_types = { 'true': !0, 'false': !1, 'null': null };
-  
-// Iterate over all name=value pairs.
-$.each(params.replace(/\+/g, ' ').split('&'), function (j,v) {
-  var param = v.split('='),
-	  key = decodeURIComponent(param[0]),
-	  val,
-	  cur = obj,
-	  i = 0,
-		
-	  // If key is more complex than 'foo', like 'a[]' or 'a[b][c]', split it
-	  // into its component parts.
-	  keys = key.split(']['),
-	  keys_last = keys.length - 1;
-	
-  // If the first keys part contains [ and the last ends with ], then []
-  // are correctly balanced.
-  if (/\[/.test(keys[0]) && /\]$/.test(keys[keys_last])) {
-	// Remove the trailing ] from the last keys part.
-	keys[keys_last] = keys[keys_last].replace(/\]$/, '');
-	  
-	// Split first keys part into two parts on the [ and add them back onto
-	// the beginning of the keys array.
-	keys = keys.shift().split('[').concat(keys);
-	  
-	keys_last = keys.length - 1;
-  } else {
-	// Basic 'foo' style key.
-	keys_last = 0;
-  }
-	
-  // Are we dealing with a name=value pair, or just a name?
-  if (param.length === 2) {
-	val = decodeURIComponent(param[1]);
-	  
-	// Coerce values.
-	if (coerce) {
-	  val = val && !isNaN(val)              ? +val              // number
-		  : val === 'undefined'             ? undefined         // undefined
-		  : coerce_types[val] !== undefined ? coerce_types[val] // true, false, null
-		  : val;                                                // string
-	}
-	  
-	if ( keys_last ) {
-	  // Complex key, build deep object structure based on a few rules:
-	  // * The 'cur' pointer starts at the object top-level.
-	  // * [] = array push (n is set to array length), [n] = array if n is 
-	  //   numeric, otherwise object.
-	  // * If at the last keys part, set the value.
-	  // * For each keys part, if the current level is undefined create an
-	  //   object or array based on the type of the next keys part.
-	  // * Move the 'cur' pointer to the next level.
-	  // * Rinse & repeat.
-	  for (; i <= keys_last; i++) {
-		key = keys[i] === '' ? cur.length : keys[i];
-		cur = cur[key] = i < keys_last
-		  ? cur[key] || (keys[i+1] && isNaN(keys[i+1]) ? {} : [])
-		  : val;
-	  }
-		
-	} else {
-	  // Simple key, even simpler rules, since only scalars and shallow
-	  // arrays are allowed.
-		
-	  if ($.isArray(obj[key])) {
-		// val is already an array, so push on the next value.
-		obj[key].push( val );
-		  
-	  } else if (obj[key] !== undefined) {
-		// val isn't an array, but since a second value has been specified,
-		// convert val into an array.
-		obj[key] = [obj[key], val];
-		  
-	  } else {
-		// val is a scalar.
-		obj[key] = val;
-	  }
-	}
-	  
-  } else if (key) {
-	// No value was defined, so set something meaningful.
-	obj[key] = coerce
-	  ? undefined
-	  : '';
-  }
-});
-  
-return obj;
+$.deparam = function(params, coerce) {
+  var obj = {}, coerce_types = { true: !0, false: !1, null: null };
+
+  // Iterate over all name=value pairs.
+  $.each(params.replace(/\+/g, " ").split("&"), function(j, v) {
+    var param = v.split("="),
+      key = decodeURIComponent(param[0]),
+      val,
+      cur = obj,
+      i = 0,
+      // If key is more complex than 'foo', like 'a[]' or 'a[b][c]', split it
+      // into its component parts.
+      keys = key.split("]["),
+      keys_last = keys.length - 1;
+
+    // If the first keys part contains [ and the last ends with ], then []
+    // are correctly balanced.
+    if (/\[/.test(keys[0]) && /\]$/.test(keys[keys_last])) {
+      // Remove the trailing ] from the last keys part.
+      keys[keys_last] = keys[keys_last].replace(/\]$/, "");
+
+      // Split first keys part into two parts on the [ and add them back onto
+      // the beginning of the keys array.
+      keys = keys.shift().split("[").concat(keys);
+
+      keys_last = keys.length - 1;
+    } else {
+      // Basic 'foo' style key.
+      keys_last = 0;
+    }
+
+    // Are we dealing with a name=value pair, or just a name?
+    if (param.length === 2) {
+      val = decodeURIComponent(param[1]);
+
+      // Coerce values.
+      if (coerce) {
+        val = val && !isNaN(val)
+          ? +val // number
+          : val === "undefined"
+              ? undefined // undefined
+              : coerce_types[val] !== undefined
+                  ? coerce_types[val] // true, false, null
+                  : val; // string
+      }
+
+      if (keys_last) {
+        // Complex key, build deep object structure based on a few rules:
+        // * The 'cur' pointer starts at the object top-level.
+        // * [] = array push (n is set to array length), [n] = array if n is
+        //   numeric, otherwise object.
+        // * If at the last keys part, set the value.
+        // * For each keys part, if the current level is undefined create an
+        //   object or array based on the type of the next keys part.
+        // * Move the 'cur' pointer to the next level.
+        // * Rinse & repeat.
+        for (; i <= keys_last; i++) {
+          key = keys[i] === "" ? cur.length : keys[i];
+          cur = cur[key] = i < keys_last ? cur[key] || (keys[i + 1] && isNaN(keys[i + 1]) ? {} : []) : val;
+        }
+      } else {
+        // Simple key, even simpler rules, since only scalars and shallow
+        // arrays are allowed.
+
+        if ($.isArray(obj[key])) {
+          // val is already an array, so push on the next value.
+          obj[key].push(val);
+        } else if (obj[key] !== undefined) {
+          // val isn't an array, but since a second value has been specified,
+          // convert val into an array.
+          obj[key] = [obj[key], val];
+        } else {
+          // val is a scalar.
+          obj[key] = val;
+        }
+      }
+    } else if (key) {
+      // No value was defined, so set something meaningful.
+      obj[key] = coerce ? undefined : "";
+    }
+  });
+
+  return obj;
 };
 
-},{"jquery":26}],52:[function(require,module,exports){
-module.exports = {table:
-{
-  "*[&&,valueLogical]" : {
-     "&&": ["[&&,valueLogical]","*[&&,valueLogical]"], 
-     "AS": [], 
-     ")": [], 
-     ",": [], 
-     "||": [], 
-     ";": []}, 
-  "*[,,expression]" : {
-     ",": ["[,,expression]","*[,,expression]"], 
-     ")": []}, 
-  "*[,,objectPath]" : {
-     ",": ["[,,objectPath]","*[,,objectPath]"], 
-     ".": [], 
-     ";": [], 
-     "]": [], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "GRAPH": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": [], 
-     "}": []}, 
-  "*[,,object]" : {
-     ",": ["[,,object]","*[,,object]"], 
-     ".": [], 
-     ";": [], 
-     "]": [], 
-     "}": [], 
-     "GRAPH": [], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": []}, 
-  "*[/,pathEltOrInverse]" : {
-     "/": ["[/,pathEltOrInverse]","*[/,pathEltOrInverse]"], 
-     "|": [], 
-     ")": [], 
-     "(": [], 
-     "[": [], 
-     "VAR1": [], 
-     "VAR2": [], 
-     "NIL": [], 
-     "IRI_REF": [], 
-     "TRUE": [], 
-     "FALSE": [], 
-     "BLANK_NODE_LABEL": [], 
-     "ANON": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": [], 
-     "STRING_LITERAL1": [], 
-     "STRING_LITERAL2": [], 
-     "STRING_LITERAL_LONG1": [], 
-     "STRING_LITERAL_LONG2": [], 
-     "INTEGER": [], 
-     "DECIMAL": [], 
-     "DOUBLE": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": []}, 
-  "*[;,?[or([verbPath,verbSimple]),objectList]]" : {
-     ";": ["[;,?[or([verbPath,verbSimple]),objectList]]","*[;,?[or([verbPath,verbSimple]),objectList]]"], 
-     ".": [], 
-     "]": [], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "GRAPH": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": [], 
-     "}": []}, 
-  "*[;,?[verb,objectList]]" : {
-     ";": ["[;,?[verb,objectList]]","*[;,?[verb,objectList]]"], 
-     ".": [], 
-     "]": [], 
-     "}": [], 
-     "GRAPH": [], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": []}, 
-  "*[UNION,groupGraphPattern]" : {
-     "UNION": ["[UNION,groupGraphPattern]","*[UNION,groupGraphPattern]"], 
-     "VAR1": [], 
-     "VAR2": [], 
-     "NIL": [], 
-     "(": [], 
-     "[": [], 
-     "IRI_REF": [], 
-     "TRUE": [], 
-     "FALSE": [], 
-     "BLANK_NODE_LABEL": [], 
-     "ANON": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": [], 
-     "STRING_LITERAL1": [], 
-     "STRING_LITERAL2": [], 
-     "STRING_LITERAL_LONG1": [], 
-     "STRING_LITERAL_LONG2": [], 
-     "INTEGER": [], 
-     "DECIMAL": [], 
-     "DOUBLE": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": [], 
-     ".": [], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "GRAPH": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": [], 
-     "}": []}, 
-  "*[graphPatternNotTriples,?.,?triplesBlock]" : {
-     "{": ["[graphPatternNotTriples,?.,?triplesBlock]","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "OPTIONAL": ["[graphPatternNotTriples,?.,?triplesBlock]","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "MINUS": ["[graphPatternNotTriples,?.,?triplesBlock]","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "GRAPH": ["[graphPatternNotTriples,?.,?triplesBlock]","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "SERVICE": ["[graphPatternNotTriples,?.,?triplesBlock]","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "FILTER": ["[graphPatternNotTriples,?.,?triplesBlock]","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "BIND": ["[graphPatternNotTriples,?.,?triplesBlock]","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "VALUES": ["[graphPatternNotTriples,?.,?triplesBlock]","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "}": []}, 
-  "*[quadsNotTriples,?.,?triplesTemplate]" : {
-     "GRAPH": ["[quadsNotTriples,?.,?triplesTemplate]","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "}": []}, 
-  "*[|,pathOneInPropertySet]" : {
-     "|": ["[|,pathOneInPropertySet]","*[|,pathOneInPropertySet]"], 
-     ")": []}, 
-  "*[|,pathSequence]" : {
-     "|": ["[|,pathSequence]","*[|,pathSequence]"], 
-     ")": [], 
-     "(": [], 
-     "[": [], 
-     "VAR1": [], 
-     "VAR2": [], 
-     "NIL": [], 
-     "IRI_REF": [], 
-     "TRUE": [], 
-     "FALSE": [], 
-     "BLANK_NODE_LABEL": [], 
-     "ANON": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": [], 
-     "STRING_LITERAL1": [], 
-     "STRING_LITERAL2": [], 
-     "STRING_LITERAL_LONG1": [], 
-     "STRING_LITERAL_LONG2": [], 
-     "INTEGER": [], 
-     "DECIMAL": [], 
-     "DOUBLE": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": []}, 
-  "*[||,conditionalAndExpression]" : {
-     "||": ["[||,conditionalAndExpression]","*[||,conditionalAndExpression]"], 
-     "AS": [], 
-     ")": [], 
-     ",": [], 
-     ";": []}, 
-  "*dataBlockValue" : {
-     "UNDEF": ["dataBlockValue","*dataBlockValue"], 
-     "IRI_REF": ["dataBlockValue","*dataBlockValue"], 
-     "TRUE": ["dataBlockValue","*dataBlockValue"], 
-     "FALSE": ["dataBlockValue","*dataBlockValue"], 
-     "PNAME_LN": ["dataBlockValue","*dataBlockValue"], 
-     "PNAME_NS": ["dataBlockValue","*dataBlockValue"], 
-     "STRING_LITERAL1": ["dataBlockValue","*dataBlockValue"], 
-     "STRING_LITERAL2": ["dataBlockValue","*dataBlockValue"], 
-     "STRING_LITERAL_LONG1": ["dataBlockValue","*dataBlockValue"], 
-     "STRING_LITERAL_LONG2": ["dataBlockValue","*dataBlockValue"], 
-     "INTEGER": ["dataBlockValue","*dataBlockValue"], 
-     "DECIMAL": ["dataBlockValue","*dataBlockValue"], 
-     "DOUBLE": ["dataBlockValue","*dataBlockValue"], 
-     "INTEGER_POSITIVE": ["dataBlockValue","*dataBlockValue"], 
-     "DECIMAL_POSITIVE": ["dataBlockValue","*dataBlockValue"], 
-     "DOUBLE_POSITIVE": ["dataBlockValue","*dataBlockValue"], 
-     "INTEGER_NEGATIVE": ["dataBlockValue","*dataBlockValue"], 
-     "DECIMAL_NEGATIVE": ["dataBlockValue","*dataBlockValue"], 
-     "DOUBLE_NEGATIVE": ["dataBlockValue","*dataBlockValue"], 
-     "}": [], 
-     ")": []}, 
-  "*datasetClause" : {
-     "FROM": ["datasetClause","*datasetClause"], 
-     "WHERE": [], 
-     "{": []}, 
-  "*describeDatasetClause" : {
-     "FROM": ["describeDatasetClause","*describeDatasetClause"], 
-     "ORDER": [], 
-     "HAVING": [], 
-     "GROUP": [], 
-     "LIMIT": [], 
-     "OFFSET": [], 
-     "WHERE": [], 
-     "{": [], 
-     "VALUES": [], 
-     "$": []}, 
-  "*graphNode" : {
-     "(": ["graphNode","*graphNode"], 
-     "[": ["graphNode","*graphNode"], 
-     "VAR1": ["graphNode","*graphNode"], 
-     "VAR2": ["graphNode","*graphNode"], 
-     "NIL": ["graphNode","*graphNode"], 
-     "IRI_REF": ["graphNode","*graphNode"], 
-     "TRUE": ["graphNode","*graphNode"], 
-     "FALSE": ["graphNode","*graphNode"], 
-     "BLANK_NODE_LABEL": ["graphNode","*graphNode"], 
-     "ANON": ["graphNode","*graphNode"], 
-     "PNAME_LN": ["graphNode","*graphNode"], 
-     "PNAME_NS": ["graphNode","*graphNode"], 
-     "STRING_LITERAL1": ["graphNode","*graphNode"], 
-     "STRING_LITERAL2": ["graphNode","*graphNode"], 
-     "STRING_LITERAL_LONG1": ["graphNode","*graphNode"], 
-     "STRING_LITERAL_LONG2": ["graphNode","*graphNode"], 
-     "INTEGER": ["graphNode","*graphNode"], 
-     "DECIMAL": ["graphNode","*graphNode"], 
-     "DOUBLE": ["graphNode","*graphNode"], 
-     "INTEGER_POSITIVE": ["graphNode","*graphNode"], 
-     "DECIMAL_POSITIVE": ["graphNode","*graphNode"], 
-     "DOUBLE_POSITIVE": ["graphNode","*graphNode"], 
-     "INTEGER_NEGATIVE": ["graphNode","*graphNode"], 
-     "DECIMAL_NEGATIVE": ["graphNode","*graphNode"], 
-     "DOUBLE_NEGATIVE": ["graphNode","*graphNode"], 
-     ")": []}, 
-  "*graphNodePath" : {
-     "(": ["graphNodePath","*graphNodePath"], 
-     "[": ["graphNodePath","*graphNodePath"], 
-     "VAR1": ["graphNodePath","*graphNodePath"], 
-     "VAR2": ["graphNodePath","*graphNodePath"], 
-     "NIL": ["graphNodePath","*graphNodePath"], 
-     "IRI_REF": ["graphNodePath","*graphNodePath"], 
-     "TRUE": ["graphNodePath","*graphNodePath"], 
-     "FALSE": ["graphNodePath","*graphNodePath"], 
-     "BLANK_NODE_LABEL": ["graphNodePath","*graphNodePath"], 
-     "ANON": ["graphNodePath","*graphNodePath"], 
-     "PNAME_LN": ["graphNodePath","*graphNodePath"], 
-     "PNAME_NS": ["graphNodePath","*graphNodePath"], 
-     "STRING_LITERAL1": ["graphNodePath","*graphNodePath"], 
-     "STRING_LITERAL2": ["graphNodePath","*graphNodePath"], 
-     "STRING_LITERAL_LONG1": ["graphNodePath","*graphNodePath"], 
-     "STRING_LITERAL_LONG2": ["graphNodePath","*graphNodePath"], 
-     "INTEGER": ["graphNodePath","*graphNodePath"], 
-     "DECIMAL": ["graphNodePath","*graphNodePath"], 
-     "DOUBLE": ["graphNodePath","*graphNodePath"], 
-     "INTEGER_POSITIVE": ["graphNodePath","*graphNodePath"], 
-     "DECIMAL_POSITIVE": ["graphNodePath","*graphNodePath"], 
-     "DOUBLE_POSITIVE": ["graphNodePath","*graphNodePath"], 
-     "INTEGER_NEGATIVE": ["graphNodePath","*graphNodePath"], 
-     "DECIMAL_NEGATIVE": ["graphNodePath","*graphNodePath"], 
-     "DOUBLE_NEGATIVE": ["graphNodePath","*graphNodePath"], 
-     ")": []}, 
-  "*groupCondition" : {
-     "(": ["groupCondition","*groupCondition"], 
-     "STR": ["groupCondition","*groupCondition"], 
-     "LANG": ["groupCondition","*groupCondition"], 
-     "LANGMATCHES": ["groupCondition","*groupCondition"], 
-     "DATATYPE": ["groupCondition","*groupCondition"], 
-     "BOUND": ["groupCondition","*groupCondition"], 
-     "IRI": ["groupCondition","*groupCondition"], 
-     "URI": ["groupCondition","*groupCondition"], 
-     "BNODE": ["groupCondition","*groupCondition"], 
-     "RAND": ["groupCondition","*groupCondition"], 
-     "ABS": ["groupCondition","*groupCondition"], 
-     "CEIL": ["groupCondition","*groupCondition"], 
-     "FLOOR": ["groupCondition","*groupCondition"], 
-     "ROUND": ["groupCondition","*groupCondition"], 
-     "CONCAT": ["groupCondition","*groupCondition"], 
-     "STRLEN": ["groupCondition","*groupCondition"], 
-     "UCASE": ["groupCondition","*groupCondition"], 
-     "LCASE": ["groupCondition","*groupCondition"], 
-     "ENCODE_FOR_URI": ["groupCondition","*groupCondition"], 
-     "CONTAINS": ["groupCondition","*groupCondition"], 
-     "STRSTARTS": ["groupCondition","*groupCondition"], 
-     "STRENDS": ["groupCondition","*groupCondition"], 
-     "STRBEFORE": ["groupCondition","*groupCondition"], 
-     "STRAFTER": ["groupCondition","*groupCondition"], 
-     "YEAR": ["groupCondition","*groupCondition"], 
-     "MONTH": ["groupCondition","*groupCondition"], 
-     "DAY": ["groupCondition","*groupCondition"], 
-     "HOURS": ["groupCondition","*groupCondition"], 
-     "MINUTES": ["groupCondition","*groupCondition"], 
-     "SECONDS": ["groupCondition","*groupCondition"], 
-     "TIMEZONE": ["groupCondition","*groupCondition"], 
-     "TZ": ["groupCondition","*groupCondition"], 
-     "NOW": ["groupCondition","*groupCondition"], 
-     "UUID": ["groupCondition","*groupCondition"], 
-     "STRUUID": ["groupCondition","*groupCondition"], 
-     "MD5": ["groupCondition","*groupCondition"], 
-     "SHA1": ["groupCondition","*groupCondition"], 
-     "SHA256": ["groupCondition","*groupCondition"], 
-     "SHA384": ["groupCondition","*groupCondition"], 
-     "SHA512": ["groupCondition","*groupCondition"], 
-     "COALESCE": ["groupCondition","*groupCondition"], 
-     "IF": ["groupCondition","*groupCondition"], 
-     "STRLANG": ["groupCondition","*groupCondition"], 
-     "STRDT": ["groupCondition","*groupCondition"], 
-     "SAMETERM": ["groupCondition","*groupCondition"], 
-     "ISIRI": ["groupCondition","*groupCondition"], 
-     "ISURI": ["groupCondition","*groupCondition"], 
-     "ISBLANK": ["groupCondition","*groupCondition"], 
-     "ISLITERAL": ["groupCondition","*groupCondition"], 
-     "ISNUMERIC": ["groupCondition","*groupCondition"], 
-     "VAR1": ["groupCondition","*groupCondition"], 
-     "VAR2": ["groupCondition","*groupCondition"], 
-     "SUBSTR": ["groupCondition","*groupCondition"], 
-     "REPLACE": ["groupCondition","*groupCondition"], 
-     "REGEX": ["groupCondition","*groupCondition"], 
-     "EXISTS": ["groupCondition","*groupCondition"], 
-     "NOT": ["groupCondition","*groupCondition"], 
-     "IRI_REF": ["groupCondition","*groupCondition"], 
-     "PNAME_LN": ["groupCondition","*groupCondition"], 
-     "PNAME_NS": ["groupCondition","*groupCondition"], 
-     "VALUES": [], 
-     "LIMIT": [], 
-     "OFFSET": [], 
-     "ORDER": [], 
-     "HAVING": [], 
-     "$": [], 
-     "}": []}, 
-  "*havingCondition" : {
-     "(": ["havingCondition","*havingCondition"], 
-     "STR": ["havingCondition","*havingCondition"], 
-     "LANG": ["havingCondition","*havingCondition"], 
-     "LANGMATCHES": ["havingCondition","*havingCondition"], 
-     "DATATYPE": ["havingCondition","*havingCondition"], 
-     "BOUND": ["havingCondition","*havingCondition"], 
-     "IRI": ["havingCondition","*havingCondition"], 
-     "URI": ["havingCondition","*havingCondition"], 
-     "BNODE": ["havingCondition","*havingCondition"], 
-     "RAND": ["havingCondition","*havingCondition"], 
-     "ABS": ["havingCondition","*havingCondition"], 
-     "CEIL": ["havingCondition","*havingCondition"], 
-     "FLOOR": ["havingCondition","*havingCondition"], 
-     "ROUND": ["havingCondition","*havingCondition"], 
-     "CONCAT": ["havingCondition","*havingCondition"], 
-     "STRLEN": ["havingCondition","*havingCondition"], 
-     "UCASE": ["havingCondition","*havingCondition"], 
-     "LCASE": ["havingCondition","*havingCondition"], 
-     "ENCODE_FOR_URI": ["havingCondition","*havingCondition"], 
-     "CONTAINS": ["havingCondition","*havingCondition"], 
-     "STRSTARTS": ["havingCondition","*havingCondition"], 
-     "STRENDS": ["havingCondition","*havingCondition"], 
-     "STRBEFORE": ["havingCondition","*havingCondition"], 
-     "STRAFTER": ["havingCondition","*havingCondition"], 
-     "YEAR": ["havingCondition","*havingCondition"], 
-     "MONTH": ["havingCondition","*havingCondition"], 
-     "DAY": ["havingCondition","*havingCondition"], 
-     "HOURS": ["havingCondition","*havingCondition"], 
-     "MINUTES": ["havingCondition","*havingCondition"], 
-     "SECONDS": ["havingCondition","*havingCondition"], 
-     "TIMEZONE": ["havingCondition","*havingCondition"], 
-     "TZ": ["havingCondition","*havingCondition"], 
-     "NOW": ["havingCondition","*havingCondition"], 
-     "UUID": ["havingCondition","*havingCondition"], 
-     "STRUUID": ["havingCondition","*havingCondition"], 
-     "MD5": ["havingCondition","*havingCondition"], 
-     "SHA1": ["havingCondition","*havingCondition"], 
-     "SHA256": ["havingCondition","*havingCondition"], 
-     "SHA384": ["havingCondition","*havingCondition"], 
-     "SHA512": ["havingCondition","*havingCondition"], 
-     "COALESCE": ["havingCondition","*havingCondition"], 
-     "IF": ["havingCondition","*havingCondition"], 
-     "STRLANG": ["havingCondition","*havingCondition"], 
-     "STRDT": ["havingCondition","*havingCondition"], 
-     "SAMETERM": ["havingCondition","*havingCondition"], 
-     "ISIRI": ["havingCondition","*havingCondition"], 
-     "ISURI": ["havingCondition","*havingCondition"], 
-     "ISBLANK": ["havingCondition","*havingCondition"], 
-     "ISLITERAL": ["havingCondition","*havingCondition"], 
-     "ISNUMERIC": ["havingCondition","*havingCondition"], 
-     "SUBSTR": ["havingCondition","*havingCondition"], 
-     "REPLACE": ["havingCondition","*havingCondition"], 
-     "REGEX": ["havingCondition","*havingCondition"], 
-     "EXISTS": ["havingCondition","*havingCondition"], 
-     "NOT": ["havingCondition","*havingCondition"], 
-     "IRI_REF": ["havingCondition","*havingCondition"], 
-     "PNAME_LN": ["havingCondition","*havingCondition"], 
-     "PNAME_NS": ["havingCondition","*havingCondition"], 
-     "VALUES": [], 
-     "LIMIT": [], 
-     "OFFSET": [], 
-     "ORDER": [], 
-     "$": [], 
-     "}": []}, 
-  "*or([[ (,*dataBlockValue,)],NIL])" : {
-     "(": ["or([[ (,*dataBlockValue,)],NIL])","*or([[ (,*dataBlockValue,)],NIL])"], 
-     "NIL": ["or([[ (,*dataBlockValue,)],NIL])","*or([[ (,*dataBlockValue,)],NIL])"], 
-     "}": []}, 
-  "*or([[*,unaryExpression],[/,unaryExpression]])" : {
-     "*": ["or([[*,unaryExpression],[/,unaryExpression]])","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "/": ["or([[*,unaryExpression],[/,unaryExpression]])","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "AS": [], 
-     ")": [], 
-     ",": [], 
-     "||": [], 
-     "&&": [], 
-     "=": [], 
-     "!=": [], 
-     "<": [], 
-     ">": [], 
-     "<=": [], 
-     ">=": [], 
-     "IN": [], 
-     "NOT": [], 
-     "+": [], 
-     "-": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": [], 
-     ";": []}, 
-  "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])" : {
-     "+": ["or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "-": ["or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "INTEGER_POSITIVE": ["or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DECIMAL_POSITIVE": ["or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DOUBLE_POSITIVE": ["or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "INTEGER_NEGATIVE": ["or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DECIMAL_NEGATIVE": ["or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DOUBLE_NEGATIVE": ["or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "AS": [], 
-     ")": [], 
-     ",": [], 
-     "||": [], 
-     "&&": [], 
-     "=": [], 
-     "!=": [], 
-     "<": [], 
-     ">": [], 
-     "<=": [], 
-     ">=": [], 
-     "IN": [], 
-     "NOT": [], 
-     ";": []}, 
-  "*or([baseDecl,prefixDecl])" : {
-     "BASE": ["or([baseDecl,prefixDecl])","*or([baseDecl,prefixDecl])"], 
-     "PREFIX": ["or([baseDecl,prefixDecl])","*or([baseDecl,prefixDecl])"], 
-     "$": [], 
-     "CONSTRUCT": [], 
-     "DESCRIBE": [], 
-     "ASK": [], 
-     "INSERT": [], 
-     "DELETE": [], 
-     "SELECT": [], 
-     "LOAD": [], 
-     "CLEAR": [], 
-     "DROP": [], 
-     "ADD": [], 
-     "MOVE": [], 
-     "COPY": [], 
-     "CREATE": [], 
-     "WITH": []}, 
-  "*or([var,[ (,expression,AS,var,)]])" : {
-     "(": ["or([var,[ (,expression,AS,var,)]])","*or([var,[ (,expression,AS,var,)]])"], 
-     "VAR1": ["or([var,[ (,expression,AS,var,)]])","*or([var,[ (,expression,AS,var,)]])"], 
-     "VAR2": ["or([var,[ (,expression,AS,var,)]])","*or([var,[ (,expression,AS,var,)]])"], 
-     "WHERE": [], 
-     "{": [], 
-     "FROM": []}, 
-  "*orderCondition" : {
-     "ASC": ["orderCondition","*orderCondition"], 
-     "DESC": ["orderCondition","*orderCondition"], 
-     "VAR1": ["orderCondition","*orderCondition"], 
-     "VAR2": ["orderCondition","*orderCondition"], 
-     "(": ["orderCondition","*orderCondition"], 
-     "STR": ["orderCondition","*orderCondition"], 
-     "LANG": ["orderCondition","*orderCondition"], 
-     "LANGMATCHES": ["orderCondition","*orderCondition"], 
-     "DATATYPE": ["orderCondition","*orderCondition"], 
-     "BOUND": ["orderCondition","*orderCondition"], 
-     "IRI": ["orderCondition","*orderCondition"], 
-     "URI": ["orderCondition","*orderCondition"], 
-     "BNODE": ["orderCondition","*orderCondition"], 
-     "RAND": ["orderCondition","*orderCondition"], 
-     "ABS": ["orderCondition","*orderCondition"], 
-     "CEIL": ["orderCondition","*orderCondition"], 
-     "FLOOR": ["orderCondition","*orderCondition"], 
-     "ROUND": ["orderCondition","*orderCondition"], 
-     "CONCAT": ["orderCondition","*orderCondition"], 
-     "STRLEN": ["orderCondition","*orderCondition"], 
-     "UCASE": ["orderCondition","*orderCondition"], 
-     "LCASE": ["orderCondition","*orderCondition"], 
-     "ENCODE_FOR_URI": ["orderCondition","*orderCondition"], 
-     "CONTAINS": ["orderCondition","*orderCondition"], 
-     "STRSTARTS": ["orderCondition","*orderCondition"], 
-     "STRENDS": ["orderCondition","*orderCondition"], 
-     "STRBEFORE": ["orderCondition","*orderCondition"], 
-     "STRAFTER": ["orderCondition","*orderCondition"], 
-     "YEAR": ["orderCondition","*orderCondition"], 
-     "MONTH": ["orderCondition","*orderCondition"], 
-     "DAY": ["orderCondition","*orderCondition"], 
-     "HOURS": ["orderCondition","*orderCondition"], 
-     "MINUTES": ["orderCondition","*orderCondition"], 
-     "SECONDS": ["orderCondition","*orderCondition"], 
-     "TIMEZONE": ["orderCondition","*orderCondition"], 
-     "TZ": ["orderCondition","*orderCondition"], 
-     "NOW": ["orderCondition","*orderCondition"], 
-     "UUID": ["orderCondition","*orderCondition"], 
-     "STRUUID": ["orderCondition","*orderCondition"], 
-     "MD5": ["orderCondition","*orderCondition"], 
-     "SHA1": ["orderCondition","*orderCondition"], 
-     "SHA256": ["orderCondition","*orderCondition"], 
-     "SHA384": ["orderCondition","*orderCondition"], 
-     "SHA512": ["orderCondition","*orderCondition"], 
-     "COALESCE": ["orderCondition","*orderCondition"], 
-     "IF": ["orderCondition","*orderCondition"], 
-     "STRLANG": ["orderCondition","*orderCondition"], 
-     "STRDT": ["orderCondition","*orderCondition"], 
-     "SAMETERM": ["orderCondition","*orderCondition"], 
-     "ISIRI": ["orderCondition","*orderCondition"], 
-     "ISURI": ["orderCondition","*orderCondition"], 
-     "ISBLANK": ["orderCondition","*orderCondition"], 
-     "ISLITERAL": ["orderCondition","*orderCondition"], 
-     "ISNUMERIC": ["orderCondition","*orderCondition"], 
-     "SUBSTR": ["orderCondition","*orderCondition"], 
-     "REPLACE": ["orderCondition","*orderCondition"], 
-     "REGEX": ["orderCondition","*orderCondition"], 
-     "EXISTS": ["orderCondition","*orderCondition"], 
-     "NOT": ["orderCondition","*orderCondition"], 
-     "IRI_REF": ["orderCondition","*orderCondition"], 
-     "PNAME_LN": ["orderCondition","*orderCondition"], 
-     "PNAME_NS": ["orderCondition","*orderCondition"], 
-     "VALUES": [], 
-     "LIMIT": [], 
-     "OFFSET": [], 
-     "$": [], 
-     "}": []}, 
-  "*usingClause" : {
-     "USING": ["usingClause","*usingClause"], 
-     "WHERE": []}, 
-  "*var" : {
-     "VAR1": ["var","*var"], 
-     "VAR2": ["var","*var"], 
-     ")": []}, 
-  "*varOrIRIref" : {
-     "VAR1": ["varOrIRIref","*varOrIRIref"], 
-     "VAR2": ["varOrIRIref","*varOrIRIref"], 
-     "IRI_REF": ["varOrIRIref","*varOrIRIref"], 
-     "PNAME_LN": ["varOrIRIref","*varOrIRIref"], 
-     "PNAME_NS": ["varOrIRIref","*varOrIRIref"], 
-     "ORDER": [], 
-     "HAVING": [], 
-     "GROUP": [], 
-     "LIMIT": [], 
-     "OFFSET": [], 
-     "WHERE": [], 
-     "{": [], 
-     "FROM": [], 
-     "VALUES": [], 
-     "$": []}, 
-  "+graphNode" : {
-     "(": ["graphNode","*graphNode"], 
-     "[": ["graphNode","*graphNode"], 
-     "VAR1": ["graphNode","*graphNode"], 
-     "VAR2": ["graphNode","*graphNode"], 
-     "NIL": ["graphNode","*graphNode"], 
-     "IRI_REF": ["graphNode","*graphNode"], 
-     "TRUE": ["graphNode","*graphNode"], 
-     "FALSE": ["graphNode","*graphNode"], 
-     "BLANK_NODE_LABEL": ["graphNode","*graphNode"], 
-     "ANON": ["graphNode","*graphNode"], 
-     "PNAME_LN": ["graphNode","*graphNode"], 
-     "PNAME_NS": ["graphNode","*graphNode"], 
-     "STRING_LITERAL1": ["graphNode","*graphNode"], 
-     "STRING_LITERAL2": ["graphNode","*graphNode"], 
-     "STRING_LITERAL_LONG1": ["graphNode","*graphNode"], 
-     "STRING_LITERAL_LONG2": ["graphNode","*graphNode"], 
-     "INTEGER": ["graphNode","*graphNode"], 
-     "DECIMAL": ["graphNode","*graphNode"], 
-     "DOUBLE": ["graphNode","*graphNode"], 
-     "INTEGER_POSITIVE": ["graphNode","*graphNode"], 
-     "DECIMAL_POSITIVE": ["graphNode","*graphNode"], 
-     "DOUBLE_POSITIVE": ["graphNode","*graphNode"], 
-     "INTEGER_NEGATIVE": ["graphNode","*graphNode"], 
-     "DECIMAL_NEGATIVE": ["graphNode","*graphNode"], 
-     "DOUBLE_NEGATIVE": ["graphNode","*graphNode"]}, 
-  "+graphNodePath" : {
-     "(": ["graphNodePath","*graphNodePath"], 
-     "[": ["graphNodePath","*graphNodePath"], 
-     "VAR1": ["graphNodePath","*graphNodePath"], 
-     "VAR2": ["graphNodePath","*graphNodePath"], 
-     "NIL": ["graphNodePath","*graphNodePath"], 
-     "IRI_REF": ["graphNodePath","*graphNodePath"], 
-     "TRUE": ["graphNodePath","*graphNodePath"], 
-     "FALSE": ["graphNodePath","*graphNodePath"], 
-     "BLANK_NODE_LABEL": ["graphNodePath","*graphNodePath"], 
-     "ANON": ["graphNodePath","*graphNodePath"], 
-     "PNAME_LN": ["graphNodePath","*graphNodePath"], 
-     "PNAME_NS": ["graphNodePath","*graphNodePath"], 
-     "STRING_LITERAL1": ["graphNodePath","*graphNodePath"], 
-     "STRING_LITERAL2": ["graphNodePath","*graphNodePath"], 
-     "STRING_LITERAL_LONG1": ["graphNodePath","*graphNodePath"], 
-     "STRING_LITERAL_LONG2": ["graphNodePath","*graphNodePath"], 
-     "INTEGER": ["graphNodePath","*graphNodePath"], 
-     "DECIMAL": ["graphNodePath","*graphNodePath"], 
-     "DOUBLE": ["graphNodePath","*graphNodePath"], 
-     "INTEGER_POSITIVE": ["graphNodePath","*graphNodePath"], 
-     "DECIMAL_POSITIVE": ["graphNodePath","*graphNodePath"], 
-     "DOUBLE_POSITIVE": ["graphNodePath","*graphNodePath"], 
-     "INTEGER_NEGATIVE": ["graphNodePath","*graphNodePath"], 
-     "DECIMAL_NEGATIVE": ["graphNodePath","*graphNodePath"], 
-     "DOUBLE_NEGATIVE": ["graphNodePath","*graphNodePath"]}, 
-  "+groupCondition" : {
-     "(": ["groupCondition","*groupCondition"], 
-     "STR": ["groupCondition","*groupCondition"], 
-     "LANG": ["groupCondition","*groupCondition"], 
-     "LANGMATCHES": ["groupCondition","*groupCondition"], 
-     "DATATYPE": ["groupCondition","*groupCondition"], 
-     "BOUND": ["groupCondition","*groupCondition"], 
-     "IRI": ["groupCondition","*groupCondition"], 
-     "URI": ["groupCondition","*groupCondition"], 
-     "BNODE": ["groupCondition","*groupCondition"], 
-     "RAND": ["groupCondition","*groupCondition"], 
-     "ABS": ["groupCondition","*groupCondition"], 
-     "CEIL": ["groupCondition","*groupCondition"], 
-     "FLOOR": ["groupCondition","*groupCondition"], 
-     "ROUND": ["groupCondition","*groupCondition"], 
-     "CONCAT": ["groupCondition","*groupCondition"], 
-     "STRLEN": ["groupCondition","*groupCondition"], 
-     "UCASE": ["groupCondition","*groupCondition"], 
-     "LCASE": ["groupCondition","*groupCondition"], 
-     "ENCODE_FOR_URI": ["groupCondition","*groupCondition"], 
-     "CONTAINS": ["groupCondition","*groupCondition"], 
-     "STRSTARTS": ["groupCondition","*groupCondition"], 
-     "STRENDS": ["groupCondition","*groupCondition"], 
-     "STRBEFORE": ["groupCondition","*groupCondition"], 
-     "STRAFTER": ["groupCondition","*groupCondition"], 
-     "YEAR": ["groupCondition","*groupCondition"], 
-     "MONTH": ["groupCondition","*groupCondition"], 
-     "DAY": ["groupCondition","*groupCondition"], 
-     "HOURS": ["groupCondition","*groupCondition"], 
-     "MINUTES": ["groupCondition","*groupCondition"], 
-     "SECONDS": ["groupCondition","*groupCondition"], 
-     "TIMEZONE": ["groupCondition","*groupCondition"], 
-     "TZ": ["groupCondition","*groupCondition"], 
-     "NOW": ["groupCondition","*groupCondition"], 
-     "UUID": ["groupCondition","*groupCondition"], 
-     "STRUUID": ["groupCondition","*groupCondition"], 
-     "MD5": ["groupCondition","*groupCondition"], 
-     "SHA1": ["groupCondition","*groupCondition"], 
-     "SHA256": ["groupCondition","*groupCondition"], 
-     "SHA384": ["groupCondition","*groupCondition"], 
-     "SHA512": ["groupCondition","*groupCondition"], 
-     "COALESCE": ["groupCondition","*groupCondition"], 
-     "IF": ["groupCondition","*groupCondition"], 
-     "STRLANG": ["groupCondition","*groupCondition"], 
-     "STRDT": ["groupCondition","*groupCondition"], 
-     "SAMETERM": ["groupCondition","*groupCondition"], 
-     "ISIRI": ["groupCondition","*groupCondition"], 
-     "ISURI": ["groupCondition","*groupCondition"], 
-     "ISBLANK": ["groupCondition","*groupCondition"], 
-     "ISLITERAL": ["groupCondition","*groupCondition"], 
-     "ISNUMERIC": ["groupCondition","*groupCondition"], 
-     "VAR1": ["groupCondition","*groupCondition"], 
-     "VAR2": ["groupCondition","*groupCondition"], 
-     "SUBSTR": ["groupCondition","*groupCondition"], 
-     "REPLACE": ["groupCondition","*groupCondition"], 
-     "REGEX": ["groupCondition","*groupCondition"], 
-     "EXISTS": ["groupCondition","*groupCondition"], 
-     "NOT": ["groupCondition","*groupCondition"], 
-     "IRI_REF": ["groupCondition","*groupCondition"], 
-     "PNAME_LN": ["groupCondition","*groupCondition"], 
-     "PNAME_NS": ["groupCondition","*groupCondition"]}, 
-  "+havingCondition" : {
-     "(": ["havingCondition","*havingCondition"], 
-     "STR": ["havingCondition","*havingCondition"], 
-     "LANG": ["havingCondition","*havingCondition"], 
-     "LANGMATCHES": ["havingCondition","*havingCondition"], 
-     "DATATYPE": ["havingCondition","*havingCondition"], 
-     "BOUND": ["havingCondition","*havingCondition"], 
-     "IRI": ["havingCondition","*havingCondition"], 
-     "URI": ["havingCondition","*havingCondition"], 
-     "BNODE": ["havingCondition","*havingCondition"], 
-     "RAND": ["havingCondition","*havingCondition"], 
-     "ABS": ["havingCondition","*havingCondition"], 
-     "CEIL": ["havingCondition","*havingCondition"], 
-     "FLOOR": ["havingCondition","*havingCondition"], 
-     "ROUND": ["havingCondition","*havingCondition"], 
-     "CONCAT": ["havingCondition","*havingCondition"], 
-     "STRLEN": ["havingCondition","*havingCondition"], 
-     "UCASE": ["havingCondition","*havingCondition"], 
-     "LCASE": ["havingCondition","*havingCondition"], 
-     "ENCODE_FOR_URI": ["havingCondition","*havingCondition"], 
-     "CONTAINS": ["havingCondition","*havingCondition"], 
-     "STRSTARTS": ["havingCondition","*havingCondition"], 
-     "STRENDS": ["havingCondition","*havingCondition"], 
-     "STRBEFORE": ["havingCondition","*havingCondition"], 
-     "STRAFTER": ["havingCondition","*havingCondition"], 
-     "YEAR": ["havingCondition","*havingCondition"], 
-     "MONTH": ["havingCondition","*havingCondition"], 
-     "DAY": ["havingCondition","*havingCondition"], 
-     "HOURS": ["havingCondition","*havingCondition"], 
-     "MINUTES": ["havingCondition","*havingCondition"], 
-     "SECONDS": ["havingCondition","*havingCondition"], 
-     "TIMEZONE": ["havingCondition","*havingCondition"], 
-     "TZ": ["havingCondition","*havingCondition"], 
-     "NOW": ["havingCondition","*havingCondition"], 
-     "UUID": ["havingCondition","*havingCondition"], 
-     "STRUUID": ["havingCondition","*havingCondition"], 
-     "MD5": ["havingCondition","*havingCondition"], 
-     "SHA1": ["havingCondition","*havingCondition"], 
-     "SHA256": ["havingCondition","*havingCondition"], 
-     "SHA384": ["havingCondition","*havingCondition"], 
-     "SHA512": ["havingCondition","*havingCondition"], 
-     "COALESCE": ["havingCondition","*havingCondition"], 
-     "IF": ["havingCondition","*havingCondition"], 
-     "STRLANG": ["havingCondition","*havingCondition"], 
-     "STRDT": ["havingCondition","*havingCondition"], 
-     "SAMETERM": ["havingCondition","*havingCondition"], 
-     "ISIRI": ["havingCondition","*havingCondition"], 
-     "ISURI": ["havingCondition","*havingCondition"], 
-     "ISBLANK": ["havingCondition","*havingCondition"], 
-     "ISLITERAL": ["havingCondition","*havingCondition"], 
-     "ISNUMERIC": ["havingCondition","*havingCondition"], 
-     "SUBSTR": ["havingCondition","*havingCondition"], 
-     "REPLACE": ["havingCondition","*havingCondition"], 
-     "REGEX": ["havingCondition","*havingCondition"], 
-     "EXISTS": ["havingCondition","*havingCondition"], 
-     "NOT": ["havingCondition","*havingCondition"], 
-     "IRI_REF": ["havingCondition","*havingCondition"], 
-     "PNAME_LN": ["havingCondition","*havingCondition"], 
-     "PNAME_NS": ["havingCondition","*havingCondition"]}, 
-  "+or([var,[ (,expression,AS,var,)]])" : {
-     "(": ["or([var,[ (,expression,AS,var,)]])","*or([var,[ (,expression,AS,var,)]])"], 
-     "VAR1": ["or([var,[ (,expression,AS,var,)]])","*or([var,[ (,expression,AS,var,)]])"], 
-     "VAR2": ["or([var,[ (,expression,AS,var,)]])","*or([var,[ (,expression,AS,var,)]])"]}, 
-  "+orderCondition" : {
-     "ASC": ["orderCondition","*orderCondition"], 
-     "DESC": ["orderCondition","*orderCondition"], 
-     "VAR1": ["orderCondition","*orderCondition"], 
-     "VAR2": ["orderCondition","*orderCondition"], 
-     "(": ["orderCondition","*orderCondition"], 
-     "STR": ["orderCondition","*orderCondition"], 
-     "LANG": ["orderCondition","*orderCondition"], 
-     "LANGMATCHES": ["orderCondition","*orderCondition"], 
-     "DATATYPE": ["orderCondition","*orderCondition"], 
-     "BOUND": ["orderCondition","*orderCondition"], 
-     "IRI": ["orderCondition","*orderCondition"], 
-     "URI": ["orderCondition","*orderCondition"], 
-     "BNODE": ["orderCondition","*orderCondition"], 
-     "RAND": ["orderCondition","*orderCondition"], 
-     "ABS": ["orderCondition","*orderCondition"], 
-     "CEIL": ["orderCondition","*orderCondition"], 
-     "FLOOR": ["orderCondition","*orderCondition"], 
-     "ROUND": ["orderCondition","*orderCondition"], 
-     "CONCAT": ["orderCondition","*orderCondition"], 
-     "STRLEN": ["orderCondition","*orderCondition"], 
-     "UCASE": ["orderCondition","*orderCondition"], 
-     "LCASE": ["orderCondition","*orderCondition"], 
-     "ENCODE_FOR_URI": ["orderCondition","*orderCondition"], 
-     "CONTAINS": ["orderCondition","*orderCondition"], 
-     "STRSTARTS": ["orderCondition","*orderCondition"], 
-     "STRENDS": ["orderCondition","*orderCondition"], 
-     "STRBEFORE": ["orderCondition","*orderCondition"], 
-     "STRAFTER": ["orderCondition","*orderCondition"], 
-     "YEAR": ["orderCondition","*orderCondition"], 
-     "MONTH": ["orderCondition","*orderCondition"], 
-     "DAY": ["orderCondition","*orderCondition"], 
-     "HOURS": ["orderCondition","*orderCondition"], 
-     "MINUTES": ["orderCondition","*orderCondition"], 
-     "SECONDS": ["orderCondition","*orderCondition"], 
-     "TIMEZONE": ["orderCondition","*orderCondition"], 
-     "TZ": ["orderCondition","*orderCondition"], 
-     "NOW": ["orderCondition","*orderCondition"], 
-     "UUID": ["orderCondition","*orderCondition"], 
-     "STRUUID": ["orderCondition","*orderCondition"], 
-     "MD5": ["orderCondition","*orderCondition"], 
-     "SHA1": ["orderCondition","*orderCondition"], 
-     "SHA256": ["orderCondition","*orderCondition"], 
-     "SHA384": ["orderCondition","*orderCondition"], 
-     "SHA512": ["orderCondition","*orderCondition"], 
-     "COALESCE": ["orderCondition","*orderCondition"], 
-     "IF": ["orderCondition","*orderCondition"], 
-     "STRLANG": ["orderCondition","*orderCondition"], 
-     "STRDT": ["orderCondition","*orderCondition"], 
-     "SAMETERM": ["orderCondition","*orderCondition"], 
-     "ISIRI": ["orderCondition","*orderCondition"], 
-     "ISURI": ["orderCondition","*orderCondition"], 
-     "ISBLANK": ["orderCondition","*orderCondition"], 
-     "ISLITERAL": ["orderCondition","*orderCondition"], 
-     "ISNUMERIC": ["orderCondition","*orderCondition"], 
-     "SUBSTR": ["orderCondition","*orderCondition"], 
-     "REPLACE": ["orderCondition","*orderCondition"], 
-     "REGEX": ["orderCondition","*orderCondition"], 
-     "EXISTS": ["orderCondition","*orderCondition"], 
-     "NOT": ["orderCondition","*orderCondition"], 
-     "IRI_REF": ["orderCondition","*orderCondition"], 
-     "PNAME_LN": ["orderCondition","*orderCondition"], 
-     "PNAME_NS": ["orderCondition","*orderCondition"]}, 
-  "+varOrIRIref" : {
-     "VAR1": ["varOrIRIref","*varOrIRIref"], 
-     "VAR2": ["varOrIRIref","*varOrIRIref"], 
-     "IRI_REF": ["varOrIRIref","*varOrIRIref"], 
-     "PNAME_LN": ["varOrIRIref","*varOrIRIref"], 
-     "PNAME_NS": ["varOrIRIref","*varOrIRIref"]}, 
-  "?." : {
-     ".": ["."], 
-     "VAR1": [], 
-     "VAR2": [], 
-     "NIL": [], 
-     "(": [], 
-     "[": [], 
-     "IRI_REF": [], 
-     "TRUE": [], 
-     "FALSE": [], 
-     "BLANK_NODE_LABEL": [], 
-     "ANON": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": [], 
-     "STRING_LITERAL1": [], 
-     "STRING_LITERAL2": [], 
-     "STRING_LITERAL_LONG1": [], 
-     "STRING_LITERAL_LONG2": [], 
-     "INTEGER": [], 
-     "DECIMAL": [], 
-     "DOUBLE": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": [], 
-     "GRAPH": [], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": [], 
-     "}": []}, 
-  "?DISTINCT" : {
-     "DISTINCT": ["DISTINCT"], 
-     "!": [], 
-     "+": [], 
-     "-": [], 
-     "VAR1": [], 
-     "VAR2": [], 
-     "(": [], 
-     "STR": [], 
-     "LANG": [], 
-     "LANGMATCHES": [], 
-     "DATATYPE": [], 
-     "BOUND": [], 
-     "IRI": [], 
-     "URI": [], 
-     "BNODE": [], 
-     "RAND": [], 
-     "ABS": [], 
-     "CEIL": [], 
-     "FLOOR": [], 
-     "ROUND": [], 
-     "CONCAT": [], 
-     "STRLEN": [], 
-     "UCASE": [], 
-     "LCASE": [], 
-     "ENCODE_FOR_URI": [], 
-     "CONTAINS": [], 
-     "STRSTARTS": [], 
-     "STRENDS": [], 
-     "STRBEFORE": [], 
-     "STRAFTER": [], 
-     "YEAR": [], 
-     "MONTH": [], 
-     "DAY": [], 
-     "HOURS": [], 
-     "MINUTES": [], 
-     "SECONDS": [], 
-     "TIMEZONE": [], 
-     "TZ": [], 
-     "NOW": [], 
-     "UUID": [], 
-     "STRUUID": [], 
-     "MD5": [], 
-     "SHA1": [], 
-     "SHA256": [], 
-     "SHA384": [], 
-     "SHA512": [], 
-     "COALESCE": [], 
-     "IF": [], 
-     "STRLANG": [], 
-     "STRDT": [], 
-     "SAMETERM": [], 
-     "ISIRI": [], 
-     "ISURI": [], 
-     "ISBLANK": [], 
-     "ISLITERAL": [], 
-     "ISNUMERIC": [], 
-     "TRUE": [], 
-     "FALSE": [], 
-     "COUNT": [], 
-     "SUM": [], 
-     "MIN": [], 
-     "MAX": [], 
-     "AVG": [], 
-     "SAMPLE": [], 
-     "GROUP_CONCAT": [], 
-     "SUBSTR": [], 
-     "REPLACE": [], 
-     "REGEX": [], 
-     "EXISTS": [], 
-     "NOT": [], 
-     "IRI_REF": [], 
-     "STRING_LITERAL1": [], 
-     "STRING_LITERAL2": [], 
-     "STRING_LITERAL_LONG1": [], 
-     "STRING_LITERAL_LONG2": [], 
-     "INTEGER": [], 
-     "DECIMAL": [], 
-     "DOUBLE": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": [], 
-     "*": []}, 
-  "?GRAPH" : {
-     "GRAPH": ["GRAPH"], 
-     "IRI_REF": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": []}, 
-  "?SILENT" : {
-     "SILENT": ["SILENT"], 
-     "VAR1": [], 
-     "VAR2": [], 
-     "IRI_REF": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": []}, 
-  "?SILENT_1" : {
-     "SILENT": ["SILENT"], 
-     "IRI_REF": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": []}, 
-  "?SILENT_2" : {
-     "SILENT": ["SILENT"], 
-     "GRAPH": [], 
-     "DEFAULT": [], 
-     "NAMED": [], 
-     "ALL": []}, 
-  "?SILENT_3" : {
-     "SILENT": ["SILENT"], 
-     "GRAPH": []}, 
-  "?SILENT_4" : {
-     "SILENT": ["SILENT"], 
-     "DEFAULT": [], 
-     "GRAPH": [], 
-     "IRI_REF": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": []}, 
-  "?WHERE" : {
-     "WHERE": ["WHERE"], 
-     "{": []}, 
-  "?[,,expression]" : {
-     ",": ["[,,expression]"], 
-     ")": []}, 
-  "?[.,?constructTriples]" : {
-     ".": ["[.,?constructTriples]"], 
-     "}": []}, 
-  "?[.,?triplesBlock]" : {
-     ".": ["[.,?triplesBlock]"], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "GRAPH": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": [], 
-     "}": []}, 
-  "?[.,?triplesTemplate]" : {
-     ".": ["[.,?triplesTemplate]"], 
-     "}": [], 
-     "GRAPH": []}, 
-  "?[;,SEPARATOR,=,string]" : {
-     ";": ["[;,SEPARATOR,=,string]"], 
-     ")": []}, 
-  "?[;,update]" : {
-     ";": ["[;,update]"], 
-     "$": []}, 
-  "?[AS,var]" : {
-     "AS": ["[AS,var]"], 
-     ")": []}, 
-  "?[INTO,graphRef]" : {
-     "INTO": ["[INTO,graphRef]"], 
-     ";": [], 
-     "$": []}, 
-  "?[or([verbPath,verbSimple]),objectList]" : {
-     "VAR1": ["[or([verbPath,verbSimple]),objectList]"], 
-     "VAR2": ["[or([verbPath,verbSimple]),objectList]"], 
-     "^": ["[or([verbPath,verbSimple]),objectList]"], 
-     "a": ["[or([verbPath,verbSimple]),objectList]"], 
-     "!": ["[or([verbPath,verbSimple]),objectList]"], 
-     "(": ["[or([verbPath,verbSimple]),objectList]"], 
-     "IRI_REF": ["[or([verbPath,verbSimple]),objectList]"], 
-     "PNAME_LN": ["[or([verbPath,verbSimple]),objectList]"], 
-     "PNAME_NS": ["[or([verbPath,verbSimple]),objectList]"], 
-     ";": [], 
-     ".": [], 
-     "]": [], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "GRAPH": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": [], 
-     "}": []}, 
-  "?[pathOneInPropertySet,*[|,pathOneInPropertySet]]" : {
-     "a": ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"], 
-     "^": ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"], 
-     "IRI_REF": ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"], 
-     "PNAME_LN": ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"], 
-     "PNAME_NS": ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"], 
-     ")": []}, 
-  "?[update1,?[;,update]]" : {
-     "INSERT": ["[update1,?[;,update]]"], 
-     "DELETE": ["[update1,?[;,update]]"], 
-     "LOAD": ["[update1,?[;,update]]"], 
-     "CLEAR": ["[update1,?[;,update]]"], 
-     "DROP": ["[update1,?[;,update]]"], 
-     "ADD": ["[update1,?[;,update]]"], 
-     "MOVE": ["[update1,?[;,update]]"], 
-     "COPY": ["[update1,?[;,update]]"], 
-     "CREATE": ["[update1,?[;,update]]"], 
-     "WITH": ["[update1,?[;,update]]"], 
-     "$": []}, 
-  "?[verb,objectList]" : {
-     "a": ["[verb,objectList]"], 
-     "VAR1": ["[verb,objectList]"], 
-     "VAR2": ["[verb,objectList]"], 
-     "IRI_REF": ["[verb,objectList]"], 
-     "PNAME_LN": ["[verb,objectList]"], 
-     "PNAME_NS": ["[verb,objectList]"], 
-     ";": [], 
-     ".": [], 
-     "]": [], 
-     "}": [], 
-     "GRAPH": [], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": []}, 
-  "?argList" : {
-     "NIL": ["argList"], 
-     "(": ["argList"], 
-     "AS": [], 
-     ")": [], 
-     ",": [], 
-     "||": [], 
-     "&&": [], 
-     "=": [], 
-     "!=": [], 
-     "<": [], 
-     ">": [], 
-     "<=": [], 
-     ">=": [], 
-     "IN": [], 
-     "NOT": [], 
-     "+": [], 
-     "-": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": [], 
-     "*": [], 
-     "/": [], 
-     ";": []}, 
-  "?constructTriples" : {
-     "VAR1": ["constructTriples"], 
-     "VAR2": ["constructTriples"], 
-     "NIL": ["constructTriples"], 
-     "(": ["constructTriples"], 
-     "[": ["constructTriples"], 
-     "IRI_REF": ["constructTriples"], 
-     "TRUE": ["constructTriples"], 
-     "FALSE": ["constructTriples"], 
-     "BLANK_NODE_LABEL": ["constructTriples"], 
-     "ANON": ["constructTriples"], 
-     "PNAME_LN": ["constructTriples"], 
-     "PNAME_NS": ["constructTriples"], 
-     "STRING_LITERAL1": ["constructTriples"], 
-     "STRING_LITERAL2": ["constructTriples"], 
-     "STRING_LITERAL_LONG1": ["constructTriples"], 
-     "STRING_LITERAL_LONG2": ["constructTriples"], 
-     "INTEGER": ["constructTriples"], 
-     "DECIMAL": ["constructTriples"], 
-     "DOUBLE": ["constructTriples"], 
-     "INTEGER_POSITIVE": ["constructTriples"], 
-     "DECIMAL_POSITIVE": ["constructTriples"], 
-     "DOUBLE_POSITIVE": ["constructTriples"], 
-     "INTEGER_NEGATIVE": ["constructTriples"], 
-     "DECIMAL_NEGATIVE": ["constructTriples"], 
-     "DOUBLE_NEGATIVE": ["constructTriples"], 
-     "}": []}, 
-  "?groupClause" : {
-     "GROUP": ["groupClause"], 
-     "VALUES": [], 
-     "LIMIT": [], 
-     "OFFSET": [], 
-     "ORDER": [], 
-     "HAVING": [], 
-     "$": [], 
-     "}": []}, 
-  "?havingClause" : {
-     "HAVING": ["havingClause"], 
-     "VALUES": [], 
-     "LIMIT": [], 
-     "OFFSET": [], 
-     "ORDER": [], 
-     "$": [], 
-     "}": []}, 
-  "?insertClause" : {
-     "INSERT": ["insertClause"], 
-     "WHERE": [], 
-     "USING": []}, 
-  "?limitClause" : {
-     "LIMIT": ["limitClause"], 
-     "VALUES": [], 
-     "$": [], 
-     "}": []}, 
-  "?limitOffsetClauses" : {
-     "LIMIT": ["limitOffsetClauses"], 
-     "OFFSET": ["limitOffsetClauses"], 
-     "VALUES": [], 
-     "$": [], 
-     "}": []}, 
-  "?offsetClause" : {
-     "OFFSET": ["offsetClause"], 
-     "VALUES": [], 
-     "$": [], 
-     "}": []}, 
-  "?or([DISTINCT,REDUCED])" : {
-     "DISTINCT": ["or([DISTINCT,REDUCED])"], 
-     "REDUCED": ["or([DISTINCT,REDUCED])"], 
-     "*": [], 
-     "(": [], 
-     "VAR1": [], 
-     "VAR2": []}, 
-  "?or([LANGTAG,[^^,iriRef]])" : {
-     "LANGTAG": ["or([LANGTAG,[^^,iriRef]])"], 
-     "^^": ["or([LANGTAG,[^^,iriRef]])"], 
-     "UNDEF": [], 
-     "IRI_REF": [], 
-     "TRUE": [], 
-     "FALSE": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": [], 
-     "STRING_LITERAL1": [], 
-     "STRING_LITERAL2": [], 
-     "STRING_LITERAL_LONG1": [], 
-     "STRING_LITERAL_LONG2": [], 
-     "INTEGER": [], 
-     "DECIMAL": [], 
-     "DOUBLE": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": [], 
-     "a": [], 
-     "VAR1": [], 
-     "VAR2": [], 
-     "^": [], 
-     "!": [], 
-     "(": [], 
-     ".": [], 
-     ";": [], 
-     ",": [], 
-     "AS": [], 
-     ")": [], 
-     "||": [], 
-     "&&": [], 
-     "=": [], 
-     "!=": [], 
-     "<": [], 
-     ">": [], 
-     "<=": [], 
-     ">=": [], 
-     "IN": [], 
-     "NOT": [], 
-     "+": [], 
-     "-": [], 
-     "*": [], 
-     "/": [], 
-     "}": [], 
-     "[": [], 
-     "NIL": [], 
-     "BLANK_NODE_LABEL": [], 
-     "ANON": [], 
-     "]": [], 
-     "GRAPH": [], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": []}, 
-  "?or([[*,unaryExpression],[/,unaryExpression]])" : {
-     "*": ["or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "/": ["or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "+": [], 
-     "-": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": [], 
-     "AS": [], 
-     ")": [], 
-     ",": [], 
-     "||": [], 
-     "&&": [], 
-     "=": [], 
-     "!=": [], 
-     "<": [], 
-     ">": [], 
-     "<=": [], 
-     ">=": [], 
-     "IN": [], 
-     "NOT": [], 
-     ";": []}, 
-  "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])" : {
-     "=": ["or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "!=": ["or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "<": ["or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     ">": ["or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "<=": ["or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     ">=": ["or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "IN": ["or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "NOT": ["or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "AS": [], 
-     ")": [], 
-     ",": [], 
-     "||": [], 
-     "&&": [], 
-     ";": []}, 
-  "?orderClause" : {
-     "ORDER": ["orderClause"], 
-     "VALUES": [], 
-     "LIMIT": [], 
-     "OFFSET": [], 
-     "$": [], 
-     "}": []}, 
-  "?pathMod" : {
-     "*": ["pathMod"], 
-     "?": ["pathMod"], 
-     "+": ["pathMod"], 
-     "{": ["pathMod"], 
-     "|": [], 
-     "/": [], 
-     ")": [], 
-     "(": [], 
-     "[": [], 
-     "VAR1": [], 
-     "VAR2": [], 
-     "NIL": [], 
-     "IRI_REF": [], 
-     "TRUE": [], 
-     "FALSE": [], 
-     "BLANK_NODE_LABEL": [], 
-     "ANON": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": [], 
-     "STRING_LITERAL1": [], 
-     "STRING_LITERAL2": [], 
-     "STRING_LITERAL_LONG1": [], 
-     "STRING_LITERAL_LONG2": [], 
-     "INTEGER": [], 
-     "DECIMAL": [], 
-     "DOUBLE": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": []}, 
-  "?triplesBlock" : {
-     "VAR1": ["triplesBlock"], 
-     "VAR2": ["triplesBlock"], 
-     "NIL": ["triplesBlock"], 
-     "(": ["triplesBlock"], 
-     "[": ["triplesBlock"], 
-     "IRI_REF": ["triplesBlock"], 
-     "TRUE": ["triplesBlock"], 
-     "FALSE": ["triplesBlock"], 
-     "BLANK_NODE_LABEL": ["triplesBlock"], 
-     "ANON": ["triplesBlock"], 
-     "PNAME_LN": ["triplesBlock"], 
-     "PNAME_NS": ["triplesBlock"], 
-     "STRING_LITERAL1": ["triplesBlock"], 
-     "STRING_LITERAL2": ["triplesBlock"], 
-     "STRING_LITERAL_LONG1": ["triplesBlock"], 
-     "STRING_LITERAL_LONG2": ["triplesBlock"], 
-     "INTEGER": ["triplesBlock"], 
-     "DECIMAL": ["triplesBlock"], 
-     "DOUBLE": ["triplesBlock"], 
-     "INTEGER_POSITIVE": ["triplesBlock"], 
-     "DECIMAL_POSITIVE": ["triplesBlock"], 
-     "DOUBLE_POSITIVE": ["triplesBlock"], 
-     "INTEGER_NEGATIVE": ["triplesBlock"], 
-     "DECIMAL_NEGATIVE": ["triplesBlock"], 
-     "DOUBLE_NEGATIVE": ["triplesBlock"], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "GRAPH": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": [], 
-     "}": []}, 
-  "?triplesTemplate" : {
-     "VAR1": ["triplesTemplate"], 
-     "VAR2": ["triplesTemplate"], 
-     "NIL": ["triplesTemplate"], 
-     "(": ["triplesTemplate"], 
-     "[": ["triplesTemplate"], 
-     "IRI_REF": ["triplesTemplate"], 
-     "TRUE": ["triplesTemplate"], 
-     "FALSE": ["triplesTemplate"], 
-     "BLANK_NODE_LABEL": ["triplesTemplate"], 
-     "ANON": ["triplesTemplate"], 
-     "PNAME_LN": ["triplesTemplate"], 
-     "PNAME_NS": ["triplesTemplate"], 
-     "STRING_LITERAL1": ["triplesTemplate"], 
-     "STRING_LITERAL2": ["triplesTemplate"], 
-     "STRING_LITERAL_LONG1": ["triplesTemplate"], 
-     "STRING_LITERAL_LONG2": ["triplesTemplate"], 
-     "INTEGER": ["triplesTemplate"], 
-     "DECIMAL": ["triplesTemplate"], 
-     "DOUBLE": ["triplesTemplate"], 
-     "INTEGER_POSITIVE": ["triplesTemplate"], 
-     "DECIMAL_POSITIVE": ["triplesTemplate"], 
-     "DOUBLE_POSITIVE": ["triplesTemplate"], 
-     "INTEGER_NEGATIVE": ["triplesTemplate"], 
-     "DECIMAL_NEGATIVE": ["triplesTemplate"], 
-     "DOUBLE_NEGATIVE": ["triplesTemplate"], 
-     "}": [], 
-     "GRAPH": []}, 
-  "?whereClause" : {
-     "WHERE": ["whereClause"], 
-     "{": ["whereClause"], 
-     "ORDER": [], 
-     "HAVING": [], 
-     "GROUP": [], 
-     "LIMIT": [], 
-     "OFFSET": [], 
-     "VALUES": [], 
-     "$": []}, 
-  "[ (,*dataBlockValue,)]" : {
-     "(": ["(","*dataBlockValue",")"]}, 
-  "[ (,*var,)]" : {
-     "(": ["(","*var",")"]}, 
-  "[ (,expression,)]" : {
-     "(": ["(","expression",")"]}, 
-  "[ (,expression,AS,var,)]" : {
-     "(": ["(","expression","AS","var",")"]}, 
-  "[!=,numericExpression]" : {
-     "!=": ["!=","numericExpression"]}, 
-  "[&&,valueLogical]" : {
-     "&&": ["&&","valueLogical"]}, 
-  "[*,unaryExpression]" : {
-     "*": ["*","unaryExpression"]}, 
-  "[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]" : {
-     "WHERE": ["*datasetClause","WHERE","{","?triplesTemplate","}","solutionModifier"], 
-     "FROM": ["*datasetClause","WHERE","{","?triplesTemplate","}","solutionModifier"]}, 
-  "[+,multiplicativeExpression]" : {
-     "+": ["+","multiplicativeExpression"]}, 
-  "[,,expression]" : {
-     ",": [",","expression"]}, 
-  "[,,integer,}]" : {
-     ",": [",","integer","}"]}, 
-  "[,,objectPath]" : {
-     ",": [",","objectPath"]}, 
-  "[,,object]" : {
-     ",": [",","object"]}, 
-  "[,,or([},[integer,}]])]" : {
-     ",": [",","or([},[integer,}]])"]}, 
-  "[-,multiplicativeExpression]" : {
-     "-": ["-","multiplicativeExpression"]}, 
-  "[.,?constructTriples]" : {
-     ".": [".","?constructTriples"]}, 
-  "[.,?triplesBlock]" : {
-     ".": [".","?triplesBlock"]}, 
-  "[.,?triplesTemplate]" : {
-     ".": [".","?triplesTemplate"]}, 
-  "[/,pathEltOrInverse]" : {
-     "/": ["/","pathEltOrInverse"]}, 
-  "[/,unaryExpression]" : {
-     "/": ["/","unaryExpression"]}, 
-  "[;,?[or([verbPath,verbSimple]),objectList]]" : {
-     ";": [";","?[or([verbPath,verbSimple]),objectList]"]}, 
-  "[;,?[verb,objectList]]" : {
-     ";": [";","?[verb,objectList]"]}, 
-  "[;,SEPARATOR,=,string]" : {
-     ";": [";","SEPARATOR","=","string"]}, 
-  "[;,update]" : {
-     ";": [";","update"]}, 
-  "[<,numericExpression]" : {
-     "<": ["<","numericExpression"]}, 
-  "[<=,numericExpression]" : {
-     "<=": ["<=","numericExpression"]}, 
-  "[=,numericExpression]" : {
-     "=": ["=","numericExpression"]}, 
-  "[>,numericExpression]" : {
-     ">": [">","numericExpression"]}, 
-  "[>=,numericExpression]" : {
-     ">=": [">=","numericExpression"]}, 
-  "[AS,var]" : {
-     "AS": ["AS","var"]}, 
-  "[IN,expressionList]" : {
-     "IN": ["IN","expressionList"]}, 
-  "[INTO,graphRef]" : {
-     "INTO": ["INTO","graphRef"]}, 
-  "[NAMED,iriRef]" : {
-     "NAMED": ["NAMED","iriRef"]}, 
-  "[NOT,IN,expressionList]" : {
-     "NOT": ["NOT","IN","expressionList"]}, 
-  "[UNION,groupGraphPattern]" : {
-     "UNION": ["UNION","groupGraphPattern"]}, 
-  "[^^,iriRef]" : {
-     "^^": ["^^","iriRef"]}, 
-  "[constructTemplate,*datasetClause,whereClause,solutionModifier]" : {
-     "{": ["constructTemplate","*datasetClause","whereClause","solutionModifier"]}, 
-  "[deleteClause,?insertClause]" : {
-     "DELETE": ["deleteClause","?insertClause"]}, 
-  "[graphPatternNotTriples,?.,?triplesBlock]" : {
-     "{": ["graphPatternNotTriples","?.","?triplesBlock"], 
-     "OPTIONAL": ["graphPatternNotTriples","?.","?triplesBlock"], 
-     "MINUS": ["graphPatternNotTriples","?.","?triplesBlock"], 
-     "GRAPH": ["graphPatternNotTriples","?.","?triplesBlock"], 
-     "SERVICE": ["graphPatternNotTriples","?.","?triplesBlock"], 
-     "FILTER": ["graphPatternNotTriples","?.","?triplesBlock"], 
-     "BIND": ["graphPatternNotTriples","?.","?triplesBlock"], 
-     "VALUES": ["graphPatternNotTriples","?.","?triplesBlock"]}, 
-  "[integer,or([[,,or([},[integer,}]])],}])]" : {
-     "INTEGER": ["integer","or([[,,or([},[integer,}]])],}])"]}, 
-  "[integer,}]" : {
-     "INTEGER": ["integer","}"]}, 
-  "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]" : {
-     "INTEGER_POSITIVE": ["or([numericLiteralPositive,numericLiteralNegative])","?or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DECIMAL_POSITIVE": ["or([numericLiteralPositive,numericLiteralNegative])","?or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DOUBLE_POSITIVE": ["or([numericLiteralPositive,numericLiteralNegative])","?or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "INTEGER_NEGATIVE": ["or([numericLiteralPositive,numericLiteralNegative])","?or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DECIMAL_NEGATIVE": ["or([numericLiteralPositive,numericLiteralNegative])","?or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DOUBLE_NEGATIVE": ["or([numericLiteralPositive,numericLiteralNegative])","?or([[*,unaryExpression],[/,unaryExpression]])"]}, 
-  "[or([verbPath,verbSimple]),objectList]" : {
-     "VAR1": ["or([verbPath,verbSimple])","objectList"], 
-     "VAR2": ["or([verbPath,verbSimple])","objectList"], 
-     "^": ["or([verbPath,verbSimple])","objectList"], 
-     "a": ["or([verbPath,verbSimple])","objectList"], 
-     "!": ["or([verbPath,verbSimple])","objectList"], 
-     "(": ["or([verbPath,verbSimple])","objectList"], 
-     "IRI_REF": ["or([verbPath,verbSimple])","objectList"], 
-     "PNAME_LN": ["or([verbPath,verbSimple])","objectList"], 
-     "PNAME_NS": ["or([verbPath,verbSimple])","objectList"]}, 
-  "[pathOneInPropertySet,*[|,pathOneInPropertySet]]" : {
-     "a": ["pathOneInPropertySet","*[|,pathOneInPropertySet]"], 
-     "^": ["pathOneInPropertySet","*[|,pathOneInPropertySet]"], 
-     "IRI_REF": ["pathOneInPropertySet","*[|,pathOneInPropertySet]"], 
-     "PNAME_LN": ["pathOneInPropertySet","*[|,pathOneInPropertySet]"], 
-     "PNAME_NS": ["pathOneInPropertySet","*[|,pathOneInPropertySet]"]}, 
-  "[quadsNotTriples,?.,?triplesTemplate]" : {
-     "GRAPH": ["quadsNotTriples","?.","?triplesTemplate"]}, 
-  "[update1,?[;,update]]" : {
-     "INSERT": ["update1","?[;,update]"], 
-     "DELETE": ["update1","?[;,update]"], 
-     "LOAD": ["update1","?[;,update]"], 
-     "CLEAR": ["update1","?[;,update]"], 
-     "DROP": ["update1","?[;,update]"], 
-     "ADD": ["update1","?[;,update]"], 
-     "MOVE": ["update1","?[;,update]"], 
-     "COPY": ["update1","?[;,update]"], 
-     "CREATE": ["update1","?[;,update]"], 
-     "WITH": ["update1","?[;,update]"]}, 
-  "[verb,objectList]" : {
-     "a": ["verb","objectList"], 
-     "VAR1": ["verb","objectList"], 
-     "VAR2": ["verb","objectList"], 
-     "IRI_REF": ["verb","objectList"], 
-     "PNAME_LN": ["verb","objectList"], 
-     "PNAME_NS": ["verb","objectList"]}, 
-  "[|,pathOneInPropertySet]" : {
-     "|": ["|","pathOneInPropertySet"]}, 
-  "[|,pathSequence]" : {
-     "|": ["|","pathSequence"]}, 
-  "[||,conditionalAndExpression]" : {
-     "||": ["||","conditionalAndExpression"]}, 
-  "add" : {
-     "ADD": ["ADD","?SILENT_4","graphOrDefault","TO","graphOrDefault"]}, 
-  "additiveExpression" : {
-     "!": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "+": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "-": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "VAR1": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "VAR2": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "(": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STR": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "LANG": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "LANGMATCHES": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DATATYPE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "BOUND": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "IRI": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "URI": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "BNODE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "RAND": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "ABS": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "CEIL": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "FLOOR": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "ROUND": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "CONCAT": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRLEN": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "UCASE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "LCASE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "ENCODE_FOR_URI": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "CONTAINS": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRSTARTS": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRENDS": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRBEFORE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRAFTER": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "YEAR": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "MONTH": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DAY": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "HOURS": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "MINUTES": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "SECONDS": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "TIMEZONE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "TZ": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "NOW": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "UUID": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRUUID": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "MD5": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "SHA1": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "SHA256": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "SHA384": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "SHA512": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "COALESCE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "IF": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRLANG": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRDT": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "SAMETERM": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "ISIRI": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "ISURI": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "ISBLANK": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "ISLITERAL": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "ISNUMERIC": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "TRUE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "FALSE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "COUNT": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "SUM": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "MIN": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "MAX": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "AVG": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "SAMPLE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "GROUP_CONCAT": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "SUBSTR": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "REPLACE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "REGEX": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "EXISTS": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "NOT": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "IRI_REF": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRING_LITERAL1": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRING_LITERAL2": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRING_LITERAL_LONG1": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "STRING_LITERAL_LONG2": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "INTEGER": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DECIMAL": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DOUBLE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "INTEGER_POSITIVE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DECIMAL_POSITIVE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DOUBLE_POSITIVE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "INTEGER_NEGATIVE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DECIMAL_NEGATIVE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "DOUBLE_NEGATIVE": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "PNAME_LN": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"], 
-     "PNAME_NS": ["multiplicativeExpression","*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"]}, 
-  "aggregate" : {
-     "COUNT": ["COUNT","(","?DISTINCT","or([*,expression])",")"], 
-     "SUM": ["SUM","(","?DISTINCT","expression",")"], 
-     "MIN": ["MIN","(","?DISTINCT","expression",")"], 
-     "MAX": ["MAX","(","?DISTINCT","expression",")"], 
-     "AVG": ["AVG","(","?DISTINCT","expression",")"], 
-     "SAMPLE": ["SAMPLE","(","?DISTINCT","expression",")"], 
-     "GROUP_CONCAT": ["GROUP_CONCAT","(","?DISTINCT","expression","?[;,SEPARATOR,=,string]",")"]}, 
-  "allowBnodes" : {
-     "}": []}, 
-  "allowVars" : {
-     "}": []}, 
-  "argList" : {
-     "NIL": ["NIL"], 
-     "(": ["(","?DISTINCT","expression","*[,,expression]",")"]}, 
-  "askQuery" : {
-     "ASK": ["ASK","*datasetClause","whereClause","solutionModifier"]}, 
-  "baseDecl" : {
-     "BASE": ["BASE","IRI_REF"]}, 
-  "bind" : {
-     "BIND": ["BIND","(","expression","AS","var",")"]}, 
-  "blankNode" : {
-     "BLANK_NODE_LABEL": ["BLANK_NODE_LABEL"], 
-     "ANON": ["ANON"]}, 
-  "blankNodePropertyList" : {
-     "[": ["[","propertyListNotEmpty","]"]}, 
-  "blankNodePropertyListPath" : {
-     "[": ["[","propertyListPathNotEmpty","]"]}, 
-  "booleanLiteral" : {
-     "TRUE": ["TRUE"], 
-     "FALSE": ["FALSE"]}, 
-  "brackettedExpression" : {
-     "(": ["(","expression",")"]}, 
-  "builtInCall" : {
-     "STR": ["STR","(","expression",")"], 
-     "LANG": ["LANG","(","expression",")"], 
-     "LANGMATCHES": ["LANGMATCHES","(","expression",",","expression",")"], 
-     "DATATYPE": ["DATATYPE","(","expression",")"], 
-     "BOUND": ["BOUND","(","var",")"], 
-     "IRI": ["IRI","(","expression",")"], 
-     "URI": ["URI","(","expression",")"], 
-     "BNODE": ["BNODE","or([[ (,expression,)],NIL])"], 
-     "RAND": ["RAND","NIL"], 
-     "ABS": ["ABS","(","expression",")"], 
-     "CEIL": ["CEIL","(","expression",")"], 
-     "FLOOR": ["FLOOR","(","expression",")"], 
-     "ROUND": ["ROUND","(","expression",")"], 
-     "CONCAT": ["CONCAT","expressionList"], 
-     "SUBSTR": ["substringExpression"], 
-     "STRLEN": ["STRLEN","(","expression",")"], 
-     "REPLACE": ["strReplaceExpression"], 
-     "UCASE": ["UCASE","(","expression",")"], 
-     "LCASE": ["LCASE","(","expression",")"], 
-     "ENCODE_FOR_URI": ["ENCODE_FOR_URI","(","expression",")"], 
-     "CONTAINS": ["CONTAINS","(","expression",",","expression",")"], 
-     "STRSTARTS": ["STRSTARTS","(","expression",",","expression",")"], 
-     "STRENDS": ["STRENDS","(","expression",",","expression",")"], 
-     "STRBEFORE": ["STRBEFORE","(","expression",",","expression",")"], 
-     "STRAFTER": ["STRAFTER","(","expression",",","expression",")"], 
-     "YEAR": ["YEAR","(","expression",")"], 
-     "MONTH": ["MONTH","(","expression",")"], 
-     "DAY": ["DAY","(","expression",")"], 
-     "HOURS": ["HOURS","(","expression",")"], 
-     "MINUTES": ["MINUTES","(","expression",")"], 
-     "SECONDS": ["SECONDS","(","expression",")"], 
-     "TIMEZONE": ["TIMEZONE","(","expression",")"], 
-     "TZ": ["TZ","(","expression",")"], 
-     "NOW": ["NOW","NIL"], 
-     "UUID": ["UUID","NIL"], 
-     "STRUUID": ["STRUUID","NIL"], 
-     "MD5": ["MD5","(","expression",")"], 
-     "SHA1": ["SHA1","(","expression",")"], 
-     "SHA256": ["SHA256","(","expression",")"], 
-     "SHA384": ["SHA384","(","expression",")"], 
-     "SHA512": ["SHA512","(","expression",")"], 
-     "COALESCE": ["COALESCE","expressionList"], 
-     "IF": ["IF","(","expression",",","expression",",","expression",")"], 
-     "STRLANG": ["STRLANG","(","expression",",","expression",")"], 
-     "STRDT": ["STRDT","(","expression",",","expression",")"], 
-     "SAMETERM": ["SAMETERM","(","expression",",","expression",")"], 
-     "ISIRI": ["ISIRI","(","expression",")"], 
-     "ISURI": ["ISURI","(","expression",")"], 
-     "ISBLANK": ["ISBLANK","(","expression",")"], 
-     "ISLITERAL": ["ISLITERAL","(","expression",")"], 
-     "ISNUMERIC": ["ISNUMERIC","(","expression",")"], 
-     "REGEX": ["regexExpression"], 
-     "EXISTS": ["existsFunc"], 
-     "NOT": ["notExistsFunc"]}, 
-  "clear" : {
-     "CLEAR": ["CLEAR","?SILENT_2","graphRefAll"]}, 
-  "collection" : {
-     "(": ["(","+graphNode",")"]}, 
-  "collectionPath" : {
-     "(": ["(","+graphNodePath",")"]}, 
-  "conditionalAndExpression" : {
-     "!": ["valueLogical","*[&&,valueLogical]"], 
-     "+": ["valueLogical","*[&&,valueLogical]"], 
-     "-": ["valueLogical","*[&&,valueLogical]"], 
-     "VAR1": ["valueLogical","*[&&,valueLogical]"], 
-     "VAR2": ["valueLogical","*[&&,valueLogical]"], 
-     "(": ["valueLogical","*[&&,valueLogical]"], 
-     "STR": ["valueLogical","*[&&,valueLogical]"], 
-     "LANG": ["valueLogical","*[&&,valueLogical]"], 
-     "LANGMATCHES": ["valueLogical","*[&&,valueLogical]"], 
-     "DATATYPE": ["valueLogical","*[&&,valueLogical]"], 
-     "BOUND": ["valueLogical","*[&&,valueLogical]"], 
-     "IRI": ["valueLogical","*[&&,valueLogical]"], 
-     "URI": ["valueLogical","*[&&,valueLogical]"], 
-     "BNODE": ["valueLogical","*[&&,valueLogical]"], 
-     "RAND": ["valueLogical","*[&&,valueLogical]"], 
-     "ABS": ["valueLogical","*[&&,valueLogical]"], 
-     "CEIL": ["valueLogical","*[&&,valueLogical]"], 
-     "FLOOR": ["valueLogical","*[&&,valueLogical]"], 
-     "ROUND": ["valueLogical","*[&&,valueLogical]"], 
-     "CONCAT": ["valueLogical","*[&&,valueLogical]"], 
-     "STRLEN": ["valueLogical","*[&&,valueLogical]"], 
-     "UCASE": ["valueLogical","*[&&,valueLogical]"], 
-     "LCASE": ["valueLogical","*[&&,valueLogical]"], 
-     "ENCODE_FOR_URI": ["valueLogical","*[&&,valueLogical]"], 
-     "CONTAINS": ["valueLogical","*[&&,valueLogical]"], 
-     "STRSTARTS": ["valueLogical","*[&&,valueLogical]"], 
-     "STRENDS": ["valueLogical","*[&&,valueLogical]"], 
-     "STRBEFORE": ["valueLogical","*[&&,valueLogical]"], 
-     "STRAFTER": ["valueLogical","*[&&,valueLogical]"], 
-     "YEAR": ["valueLogical","*[&&,valueLogical]"], 
-     "MONTH": ["valueLogical","*[&&,valueLogical]"], 
-     "DAY": ["valueLogical","*[&&,valueLogical]"], 
-     "HOURS": ["valueLogical","*[&&,valueLogical]"], 
-     "MINUTES": ["valueLogical","*[&&,valueLogical]"], 
-     "SECONDS": ["valueLogical","*[&&,valueLogical]"], 
-     "TIMEZONE": ["valueLogical","*[&&,valueLogical]"], 
-     "TZ": ["valueLogical","*[&&,valueLogical]"], 
-     "NOW": ["valueLogical","*[&&,valueLogical]"], 
-     "UUID": ["valueLogical","*[&&,valueLogical]"], 
-     "STRUUID": ["valueLogical","*[&&,valueLogical]"], 
-     "MD5": ["valueLogical","*[&&,valueLogical]"], 
-     "SHA1": ["valueLogical","*[&&,valueLogical]"], 
-     "SHA256": ["valueLogical","*[&&,valueLogical]"], 
-     "SHA384": ["valueLogical","*[&&,valueLogical]"], 
-     "SHA512": ["valueLogical","*[&&,valueLogical]"], 
-     "COALESCE": ["valueLogical","*[&&,valueLogical]"], 
-     "IF": ["valueLogical","*[&&,valueLogical]"], 
-     "STRLANG": ["valueLogical","*[&&,valueLogical]"], 
-     "STRDT": ["valueLogical","*[&&,valueLogical]"], 
-     "SAMETERM": ["valueLogical","*[&&,valueLogical]"], 
-     "ISIRI": ["valueLogical","*[&&,valueLogical]"], 
-     "ISURI": ["valueLogical","*[&&,valueLogical]"], 
-     "ISBLANK": ["valueLogical","*[&&,valueLogical]"], 
-     "ISLITERAL": ["valueLogical","*[&&,valueLogical]"], 
-     "ISNUMERIC": ["valueLogical","*[&&,valueLogical]"], 
-     "TRUE": ["valueLogical","*[&&,valueLogical]"], 
-     "FALSE": ["valueLogical","*[&&,valueLogical]"], 
-     "COUNT": ["valueLogical","*[&&,valueLogical]"], 
-     "SUM": ["valueLogical","*[&&,valueLogical]"], 
-     "MIN": ["valueLogical","*[&&,valueLogical]"], 
-     "MAX": ["valueLogical","*[&&,valueLogical]"], 
-     "AVG": ["valueLogical","*[&&,valueLogical]"], 
-     "SAMPLE": ["valueLogical","*[&&,valueLogical]"], 
-     "GROUP_CONCAT": ["valueLogical","*[&&,valueLogical]"], 
-     "SUBSTR": ["valueLogical","*[&&,valueLogical]"], 
-     "REPLACE": ["valueLogical","*[&&,valueLogical]"], 
-     "REGEX": ["valueLogical","*[&&,valueLogical]"], 
-     "EXISTS": ["valueLogical","*[&&,valueLogical]"], 
-     "NOT": ["valueLogical","*[&&,valueLogical]"], 
-     "IRI_REF": ["valueLogical","*[&&,valueLogical]"], 
-     "STRING_LITERAL1": ["valueLogical","*[&&,valueLogical]"], 
-     "STRING_LITERAL2": ["valueLogical","*[&&,valueLogical]"], 
-     "STRING_LITERAL_LONG1": ["valueLogical","*[&&,valueLogical]"], 
-     "STRING_LITERAL_LONG2": ["valueLogical","*[&&,valueLogical]"], 
-     "INTEGER": ["valueLogical","*[&&,valueLogical]"], 
-     "DECIMAL": ["valueLogical","*[&&,valueLogical]"], 
-     "DOUBLE": ["valueLogical","*[&&,valueLogical]"], 
-     "INTEGER_POSITIVE": ["valueLogical","*[&&,valueLogical]"], 
-     "DECIMAL_POSITIVE": ["valueLogical","*[&&,valueLogical]"], 
-     "DOUBLE_POSITIVE": ["valueLogical","*[&&,valueLogical]"], 
-     "INTEGER_NEGATIVE": ["valueLogical","*[&&,valueLogical]"], 
-     "DECIMAL_NEGATIVE": ["valueLogical","*[&&,valueLogical]"], 
-     "DOUBLE_NEGATIVE": ["valueLogical","*[&&,valueLogical]"], 
-     "PNAME_LN": ["valueLogical","*[&&,valueLogical]"], 
-     "PNAME_NS": ["valueLogical","*[&&,valueLogical]"]}, 
-  "conditionalOrExpression" : {
-     "!": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "+": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "-": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "VAR1": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "VAR2": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "(": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STR": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "LANG": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "LANGMATCHES": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "DATATYPE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "BOUND": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "IRI": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "URI": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "BNODE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "RAND": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "ABS": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "CEIL": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "FLOOR": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "ROUND": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "CONCAT": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRLEN": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "UCASE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "LCASE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "ENCODE_FOR_URI": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "CONTAINS": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRSTARTS": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRENDS": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRBEFORE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRAFTER": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "YEAR": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "MONTH": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "DAY": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "HOURS": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "MINUTES": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "SECONDS": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "TIMEZONE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "TZ": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "NOW": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "UUID": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRUUID": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "MD5": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "SHA1": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "SHA256": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "SHA384": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "SHA512": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "COALESCE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "IF": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRLANG": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRDT": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "SAMETERM": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "ISIRI": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "ISURI": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "ISBLANK": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "ISLITERAL": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "ISNUMERIC": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "TRUE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "FALSE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "COUNT": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "SUM": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "MIN": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "MAX": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "AVG": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "SAMPLE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "GROUP_CONCAT": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "SUBSTR": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "REPLACE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "REGEX": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "EXISTS": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "NOT": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "IRI_REF": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRING_LITERAL1": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRING_LITERAL2": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRING_LITERAL_LONG1": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "STRING_LITERAL_LONG2": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "INTEGER": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "DECIMAL": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "DOUBLE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "INTEGER_POSITIVE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "DECIMAL_POSITIVE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "DOUBLE_POSITIVE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "INTEGER_NEGATIVE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "DECIMAL_NEGATIVE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "DOUBLE_NEGATIVE": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "PNAME_LN": ["conditionalAndExpression","*[||,conditionalAndExpression]"], 
-     "PNAME_NS": ["conditionalAndExpression","*[||,conditionalAndExpression]"]}, 
-  "constraint" : {
-     "(": ["brackettedExpression"], 
-     "STR": ["builtInCall"], 
-     "LANG": ["builtInCall"], 
-     "LANGMATCHES": ["builtInCall"], 
-     "DATATYPE": ["builtInCall"], 
-     "BOUND": ["builtInCall"], 
-     "IRI": ["builtInCall"], 
-     "URI": ["builtInCall"], 
-     "BNODE": ["builtInCall"], 
-     "RAND": ["builtInCall"], 
-     "ABS": ["builtInCall"], 
-     "CEIL": ["builtInCall"], 
-     "FLOOR": ["builtInCall"], 
-     "ROUND": ["builtInCall"], 
-     "CONCAT": ["builtInCall"], 
-     "STRLEN": ["builtInCall"], 
-     "UCASE": ["builtInCall"], 
-     "LCASE": ["builtInCall"], 
-     "ENCODE_FOR_URI": ["builtInCall"], 
-     "CONTAINS": ["builtInCall"], 
-     "STRSTARTS": ["builtInCall"], 
-     "STRENDS": ["builtInCall"], 
-     "STRBEFORE": ["builtInCall"], 
-     "STRAFTER": ["builtInCall"], 
-     "YEAR": ["builtInCall"], 
-     "MONTH": ["builtInCall"], 
-     "DAY": ["builtInCall"], 
-     "HOURS": ["builtInCall"], 
-     "MINUTES": ["builtInCall"], 
-     "SECONDS": ["builtInCall"], 
-     "TIMEZONE": ["builtInCall"], 
-     "TZ": ["builtInCall"], 
-     "NOW": ["builtInCall"], 
-     "UUID": ["builtInCall"], 
-     "STRUUID": ["builtInCall"], 
-     "MD5": ["builtInCall"], 
-     "SHA1": ["builtInCall"], 
-     "SHA256": ["builtInCall"], 
-     "SHA384": ["builtInCall"], 
-     "SHA512": ["builtInCall"], 
-     "COALESCE": ["builtInCall"], 
-     "IF": ["builtInCall"], 
-     "STRLANG": ["builtInCall"], 
-     "STRDT": ["builtInCall"], 
-     "SAMETERM": ["builtInCall"], 
-     "ISIRI": ["builtInCall"], 
-     "ISURI": ["builtInCall"], 
-     "ISBLANK": ["builtInCall"], 
-     "ISLITERAL": ["builtInCall"], 
-     "ISNUMERIC": ["builtInCall"], 
-     "SUBSTR": ["builtInCall"], 
-     "REPLACE": ["builtInCall"], 
-     "REGEX": ["builtInCall"], 
-     "EXISTS": ["builtInCall"], 
-     "NOT": ["builtInCall"], 
-     "IRI_REF": ["functionCall"], 
-     "PNAME_LN": ["functionCall"], 
-     "PNAME_NS": ["functionCall"]}, 
-  "constructQuery" : {
-     "CONSTRUCT": ["CONSTRUCT","or([[constructTemplate,*datasetClause,whereClause,solutionModifier],[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]])"]}, 
-  "constructTemplate" : {
-     "{": ["{","?constructTriples","}"]}, 
-  "constructTriples" : {
-     "VAR1": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "VAR2": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "NIL": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "(": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "[": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "IRI_REF": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "TRUE": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "FALSE": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "BLANK_NODE_LABEL": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "ANON": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "PNAME_LN": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "PNAME_NS": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "STRING_LITERAL1": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "STRING_LITERAL2": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "STRING_LITERAL_LONG1": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "STRING_LITERAL_LONG2": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "INTEGER": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "DECIMAL": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "DOUBLE": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "INTEGER_POSITIVE": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "DECIMAL_POSITIVE": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "DOUBLE_POSITIVE": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "INTEGER_NEGATIVE": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "DECIMAL_NEGATIVE": ["triplesSameSubject","?[.,?constructTriples]"], 
-     "DOUBLE_NEGATIVE": ["triplesSameSubject","?[.,?constructTriples]"]}, 
-  "copy" : {
-     "COPY": ["COPY","?SILENT_4","graphOrDefault","TO","graphOrDefault"]}, 
-  "create" : {
-     "CREATE": ["CREATE","?SILENT_3","graphRef"]}, 
-  "dataBlock" : {
-     "NIL": ["or([inlineDataOneVar,inlineDataFull])"], 
-     "(": ["or([inlineDataOneVar,inlineDataFull])"], 
-     "VAR1": ["or([inlineDataOneVar,inlineDataFull])"], 
-     "VAR2": ["or([inlineDataOneVar,inlineDataFull])"]}, 
-  "dataBlockValue" : {
-     "IRI_REF": ["iriRef"], 
-     "PNAME_LN": ["iriRef"], 
-     "PNAME_NS": ["iriRef"], 
-     "STRING_LITERAL1": ["rdfLiteral"], 
-     "STRING_LITERAL2": ["rdfLiteral"], 
-     "STRING_LITERAL_LONG1": ["rdfLiteral"], 
-     "STRING_LITERAL_LONG2": ["rdfLiteral"], 
-     "INTEGER": ["numericLiteral"], 
-     "DECIMAL": ["numericLiteral"], 
-     "DOUBLE": ["numericLiteral"], 
-     "INTEGER_POSITIVE": ["numericLiteral"], 
-     "DECIMAL_POSITIVE": ["numericLiteral"], 
-     "DOUBLE_POSITIVE": ["numericLiteral"], 
-     "INTEGER_NEGATIVE": ["numericLiteral"], 
-     "DECIMAL_NEGATIVE": ["numericLiteral"], 
-     "DOUBLE_NEGATIVE": ["numericLiteral"], 
-     "TRUE": ["booleanLiteral"], 
-     "FALSE": ["booleanLiteral"], 
-     "UNDEF": ["UNDEF"]}, 
-  "datasetClause" : {
-     "FROM": ["FROM","or([defaultGraphClause,namedGraphClause])"]}, 
-  "defaultGraphClause" : {
-     "IRI_REF": ["sourceSelector"], 
-     "PNAME_LN": ["sourceSelector"], 
-     "PNAME_NS": ["sourceSelector"]}, 
-  "delete1" : {
-     "DATA": ["DATA","quadDataNoBnodes"], 
-     "WHERE": ["WHERE","quadPatternNoBnodes"], 
-     "{": ["quadPatternNoBnodes","?insertClause","*usingClause","WHERE","groupGraphPattern"]}, 
-  "deleteClause" : {
-     "DELETE": ["DELETE","quadPattern"]}, 
-  "describeDatasetClause" : {
-     "FROM": ["FROM","or([defaultGraphClause,namedGraphClause])"]}, 
-  "describeQuery" : {
-     "DESCRIBE": ["DESCRIBE","or([+varOrIRIref,*])","*describeDatasetClause","?whereClause","solutionModifier"]}, 
-  "disallowBnodes" : {
-     "}": [], 
-     "GRAPH": [], 
-     "VAR1": [], 
-     "VAR2": [], 
-     "NIL": [], 
-     "(": [], 
-     "[": [], 
-     "IRI_REF": [], 
-     "TRUE": [], 
-     "FALSE": [], 
-     "BLANK_NODE_LABEL": [], 
-     "ANON": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": [], 
-     "STRING_LITERAL1": [], 
-     "STRING_LITERAL2": [], 
-     "STRING_LITERAL_LONG1": [], 
-     "STRING_LITERAL_LONG2": [], 
-     "INTEGER": [], 
-     "DECIMAL": [], 
-     "DOUBLE": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": []}, 
-  "disallowVars" : {
-     "}": [], 
-     "GRAPH": [], 
-     "VAR1": [], 
-     "VAR2": [], 
-     "NIL": [], 
-     "(": [], 
-     "[": [], 
-     "IRI_REF": [], 
-     "TRUE": [], 
-     "FALSE": [], 
-     "BLANK_NODE_LABEL": [], 
-     "ANON": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": [], 
-     "STRING_LITERAL1": [], 
-     "STRING_LITERAL2": [], 
-     "STRING_LITERAL_LONG1": [], 
-     "STRING_LITERAL_LONG2": [], 
-     "INTEGER": [], 
-     "DECIMAL": [], 
-     "DOUBLE": [], 
-     "INTEGER_POSITIVE": [], 
-     "DECIMAL_POSITIVE": [], 
-     "DOUBLE_POSITIVE": [], 
-     "INTEGER_NEGATIVE": [], 
-     "DECIMAL_NEGATIVE": [], 
-     "DOUBLE_NEGATIVE": []}, 
-  "drop" : {
-     "DROP": ["DROP","?SILENT_2","graphRefAll"]}, 
-  "existsFunc" : {
-     "EXISTS": ["EXISTS","groupGraphPattern"]}, 
-  "expression" : {
-     "!": ["conditionalOrExpression"], 
-     "+": ["conditionalOrExpression"], 
-     "-": ["conditionalOrExpression"], 
-     "VAR1": ["conditionalOrExpression"], 
-     "VAR2": ["conditionalOrExpression"], 
-     "(": ["conditionalOrExpression"], 
-     "STR": ["conditionalOrExpression"], 
-     "LANG": ["conditionalOrExpression"], 
-     "LANGMATCHES": ["conditionalOrExpression"], 
-     "DATATYPE": ["conditionalOrExpression"], 
-     "BOUND": ["conditionalOrExpression"], 
-     "IRI": ["conditionalOrExpression"], 
-     "URI": ["conditionalOrExpression"], 
-     "BNODE": ["conditionalOrExpression"], 
-     "RAND": ["conditionalOrExpression"], 
-     "ABS": ["conditionalOrExpression"], 
-     "CEIL": ["conditionalOrExpression"], 
-     "FLOOR": ["conditionalOrExpression"], 
-     "ROUND": ["conditionalOrExpression"], 
-     "CONCAT": ["conditionalOrExpression"], 
-     "STRLEN": ["conditionalOrExpression"], 
-     "UCASE": ["conditionalOrExpression"], 
-     "LCASE": ["conditionalOrExpression"], 
-     "ENCODE_FOR_URI": ["conditionalOrExpression"], 
-     "CONTAINS": ["conditionalOrExpression"], 
-     "STRSTARTS": ["conditionalOrExpression"], 
-     "STRENDS": ["conditionalOrExpression"], 
-     "STRBEFORE": ["conditionalOrExpression"], 
-     "STRAFTER": ["conditionalOrExpression"], 
-     "YEAR": ["conditionalOrExpression"], 
-     "MONTH": ["conditionalOrExpression"], 
-     "DAY": ["conditionalOrExpression"], 
-     "HOURS": ["conditionalOrExpression"], 
-     "MINUTES": ["conditionalOrExpression"], 
-     "SECONDS": ["conditionalOrExpression"], 
-     "TIMEZONE": ["conditionalOrExpression"], 
-     "TZ": ["conditionalOrExpression"], 
-     "NOW": ["conditionalOrExpression"], 
-     "UUID": ["conditionalOrExpression"], 
-     "STRUUID": ["conditionalOrExpression"], 
-     "MD5": ["conditionalOrExpression"], 
-     "SHA1": ["conditionalOrExpression"], 
-     "SHA256": ["conditionalOrExpression"], 
-     "SHA384": ["conditionalOrExpression"], 
-     "SHA512": ["conditionalOrExpression"], 
-     "COALESCE": ["conditionalOrExpression"], 
-     "IF": ["conditionalOrExpression"], 
-     "STRLANG": ["conditionalOrExpression"], 
-     "STRDT": ["conditionalOrExpression"], 
-     "SAMETERM": ["conditionalOrExpression"], 
-     "ISIRI": ["conditionalOrExpression"], 
-     "ISURI": ["conditionalOrExpression"], 
-     "ISBLANK": ["conditionalOrExpression"], 
-     "ISLITERAL": ["conditionalOrExpression"], 
-     "ISNUMERIC": ["conditionalOrExpression"], 
-     "TRUE": ["conditionalOrExpression"], 
-     "FALSE": ["conditionalOrExpression"], 
-     "COUNT": ["conditionalOrExpression"], 
-     "SUM": ["conditionalOrExpression"], 
-     "MIN": ["conditionalOrExpression"], 
-     "MAX": ["conditionalOrExpression"], 
-     "AVG": ["conditionalOrExpression"], 
-     "SAMPLE": ["conditionalOrExpression"], 
-     "GROUP_CONCAT": ["conditionalOrExpression"], 
-     "SUBSTR": ["conditionalOrExpression"], 
-     "REPLACE": ["conditionalOrExpression"], 
-     "REGEX": ["conditionalOrExpression"], 
-     "EXISTS": ["conditionalOrExpression"], 
-     "NOT": ["conditionalOrExpression"], 
-     "IRI_REF": ["conditionalOrExpression"], 
-     "STRING_LITERAL1": ["conditionalOrExpression"], 
-     "STRING_LITERAL2": ["conditionalOrExpression"], 
-     "STRING_LITERAL_LONG1": ["conditionalOrExpression"], 
-     "STRING_LITERAL_LONG2": ["conditionalOrExpression"], 
-     "INTEGER": ["conditionalOrExpression"], 
-     "DECIMAL": ["conditionalOrExpression"], 
-     "DOUBLE": ["conditionalOrExpression"], 
-     "INTEGER_POSITIVE": ["conditionalOrExpression"], 
-     "DECIMAL_POSITIVE": ["conditionalOrExpression"], 
-     "DOUBLE_POSITIVE": ["conditionalOrExpression"], 
-     "INTEGER_NEGATIVE": ["conditionalOrExpression"], 
-     "DECIMAL_NEGATIVE": ["conditionalOrExpression"], 
-     "DOUBLE_NEGATIVE": ["conditionalOrExpression"], 
-     "PNAME_LN": ["conditionalOrExpression"], 
-     "PNAME_NS": ["conditionalOrExpression"]}, 
-  "expressionList" : {
-     "NIL": ["NIL"], 
-     "(": ["(","expression","*[,,expression]",")"]}, 
-  "filter" : {
-     "FILTER": ["FILTER","constraint"]}, 
-  "functionCall" : {
-     "IRI_REF": ["iriRef","argList"], 
-     "PNAME_LN": ["iriRef","argList"], 
-     "PNAME_NS": ["iriRef","argList"]}, 
-  "graphGraphPattern" : {
-     "GRAPH": ["GRAPH","varOrIRIref","groupGraphPattern"]}, 
-  "graphNode" : {
-     "VAR1": ["varOrTerm"], 
-     "VAR2": ["varOrTerm"], 
-     "NIL": ["varOrTerm"], 
-     "IRI_REF": ["varOrTerm"], 
-     "TRUE": ["varOrTerm"], 
-     "FALSE": ["varOrTerm"], 
-     "BLANK_NODE_LABEL": ["varOrTerm"], 
-     "ANON": ["varOrTerm"], 
-     "PNAME_LN": ["varOrTerm"], 
-     "PNAME_NS": ["varOrTerm"], 
-     "STRING_LITERAL1": ["varOrTerm"], 
-     "STRING_LITERAL2": ["varOrTerm"], 
-     "STRING_LITERAL_LONG1": ["varOrTerm"], 
-     "STRING_LITERAL_LONG2": ["varOrTerm"], 
-     "INTEGER": ["varOrTerm"], 
-     "DECIMAL": ["varOrTerm"], 
-     "DOUBLE": ["varOrTerm"], 
-     "INTEGER_POSITIVE": ["varOrTerm"], 
-     "DECIMAL_POSITIVE": ["varOrTerm"], 
-     "DOUBLE_POSITIVE": ["varOrTerm"], 
-     "INTEGER_NEGATIVE": ["varOrTerm"], 
-     "DECIMAL_NEGATIVE": ["varOrTerm"], 
-     "DOUBLE_NEGATIVE": ["varOrTerm"], 
-     "(": ["triplesNode"], 
-     "[": ["triplesNode"]}, 
-  "graphNodePath" : {
-     "VAR1": ["varOrTerm"], 
-     "VAR2": ["varOrTerm"], 
-     "NIL": ["varOrTerm"], 
-     "IRI_REF": ["varOrTerm"], 
-     "TRUE": ["varOrTerm"], 
-     "FALSE": ["varOrTerm"], 
-     "BLANK_NODE_LABEL": ["varOrTerm"], 
-     "ANON": ["varOrTerm"], 
-     "PNAME_LN": ["varOrTerm"], 
-     "PNAME_NS": ["varOrTerm"], 
-     "STRING_LITERAL1": ["varOrTerm"], 
-     "STRING_LITERAL2": ["varOrTerm"], 
-     "STRING_LITERAL_LONG1": ["varOrTerm"], 
-     "STRING_LITERAL_LONG2": ["varOrTerm"], 
-     "INTEGER": ["varOrTerm"], 
-     "DECIMAL": ["varOrTerm"], 
-     "DOUBLE": ["varOrTerm"], 
-     "INTEGER_POSITIVE": ["varOrTerm"], 
-     "DECIMAL_POSITIVE": ["varOrTerm"], 
-     "DOUBLE_POSITIVE": ["varOrTerm"], 
-     "INTEGER_NEGATIVE": ["varOrTerm"], 
-     "DECIMAL_NEGATIVE": ["varOrTerm"], 
-     "DOUBLE_NEGATIVE": ["varOrTerm"], 
-     "(": ["triplesNodePath"], 
-     "[": ["triplesNodePath"]}, 
-  "graphOrDefault" : {
-     "DEFAULT": ["DEFAULT"], 
-     "IRI_REF": ["?GRAPH","iriRef"], 
-     "PNAME_LN": ["?GRAPH","iriRef"], 
-     "PNAME_NS": ["?GRAPH","iriRef"], 
-     "GRAPH": ["?GRAPH","iriRef"]}, 
-  "graphPatternNotTriples" : {
-     "{": ["groupOrUnionGraphPattern"], 
-     "OPTIONAL": ["optionalGraphPattern"], 
-     "MINUS": ["minusGraphPattern"], 
-     "GRAPH": ["graphGraphPattern"], 
-     "SERVICE": ["serviceGraphPattern"], 
-     "FILTER": ["filter"], 
-     "BIND": ["bind"], 
-     "VALUES": ["inlineData"]}, 
-  "graphRef" : {
-     "GRAPH": ["GRAPH","iriRef"]}, 
-  "graphRefAll" : {
-     "GRAPH": ["graphRef"], 
-     "DEFAULT": ["DEFAULT"], 
-     "NAMED": ["NAMED"], 
-     "ALL": ["ALL"]}, 
-  "graphTerm" : {
-     "IRI_REF": ["iriRef"], 
-     "PNAME_LN": ["iriRef"], 
-     "PNAME_NS": ["iriRef"], 
-     "STRING_LITERAL1": ["rdfLiteral"], 
-     "STRING_LITERAL2": ["rdfLiteral"], 
-     "STRING_LITERAL_LONG1": ["rdfLiteral"], 
-     "STRING_LITERAL_LONG2": ["rdfLiteral"], 
-     "INTEGER": ["numericLiteral"], 
-     "DECIMAL": ["numericLiteral"], 
-     "DOUBLE": ["numericLiteral"], 
-     "INTEGER_POSITIVE": ["numericLiteral"], 
-     "DECIMAL_POSITIVE": ["numericLiteral"], 
-     "DOUBLE_POSITIVE": ["numericLiteral"], 
-     "INTEGER_NEGATIVE": ["numericLiteral"], 
-     "DECIMAL_NEGATIVE": ["numericLiteral"], 
-     "DOUBLE_NEGATIVE": ["numericLiteral"], 
-     "TRUE": ["booleanLiteral"], 
-     "FALSE": ["booleanLiteral"], 
-     "BLANK_NODE_LABEL": ["blankNode"], 
-     "ANON": ["blankNode"], 
-     "NIL": ["NIL"]}, 
-  "groupClause" : {
-     "GROUP": ["GROUP","BY","+groupCondition"]}, 
-  "groupCondition" : {
-     "STR": ["builtInCall"], 
-     "LANG": ["builtInCall"], 
-     "LANGMATCHES": ["builtInCall"], 
-     "DATATYPE": ["builtInCall"], 
-     "BOUND": ["builtInCall"], 
-     "IRI": ["builtInCall"], 
-     "URI": ["builtInCall"], 
-     "BNODE": ["builtInCall"], 
-     "RAND": ["builtInCall"], 
-     "ABS": ["builtInCall"], 
-     "CEIL": ["builtInCall"], 
-     "FLOOR": ["builtInCall"], 
-     "ROUND": ["builtInCall"], 
-     "CONCAT": ["builtInCall"], 
-     "STRLEN": ["builtInCall"], 
-     "UCASE": ["builtInCall"], 
-     "LCASE": ["builtInCall"], 
-     "ENCODE_FOR_URI": ["builtInCall"], 
-     "CONTAINS": ["builtInCall"], 
-     "STRSTARTS": ["builtInCall"], 
-     "STRENDS": ["builtInCall"], 
-     "STRBEFORE": ["builtInCall"], 
-     "STRAFTER": ["builtInCall"], 
-     "YEAR": ["builtInCall"], 
-     "MONTH": ["builtInCall"], 
-     "DAY": ["builtInCall"], 
-     "HOURS": ["builtInCall"], 
-     "MINUTES": ["builtInCall"], 
-     "SECONDS": ["builtInCall"], 
-     "TIMEZONE": ["builtInCall"], 
-     "TZ": ["builtInCall"], 
-     "NOW": ["builtInCall"], 
-     "UUID": ["builtInCall"], 
-     "STRUUID": ["builtInCall"], 
-     "MD5": ["builtInCall"], 
-     "SHA1": ["builtInCall"], 
-     "SHA256": ["builtInCall"], 
-     "SHA384": ["builtInCall"], 
-     "SHA512": ["builtInCall"], 
-     "COALESCE": ["builtInCall"], 
-     "IF": ["builtInCall"], 
-     "STRLANG": ["builtInCall"], 
-     "STRDT": ["builtInCall"], 
-     "SAMETERM": ["builtInCall"], 
-     "ISIRI": ["builtInCall"], 
-     "ISURI": ["builtInCall"], 
-     "ISBLANK": ["builtInCall"], 
-     "ISLITERAL": ["builtInCall"], 
-     "ISNUMERIC": ["builtInCall"], 
-     "SUBSTR": ["builtInCall"], 
-     "REPLACE": ["builtInCall"], 
-     "REGEX": ["builtInCall"], 
-     "EXISTS": ["builtInCall"], 
-     "NOT": ["builtInCall"], 
-     "IRI_REF": ["functionCall"], 
-     "PNAME_LN": ["functionCall"], 
-     "PNAME_NS": ["functionCall"], 
-     "(": ["(","expression","?[AS,var]",")"], 
-     "VAR1": ["var"], 
-     "VAR2": ["var"]}, 
-  "groupGraphPattern" : {
-     "{": ["{","or([subSelect,groupGraphPatternSub])","}"]}, 
-  "groupGraphPatternSub" : {
-     "{": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "OPTIONAL": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "MINUS": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "GRAPH": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "SERVICE": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "FILTER": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "BIND": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "VALUES": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "VAR1": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "VAR2": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "NIL": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "(": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "[": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "IRI_REF": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "TRUE": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "FALSE": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "BLANK_NODE_LABEL": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "ANON": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "PNAME_LN": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "PNAME_NS": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "STRING_LITERAL1": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "STRING_LITERAL2": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "STRING_LITERAL_LONG1": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "STRING_LITERAL_LONG2": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "INTEGER": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "DECIMAL": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "DOUBLE": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "INTEGER_POSITIVE": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "DECIMAL_POSITIVE": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "DOUBLE_POSITIVE": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "INTEGER_NEGATIVE": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "DECIMAL_NEGATIVE": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "DOUBLE_NEGATIVE": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"], 
-     "}": ["?triplesBlock","*[graphPatternNotTriples,?.,?triplesBlock]"]}, 
-  "groupOrUnionGraphPattern" : {
-     "{": ["groupGraphPattern","*[UNION,groupGraphPattern]"]}, 
-  "havingClause" : {
-     "HAVING": ["HAVING","+havingCondition"]}, 
-  "havingCondition" : {
-     "(": ["constraint"], 
-     "STR": ["constraint"], 
-     "LANG": ["constraint"], 
-     "LANGMATCHES": ["constraint"], 
-     "DATATYPE": ["constraint"], 
-     "BOUND": ["constraint"], 
-     "IRI": ["constraint"], 
-     "URI": ["constraint"], 
-     "BNODE": ["constraint"], 
-     "RAND": ["constraint"], 
-     "ABS": ["constraint"], 
-     "CEIL": ["constraint"], 
-     "FLOOR": ["constraint"], 
-     "ROUND": ["constraint"], 
-     "CONCAT": ["constraint"], 
-     "STRLEN": ["constraint"], 
-     "UCASE": ["constraint"], 
-     "LCASE": ["constraint"], 
-     "ENCODE_FOR_URI": ["constraint"], 
-     "CONTAINS": ["constraint"], 
-     "STRSTARTS": ["constraint"], 
-     "STRENDS": ["constraint"], 
-     "STRBEFORE": ["constraint"], 
-     "STRAFTER": ["constraint"], 
-     "YEAR": ["constraint"], 
-     "MONTH": ["constraint"], 
-     "DAY": ["constraint"], 
-     "HOURS": ["constraint"], 
-     "MINUTES": ["constraint"], 
-     "SECONDS": ["constraint"], 
-     "TIMEZONE": ["constraint"], 
-     "TZ": ["constraint"], 
-     "NOW": ["constraint"], 
-     "UUID": ["constraint"], 
-     "STRUUID": ["constraint"], 
-     "MD5": ["constraint"], 
-     "SHA1": ["constraint"], 
-     "SHA256": ["constraint"], 
-     "SHA384": ["constraint"], 
-     "SHA512": ["constraint"], 
-     "COALESCE": ["constraint"], 
-     "IF": ["constraint"], 
-     "STRLANG": ["constraint"], 
-     "STRDT": ["constraint"], 
-     "SAMETERM": ["constraint"], 
-     "ISIRI": ["constraint"], 
-     "ISURI": ["constraint"], 
-     "ISBLANK": ["constraint"], 
-     "ISLITERAL": ["constraint"], 
-     "ISNUMERIC": ["constraint"], 
-     "SUBSTR": ["constraint"], 
-     "REPLACE": ["constraint"], 
-     "REGEX": ["constraint"], 
-     "EXISTS": ["constraint"], 
-     "NOT": ["constraint"], 
-     "IRI_REF": ["constraint"], 
-     "PNAME_LN": ["constraint"], 
-     "PNAME_NS": ["constraint"]}, 
-  "inlineData" : {
-     "VALUES": ["VALUES","dataBlock"]}, 
-  "inlineDataFull" : {
-     "NIL": ["or([NIL,[ (,*var,)]])","{","*or([[ (,*dataBlockValue,)],NIL])","}"], 
-     "(": ["or([NIL,[ (,*var,)]])","{","*or([[ (,*dataBlockValue,)],NIL])","}"]}, 
-  "inlineDataOneVar" : {
-     "VAR1": ["var","{","*dataBlockValue","}"], 
-     "VAR2": ["var","{","*dataBlockValue","}"]}, 
-  "insert1" : {
-     "DATA": ["DATA","quadData"], 
-     "{": ["quadPattern","*usingClause","WHERE","groupGraphPattern"]}, 
-  "insertClause" : {
-     "INSERT": ["INSERT","quadPattern"]}, 
-  "integer" : {
-     "INTEGER": ["INTEGER"]}, 
-  "iriRef" : {
-     "IRI_REF": ["IRI_REF"], 
-     "PNAME_LN": ["prefixedName"], 
-     "PNAME_NS": ["prefixedName"]}, 
-  "iriRefOrFunction" : {
-     "IRI_REF": ["iriRef","?argList"], 
-     "PNAME_LN": ["iriRef","?argList"], 
-     "PNAME_NS": ["iriRef","?argList"]}, 
-  "limitClause" : {
-     "LIMIT": ["LIMIT","INTEGER"]}, 
-  "limitOffsetClauses" : {
-     "LIMIT": ["limitClause","?offsetClause"], 
-     "OFFSET": ["offsetClause","?limitClause"]}, 
-  "load" : {
-     "LOAD": ["LOAD","?SILENT_1","iriRef","?[INTO,graphRef]"]}, 
-  "minusGraphPattern" : {
-     "MINUS": ["MINUS","groupGraphPattern"]}, 
-  "modify" : {
-     "WITH": ["WITH","iriRef","or([[deleteClause,?insertClause],insertClause])","*usingClause","WHERE","groupGraphPattern"]}, 
-  "move" : {
-     "MOVE": ["MOVE","?SILENT_4","graphOrDefault","TO","graphOrDefault"]}, 
-  "multiplicativeExpression" : {
-     "!": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "+": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "-": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "VAR1": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "VAR2": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "(": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STR": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "LANG": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "LANGMATCHES": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DATATYPE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "BOUND": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "IRI": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "URI": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "BNODE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "RAND": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "ABS": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "CEIL": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "FLOOR": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "ROUND": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "CONCAT": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRLEN": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "UCASE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "LCASE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "ENCODE_FOR_URI": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "CONTAINS": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRSTARTS": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRENDS": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRBEFORE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRAFTER": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "YEAR": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "MONTH": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DAY": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "HOURS": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "MINUTES": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "SECONDS": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "TIMEZONE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "TZ": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "NOW": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "UUID": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRUUID": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "MD5": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "SHA1": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "SHA256": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "SHA384": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "SHA512": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "COALESCE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "IF": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRLANG": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRDT": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "SAMETERM": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "ISIRI": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "ISURI": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "ISBLANK": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "ISLITERAL": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "ISNUMERIC": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "TRUE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "FALSE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "COUNT": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "SUM": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "MIN": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "MAX": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "AVG": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "SAMPLE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "GROUP_CONCAT": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "SUBSTR": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "REPLACE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "REGEX": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "EXISTS": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "NOT": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "IRI_REF": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRING_LITERAL1": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRING_LITERAL2": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRING_LITERAL_LONG1": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "STRING_LITERAL_LONG2": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "INTEGER": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DECIMAL": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DOUBLE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "INTEGER_POSITIVE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DECIMAL_POSITIVE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DOUBLE_POSITIVE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "INTEGER_NEGATIVE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DECIMAL_NEGATIVE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "DOUBLE_NEGATIVE": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "PNAME_LN": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"], 
-     "PNAME_NS": ["unaryExpression","*or([[*,unaryExpression],[/,unaryExpression]])"]}, 
-  "namedGraphClause" : {
-     "NAMED": ["NAMED","sourceSelector"]}, 
-  "notExistsFunc" : {
-     "NOT": ["NOT","EXISTS","groupGraphPattern"]}, 
-  "numericExpression" : {
-     "!": ["additiveExpression"], 
-     "+": ["additiveExpression"], 
-     "-": ["additiveExpression"], 
-     "VAR1": ["additiveExpression"], 
-     "VAR2": ["additiveExpression"], 
-     "(": ["additiveExpression"], 
-     "STR": ["additiveExpression"], 
-     "LANG": ["additiveExpression"], 
-     "LANGMATCHES": ["additiveExpression"], 
-     "DATATYPE": ["additiveExpression"], 
-     "BOUND": ["additiveExpression"], 
-     "IRI": ["additiveExpression"], 
-     "URI": ["additiveExpression"], 
-     "BNODE": ["additiveExpression"], 
-     "RAND": ["additiveExpression"], 
-     "ABS": ["additiveExpression"], 
-     "CEIL": ["additiveExpression"], 
-     "FLOOR": ["additiveExpression"], 
-     "ROUND": ["additiveExpression"], 
-     "CONCAT": ["additiveExpression"], 
-     "STRLEN": ["additiveExpression"], 
-     "UCASE": ["additiveExpression"], 
-     "LCASE": ["additiveExpression"], 
-     "ENCODE_FOR_URI": ["additiveExpression"], 
-     "CONTAINS": ["additiveExpression"], 
-     "STRSTARTS": ["additiveExpression"], 
-     "STRENDS": ["additiveExpression"], 
-     "STRBEFORE": ["additiveExpression"], 
-     "STRAFTER": ["additiveExpression"], 
-     "YEAR": ["additiveExpression"], 
-     "MONTH": ["additiveExpression"], 
-     "DAY": ["additiveExpression"], 
-     "HOURS": ["additiveExpression"], 
-     "MINUTES": ["additiveExpression"], 
-     "SECONDS": ["additiveExpression"], 
-     "TIMEZONE": ["additiveExpression"], 
-     "TZ": ["additiveExpression"], 
-     "NOW": ["additiveExpression"], 
-     "UUID": ["additiveExpression"], 
-     "STRUUID": ["additiveExpression"], 
-     "MD5": ["additiveExpression"], 
-     "SHA1": ["additiveExpression"], 
-     "SHA256": ["additiveExpression"], 
-     "SHA384": ["additiveExpression"], 
-     "SHA512": ["additiveExpression"], 
-     "COALESCE": ["additiveExpression"], 
-     "IF": ["additiveExpression"], 
-     "STRLANG": ["additiveExpression"], 
-     "STRDT": ["additiveExpression"], 
-     "SAMETERM": ["additiveExpression"], 
-     "ISIRI": ["additiveExpression"], 
-     "ISURI": ["additiveExpression"], 
-     "ISBLANK": ["additiveExpression"], 
-     "ISLITERAL": ["additiveExpression"], 
-     "ISNUMERIC": ["additiveExpression"], 
-     "TRUE": ["additiveExpression"], 
-     "FALSE": ["additiveExpression"], 
-     "COUNT": ["additiveExpression"], 
-     "SUM": ["additiveExpression"], 
-     "MIN": ["additiveExpression"], 
-     "MAX": ["additiveExpression"], 
-     "AVG": ["additiveExpression"], 
-     "SAMPLE": ["additiveExpression"], 
-     "GROUP_CONCAT": ["additiveExpression"], 
-     "SUBSTR": ["additiveExpression"], 
-     "REPLACE": ["additiveExpression"], 
-     "REGEX": ["additiveExpression"], 
-     "EXISTS": ["additiveExpression"], 
-     "NOT": ["additiveExpression"], 
-     "IRI_REF": ["additiveExpression"], 
-     "STRING_LITERAL1": ["additiveExpression"], 
-     "STRING_LITERAL2": ["additiveExpression"], 
-     "STRING_LITERAL_LONG1": ["additiveExpression"], 
-     "STRING_LITERAL_LONG2": ["additiveExpression"], 
-     "INTEGER": ["additiveExpression"], 
-     "DECIMAL": ["additiveExpression"], 
-     "DOUBLE": ["additiveExpression"], 
-     "INTEGER_POSITIVE": ["additiveExpression"], 
-     "DECIMAL_POSITIVE": ["additiveExpression"], 
-     "DOUBLE_POSITIVE": ["additiveExpression"], 
-     "INTEGER_NEGATIVE": ["additiveExpression"], 
-     "DECIMAL_NEGATIVE": ["additiveExpression"], 
-     "DOUBLE_NEGATIVE": ["additiveExpression"], 
-     "PNAME_LN": ["additiveExpression"], 
-     "PNAME_NS": ["additiveExpression"]}, 
-  "numericLiteral" : {
-     "INTEGER": ["numericLiteralUnsigned"], 
-     "DECIMAL": ["numericLiteralUnsigned"], 
-     "DOUBLE": ["numericLiteralUnsigned"], 
-     "INTEGER_POSITIVE": ["numericLiteralPositive"], 
-     "DECIMAL_POSITIVE": ["numericLiteralPositive"], 
-     "DOUBLE_POSITIVE": ["numericLiteralPositive"], 
-     "INTEGER_NEGATIVE": ["numericLiteralNegative"], 
-     "DECIMAL_NEGATIVE": ["numericLiteralNegative"], 
-     "DOUBLE_NEGATIVE": ["numericLiteralNegative"]}, 
-  "numericLiteralNegative" : {
-     "INTEGER_NEGATIVE": ["INTEGER_NEGATIVE"], 
-     "DECIMAL_NEGATIVE": ["DECIMAL_NEGATIVE"], 
-     "DOUBLE_NEGATIVE": ["DOUBLE_NEGATIVE"]}, 
-  "numericLiteralPositive" : {
-     "INTEGER_POSITIVE": ["INTEGER_POSITIVE"], 
-     "DECIMAL_POSITIVE": ["DECIMAL_POSITIVE"], 
-     "DOUBLE_POSITIVE": ["DOUBLE_POSITIVE"]}, 
-  "numericLiteralUnsigned" : {
-     "INTEGER": ["INTEGER"], 
-     "DECIMAL": ["DECIMAL"], 
-     "DOUBLE": ["DOUBLE"]}, 
-  "object" : {
-     "(": ["graphNode"], 
-     "[": ["graphNode"], 
-     "VAR1": ["graphNode"], 
-     "VAR2": ["graphNode"], 
-     "NIL": ["graphNode"], 
-     "IRI_REF": ["graphNode"], 
-     "TRUE": ["graphNode"], 
-     "FALSE": ["graphNode"], 
-     "BLANK_NODE_LABEL": ["graphNode"], 
-     "ANON": ["graphNode"], 
-     "PNAME_LN": ["graphNode"], 
-     "PNAME_NS": ["graphNode"], 
-     "STRING_LITERAL1": ["graphNode"], 
-     "STRING_LITERAL2": ["graphNode"], 
-     "STRING_LITERAL_LONG1": ["graphNode"], 
-     "STRING_LITERAL_LONG2": ["graphNode"], 
-     "INTEGER": ["graphNode"], 
-     "DECIMAL": ["graphNode"], 
-     "DOUBLE": ["graphNode"], 
-     "INTEGER_POSITIVE": ["graphNode"], 
-     "DECIMAL_POSITIVE": ["graphNode"], 
-     "DOUBLE_POSITIVE": ["graphNode"], 
-     "INTEGER_NEGATIVE": ["graphNode"], 
-     "DECIMAL_NEGATIVE": ["graphNode"], 
-     "DOUBLE_NEGATIVE": ["graphNode"]}, 
-  "objectList" : {
-     "(": ["object","*[,,object]"], 
-     "[": ["object","*[,,object]"], 
-     "VAR1": ["object","*[,,object]"], 
-     "VAR2": ["object","*[,,object]"], 
-     "NIL": ["object","*[,,object]"], 
-     "IRI_REF": ["object","*[,,object]"], 
-     "TRUE": ["object","*[,,object]"], 
-     "FALSE": ["object","*[,,object]"], 
-     "BLANK_NODE_LABEL": ["object","*[,,object]"], 
-     "ANON": ["object","*[,,object]"], 
-     "PNAME_LN": ["object","*[,,object]"], 
-     "PNAME_NS": ["object","*[,,object]"], 
-     "STRING_LITERAL1": ["object","*[,,object]"], 
-     "STRING_LITERAL2": ["object","*[,,object]"], 
-     "STRING_LITERAL_LONG1": ["object","*[,,object]"], 
-     "STRING_LITERAL_LONG2": ["object","*[,,object]"], 
-     "INTEGER": ["object","*[,,object]"], 
-     "DECIMAL": ["object","*[,,object]"], 
-     "DOUBLE": ["object","*[,,object]"], 
-     "INTEGER_POSITIVE": ["object","*[,,object]"], 
-     "DECIMAL_POSITIVE": ["object","*[,,object]"], 
-     "DOUBLE_POSITIVE": ["object","*[,,object]"], 
-     "INTEGER_NEGATIVE": ["object","*[,,object]"], 
-     "DECIMAL_NEGATIVE": ["object","*[,,object]"], 
-     "DOUBLE_NEGATIVE": ["object","*[,,object]"]}, 
-  "objectListPath" : {
-     "(": ["objectPath","*[,,objectPath]"], 
-     "[": ["objectPath","*[,,objectPath]"], 
-     "VAR1": ["objectPath","*[,,objectPath]"], 
-     "VAR2": ["objectPath","*[,,objectPath]"], 
-     "NIL": ["objectPath","*[,,objectPath]"], 
-     "IRI_REF": ["objectPath","*[,,objectPath]"], 
-     "TRUE": ["objectPath","*[,,objectPath]"], 
-     "FALSE": ["objectPath","*[,,objectPath]"], 
-     "BLANK_NODE_LABEL": ["objectPath","*[,,objectPath]"], 
-     "ANON": ["objectPath","*[,,objectPath]"], 
-     "PNAME_LN": ["objectPath","*[,,objectPath]"], 
-     "PNAME_NS": ["objectPath","*[,,objectPath]"], 
-     "STRING_LITERAL1": ["objectPath","*[,,objectPath]"], 
-     "STRING_LITERAL2": ["objectPath","*[,,objectPath]"], 
-     "STRING_LITERAL_LONG1": ["objectPath","*[,,objectPath]"], 
-     "STRING_LITERAL_LONG2": ["objectPath","*[,,objectPath]"], 
-     "INTEGER": ["objectPath","*[,,objectPath]"], 
-     "DECIMAL": ["objectPath","*[,,objectPath]"], 
-     "DOUBLE": ["objectPath","*[,,objectPath]"], 
-     "INTEGER_POSITIVE": ["objectPath","*[,,objectPath]"], 
-     "DECIMAL_POSITIVE": ["objectPath","*[,,objectPath]"], 
-     "DOUBLE_POSITIVE": ["objectPath","*[,,objectPath]"], 
-     "INTEGER_NEGATIVE": ["objectPath","*[,,objectPath]"], 
-     "DECIMAL_NEGATIVE": ["objectPath","*[,,objectPath]"], 
-     "DOUBLE_NEGATIVE": ["objectPath","*[,,objectPath]"]}, 
-  "objectPath" : {
-     "(": ["graphNodePath"], 
-     "[": ["graphNodePath"], 
-     "VAR1": ["graphNodePath"], 
-     "VAR2": ["graphNodePath"], 
-     "NIL": ["graphNodePath"], 
-     "IRI_REF": ["graphNodePath"], 
-     "TRUE": ["graphNodePath"], 
-     "FALSE": ["graphNodePath"], 
-     "BLANK_NODE_LABEL": ["graphNodePath"], 
-     "ANON": ["graphNodePath"], 
-     "PNAME_LN": ["graphNodePath"], 
-     "PNAME_NS": ["graphNodePath"], 
-     "STRING_LITERAL1": ["graphNodePath"], 
-     "STRING_LITERAL2": ["graphNodePath"], 
-     "STRING_LITERAL_LONG1": ["graphNodePath"], 
-     "STRING_LITERAL_LONG2": ["graphNodePath"], 
-     "INTEGER": ["graphNodePath"], 
-     "DECIMAL": ["graphNodePath"], 
-     "DOUBLE": ["graphNodePath"], 
-     "INTEGER_POSITIVE": ["graphNodePath"], 
-     "DECIMAL_POSITIVE": ["graphNodePath"], 
-     "DOUBLE_POSITIVE": ["graphNodePath"], 
-     "INTEGER_NEGATIVE": ["graphNodePath"], 
-     "DECIMAL_NEGATIVE": ["graphNodePath"], 
-     "DOUBLE_NEGATIVE": ["graphNodePath"]}, 
-  "offsetClause" : {
-     "OFFSET": ["OFFSET","INTEGER"]}, 
-  "optionalGraphPattern" : {
-     "OPTIONAL": ["OPTIONAL","groupGraphPattern"]}, 
-  "or([*,expression])" : {
-     "*": ["*"], 
-     "!": ["expression"], 
-     "+": ["expression"], 
-     "-": ["expression"], 
-     "VAR1": ["expression"], 
-     "VAR2": ["expression"], 
-     "(": ["expression"], 
-     "STR": ["expression"], 
-     "LANG": ["expression"], 
-     "LANGMATCHES": ["expression"], 
-     "DATATYPE": ["expression"], 
-     "BOUND": ["expression"], 
-     "IRI": ["expression"], 
-     "URI": ["expression"], 
-     "BNODE": ["expression"], 
-     "RAND": ["expression"], 
-     "ABS": ["expression"], 
-     "CEIL": ["expression"], 
-     "FLOOR": ["expression"], 
-     "ROUND": ["expression"], 
-     "CONCAT": ["expression"], 
-     "STRLEN": ["expression"], 
-     "UCASE": ["expression"], 
-     "LCASE": ["expression"], 
-     "ENCODE_FOR_URI": ["expression"], 
-     "CONTAINS": ["expression"], 
-     "STRSTARTS": ["expression"], 
-     "STRENDS": ["expression"], 
-     "STRBEFORE": ["expression"], 
-     "STRAFTER": ["expression"], 
-     "YEAR": ["expression"], 
-     "MONTH": ["expression"], 
-     "DAY": ["expression"], 
-     "HOURS": ["expression"], 
-     "MINUTES": ["expression"], 
-     "SECONDS": ["expression"], 
-     "TIMEZONE": ["expression"], 
-     "TZ": ["expression"], 
-     "NOW": ["expression"], 
-     "UUID": ["expression"], 
-     "STRUUID": ["expression"], 
-     "MD5": ["expression"], 
-     "SHA1": ["expression"], 
-     "SHA256": ["expression"], 
-     "SHA384": ["expression"], 
-     "SHA512": ["expression"], 
-     "COALESCE": ["expression"], 
-     "IF": ["expression"], 
-     "STRLANG": ["expression"], 
-     "STRDT": ["expression"], 
-     "SAMETERM": ["expression"], 
-     "ISIRI": ["expression"], 
-     "ISURI": ["expression"], 
-     "ISBLANK": ["expression"], 
-     "ISLITERAL": ["expression"], 
-     "ISNUMERIC": ["expression"], 
-     "TRUE": ["expression"], 
-     "FALSE": ["expression"], 
-     "COUNT": ["expression"], 
-     "SUM": ["expression"], 
-     "MIN": ["expression"], 
-     "MAX": ["expression"], 
-     "AVG": ["expression"], 
-     "SAMPLE": ["expression"], 
-     "GROUP_CONCAT": ["expression"], 
-     "SUBSTR": ["expression"], 
-     "REPLACE": ["expression"], 
-     "REGEX": ["expression"], 
-     "EXISTS": ["expression"], 
-     "NOT": ["expression"], 
-     "IRI_REF": ["expression"], 
-     "STRING_LITERAL1": ["expression"], 
-     "STRING_LITERAL2": ["expression"], 
-     "STRING_LITERAL_LONG1": ["expression"], 
-     "STRING_LITERAL_LONG2": ["expression"], 
-     "INTEGER": ["expression"], 
-     "DECIMAL": ["expression"], 
-     "DOUBLE": ["expression"], 
-     "INTEGER_POSITIVE": ["expression"], 
-     "DECIMAL_POSITIVE": ["expression"], 
-     "DOUBLE_POSITIVE": ["expression"], 
-     "INTEGER_NEGATIVE": ["expression"], 
-     "DECIMAL_NEGATIVE": ["expression"], 
-     "DOUBLE_NEGATIVE": ["expression"], 
-     "PNAME_LN": ["expression"], 
-     "PNAME_NS": ["expression"]}, 
-  "or([+or([var,[ (,expression,AS,var,)]]),*])" : {
-     "(": ["+or([var,[ (,expression,AS,var,)]])"], 
-     "VAR1": ["+or([var,[ (,expression,AS,var,)]])"], 
-     "VAR2": ["+or([var,[ (,expression,AS,var,)]])"], 
-     "*": ["*"]}, 
-  "or([+varOrIRIref,*])" : {
-     "VAR1": ["+varOrIRIref"], 
-     "VAR2": ["+varOrIRIref"], 
-     "IRI_REF": ["+varOrIRIref"], 
-     "PNAME_LN": ["+varOrIRIref"], 
-     "PNAME_NS": ["+varOrIRIref"], 
-     "*": ["*"]}, 
-  "or([ASC,DESC])" : {
-     "ASC": ["ASC"], 
-     "DESC": ["DESC"]}, 
-  "or([DISTINCT,REDUCED])" : {
-     "DISTINCT": ["DISTINCT"], 
-     "REDUCED": ["REDUCED"]}, 
-  "or([LANGTAG,[^^,iriRef]])" : {
-     "LANGTAG": ["LANGTAG"], 
-     "^^": ["[^^,iriRef]"]}, 
-  "or([NIL,[ (,*var,)]])" : {
-     "NIL": ["NIL"], 
-     "(": ["[ (,*var,)]"]}, 
-  "or([[ (,*dataBlockValue,)],NIL])" : {
-     "(": ["[ (,*dataBlockValue,)]"], 
-     "NIL": ["NIL"]}, 
-  "or([[ (,expression,)],NIL])" : {
-     "(": ["[ (,expression,)]"], 
-     "NIL": ["NIL"]}, 
-  "or([[*,unaryExpression],[/,unaryExpression]])" : {
-     "*": ["[*,unaryExpression]"], 
-     "/": ["[/,unaryExpression]"]}, 
-  "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])" : {
-     "+": ["[+,multiplicativeExpression]"], 
-     "-": ["[-,multiplicativeExpression]"], 
-     "INTEGER_POSITIVE": ["[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"], 
-     "DECIMAL_POSITIVE": ["[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"], 
-     "DOUBLE_POSITIVE": ["[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"], 
-     "INTEGER_NEGATIVE": ["[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"], 
-     "DECIMAL_NEGATIVE": ["[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"], 
-     "DOUBLE_NEGATIVE": ["[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"]}, 
-  "or([[,,or([},[integer,}]])],}])" : {
-     ",": ["[,,or([},[integer,}]])]"], 
-     "}": ["}"]}, 
-  "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])" : {
-     "=": ["[=,numericExpression]"], 
-     "!=": ["[!=,numericExpression]"], 
-     "<": ["[<,numericExpression]"], 
-     ">": ["[>,numericExpression]"], 
-     "<=": ["[<=,numericExpression]"], 
-     ">=": ["[>=,numericExpression]"], 
-     "IN": ["[IN,expressionList]"], 
-     "NOT": ["[NOT,IN,expressionList]"]}, 
-  "or([[constructTemplate,*datasetClause,whereClause,solutionModifier],[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]])" : {
-     "{": ["[constructTemplate,*datasetClause,whereClause,solutionModifier]"], 
-     "WHERE": ["[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]"], 
-     "FROM": ["[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]"]}, 
-  "or([[deleteClause,?insertClause],insertClause])" : {
-     "DELETE": ["[deleteClause,?insertClause]"], 
-     "INSERT": ["insertClause"]}, 
-  "or([[integer,or([[,,or([},[integer,}]])],}])],[,,integer,}]])" : {
-     "INTEGER": ["[integer,or([[,,or([},[integer,}]])],}])]"], 
-     ",": ["[,,integer,}]"]}, 
-  "or([baseDecl,prefixDecl])" : {
-     "BASE": ["baseDecl"], 
-     "PREFIX": ["prefixDecl"]}, 
-  "or([defaultGraphClause,namedGraphClause])" : {
-     "IRI_REF": ["defaultGraphClause"], 
-     "PNAME_LN": ["defaultGraphClause"], 
-     "PNAME_NS": ["defaultGraphClause"], 
-     "NAMED": ["namedGraphClause"]}, 
-  "or([inlineDataOneVar,inlineDataFull])" : {
-     "VAR1": ["inlineDataOneVar"], 
-     "VAR2": ["inlineDataOneVar"], 
-     "NIL": ["inlineDataFull"], 
-     "(": ["inlineDataFull"]}, 
-  "or([iriRef,[NAMED,iriRef]])" : {
-     "IRI_REF": ["iriRef"], 
-     "PNAME_LN": ["iriRef"], 
-     "PNAME_NS": ["iriRef"], 
-     "NAMED": ["[NAMED,iriRef]"]}, 
-  "or([iriRef,a])" : {
-     "IRI_REF": ["iriRef"], 
-     "PNAME_LN": ["iriRef"], 
-     "PNAME_NS": ["iriRef"], 
-     "a": ["a"]}, 
-  "or([numericLiteralPositive,numericLiteralNegative])" : {
-     "INTEGER_POSITIVE": ["numericLiteralPositive"], 
-     "DECIMAL_POSITIVE": ["numericLiteralPositive"], 
-     "DOUBLE_POSITIVE": ["numericLiteralPositive"], 
-     "INTEGER_NEGATIVE": ["numericLiteralNegative"], 
-     "DECIMAL_NEGATIVE": ["numericLiteralNegative"], 
-     "DOUBLE_NEGATIVE": ["numericLiteralNegative"]}, 
-  "or([queryAll,updateAll])" : {
-     "CONSTRUCT": ["queryAll"], 
-     "DESCRIBE": ["queryAll"], 
-     "ASK": ["queryAll"], 
-     "SELECT": ["queryAll"], 
-     "INSERT": ["updateAll"], 
-     "DELETE": ["updateAll"], 
-     "LOAD": ["updateAll"], 
-     "CLEAR": ["updateAll"], 
-     "DROP": ["updateAll"], 
-     "ADD": ["updateAll"], 
-     "MOVE": ["updateAll"], 
-     "COPY": ["updateAll"], 
-     "CREATE": ["updateAll"], 
-     "WITH": ["updateAll"], 
-     "$": ["updateAll"]}, 
-  "or([selectQuery,constructQuery,describeQuery,askQuery])" : {
-     "SELECT": ["selectQuery"], 
-     "CONSTRUCT": ["constructQuery"], 
-     "DESCRIBE": ["describeQuery"], 
-     "ASK": ["askQuery"]}, 
-  "or([subSelect,groupGraphPatternSub])" : {
-     "SELECT": ["subSelect"], 
-     "{": ["groupGraphPatternSub"], 
-     "OPTIONAL": ["groupGraphPatternSub"], 
-     "MINUS": ["groupGraphPatternSub"], 
-     "GRAPH": ["groupGraphPatternSub"], 
-     "SERVICE": ["groupGraphPatternSub"], 
-     "FILTER": ["groupGraphPatternSub"], 
-     "BIND": ["groupGraphPatternSub"], 
-     "VALUES": ["groupGraphPatternSub"], 
-     "VAR1": ["groupGraphPatternSub"], 
-     "VAR2": ["groupGraphPatternSub"], 
-     "NIL": ["groupGraphPatternSub"], 
-     "(": ["groupGraphPatternSub"], 
-     "[": ["groupGraphPatternSub"], 
-     "IRI_REF": ["groupGraphPatternSub"], 
-     "TRUE": ["groupGraphPatternSub"], 
-     "FALSE": ["groupGraphPatternSub"], 
-     "BLANK_NODE_LABEL": ["groupGraphPatternSub"], 
-     "ANON": ["groupGraphPatternSub"], 
-     "PNAME_LN": ["groupGraphPatternSub"], 
-     "PNAME_NS": ["groupGraphPatternSub"], 
-     "STRING_LITERAL1": ["groupGraphPatternSub"], 
-     "STRING_LITERAL2": ["groupGraphPatternSub"], 
-     "STRING_LITERAL_LONG1": ["groupGraphPatternSub"], 
-     "STRING_LITERAL_LONG2": ["groupGraphPatternSub"], 
-     "INTEGER": ["groupGraphPatternSub"], 
-     "DECIMAL": ["groupGraphPatternSub"], 
-     "DOUBLE": ["groupGraphPatternSub"], 
-     "INTEGER_POSITIVE": ["groupGraphPatternSub"], 
-     "DECIMAL_POSITIVE": ["groupGraphPatternSub"], 
-     "DOUBLE_POSITIVE": ["groupGraphPatternSub"], 
-     "INTEGER_NEGATIVE": ["groupGraphPatternSub"], 
-     "DECIMAL_NEGATIVE": ["groupGraphPatternSub"], 
-     "DOUBLE_NEGATIVE": ["groupGraphPatternSub"], 
-     "}": ["groupGraphPatternSub"]}, 
-  "or([var,[ (,expression,AS,var,)]])" : {
-     "VAR1": ["var"], 
-     "VAR2": ["var"], 
-     "(": ["[ (,expression,AS,var,)]"]}, 
-  "or([verbPath,verbSimple])" : {
-     "^": ["verbPath"], 
-     "a": ["verbPath"], 
-     "!": ["verbPath"], 
-     "(": ["verbPath"], 
-     "IRI_REF": ["verbPath"], 
-     "PNAME_LN": ["verbPath"], 
-     "PNAME_NS": ["verbPath"], 
-     "VAR1": ["verbSimple"], 
-     "VAR2": ["verbSimple"]}, 
-  "or([},[integer,}]])" : {
-     "}": ["}"], 
-     "INTEGER": ["[integer,}]"]}, 
-  "orderClause" : {
-     "ORDER": ["ORDER","BY","+orderCondition"]}, 
-  "orderCondition" : {
-     "ASC": ["or([ASC,DESC])","brackettedExpression"], 
-     "DESC": ["or([ASC,DESC])","brackettedExpression"], 
-     "(": ["constraint"], 
-     "STR": ["constraint"], 
-     "LANG": ["constraint"], 
-     "LANGMATCHES": ["constraint"], 
-     "DATATYPE": ["constraint"], 
-     "BOUND": ["constraint"], 
-     "IRI": ["constraint"], 
-     "URI": ["constraint"], 
-     "BNODE": ["constraint"], 
-     "RAND": ["constraint"], 
-     "ABS": ["constraint"], 
-     "CEIL": ["constraint"], 
-     "FLOOR": ["constraint"], 
-     "ROUND": ["constraint"], 
-     "CONCAT": ["constraint"], 
-     "STRLEN": ["constraint"], 
-     "UCASE": ["constraint"], 
-     "LCASE": ["constraint"], 
-     "ENCODE_FOR_URI": ["constraint"], 
-     "CONTAINS": ["constraint"], 
-     "STRSTARTS": ["constraint"], 
-     "STRENDS": ["constraint"], 
-     "STRBEFORE": ["constraint"], 
-     "STRAFTER": ["constraint"], 
-     "YEAR": ["constraint"], 
-     "MONTH": ["constraint"], 
-     "DAY": ["constraint"], 
-     "HOURS": ["constraint"], 
-     "MINUTES": ["constraint"], 
-     "SECONDS": ["constraint"], 
-     "TIMEZONE": ["constraint"], 
-     "TZ": ["constraint"], 
-     "NOW": ["constraint"], 
-     "UUID": ["constraint"], 
-     "STRUUID": ["constraint"], 
-     "MD5": ["constraint"], 
-     "SHA1": ["constraint"], 
-     "SHA256": ["constraint"], 
-     "SHA384": ["constraint"], 
-     "SHA512": ["constraint"], 
-     "COALESCE": ["constraint"], 
-     "IF": ["constraint"], 
-     "STRLANG": ["constraint"], 
-     "STRDT": ["constraint"], 
-     "SAMETERM": ["constraint"], 
-     "ISIRI": ["constraint"], 
-     "ISURI": ["constraint"], 
-     "ISBLANK": ["constraint"], 
-     "ISLITERAL": ["constraint"], 
-     "ISNUMERIC": ["constraint"], 
-     "SUBSTR": ["constraint"], 
-     "REPLACE": ["constraint"], 
-     "REGEX": ["constraint"], 
-     "EXISTS": ["constraint"], 
-     "NOT": ["constraint"], 
-     "IRI_REF": ["constraint"], 
-     "PNAME_LN": ["constraint"], 
-     "PNAME_NS": ["constraint"], 
-     "VAR1": ["var"], 
-     "VAR2": ["var"]}, 
-  "path" : {
-     "^": ["pathAlternative"], 
-     "a": ["pathAlternative"], 
-     "!": ["pathAlternative"], 
-     "(": ["pathAlternative"], 
-     "IRI_REF": ["pathAlternative"], 
-     "PNAME_LN": ["pathAlternative"], 
-     "PNAME_NS": ["pathAlternative"]}, 
-  "pathAlternative" : {
-     "^": ["pathSequence","*[|,pathSequence]"], 
-     "a": ["pathSequence","*[|,pathSequence]"], 
-     "!": ["pathSequence","*[|,pathSequence]"], 
-     "(": ["pathSequence","*[|,pathSequence]"], 
-     "IRI_REF": ["pathSequence","*[|,pathSequence]"], 
-     "PNAME_LN": ["pathSequence","*[|,pathSequence]"], 
-     "PNAME_NS": ["pathSequence","*[|,pathSequence]"]}, 
-  "pathElt" : {
-     "a": ["pathPrimary","?pathMod"], 
-     "!": ["pathPrimary","?pathMod"], 
-     "(": ["pathPrimary","?pathMod"], 
-     "IRI_REF": ["pathPrimary","?pathMod"], 
-     "PNAME_LN": ["pathPrimary","?pathMod"], 
-     "PNAME_NS": ["pathPrimary","?pathMod"]}, 
-  "pathEltOrInverse" : {
-     "a": ["pathElt"], 
-     "!": ["pathElt"], 
-     "(": ["pathElt"], 
-     "IRI_REF": ["pathElt"], 
-     "PNAME_LN": ["pathElt"], 
-     "PNAME_NS": ["pathElt"], 
-     "^": ["^","pathElt"]}, 
-  "pathMod" : {
-     "*": ["*"], 
-     "?": ["?"], 
-     "+": ["+"], 
-     "{": ["{","or([[integer,or([[,,or([},[integer,}]])],}])],[,,integer,}]])"]}, 
-  "pathNegatedPropertySet" : {
-     "a": ["pathOneInPropertySet"], 
-     "^": ["pathOneInPropertySet"], 
-     "IRI_REF": ["pathOneInPropertySet"], 
-     "PNAME_LN": ["pathOneInPropertySet"], 
-     "PNAME_NS": ["pathOneInPropertySet"], 
-     "(": ["(","?[pathOneInPropertySet,*[|,pathOneInPropertySet]]",")"]}, 
-  "pathOneInPropertySet" : {
-     "IRI_REF": ["iriRef"], 
-     "PNAME_LN": ["iriRef"], 
-     "PNAME_NS": ["iriRef"], 
-     "a": ["a"], 
-     "^": ["^","or([iriRef,a])"]}, 
-  "pathPrimary" : {
-     "IRI_REF": ["storeProperty","iriRef"], 
-     "PNAME_LN": ["storeProperty","iriRef"], 
-     "PNAME_NS": ["storeProperty","iriRef"], 
-     "a": ["storeProperty","a"], 
-     "!": ["!","pathNegatedPropertySet"], 
-     "(": ["(","path",")"]}, 
-  "pathSequence" : {
-     "^": ["pathEltOrInverse","*[/,pathEltOrInverse]"], 
-     "a": ["pathEltOrInverse","*[/,pathEltOrInverse]"], 
-     "!": ["pathEltOrInverse","*[/,pathEltOrInverse]"], 
-     "(": ["pathEltOrInverse","*[/,pathEltOrInverse]"], 
-     "IRI_REF": ["pathEltOrInverse","*[/,pathEltOrInverse]"], 
-     "PNAME_LN": ["pathEltOrInverse","*[/,pathEltOrInverse]"], 
-     "PNAME_NS": ["pathEltOrInverse","*[/,pathEltOrInverse]"]}, 
-  "prefixDecl" : {
-     "PREFIX": ["PREFIX","PNAME_NS","IRI_REF"]}, 
-  "prefixedName" : {
-     "PNAME_LN": ["PNAME_LN"], 
-     "PNAME_NS": ["PNAME_NS"]}, 
-  "primaryExpression" : {
-     "(": ["brackettedExpression"], 
-     "STR": ["builtInCall"], 
-     "LANG": ["builtInCall"], 
-     "LANGMATCHES": ["builtInCall"], 
-     "DATATYPE": ["builtInCall"], 
-     "BOUND": ["builtInCall"], 
-     "IRI": ["builtInCall"], 
-     "URI": ["builtInCall"], 
-     "BNODE": ["builtInCall"], 
-     "RAND": ["builtInCall"], 
-     "ABS": ["builtInCall"], 
-     "CEIL": ["builtInCall"], 
-     "FLOOR": ["builtInCall"], 
-     "ROUND": ["builtInCall"], 
-     "CONCAT": ["builtInCall"], 
-     "STRLEN": ["builtInCall"], 
-     "UCASE": ["builtInCall"], 
-     "LCASE": ["builtInCall"], 
-     "ENCODE_FOR_URI": ["builtInCall"], 
-     "CONTAINS": ["builtInCall"], 
-     "STRSTARTS": ["builtInCall"], 
-     "STRENDS": ["builtInCall"], 
-     "STRBEFORE": ["builtInCall"], 
-     "STRAFTER": ["builtInCall"], 
-     "YEAR": ["builtInCall"], 
-     "MONTH": ["builtInCall"], 
-     "DAY": ["builtInCall"], 
-     "HOURS": ["builtInCall"], 
-     "MINUTES": ["builtInCall"], 
-     "SECONDS": ["builtInCall"], 
-     "TIMEZONE": ["builtInCall"], 
-     "TZ": ["builtInCall"], 
-     "NOW": ["builtInCall"], 
-     "UUID": ["builtInCall"], 
-     "STRUUID": ["builtInCall"], 
-     "MD5": ["builtInCall"], 
-     "SHA1": ["builtInCall"], 
-     "SHA256": ["builtInCall"], 
-     "SHA384": ["builtInCall"], 
-     "SHA512": ["builtInCall"], 
-     "COALESCE": ["builtInCall"], 
-     "IF": ["builtInCall"], 
-     "STRLANG": ["builtInCall"], 
-     "STRDT": ["builtInCall"], 
-     "SAMETERM": ["builtInCall"], 
-     "ISIRI": ["builtInCall"], 
-     "ISURI": ["builtInCall"], 
-     "ISBLANK": ["builtInCall"], 
-     "ISLITERAL": ["builtInCall"], 
-     "ISNUMERIC": ["builtInCall"], 
-     "SUBSTR": ["builtInCall"], 
-     "REPLACE": ["builtInCall"], 
-     "REGEX": ["builtInCall"], 
-     "EXISTS": ["builtInCall"], 
-     "NOT": ["builtInCall"], 
-     "IRI_REF": ["iriRefOrFunction"], 
-     "PNAME_LN": ["iriRefOrFunction"], 
-     "PNAME_NS": ["iriRefOrFunction"], 
-     "STRING_LITERAL1": ["rdfLiteral"], 
-     "STRING_LITERAL2": ["rdfLiteral"], 
-     "STRING_LITERAL_LONG1": ["rdfLiteral"], 
-     "STRING_LITERAL_LONG2": ["rdfLiteral"], 
-     "INTEGER": ["numericLiteral"], 
-     "DECIMAL": ["numericLiteral"], 
-     "DOUBLE": ["numericLiteral"], 
-     "INTEGER_POSITIVE": ["numericLiteral"], 
-     "DECIMAL_POSITIVE": ["numericLiteral"], 
-     "DOUBLE_POSITIVE": ["numericLiteral"], 
-     "INTEGER_NEGATIVE": ["numericLiteral"], 
-     "DECIMAL_NEGATIVE": ["numericLiteral"], 
-     "DOUBLE_NEGATIVE": ["numericLiteral"], 
-     "TRUE": ["booleanLiteral"], 
-     "FALSE": ["booleanLiteral"], 
-     "VAR1": ["var"], 
-     "VAR2": ["var"], 
-     "COUNT": ["aggregate"], 
-     "SUM": ["aggregate"], 
-     "MIN": ["aggregate"], 
-     "MAX": ["aggregate"], 
-     "AVG": ["aggregate"], 
-     "SAMPLE": ["aggregate"], 
-     "GROUP_CONCAT": ["aggregate"]}, 
-  "prologue" : {
-     "BASE": ["*or([baseDecl,prefixDecl])"], 
-     "PREFIX": ["*or([baseDecl,prefixDecl])"], 
-     "$": ["*or([baseDecl,prefixDecl])"], 
-     "CONSTRUCT": ["*or([baseDecl,prefixDecl])"], 
-     "DESCRIBE": ["*or([baseDecl,prefixDecl])"], 
-     "ASK": ["*or([baseDecl,prefixDecl])"], 
-     "INSERT": ["*or([baseDecl,prefixDecl])"], 
-     "DELETE": ["*or([baseDecl,prefixDecl])"], 
-     "SELECT": ["*or([baseDecl,prefixDecl])"], 
-     "LOAD": ["*or([baseDecl,prefixDecl])"], 
-     "CLEAR": ["*or([baseDecl,prefixDecl])"], 
-     "DROP": ["*or([baseDecl,prefixDecl])"], 
-     "ADD": ["*or([baseDecl,prefixDecl])"], 
-     "MOVE": ["*or([baseDecl,prefixDecl])"], 
-     "COPY": ["*or([baseDecl,prefixDecl])"], 
-     "CREATE": ["*or([baseDecl,prefixDecl])"], 
-     "WITH": ["*or([baseDecl,prefixDecl])"]}, 
-  "propertyList" : {
-     "a": ["propertyListNotEmpty"], 
-     "VAR1": ["propertyListNotEmpty"], 
-     "VAR2": ["propertyListNotEmpty"], 
-     "IRI_REF": ["propertyListNotEmpty"], 
-     "PNAME_LN": ["propertyListNotEmpty"], 
-     "PNAME_NS": ["propertyListNotEmpty"], 
-     ".": [], 
-     "}": [], 
-     "GRAPH": []}, 
-  "propertyListNotEmpty" : {
-     "a": ["verb","objectList","*[;,?[verb,objectList]]"], 
-     "VAR1": ["verb","objectList","*[;,?[verb,objectList]]"], 
-     "VAR2": ["verb","objectList","*[;,?[verb,objectList]]"], 
-     "IRI_REF": ["verb","objectList","*[;,?[verb,objectList]]"], 
-     "PNAME_LN": ["verb","objectList","*[;,?[verb,objectList]]"], 
-     "PNAME_NS": ["verb","objectList","*[;,?[verb,objectList]]"]}, 
-  "propertyListPath" : {
-     "a": ["propertyListNotEmpty"], 
-     "VAR1": ["propertyListNotEmpty"], 
-     "VAR2": ["propertyListNotEmpty"], 
-     "IRI_REF": ["propertyListNotEmpty"], 
-     "PNAME_LN": ["propertyListNotEmpty"], 
-     "PNAME_NS": ["propertyListNotEmpty"], 
-     ".": [], 
-     "{": [], 
-     "OPTIONAL": [], 
-     "MINUS": [], 
-     "GRAPH": [], 
-     "SERVICE": [], 
-     "FILTER": [], 
-     "BIND": [], 
-     "VALUES": [], 
-     "}": []}, 
-  "propertyListPathNotEmpty" : {
-     "VAR1": ["or([verbPath,verbSimple])","objectListPath","*[;,?[or([verbPath,verbSimple]),objectList]]"], 
-     "VAR2": ["or([verbPath,verbSimple])","objectListPath","*[;,?[or([verbPath,verbSimple]),objectList]]"], 
-     "^": ["or([verbPath,verbSimple])","objectListPath","*[;,?[or([verbPath,verbSimple]),objectList]]"], 
-     "a": ["or([verbPath,verbSimple])","objectListPath","*[;,?[or([verbPath,verbSimple]),objectList]]"], 
-     "!": ["or([verbPath,verbSimple])","objectListPath","*[;,?[or([verbPath,verbSimple]),objectList]]"], 
-     "(": ["or([verbPath,verbSimple])","objectListPath","*[;,?[or([verbPath,verbSimple]),objectList]]"], 
-     "IRI_REF": ["or([verbPath,verbSimple])","objectListPath","*[;,?[or([verbPath,verbSimple]),objectList]]"], 
-     "PNAME_LN": ["or([verbPath,verbSimple])","objectListPath","*[;,?[or([verbPath,verbSimple]),objectList]]"], 
-     "PNAME_NS": ["or([verbPath,verbSimple])","objectListPath","*[;,?[or([verbPath,verbSimple]),objectList]]"]}, 
-  "quadData" : {
-     "{": ["{","disallowVars","quads","allowVars","}"]}, 
-  "quadDataNoBnodes" : {
-     "{": ["{","disallowBnodes","disallowVars","quads","allowVars","allowBnodes","}"]}, 
-  "quadPattern" : {
-     "{": ["{","quads","}"]}, 
-  "quadPatternNoBnodes" : {
-     "{": ["{","disallowBnodes","quads","allowBnodes","}"]}, 
-  "quads" : {
-     "GRAPH": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "VAR1": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "VAR2": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "NIL": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "(": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "[": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "IRI_REF": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "TRUE": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "FALSE": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "BLANK_NODE_LABEL": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "ANON": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "PNAME_LN": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "PNAME_NS": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "STRING_LITERAL1": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "STRING_LITERAL2": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "STRING_LITERAL_LONG1": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "STRING_LITERAL_LONG2": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "INTEGER": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "DECIMAL": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "DOUBLE": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "INTEGER_POSITIVE": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "DECIMAL_POSITIVE": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "DOUBLE_POSITIVE": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "INTEGER_NEGATIVE": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "DECIMAL_NEGATIVE": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "DOUBLE_NEGATIVE": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"], 
-     "}": ["?triplesTemplate","*[quadsNotTriples,?.,?triplesTemplate]"]}, 
-  "quadsNotTriples" : {
-     "GRAPH": ["GRAPH","varOrIRIref","{","?triplesTemplate","}"]}, 
-  "queryAll" : {
-     "CONSTRUCT": ["or([selectQuery,constructQuery,describeQuery,askQuery])","valuesClause"], 
-     "DESCRIBE": ["or([selectQuery,constructQuery,describeQuery,askQuery])","valuesClause"], 
-     "ASK": ["or([selectQuery,constructQuery,describeQuery,askQuery])","valuesClause"], 
-     "SELECT": ["or([selectQuery,constructQuery,describeQuery,askQuery])","valuesClause"]}, 
-  "rdfLiteral" : {
-     "STRING_LITERAL1": ["string","?or([LANGTAG,[^^,iriRef]])"], 
-     "STRING_LITERAL2": ["string","?or([LANGTAG,[^^,iriRef]])"], 
-     "STRING_LITERAL_LONG1": ["string","?or([LANGTAG,[^^,iriRef]])"], 
-     "STRING_LITERAL_LONG2": ["string","?or([LANGTAG,[^^,iriRef]])"]}, 
-  "regexExpression" : {
-     "REGEX": ["REGEX","(","expression",",","expression","?[,,expression]",")"]}, 
-  "relationalExpression" : {
-     "!": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "+": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "-": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "VAR1": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "VAR2": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "(": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STR": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "LANG": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "LANGMATCHES": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "DATATYPE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "BOUND": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "IRI": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "URI": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "BNODE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "RAND": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "ABS": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "CEIL": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "FLOOR": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "ROUND": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "CONCAT": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRLEN": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "UCASE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "LCASE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "ENCODE_FOR_URI": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "CONTAINS": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRSTARTS": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRENDS": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRBEFORE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRAFTER": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "YEAR": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "MONTH": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "DAY": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "HOURS": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "MINUTES": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "SECONDS": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "TIMEZONE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "TZ": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "NOW": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "UUID": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRUUID": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "MD5": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "SHA1": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "SHA256": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "SHA384": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "SHA512": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "COALESCE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "IF": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRLANG": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRDT": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "SAMETERM": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "ISIRI": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "ISURI": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "ISBLANK": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "ISLITERAL": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "ISNUMERIC": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "TRUE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "FALSE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "COUNT": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "SUM": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "MIN": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "MAX": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "AVG": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "SAMPLE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "GROUP_CONCAT": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "SUBSTR": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "REPLACE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "REGEX": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "EXISTS": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "NOT": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "IRI_REF": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRING_LITERAL1": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRING_LITERAL2": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRING_LITERAL_LONG1": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "STRING_LITERAL_LONG2": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "INTEGER": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "DECIMAL": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "DOUBLE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "INTEGER_POSITIVE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "DECIMAL_POSITIVE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "DOUBLE_POSITIVE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "INTEGER_NEGATIVE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "DECIMAL_NEGATIVE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "DOUBLE_NEGATIVE": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "PNAME_LN": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"], 
-     "PNAME_NS": ["numericExpression","?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"]}, 
-  "selectClause" : {
-     "SELECT": ["SELECT","?or([DISTINCT,REDUCED])","or([+or([var,[ (,expression,AS,var,)]]),*])"]}, 
-  "selectQuery" : {
-     "SELECT": ["selectClause","*datasetClause","whereClause","solutionModifier"]}, 
-  "serviceGraphPattern" : {
-     "SERVICE": ["SERVICE","?SILENT","varOrIRIref","groupGraphPattern"]}, 
-  "solutionModifier" : {
-     "LIMIT": ["?groupClause","?havingClause","?orderClause","?limitOffsetClauses"], 
-     "OFFSET": ["?groupClause","?havingClause","?orderClause","?limitOffsetClauses"], 
-     "ORDER": ["?groupClause","?havingClause","?orderClause","?limitOffsetClauses"], 
-     "HAVING": ["?groupClause","?havingClause","?orderClause","?limitOffsetClauses"], 
-     "GROUP": ["?groupClause","?havingClause","?orderClause","?limitOffsetClauses"], 
-     "VALUES": ["?groupClause","?havingClause","?orderClause","?limitOffsetClauses"], 
-     "$": ["?groupClause","?havingClause","?orderClause","?limitOffsetClauses"], 
-     "}": ["?groupClause","?havingClause","?orderClause","?limitOffsetClauses"]}, 
-  "sourceSelector" : {
-     "IRI_REF": ["iriRef"], 
-     "PNAME_LN": ["iriRef"], 
-     "PNAME_NS": ["iriRef"]}, 
-  "sparql11" : {
-     "$": ["prologue","or([queryAll,updateAll])","$"], 
-     "CONSTRUCT": ["prologue","or([queryAll,updateAll])","$"], 
-     "DESCRIBE": ["prologue","or([queryAll,updateAll])","$"], 
-     "ASK": ["prologue","or([queryAll,updateAll])","$"], 
-     "INSERT": ["prologue","or([queryAll,updateAll])","$"], 
-     "DELETE": ["prologue","or([queryAll,updateAll])","$"], 
-     "SELECT": ["prologue","or([queryAll,updateAll])","$"], 
-     "LOAD": ["prologue","or([queryAll,updateAll])","$"], 
-     "CLEAR": ["prologue","or([queryAll,updateAll])","$"], 
-     "DROP": ["prologue","or([queryAll,updateAll])","$"], 
-     "ADD": ["prologue","or([queryAll,updateAll])","$"], 
-     "MOVE": ["prologue","or([queryAll,updateAll])","$"], 
-     "COPY": ["prologue","or([queryAll,updateAll])","$"], 
-     "CREATE": ["prologue","or([queryAll,updateAll])","$"], 
-     "WITH": ["prologue","or([queryAll,updateAll])","$"], 
-     "BASE": ["prologue","or([queryAll,updateAll])","$"], 
-     "PREFIX": ["prologue","or([queryAll,updateAll])","$"]}, 
-  "storeProperty" : {
-     "VAR1": [], 
-     "VAR2": [], 
-     "IRI_REF": [], 
-     "PNAME_LN": [], 
-     "PNAME_NS": [], 
-     "a": []}, 
-  "strReplaceExpression" : {
-     "REPLACE": ["REPLACE","(","expression",",","expression",",","expression","?[,,expression]",")"]}, 
-  "string" : {
-     "STRING_LITERAL1": ["STRING_LITERAL1"], 
-     "STRING_LITERAL2": ["STRING_LITERAL2"], 
-     "STRING_LITERAL_LONG1": ["STRING_LITERAL_LONG1"], 
-     "STRING_LITERAL_LONG2": ["STRING_LITERAL_LONG2"]}, 
-  "subSelect" : {
-     "SELECT": ["selectClause","whereClause","solutionModifier","valuesClause"]}, 
-  "substringExpression" : {
-     "SUBSTR": ["SUBSTR","(","expression",",","expression","?[,,expression]",")"]}, 
-  "triplesBlock" : {
-     "VAR1": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "VAR2": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "NIL": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "(": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "[": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "IRI_REF": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "TRUE": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "FALSE": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "BLANK_NODE_LABEL": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "ANON": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "PNAME_LN": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "PNAME_NS": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "STRING_LITERAL1": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "STRING_LITERAL2": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "STRING_LITERAL_LONG1": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "STRING_LITERAL_LONG2": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "INTEGER": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "DECIMAL": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "DOUBLE": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "INTEGER_POSITIVE": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "DECIMAL_POSITIVE": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "DOUBLE_POSITIVE": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "INTEGER_NEGATIVE": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "DECIMAL_NEGATIVE": ["triplesSameSubjectPath","?[.,?triplesBlock]"], 
-     "DOUBLE_NEGATIVE": ["triplesSameSubjectPath","?[.,?triplesBlock]"]}, 
-  "triplesNode" : {
-     "(": ["collection"], 
-     "[": ["blankNodePropertyList"]}, 
-  "triplesNodePath" : {
-     "(": ["collectionPath"], 
-     "[": ["blankNodePropertyListPath"]}, 
-  "triplesSameSubject" : {
-     "VAR1": ["varOrTerm","propertyListNotEmpty"], 
-     "VAR2": ["varOrTerm","propertyListNotEmpty"], 
-     "NIL": ["varOrTerm","propertyListNotEmpty"], 
-     "IRI_REF": ["varOrTerm","propertyListNotEmpty"], 
-     "TRUE": ["varOrTerm","propertyListNotEmpty"], 
-     "FALSE": ["varOrTerm","propertyListNotEmpty"], 
-     "BLANK_NODE_LABEL": ["varOrTerm","propertyListNotEmpty"], 
-     "ANON": ["varOrTerm","propertyListNotEmpty"], 
-     "PNAME_LN": ["varOrTerm","propertyListNotEmpty"], 
-     "PNAME_NS": ["varOrTerm","propertyListNotEmpty"], 
-     "STRING_LITERAL1": ["varOrTerm","propertyListNotEmpty"], 
-     "STRING_LITERAL2": ["varOrTerm","propertyListNotEmpty"], 
-     "STRING_LITERAL_LONG1": ["varOrTerm","propertyListNotEmpty"], 
-     "STRING_LITERAL_LONG2": ["varOrTerm","propertyListNotEmpty"], 
-     "INTEGER": ["varOrTerm","propertyListNotEmpty"], 
-     "DECIMAL": ["varOrTerm","propertyListNotEmpty"], 
-     "DOUBLE": ["varOrTerm","propertyListNotEmpty"], 
-     "INTEGER_POSITIVE": ["varOrTerm","propertyListNotEmpty"], 
-     "DECIMAL_POSITIVE": ["varOrTerm","propertyListNotEmpty"], 
-     "DOUBLE_POSITIVE": ["varOrTerm","propertyListNotEmpty"], 
-     "INTEGER_NEGATIVE": ["varOrTerm","propertyListNotEmpty"], 
-     "DECIMAL_NEGATIVE": ["varOrTerm","propertyListNotEmpty"], 
-     "DOUBLE_NEGATIVE": ["varOrTerm","propertyListNotEmpty"], 
-     "(": ["triplesNode","propertyList"], 
-     "[": ["triplesNode","propertyList"]}, 
-  "triplesSameSubjectPath" : {
-     "VAR1": ["varOrTerm","propertyListPathNotEmpty"], 
-     "VAR2": ["varOrTerm","propertyListPathNotEmpty"], 
-     "NIL": ["varOrTerm","propertyListPathNotEmpty"], 
-     "IRI_REF": ["varOrTerm","propertyListPathNotEmpty"], 
-     "TRUE": ["varOrTerm","propertyListPathNotEmpty"], 
-     "FALSE": ["varOrTerm","propertyListPathNotEmpty"], 
-     "BLANK_NODE_LABEL": ["varOrTerm","propertyListPathNotEmpty"], 
-     "ANON": ["varOrTerm","propertyListPathNotEmpty"], 
-     "PNAME_LN": ["varOrTerm","propertyListPathNotEmpty"], 
-     "PNAME_NS": ["varOrTerm","propertyListPathNotEmpty"], 
-     "STRING_LITERAL1": ["varOrTerm","propertyListPathNotEmpty"], 
-     "STRING_LITERAL2": ["varOrTerm","propertyListPathNotEmpty"], 
-     "STRING_LITERAL_LONG1": ["varOrTerm","propertyListPathNotEmpty"], 
-     "STRING_LITERAL_LONG2": ["varOrTerm","propertyListPathNotEmpty"], 
-     "INTEGER": ["varOrTerm","propertyListPathNotEmpty"], 
-     "DECIMAL": ["varOrTerm","propertyListPathNotEmpty"], 
-     "DOUBLE": ["varOrTerm","propertyListPathNotEmpty"], 
-     "INTEGER_POSITIVE": ["varOrTerm","propertyListPathNotEmpty"], 
-     "DECIMAL_POSITIVE": ["varOrTerm","propertyListPathNotEmpty"], 
-     "DOUBLE_POSITIVE": ["varOrTerm","propertyListPathNotEmpty"], 
-     "INTEGER_NEGATIVE": ["varOrTerm","propertyListPathNotEmpty"], 
-     "DECIMAL_NEGATIVE": ["varOrTerm","propertyListPathNotEmpty"], 
-     "DOUBLE_NEGATIVE": ["varOrTerm","propertyListPathNotEmpty"], 
-     "(": ["triplesNodePath","propertyListPath"], 
-     "[": ["triplesNodePath","propertyListPath"]}, 
-  "triplesTemplate" : {
-     "VAR1": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "VAR2": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "NIL": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "(": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "[": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "IRI_REF": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "TRUE": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "FALSE": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "BLANK_NODE_LABEL": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "ANON": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "PNAME_LN": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "PNAME_NS": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "STRING_LITERAL1": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "STRING_LITERAL2": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "STRING_LITERAL_LONG1": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "STRING_LITERAL_LONG2": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "INTEGER": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "DECIMAL": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "DOUBLE": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "INTEGER_POSITIVE": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "DECIMAL_POSITIVE": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "DOUBLE_POSITIVE": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "INTEGER_NEGATIVE": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "DECIMAL_NEGATIVE": ["triplesSameSubject","?[.,?triplesTemplate]"], 
-     "DOUBLE_NEGATIVE": ["triplesSameSubject","?[.,?triplesTemplate]"]}, 
-  "unaryExpression" : {
-     "!": ["!","primaryExpression"], 
-     "+": ["+","primaryExpression"], 
-     "-": ["-","primaryExpression"], 
-     "VAR1": ["primaryExpression"], 
-     "VAR2": ["primaryExpression"], 
-     "(": ["primaryExpression"], 
-     "STR": ["primaryExpression"], 
-     "LANG": ["primaryExpression"], 
-     "LANGMATCHES": ["primaryExpression"], 
-     "DATATYPE": ["primaryExpression"], 
-     "BOUND": ["primaryExpression"], 
-     "IRI": ["primaryExpression"], 
-     "URI": ["primaryExpression"], 
-     "BNODE": ["primaryExpression"], 
-     "RAND": ["primaryExpression"], 
-     "ABS": ["primaryExpression"], 
-     "CEIL": ["primaryExpression"], 
-     "FLOOR": ["primaryExpression"], 
-     "ROUND": ["primaryExpression"], 
-     "CONCAT": ["primaryExpression"], 
-     "STRLEN": ["primaryExpression"], 
-     "UCASE": ["primaryExpression"], 
-     "LCASE": ["primaryExpression"], 
-     "ENCODE_FOR_URI": ["primaryExpression"], 
-     "CONTAINS": ["primaryExpression"], 
-     "STRSTARTS": ["primaryExpression"], 
-     "STRENDS": ["primaryExpression"], 
-     "STRBEFORE": ["primaryExpression"], 
-     "STRAFTER": ["primaryExpression"], 
-     "YEAR": ["primaryExpression"], 
-     "MONTH": ["primaryExpression"], 
-     "DAY": ["primaryExpression"], 
-     "HOURS": ["primaryExpression"], 
-     "MINUTES": ["primaryExpression"], 
-     "SECONDS": ["primaryExpression"], 
-     "TIMEZONE": ["primaryExpression"], 
-     "TZ": ["primaryExpression"], 
-     "NOW": ["primaryExpression"], 
-     "UUID": ["primaryExpression"], 
-     "STRUUID": ["primaryExpression"], 
-     "MD5": ["primaryExpression"], 
-     "SHA1": ["primaryExpression"], 
-     "SHA256": ["primaryExpression"], 
-     "SHA384": ["primaryExpression"], 
-     "SHA512": ["primaryExpression"], 
-     "COALESCE": ["primaryExpression"], 
-     "IF": ["primaryExpression"], 
-     "STRLANG": ["primaryExpression"], 
-     "STRDT": ["primaryExpression"], 
-     "SAMETERM": ["primaryExpression"], 
-     "ISIRI": ["primaryExpression"], 
-     "ISURI": ["primaryExpression"], 
-     "ISBLANK": ["primaryExpression"], 
-     "ISLITERAL": ["primaryExpression"], 
-     "ISNUMERIC": ["primaryExpression"], 
-     "TRUE": ["primaryExpression"], 
-     "FALSE": ["primaryExpression"], 
-     "COUNT": ["primaryExpression"], 
-     "SUM": ["primaryExpression"], 
-     "MIN": ["primaryExpression"], 
-     "MAX": ["primaryExpression"], 
-     "AVG": ["primaryExpression"], 
-     "SAMPLE": ["primaryExpression"], 
-     "GROUP_CONCAT": ["primaryExpression"], 
-     "SUBSTR": ["primaryExpression"], 
-     "REPLACE": ["primaryExpression"], 
-     "REGEX": ["primaryExpression"], 
-     "EXISTS": ["primaryExpression"], 
-     "NOT": ["primaryExpression"], 
-     "IRI_REF": ["primaryExpression"], 
-     "STRING_LITERAL1": ["primaryExpression"], 
-     "STRING_LITERAL2": ["primaryExpression"], 
-     "STRING_LITERAL_LONG1": ["primaryExpression"], 
-     "STRING_LITERAL_LONG2": ["primaryExpression"], 
-     "INTEGER": ["primaryExpression"], 
-     "DECIMAL": ["primaryExpression"], 
-     "DOUBLE": ["primaryExpression"], 
-     "INTEGER_POSITIVE": ["primaryExpression"], 
-     "DECIMAL_POSITIVE": ["primaryExpression"], 
-     "DOUBLE_POSITIVE": ["primaryExpression"], 
-     "INTEGER_NEGATIVE": ["primaryExpression"], 
-     "DECIMAL_NEGATIVE": ["primaryExpression"], 
-     "DOUBLE_NEGATIVE": ["primaryExpression"], 
-     "PNAME_LN": ["primaryExpression"], 
-     "PNAME_NS": ["primaryExpression"]}, 
-  "update" : {
-     "INSERT": ["prologue","?[update1,?[;,update]]"], 
-     "DELETE": ["prologue","?[update1,?[;,update]]"], 
-     "LOAD": ["prologue","?[update1,?[;,update]]"], 
-     "CLEAR": ["prologue","?[update1,?[;,update]]"], 
-     "DROP": ["prologue","?[update1,?[;,update]]"], 
-     "ADD": ["prologue","?[update1,?[;,update]]"], 
-     "MOVE": ["prologue","?[update1,?[;,update]]"], 
-     "COPY": ["prologue","?[update1,?[;,update]]"], 
-     "CREATE": ["prologue","?[update1,?[;,update]]"], 
-     "WITH": ["prologue","?[update1,?[;,update]]"], 
-     "BASE": ["prologue","?[update1,?[;,update]]"], 
-     "PREFIX": ["prologue","?[update1,?[;,update]]"], 
-     "$": ["prologue","?[update1,?[;,update]]"]}, 
-  "update1" : {
-     "LOAD": ["load"], 
-     "CLEAR": ["clear"], 
-     "DROP": ["drop"], 
-     "ADD": ["add"], 
-     "MOVE": ["move"], 
-     "COPY": ["copy"], 
-     "CREATE": ["create"], 
-     "INSERT": ["INSERT","insert1"], 
-     "DELETE": ["DELETE","delete1"], 
-     "WITH": ["modify"]}, 
-  "updateAll" : {
-     "INSERT": ["?[update1,?[;,update]]"], 
-     "DELETE": ["?[update1,?[;,update]]"], 
-     "LOAD": ["?[update1,?[;,update]]"], 
-     "CLEAR": ["?[update1,?[;,update]]"], 
-     "DROP": ["?[update1,?[;,update]]"], 
-     "ADD": ["?[update1,?[;,update]]"], 
-     "MOVE": ["?[update1,?[;,update]]"], 
-     "COPY": ["?[update1,?[;,update]]"], 
-     "CREATE": ["?[update1,?[;,update]]"], 
-     "WITH": ["?[update1,?[;,update]]"], 
-     "$": ["?[update1,?[;,update]]"]}, 
-  "usingClause" : {
-     "USING": ["USING","or([iriRef,[NAMED,iriRef]])"]}, 
-  "valueLogical" : {
-     "!": ["relationalExpression"], 
-     "+": ["relationalExpression"], 
-     "-": ["relationalExpression"], 
-     "VAR1": ["relationalExpression"], 
-     "VAR2": ["relationalExpression"], 
-     "(": ["relationalExpression"], 
-     "STR": ["relationalExpression"], 
-     "LANG": ["relationalExpression"], 
-     "LANGMATCHES": ["relationalExpression"], 
-     "DATATYPE": ["relationalExpression"], 
-     "BOUND": ["relationalExpression"], 
-     "IRI": ["relationalExpression"], 
-     "URI": ["relationalExpression"], 
-     "BNODE": ["relationalExpression"], 
-     "RAND": ["relationalExpression"], 
-     "ABS": ["relationalExpression"], 
-     "CEIL": ["relationalExpression"], 
-     "FLOOR": ["relationalExpression"], 
-     "ROUND": ["relationalExpression"], 
-     "CONCAT": ["relationalExpression"], 
-     "STRLEN": ["relationalExpression"], 
-     "UCASE": ["relationalExpression"], 
-     "LCASE": ["relationalExpression"], 
-     "ENCODE_FOR_URI": ["relationalExpression"], 
-     "CONTAINS": ["relationalExpression"], 
-     "STRSTARTS": ["relationalExpression"], 
-     "STRENDS": ["relationalExpression"], 
-     "STRBEFORE": ["relationalExpression"], 
-     "STRAFTER": ["relationalExpression"], 
-     "YEAR": ["relationalExpression"], 
-     "MONTH": ["relationalExpression"], 
-     "DAY": ["relationalExpression"], 
-     "HOURS": ["relationalExpression"], 
-     "MINUTES": ["relationalExpression"], 
-     "SECONDS": ["relationalExpression"], 
-     "TIMEZONE": ["relationalExpression"], 
-     "TZ": ["relationalExpression"], 
-     "NOW": ["relationalExpression"], 
-     "UUID": ["relationalExpression"], 
-     "STRUUID": ["relationalExpression"], 
-     "MD5": ["relationalExpression"], 
-     "SHA1": ["relationalExpression"], 
-     "SHA256": ["relationalExpression"], 
-     "SHA384": ["relationalExpression"], 
-     "SHA512": ["relationalExpression"], 
-     "COALESCE": ["relationalExpression"], 
-     "IF": ["relationalExpression"], 
-     "STRLANG": ["relationalExpression"], 
-     "STRDT": ["relationalExpression"], 
-     "SAMETERM": ["relationalExpression"], 
-     "ISIRI": ["relationalExpression"], 
-     "ISURI": ["relationalExpression"], 
-     "ISBLANK": ["relationalExpression"], 
-     "ISLITERAL": ["relationalExpression"], 
-     "ISNUMERIC": ["relationalExpression"], 
-     "TRUE": ["relationalExpression"], 
-     "FALSE": ["relationalExpression"], 
-     "COUNT": ["relationalExpression"], 
-     "SUM": ["relationalExpression"], 
-     "MIN": ["relationalExpression"], 
-     "MAX": ["relationalExpression"], 
-     "AVG": ["relationalExpression"], 
-     "SAMPLE": ["relationalExpression"], 
-     "GROUP_CONCAT": ["relationalExpression"], 
-     "SUBSTR": ["relationalExpression"], 
-     "REPLACE": ["relationalExpression"], 
-     "REGEX": ["relationalExpression"], 
-     "EXISTS": ["relationalExpression"], 
-     "NOT": ["relationalExpression"], 
-     "IRI_REF": ["relationalExpression"], 
-     "STRING_LITERAL1": ["relationalExpression"], 
-     "STRING_LITERAL2": ["relationalExpression"], 
-     "STRING_LITERAL_LONG1": ["relationalExpression"], 
-     "STRING_LITERAL_LONG2": ["relationalExpression"], 
-     "INTEGER": ["relationalExpression"], 
-     "DECIMAL": ["relationalExpression"], 
-     "DOUBLE": ["relationalExpression"], 
-     "INTEGER_POSITIVE": ["relationalExpression"], 
-     "DECIMAL_POSITIVE": ["relationalExpression"], 
-     "DOUBLE_POSITIVE": ["relationalExpression"], 
-     "INTEGER_NEGATIVE": ["relationalExpression"], 
-     "DECIMAL_NEGATIVE": ["relationalExpression"], 
-     "DOUBLE_NEGATIVE": ["relationalExpression"], 
-     "PNAME_LN": ["relationalExpression"], 
-     "PNAME_NS": ["relationalExpression"]}, 
-  "valuesClause" : {
-     "VALUES": ["VALUES","dataBlock"], 
-     "$": [], 
-     "}": []}, 
-  "var" : {
-     "VAR1": ["VAR1"], 
-     "VAR2": ["VAR2"]}, 
-  "varOrIRIref" : {
-     "VAR1": ["var"], 
-     "VAR2": ["var"], 
-     "IRI_REF": ["iriRef"], 
-     "PNAME_LN": ["iriRef"], 
-     "PNAME_NS": ["iriRef"]}, 
-  "varOrTerm" : {
-     "VAR1": ["var"], 
-     "VAR2": ["var"], 
-     "NIL": ["graphTerm"], 
-     "IRI_REF": ["graphTerm"], 
-     "TRUE": ["graphTerm"], 
-     "FALSE": ["graphTerm"], 
-     "BLANK_NODE_LABEL": ["graphTerm"], 
-     "ANON": ["graphTerm"], 
-     "PNAME_LN": ["graphTerm"], 
-     "PNAME_NS": ["graphTerm"], 
-     "STRING_LITERAL1": ["graphTerm"], 
-     "STRING_LITERAL2": ["graphTerm"], 
-     "STRING_LITERAL_LONG1": ["graphTerm"], 
-     "STRING_LITERAL_LONG2": ["graphTerm"], 
-     "INTEGER": ["graphTerm"], 
-     "DECIMAL": ["graphTerm"], 
-     "DOUBLE": ["graphTerm"], 
-     "INTEGER_POSITIVE": ["graphTerm"], 
-     "DECIMAL_POSITIVE": ["graphTerm"], 
-     "DOUBLE_POSITIVE": ["graphTerm"], 
-     "INTEGER_NEGATIVE": ["graphTerm"], 
-     "DECIMAL_NEGATIVE": ["graphTerm"], 
-     "DOUBLE_NEGATIVE": ["graphTerm"]}, 
-  "verb" : {
-     "VAR1": ["storeProperty","varOrIRIref"], 
-     "VAR2": ["storeProperty","varOrIRIref"], 
-     "IRI_REF": ["storeProperty","varOrIRIref"], 
-     "PNAME_LN": ["storeProperty","varOrIRIref"], 
-     "PNAME_NS": ["storeProperty","varOrIRIref"], 
-     "a": ["storeProperty","a"]}, 
-  "verbPath" : {
-     "^": ["path"], 
-     "a": ["path"], 
-     "!": ["path"], 
-     "(": ["path"], 
-     "IRI_REF": ["path"], 
-     "PNAME_LN": ["path"], 
-     "PNAME_NS": ["path"]}, 
-  "verbSimple" : {
-     "VAR1": ["var"], 
-     "VAR2": ["var"]}, 
-  "whereClause" : {
-     "{": ["?WHERE","groupGraphPattern"], 
-     "WHERE": ["?WHERE","groupGraphPattern"]}
-},
+},{"jquery":29}],66:[function(require,module,exports){
+module.exports = {
+  table: {
+    "*[&&,valueLogical]": {
+      "&&": ["[&&,valueLogical]", "*[&&,valueLogical]"],
+      AS: [],
+      ")": [],
+      ",": [],
+      "||": [],
+      ";": []
+    },
+    "*[,,expression]": {
+      ",": ["[,,expression]", "*[,,expression]"],
+      ")": []
+    },
+    "*[,,objectPath]": {
+      ",": ["[,,objectPath]", "*[,,objectPath]"],
+      ".": [],
+      ";": [],
+      "]": [],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      GRAPH: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: [],
+      "}": []
+    },
+    "*[,,object]": {
+      ",": ["[,,object]", "*[,,object]"],
+      ".": [],
+      ";": [],
+      "]": [],
+      "}": [],
+      GRAPH: [],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: []
+    },
+    "*[/,pathEltOrInverse]": {
+      "/": ["[/,pathEltOrInverse]", "*[/,pathEltOrInverse]"],
+      "|": [],
+      ")": [],
+      "(": [],
+      "[": [],
+      VAR1: [],
+      VAR2: [],
+      NIL: [],
+      IRI_REF: [],
+      TRUE: [],
+      FALSE: [],
+      BLANK_NODE_LABEL: [],
+      ANON: [],
+      PNAME_LN: [],
+      PNAME_NS: [],
+      STRING_LITERAL1: [],
+      STRING_LITERAL2: [],
+      STRING_LITERAL_LONG1: [],
+      STRING_LITERAL_LONG2: [],
+      INTEGER: [],
+      DECIMAL: [],
+      DOUBLE: [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: []
+    },
+    "*[;,?[or([verbPath,verbSimple]),objectList]]": {
+      ";": ["[;,?[or([verbPath,verbSimple]),objectList]]", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
+      ".": [],
+      "]": [],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      GRAPH: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: [],
+      "}": []
+    },
+    "*[;,?[verb,objectList]]": {
+      ";": ["[;,?[verb,objectList]]", "*[;,?[verb,objectList]]"],
+      ".": [],
+      "]": [],
+      "}": [],
+      GRAPH: [],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: []
+    },
+    "*[UNION,groupGraphPattern]": {
+      UNION: ["[UNION,groupGraphPattern]", "*[UNION,groupGraphPattern]"],
+      VAR1: [],
+      VAR2: [],
+      NIL: [],
+      "(": [],
+      "[": [],
+      IRI_REF: [],
+      TRUE: [],
+      FALSE: [],
+      BLANK_NODE_LABEL: [],
+      ANON: [],
+      PNAME_LN: [],
+      PNAME_NS: [],
+      STRING_LITERAL1: [],
+      STRING_LITERAL2: [],
+      STRING_LITERAL_LONG1: [],
+      STRING_LITERAL_LONG2: [],
+      INTEGER: [],
+      DECIMAL: [],
+      DOUBLE: [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: [],
+      ".": [],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      GRAPH: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: [],
+      "}": []
+    },
+    "*[graphPatternNotTriples,?.,?triplesBlock]": {
+      "{": ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      OPTIONAL: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      MINUS: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      GRAPH: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      SERVICE: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      FILTER: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      BIND: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      VALUES: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      "}": []
+    },
+    "*[quadsNotTriples,?.,?triplesTemplate]": {
+      GRAPH: ["[quadsNotTriples,?.,?triplesTemplate]", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      "}": []
+    },
+    "*[|,pathOneInPropertySet]": {
+      "|": ["[|,pathOneInPropertySet]", "*[|,pathOneInPropertySet]"],
+      ")": []
+    },
+    "*[|,pathSequence]": {
+      "|": ["[|,pathSequence]", "*[|,pathSequence]"],
+      ")": [],
+      "(": [],
+      "[": [],
+      VAR1: [],
+      VAR2: [],
+      NIL: [],
+      IRI_REF: [],
+      TRUE: [],
+      FALSE: [],
+      BLANK_NODE_LABEL: [],
+      ANON: [],
+      PNAME_LN: [],
+      PNAME_NS: [],
+      STRING_LITERAL1: [],
+      STRING_LITERAL2: [],
+      STRING_LITERAL_LONG1: [],
+      STRING_LITERAL_LONG2: [],
+      INTEGER: [],
+      DECIMAL: [],
+      DOUBLE: [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: []
+    },
+    "*[||,conditionalAndExpression]": {
+      "||": ["[||,conditionalAndExpression]", "*[||,conditionalAndExpression]"],
+      AS: [],
+      ")": [],
+      ",": [],
+      ";": []
+    },
+    "*dataBlockValue": {
+      UNDEF: ["dataBlockValue", "*dataBlockValue"],
+      IRI_REF: ["dataBlockValue", "*dataBlockValue"],
+      TRUE: ["dataBlockValue", "*dataBlockValue"],
+      FALSE: ["dataBlockValue", "*dataBlockValue"],
+      PNAME_LN: ["dataBlockValue", "*dataBlockValue"],
+      PNAME_NS: ["dataBlockValue", "*dataBlockValue"],
+      STRING_LITERAL1: ["dataBlockValue", "*dataBlockValue"],
+      STRING_LITERAL2: ["dataBlockValue", "*dataBlockValue"],
+      STRING_LITERAL_LONG1: ["dataBlockValue", "*dataBlockValue"],
+      STRING_LITERAL_LONG2: ["dataBlockValue", "*dataBlockValue"],
+      INTEGER: ["dataBlockValue", "*dataBlockValue"],
+      DECIMAL: ["dataBlockValue", "*dataBlockValue"],
+      DOUBLE: ["dataBlockValue", "*dataBlockValue"],
+      INTEGER_POSITIVE: ["dataBlockValue", "*dataBlockValue"],
+      DECIMAL_POSITIVE: ["dataBlockValue", "*dataBlockValue"],
+      DOUBLE_POSITIVE: ["dataBlockValue", "*dataBlockValue"],
+      INTEGER_NEGATIVE: ["dataBlockValue", "*dataBlockValue"],
+      DECIMAL_NEGATIVE: ["dataBlockValue", "*dataBlockValue"],
+      DOUBLE_NEGATIVE: ["dataBlockValue", "*dataBlockValue"],
+      "}": [],
+      ")": []
+    },
+    "*datasetClause": {
+      FROM: ["datasetClause", "*datasetClause"],
+      WHERE: [],
+      "{": []
+    },
+    "*describeDatasetClause": {
+      FROM: ["describeDatasetClause", "*describeDatasetClause"],
+      ORDER: [],
+      HAVING: [],
+      GROUP: [],
+      LIMIT: [],
+      OFFSET: [],
+      WHERE: [],
+      "{": [],
+      VALUES: [],
+      $: []
+    },
+    "*graphNode": {
+      "(": ["graphNode", "*graphNode"],
+      "[": ["graphNode", "*graphNode"],
+      VAR1: ["graphNode", "*graphNode"],
+      VAR2: ["graphNode", "*graphNode"],
+      NIL: ["graphNode", "*graphNode"],
+      IRI_REF: ["graphNode", "*graphNode"],
+      TRUE: ["graphNode", "*graphNode"],
+      FALSE: ["graphNode", "*graphNode"],
+      BLANK_NODE_LABEL: ["graphNode", "*graphNode"],
+      ANON: ["graphNode", "*graphNode"],
+      PNAME_LN: ["graphNode", "*graphNode"],
+      PNAME_NS: ["graphNode", "*graphNode"],
+      STRING_LITERAL1: ["graphNode", "*graphNode"],
+      STRING_LITERAL2: ["graphNode", "*graphNode"],
+      STRING_LITERAL_LONG1: ["graphNode", "*graphNode"],
+      STRING_LITERAL_LONG2: ["graphNode", "*graphNode"],
+      INTEGER: ["graphNode", "*graphNode"],
+      DECIMAL: ["graphNode", "*graphNode"],
+      DOUBLE: ["graphNode", "*graphNode"],
+      INTEGER_POSITIVE: ["graphNode", "*graphNode"],
+      DECIMAL_POSITIVE: ["graphNode", "*graphNode"],
+      DOUBLE_POSITIVE: ["graphNode", "*graphNode"],
+      INTEGER_NEGATIVE: ["graphNode", "*graphNode"],
+      DECIMAL_NEGATIVE: ["graphNode", "*graphNode"],
+      DOUBLE_NEGATIVE: ["graphNode", "*graphNode"],
+      ")": []
+    },
+    "*graphNodePath": {
+      "(": ["graphNodePath", "*graphNodePath"],
+      "[": ["graphNodePath", "*graphNodePath"],
+      VAR1: ["graphNodePath", "*graphNodePath"],
+      VAR2: ["graphNodePath", "*graphNodePath"],
+      NIL: ["graphNodePath", "*graphNodePath"],
+      IRI_REF: ["graphNodePath", "*graphNodePath"],
+      TRUE: ["graphNodePath", "*graphNodePath"],
+      FALSE: ["graphNodePath", "*graphNodePath"],
+      BLANK_NODE_LABEL: ["graphNodePath", "*graphNodePath"],
+      ANON: ["graphNodePath", "*graphNodePath"],
+      PNAME_LN: ["graphNodePath", "*graphNodePath"],
+      PNAME_NS: ["graphNodePath", "*graphNodePath"],
+      STRING_LITERAL1: ["graphNodePath", "*graphNodePath"],
+      STRING_LITERAL2: ["graphNodePath", "*graphNodePath"],
+      STRING_LITERAL_LONG1: ["graphNodePath", "*graphNodePath"],
+      STRING_LITERAL_LONG2: ["graphNodePath", "*graphNodePath"],
+      INTEGER: ["graphNodePath", "*graphNodePath"],
+      DECIMAL: ["graphNodePath", "*graphNodePath"],
+      DOUBLE: ["graphNodePath", "*graphNodePath"],
+      INTEGER_POSITIVE: ["graphNodePath", "*graphNodePath"],
+      DECIMAL_POSITIVE: ["graphNodePath", "*graphNodePath"],
+      DOUBLE_POSITIVE: ["graphNodePath", "*graphNodePath"],
+      INTEGER_NEGATIVE: ["graphNodePath", "*graphNodePath"],
+      DECIMAL_NEGATIVE: ["graphNodePath", "*graphNodePath"],
+      DOUBLE_NEGATIVE: ["graphNodePath", "*graphNodePath"],
+      ")": []
+    },
+    "*groupCondition": {
+      "(": ["groupCondition", "*groupCondition"],
+      STR: ["groupCondition", "*groupCondition"],
+      LANG: ["groupCondition", "*groupCondition"],
+      LANGMATCHES: ["groupCondition", "*groupCondition"],
+      DATATYPE: ["groupCondition", "*groupCondition"],
+      BOUND: ["groupCondition", "*groupCondition"],
+      IRI: ["groupCondition", "*groupCondition"],
+      URI: ["groupCondition", "*groupCondition"],
+      BNODE: ["groupCondition", "*groupCondition"],
+      RAND: ["groupCondition", "*groupCondition"],
+      ABS: ["groupCondition", "*groupCondition"],
+      CEIL: ["groupCondition", "*groupCondition"],
+      FLOOR: ["groupCondition", "*groupCondition"],
+      ROUND: ["groupCondition", "*groupCondition"],
+      CONCAT: ["groupCondition", "*groupCondition"],
+      STRLEN: ["groupCondition", "*groupCondition"],
+      UCASE: ["groupCondition", "*groupCondition"],
+      LCASE: ["groupCondition", "*groupCondition"],
+      ENCODE_FOR_URI: ["groupCondition", "*groupCondition"],
+      CONTAINS: ["groupCondition", "*groupCondition"],
+      STRSTARTS: ["groupCondition", "*groupCondition"],
+      STRENDS: ["groupCondition", "*groupCondition"],
+      STRBEFORE: ["groupCondition", "*groupCondition"],
+      STRAFTER: ["groupCondition", "*groupCondition"],
+      YEAR: ["groupCondition", "*groupCondition"],
+      MONTH: ["groupCondition", "*groupCondition"],
+      DAY: ["groupCondition", "*groupCondition"],
+      HOURS: ["groupCondition", "*groupCondition"],
+      MINUTES: ["groupCondition", "*groupCondition"],
+      SECONDS: ["groupCondition", "*groupCondition"],
+      TIMEZONE: ["groupCondition", "*groupCondition"],
+      TZ: ["groupCondition", "*groupCondition"],
+      NOW: ["groupCondition", "*groupCondition"],
+      UUID: ["groupCondition", "*groupCondition"],
+      STRUUID: ["groupCondition", "*groupCondition"],
+      MD5: ["groupCondition", "*groupCondition"],
+      SHA1: ["groupCondition", "*groupCondition"],
+      SHA256: ["groupCondition", "*groupCondition"],
+      SHA384: ["groupCondition", "*groupCondition"],
+      SHA512: ["groupCondition", "*groupCondition"],
+      COALESCE: ["groupCondition", "*groupCondition"],
+      IF: ["groupCondition", "*groupCondition"],
+      STRLANG: ["groupCondition", "*groupCondition"],
+      STRDT: ["groupCondition", "*groupCondition"],
+      SAMETERM: ["groupCondition", "*groupCondition"],
+      ISIRI: ["groupCondition", "*groupCondition"],
+      ISURI: ["groupCondition", "*groupCondition"],
+      ISBLANK: ["groupCondition", "*groupCondition"],
+      ISLITERAL: ["groupCondition", "*groupCondition"],
+      ISNUMERIC: ["groupCondition", "*groupCondition"],
+      VAR1: ["groupCondition", "*groupCondition"],
+      VAR2: ["groupCondition", "*groupCondition"],
+      SUBSTR: ["groupCondition", "*groupCondition"],
+      REPLACE: ["groupCondition", "*groupCondition"],
+      REGEX: ["groupCondition", "*groupCondition"],
+      EXISTS: ["groupCondition", "*groupCondition"],
+      NOT: ["groupCondition", "*groupCondition"],
+      IRI_REF: ["groupCondition", "*groupCondition"],
+      PNAME_LN: ["groupCondition", "*groupCondition"],
+      PNAME_NS: ["groupCondition", "*groupCondition"],
+      VALUES: [],
+      LIMIT: [],
+      OFFSET: [],
+      ORDER: [],
+      HAVING: [],
+      $: [],
+      "}": []
+    },
+    "*havingCondition": {
+      "(": ["havingCondition", "*havingCondition"],
+      STR: ["havingCondition", "*havingCondition"],
+      LANG: ["havingCondition", "*havingCondition"],
+      LANGMATCHES: ["havingCondition", "*havingCondition"],
+      DATATYPE: ["havingCondition", "*havingCondition"],
+      BOUND: ["havingCondition", "*havingCondition"],
+      IRI: ["havingCondition", "*havingCondition"],
+      URI: ["havingCondition", "*havingCondition"],
+      BNODE: ["havingCondition", "*havingCondition"],
+      RAND: ["havingCondition", "*havingCondition"],
+      ABS: ["havingCondition", "*havingCondition"],
+      CEIL: ["havingCondition", "*havingCondition"],
+      FLOOR: ["havingCondition", "*havingCondition"],
+      ROUND: ["havingCondition", "*havingCondition"],
+      CONCAT: ["havingCondition", "*havingCondition"],
+      STRLEN: ["havingCondition", "*havingCondition"],
+      UCASE: ["havingCondition", "*havingCondition"],
+      LCASE: ["havingCondition", "*havingCondition"],
+      ENCODE_FOR_URI: ["havingCondition", "*havingCondition"],
+      CONTAINS: ["havingCondition", "*havingCondition"],
+      STRSTARTS: ["havingCondition", "*havingCondition"],
+      STRENDS: ["havingCondition", "*havingCondition"],
+      STRBEFORE: ["havingCondition", "*havingCondition"],
+      STRAFTER: ["havingCondition", "*havingCondition"],
+      YEAR: ["havingCondition", "*havingCondition"],
+      MONTH: ["havingCondition", "*havingCondition"],
+      DAY: ["havingCondition", "*havingCondition"],
+      HOURS: ["havingCondition", "*havingCondition"],
+      MINUTES: ["havingCondition", "*havingCondition"],
+      SECONDS: ["havingCondition", "*havingCondition"],
+      TIMEZONE: ["havingCondition", "*havingCondition"],
+      TZ: ["havingCondition", "*havingCondition"],
+      NOW: ["havingCondition", "*havingCondition"],
+      UUID: ["havingCondition", "*havingCondition"],
+      STRUUID: ["havingCondition", "*havingCondition"],
+      MD5: ["havingCondition", "*havingCondition"],
+      SHA1: ["havingCondition", "*havingCondition"],
+      SHA256: ["havingCondition", "*havingCondition"],
+      SHA384: ["havingCondition", "*havingCondition"],
+      SHA512: ["havingCondition", "*havingCondition"],
+      COALESCE: ["havingCondition", "*havingCondition"],
+      IF: ["havingCondition", "*havingCondition"],
+      STRLANG: ["havingCondition", "*havingCondition"],
+      STRDT: ["havingCondition", "*havingCondition"],
+      SAMETERM: ["havingCondition", "*havingCondition"],
+      ISIRI: ["havingCondition", "*havingCondition"],
+      ISURI: ["havingCondition", "*havingCondition"],
+      ISBLANK: ["havingCondition", "*havingCondition"],
+      ISLITERAL: ["havingCondition", "*havingCondition"],
+      ISNUMERIC: ["havingCondition", "*havingCondition"],
+      SUBSTR: ["havingCondition", "*havingCondition"],
+      REPLACE: ["havingCondition", "*havingCondition"],
+      REGEX: ["havingCondition", "*havingCondition"],
+      EXISTS: ["havingCondition", "*havingCondition"],
+      NOT: ["havingCondition", "*havingCondition"],
+      IRI_REF: ["havingCondition", "*havingCondition"],
+      PNAME_LN: ["havingCondition", "*havingCondition"],
+      PNAME_NS: ["havingCondition", "*havingCondition"],
+      VALUES: [],
+      LIMIT: [],
+      OFFSET: [],
+      ORDER: [],
+      $: [],
+      "}": []
+    },
+    "*or([[ (,*dataBlockValue,)],NIL])": {
+      "(": ["or([[ (,*dataBlockValue,)],NIL])", "*or([[ (,*dataBlockValue,)],NIL])"],
+      NIL: ["or([[ (,*dataBlockValue,)],NIL])", "*or([[ (,*dataBlockValue,)],NIL])"],
+      "}": []
+    },
+    "*or([[*,unaryExpression],[/,unaryExpression]])": {
+      "*": ["or([[*,unaryExpression],[/,unaryExpression]])", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      "/": ["or([[*,unaryExpression],[/,unaryExpression]])", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      AS: [],
+      ")": [],
+      ",": [],
+      "||": [],
+      "&&": [],
+      "=": [],
+      "!=": [],
+      "<": [],
+      ">": [],
+      "<=": [],
+      ">=": [],
+      IN: [],
+      NOT: [],
+      "+": [],
+      "-": [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: [],
+      ";": []
+    },
+    "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])": {
+      "+": [
+        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      "-": [
+        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      INTEGER_POSITIVE: [
+        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DECIMAL_POSITIVE: [
+        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DOUBLE_POSITIVE: [
+        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      INTEGER_NEGATIVE: [
+        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DECIMAL_NEGATIVE: [
+        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DOUBLE_NEGATIVE: [
+        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      AS: [],
+      ")": [],
+      ",": [],
+      "||": [],
+      "&&": [],
+      "=": [],
+      "!=": [],
+      "<": [],
+      ">": [],
+      "<=": [],
+      ">=": [],
+      IN: [],
+      NOT: [],
+      ";": []
+    },
+    "*or([baseDecl,prefixDecl])": {
+      BASE: ["or([baseDecl,prefixDecl])", "*or([baseDecl,prefixDecl])"],
+      PREFIX: ["or([baseDecl,prefixDecl])", "*or([baseDecl,prefixDecl])"],
+      $: [],
+      CONSTRUCT: [],
+      DESCRIBE: [],
+      ASK: [],
+      INSERT: [],
+      DELETE: [],
+      SELECT: [],
+      LOAD: [],
+      CLEAR: [],
+      DROP: [],
+      ADD: [],
+      MOVE: [],
+      COPY: [],
+      CREATE: [],
+      WITH: []
+    },
+    "*or([var,[ (,expression,AS,var,)]])": {
+      "(": ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"],
+      VAR1: ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"],
+      VAR2: ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"],
+      WHERE: [],
+      "{": [],
+      FROM: []
+    },
+    "*orderCondition": {
+      ASC: ["orderCondition", "*orderCondition"],
+      DESC: ["orderCondition", "*orderCondition"],
+      VAR1: ["orderCondition", "*orderCondition"],
+      VAR2: ["orderCondition", "*orderCondition"],
+      "(": ["orderCondition", "*orderCondition"],
+      STR: ["orderCondition", "*orderCondition"],
+      LANG: ["orderCondition", "*orderCondition"],
+      LANGMATCHES: ["orderCondition", "*orderCondition"],
+      DATATYPE: ["orderCondition", "*orderCondition"],
+      BOUND: ["orderCondition", "*orderCondition"],
+      IRI: ["orderCondition", "*orderCondition"],
+      URI: ["orderCondition", "*orderCondition"],
+      BNODE: ["orderCondition", "*orderCondition"],
+      RAND: ["orderCondition", "*orderCondition"],
+      ABS: ["orderCondition", "*orderCondition"],
+      CEIL: ["orderCondition", "*orderCondition"],
+      FLOOR: ["orderCondition", "*orderCondition"],
+      ROUND: ["orderCondition", "*orderCondition"],
+      CONCAT: ["orderCondition", "*orderCondition"],
+      STRLEN: ["orderCondition", "*orderCondition"],
+      UCASE: ["orderCondition", "*orderCondition"],
+      LCASE: ["orderCondition", "*orderCondition"],
+      ENCODE_FOR_URI: ["orderCondition", "*orderCondition"],
+      CONTAINS: ["orderCondition", "*orderCondition"],
+      STRSTARTS: ["orderCondition", "*orderCondition"],
+      STRENDS: ["orderCondition", "*orderCondition"],
+      STRBEFORE: ["orderCondition", "*orderCondition"],
+      STRAFTER: ["orderCondition", "*orderCondition"],
+      YEAR: ["orderCondition", "*orderCondition"],
+      MONTH: ["orderCondition", "*orderCondition"],
+      DAY: ["orderCondition", "*orderCondition"],
+      HOURS: ["orderCondition", "*orderCondition"],
+      MINUTES: ["orderCondition", "*orderCondition"],
+      SECONDS: ["orderCondition", "*orderCondition"],
+      TIMEZONE: ["orderCondition", "*orderCondition"],
+      TZ: ["orderCondition", "*orderCondition"],
+      NOW: ["orderCondition", "*orderCondition"],
+      UUID: ["orderCondition", "*orderCondition"],
+      STRUUID: ["orderCondition", "*orderCondition"],
+      MD5: ["orderCondition", "*orderCondition"],
+      SHA1: ["orderCondition", "*orderCondition"],
+      SHA256: ["orderCondition", "*orderCondition"],
+      SHA384: ["orderCondition", "*orderCondition"],
+      SHA512: ["orderCondition", "*orderCondition"],
+      COALESCE: ["orderCondition", "*orderCondition"],
+      IF: ["orderCondition", "*orderCondition"],
+      STRLANG: ["orderCondition", "*orderCondition"],
+      STRDT: ["orderCondition", "*orderCondition"],
+      SAMETERM: ["orderCondition", "*orderCondition"],
+      ISIRI: ["orderCondition", "*orderCondition"],
+      ISURI: ["orderCondition", "*orderCondition"],
+      ISBLANK: ["orderCondition", "*orderCondition"],
+      ISLITERAL: ["orderCondition", "*orderCondition"],
+      ISNUMERIC: ["orderCondition", "*orderCondition"],
+      SUBSTR: ["orderCondition", "*orderCondition"],
+      REPLACE: ["orderCondition", "*orderCondition"],
+      REGEX: ["orderCondition", "*orderCondition"],
+      EXISTS: ["orderCondition", "*orderCondition"],
+      NOT: ["orderCondition", "*orderCondition"],
+      IRI_REF: ["orderCondition", "*orderCondition"],
+      PNAME_LN: ["orderCondition", "*orderCondition"],
+      PNAME_NS: ["orderCondition", "*orderCondition"],
+      VALUES: [],
+      LIMIT: [],
+      OFFSET: [],
+      $: [],
+      "}": []
+    },
+    "*usingClause": {
+      USING: ["usingClause", "*usingClause"],
+      WHERE: []
+    },
+    "*var": {
+      VAR1: ["var", "*var"],
+      VAR2: ["var", "*var"],
+      ")": []
+    },
+    "*varOrIRIref": {
+      VAR1: ["varOrIRIref", "*varOrIRIref"],
+      VAR2: ["varOrIRIref", "*varOrIRIref"],
+      IRI_REF: ["varOrIRIref", "*varOrIRIref"],
+      PNAME_LN: ["varOrIRIref", "*varOrIRIref"],
+      PNAME_NS: ["varOrIRIref", "*varOrIRIref"],
+      ORDER: [],
+      HAVING: [],
+      GROUP: [],
+      LIMIT: [],
+      OFFSET: [],
+      WHERE: [],
+      "{": [],
+      FROM: [],
+      VALUES: [],
+      $: []
+    },
+    "+graphNode": {
+      "(": ["graphNode", "*graphNode"],
+      "[": ["graphNode", "*graphNode"],
+      VAR1: ["graphNode", "*graphNode"],
+      VAR2: ["graphNode", "*graphNode"],
+      NIL: ["graphNode", "*graphNode"],
+      IRI_REF: ["graphNode", "*graphNode"],
+      TRUE: ["graphNode", "*graphNode"],
+      FALSE: ["graphNode", "*graphNode"],
+      BLANK_NODE_LABEL: ["graphNode", "*graphNode"],
+      ANON: ["graphNode", "*graphNode"],
+      PNAME_LN: ["graphNode", "*graphNode"],
+      PNAME_NS: ["graphNode", "*graphNode"],
+      STRING_LITERAL1: ["graphNode", "*graphNode"],
+      STRING_LITERAL2: ["graphNode", "*graphNode"],
+      STRING_LITERAL_LONG1: ["graphNode", "*graphNode"],
+      STRING_LITERAL_LONG2: ["graphNode", "*graphNode"],
+      INTEGER: ["graphNode", "*graphNode"],
+      DECIMAL: ["graphNode", "*graphNode"],
+      DOUBLE: ["graphNode", "*graphNode"],
+      INTEGER_POSITIVE: ["graphNode", "*graphNode"],
+      DECIMAL_POSITIVE: ["graphNode", "*graphNode"],
+      DOUBLE_POSITIVE: ["graphNode", "*graphNode"],
+      INTEGER_NEGATIVE: ["graphNode", "*graphNode"],
+      DECIMAL_NEGATIVE: ["graphNode", "*graphNode"],
+      DOUBLE_NEGATIVE: ["graphNode", "*graphNode"]
+    },
+    "+graphNodePath": {
+      "(": ["graphNodePath", "*graphNodePath"],
+      "[": ["graphNodePath", "*graphNodePath"],
+      VAR1: ["graphNodePath", "*graphNodePath"],
+      VAR2: ["graphNodePath", "*graphNodePath"],
+      NIL: ["graphNodePath", "*graphNodePath"],
+      IRI_REF: ["graphNodePath", "*graphNodePath"],
+      TRUE: ["graphNodePath", "*graphNodePath"],
+      FALSE: ["graphNodePath", "*graphNodePath"],
+      BLANK_NODE_LABEL: ["graphNodePath", "*graphNodePath"],
+      ANON: ["graphNodePath", "*graphNodePath"],
+      PNAME_LN: ["graphNodePath", "*graphNodePath"],
+      PNAME_NS: ["graphNodePath", "*graphNodePath"],
+      STRING_LITERAL1: ["graphNodePath", "*graphNodePath"],
+      STRING_LITERAL2: ["graphNodePath", "*graphNodePath"],
+      STRING_LITERAL_LONG1: ["graphNodePath", "*graphNodePath"],
+      STRING_LITERAL_LONG2: ["graphNodePath", "*graphNodePath"],
+      INTEGER: ["graphNodePath", "*graphNodePath"],
+      DECIMAL: ["graphNodePath", "*graphNodePath"],
+      DOUBLE: ["graphNodePath", "*graphNodePath"],
+      INTEGER_POSITIVE: ["graphNodePath", "*graphNodePath"],
+      DECIMAL_POSITIVE: ["graphNodePath", "*graphNodePath"],
+      DOUBLE_POSITIVE: ["graphNodePath", "*graphNodePath"],
+      INTEGER_NEGATIVE: ["graphNodePath", "*graphNodePath"],
+      DECIMAL_NEGATIVE: ["graphNodePath", "*graphNodePath"],
+      DOUBLE_NEGATIVE: ["graphNodePath", "*graphNodePath"]
+    },
+    "+groupCondition": {
+      "(": ["groupCondition", "*groupCondition"],
+      STR: ["groupCondition", "*groupCondition"],
+      LANG: ["groupCondition", "*groupCondition"],
+      LANGMATCHES: ["groupCondition", "*groupCondition"],
+      DATATYPE: ["groupCondition", "*groupCondition"],
+      BOUND: ["groupCondition", "*groupCondition"],
+      IRI: ["groupCondition", "*groupCondition"],
+      URI: ["groupCondition", "*groupCondition"],
+      BNODE: ["groupCondition", "*groupCondition"],
+      RAND: ["groupCondition", "*groupCondition"],
+      ABS: ["groupCondition", "*groupCondition"],
+      CEIL: ["groupCondition", "*groupCondition"],
+      FLOOR: ["groupCondition", "*groupCondition"],
+      ROUND: ["groupCondition", "*groupCondition"],
+      CONCAT: ["groupCondition", "*groupCondition"],
+      STRLEN: ["groupCondition", "*groupCondition"],
+      UCASE: ["groupCondition", "*groupCondition"],
+      LCASE: ["groupCondition", "*groupCondition"],
+      ENCODE_FOR_URI: ["groupCondition", "*groupCondition"],
+      CONTAINS: ["groupCondition", "*groupCondition"],
+      STRSTARTS: ["groupCondition", "*groupCondition"],
+      STRENDS: ["groupCondition", "*groupCondition"],
+      STRBEFORE: ["groupCondition", "*groupCondition"],
+      STRAFTER: ["groupCondition", "*groupCondition"],
+      YEAR: ["groupCondition", "*groupCondition"],
+      MONTH: ["groupCondition", "*groupCondition"],
+      DAY: ["groupCondition", "*groupCondition"],
+      HOURS: ["groupCondition", "*groupCondition"],
+      MINUTES: ["groupCondition", "*groupCondition"],
+      SECONDS: ["groupCondition", "*groupCondition"],
+      TIMEZONE: ["groupCondition", "*groupCondition"],
+      TZ: ["groupCondition", "*groupCondition"],
+      NOW: ["groupCondition", "*groupCondition"],
+      UUID: ["groupCondition", "*groupCondition"],
+      STRUUID: ["groupCondition", "*groupCondition"],
+      MD5: ["groupCondition", "*groupCondition"],
+      SHA1: ["groupCondition", "*groupCondition"],
+      SHA256: ["groupCondition", "*groupCondition"],
+      SHA384: ["groupCondition", "*groupCondition"],
+      SHA512: ["groupCondition", "*groupCondition"],
+      COALESCE: ["groupCondition", "*groupCondition"],
+      IF: ["groupCondition", "*groupCondition"],
+      STRLANG: ["groupCondition", "*groupCondition"],
+      STRDT: ["groupCondition", "*groupCondition"],
+      SAMETERM: ["groupCondition", "*groupCondition"],
+      ISIRI: ["groupCondition", "*groupCondition"],
+      ISURI: ["groupCondition", "*groupCondition"],
+      ISBLANK: ["groupCondition", "*groupCondition"],
+      ISLITERAL: ["groupCondition", "*groupCondition"],
+      ISNUMERIC: ["groupCondition", "*groupCondition"],
+      VAR1: ["groupCondition", "*groupCondition"],
+      VAR2: ["groupCondition", "*groupCondition"],
+      SUBSTR: ["groupCondition", "*groupCondition"],
+      REPLACE: ["groupCondition", "*groupCondition"],
+      REGEX: ["groupCondition", "*groupCondition"],
+      EXISTS: ["groupCondition", "*groupCondition"],
+      NOT: ["groupCondition", "*groupCondition"],
+      IRI_REF: ["groupCondition", "*groupCondition"],
+      PNAME_LN: ["groupCondition", "*groupCondition"],
+      PNAME_NS: ["groupCondition", "*groupCondition"]
+    },
+    "+havingCondition": {
+      "(": ["havingCondition", "*havingCondition"],
+      STR: ["havingCondition", "*havingCondition"],
+      LANG: ["havingCondition", "*havingCondition"],
+      LANGMATCHES: ["havingCondition", "*havingCondition"],
+      DATATYPE: ["havingCondition", "*havingCondition"],
+      BOUND: ["havingCondition", "*havingCondition"],
+      IRI: ["havingCondition", "*havingCondition"],
+      URI: ["havingCondition", "*havingCondition"],
+      BNODE: ["havingCondition", "*havingCondition"],
+      RAND: ["havingCondition", "*havingCondition"],
+      ABS: ["havingCondition", "*havingCondition"],
+      CEIL: ["havingCondition", "*havingCondition"],
+      FLOOR: ["havingCondition", "*havingCondition"],
+      ROUND: ["havingCondition", "*havingCondition"],
+      CONCAT: ["havingCondition", "*havingCondition"],
+      STRLEN: ["havingCondition", "*havingCondition"],
+      UCASE: ["havingCondition", "*havingCondition"],
+      LCASE: ["havingCondition", "*havingCondition"],
+      ENCODE_FOR_URI: ["havingCondition", "*havingCondition"],
+      CONTAINS: ["havingCondition", "*havingCondition"],
+      STRSTARTS: ["havingCondition", "*havingCondition"],
+      STRENDS: ["havingCondition", "*havingCondition"],
+      STRBEFORE: ["havingCondition", "*havingCondition"],
+      STRAFTER: ["havingCondition", "*havingCondition"],
+      YEAR: ["havingCondition", "*havingCondition"],
+      MONTH: ["havingCondition", "*havingCondition"],
+      DAY: ["havingCondition", "*havingCondition"],
+      HOURS: ["havingCondition", "*havingCondition"],
+      MINUTES: ["havingCondition", "*havingCondition"],
+      SECONDS: ["havingCondition", "*havingCondition"],
+      TIMEZONE: ["havingCondition", "*havingCondition"],
+      TZ: ["havingCondition", "*havingCondition"],
+      NOW: ["havingCondition", "*havingCondition"],
+      UUID: ["havingCondition", "*havingCondition"],
+      STRUUID: ["havingCondition", "*havingCondition"],
+      MD5: ["havingCondition", "*havingCondition"],
+      SHA1: ["havingCondition", "*havingCondition"],
+      SHA256: ["havingCondition", "*havingCondition"],
+      SHA384: ["havingCondition", "*havingCondition"],
+      SHA512: ["havingCondition", "*havingCondition"],
+      COALESCE: ["havingCondition", "*havingCondition"],
+      IF: ["havingCondition", "*havingCondition"],
+      STRLANG: ["havingCondition", "*havingCondition"],
+      STRDT: ["havingCondition", "*havingCondition"],
+      SAMETERM: ["havingCondition", "*havingCondition"],
+      ISIRI: ["havingCondition", "*havingCondition"],
+      ISURI: ["havingCondition", "*havingCondition"],
+      ISBLANK: ["havingCondition", "*havingCondition"],
+      ISLITERAL: ["havingCondition", "*havingCondition"],
+      ISNUMERIC: ["havingCondition", "*havingCondition"],
+      SUBSTR: ["havingCondition", "*havingCondition"],
+      REPLACE: ["havingCondition", "*havingCondition"],
+      REGEX: ["havingCondition", "*havingCondition"],
+      EXISTS: ["havingCondition", "*havingCondition"],
+      NOT: ["havingCondition", "*havingCondition"],
+      IRI_REF: ["havingCondition", "*havingCondition"],
+      PNAME_LN: ["havingCondition", "*havingCondition"],
+      PNAME_NS: ["havingCondition", "*havingCondition"]
+    },
+    "+or([var,[ (,expression,AS,var,)]])": {
+      "(": ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"],
+      VAR1: ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"],
+      VAR2: ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"]
+    },
+    "+orderCondition": {
+      ASC: ["orderCondition", "*orderCondition"],
+      DESC: ["orderCondition", "*orderCondition"],
+      VAR1: ["orderCondition", "*orderCondition"],
+      VAR2: ["orderCondition", "*orderCondition"],
+      "(": ["orderCondition", "*orderCondition"],
+      STR: ["orderCondition", "*orderCondition"],
+      LANG: ["orderCondition", "*orderCondition"],
+      LANGMATCHES: ["orderCondition", "*orderCondition"],
+      DATATYPE: ["orderCondition", "*orderCondition"],
+      BOUND: ["orderCondition", "*orderCondition"],
+      IRI: ["orderCondition", "*orderCondition"],
+      URI: ["orderCondition", "*orderCondition"],
+      BNODE: ["orderCondition", "*orderCondition"],
+      RAND: ["orderCondition", "*orderCondition"],
+      ABS: ["orderCondition", "*orderCondition"],
+      CEIL: ["orderCondition", "*orderCondition"],
+      FLOOR: ["orderCondition", "*orderCondition"],
+      ROUND: ["orderCondition", "*orderCondition"],
+      CONCAT: ["orderCondition", "*orderCondition"],
+      STRLEN: ["orderCondition", "*orderCondition"],
+      UCASE: ["orderCondition", "*orderCondition"],
+      LCASE: ["orderCondition", "*orderCondition"],
+      ENCODE_FOR_URI: ["orderCondition", "*orderCondition"],
+      CONTAINS: ["orderCondition", "*orderCondition"],
+      STRSTARTS: ["orderCondition", "*orderCondition"],
+      STRENDS: ["orderCondition", "*orderCondition"],
+      STRBEFORE: ["orderCondition", "*orderCondition"],
+      STRAFTER: ["orderCondition", "*orderCondition"],
+      YEAR: ["orderCondition", "*orderCondition"],
+      MONTH: ["orderCondition", "*orderCondition"],
+      DAY: ["orderCondition", "*orderCondition"],
+      HOURS: ["orderCondition", "*orderCondition"],
+      MINUTES: ["orderCondition", "*orderCondition"],
+      SECONDS: ["orderCondition", "*orderCondition"],
+      TIMEZONE: ["orderCondition", "*orderCondition"],
+      TZ: ["orderCondition", "*orderCondition"],
+      NOW: ["orderCondition", "*orderCondition"],
+      UUID: ["orderCondition", "*orderCondition"],
+      STRUUID: ["orderCondition", "*orderCondition"],
+      MD5: ["orderCondition", "*orderCondition"],
+      SHA1: ["orderCondition", "*orderCondition"],
+      SHA256: ["orderCondition", "*orderCondition"],
+      SHA384: ["orderCondition", "*orderCondition"],
+      SHA512: ["orderCondition", "*orderCondition"],
+      COALESCE: ["orderCondition", "*orderCondition"],
+      IF: ["orderCondition", "*orderCondition"],
+      STRLANG: ["orderCondition", "*orderCondition"],
+      STRDT: ["orderCondition", "*orderCondition"],
+      SAMETERM: ["orderCondition", "*orderCondition"],
+      ISIRI: ["orderCondition", "*orderCondition"],
+      ISURI: ["orderCondition", "*orderCondition"],
+      ISBLANK: ["orderCondition", "*orderCondition"],
+      ISLITERAL: ["orderCondition", "*orderCondition"],
+      ISNUMERIC: ["orderCondition", "*orderCondition"],
+      SUBSTR: ["orderCondition", "*orderCondition"],
+      REPLACE: ["orderCondition", "*orderCondition"],
+      REGEX: ["orderCondition", "*orderCondition"],
+      EXISTS: ["orderCondition", "*orderCondition"],
+      NOT: ["orderCondition", "*orderCondition"],
+      IRI_REF: ["orderCondition", "*orderCondition"],
+      PNAME_LN: ["orderCondition", "*orderCondition"],
+      PNAME_NS: ["orderCondition", "*orderCondition"]
+    },
+    "+varOrIRIref": {
+      VAR1: ["varOrIRIref", "*varOrIRIref"],
+      VAR2: ["varOrIRIref", "*varOrIRIref"],
+      IRI_REF: ["varOrIRIref", "*varOrIRIref"],
+      PNAME_LN: ["varOrIRIref", "*varOrIRIref"],
+      PNAME_NS: ["varOrIRIref", "*varOrIRIref"]
+    },
+    "?.": {
+      ".": ["."],
+      VAR1: [],
+      VAR2: [],
+      NIL: [],
+      "(": [],
+      "[": [],
+      IRI_REF: [],
+      TRUE: [],
+      FALSE: [],
+      BLANK_NODE_LABEL: [],
+      ANON: [],
+      PNAME_LN: [],
+      PNAME_NS: [],
+      STRING_LITERAL1: [],
+      STRING_LITERAL2: [],
+      STRING_LITERAL_LONG1: [],
+      STRING_LITERAL_LONG2: [],
+      INTEGER: [],
+      DECIMAL: [],
+      DOUBLE: [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: [],
+      GRAPH: [],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: [],
+      "}": []
+    },
+    "?DISTINCT": {
+      DISTINCT: ["DISTINCT"],
+      "!": [],
+      "+": [],
+      "-": [],
+      VAR1: [],
+      VAR2: [],
+      "(": [],
+      STR: [],
+      LANG: [],
+      LANGMATCHES: [],
+      DATATYPE: [],
+      BOUND: [],
+      IRI: [],
+      URI: [],
+      BNODE: [],
+      RAND: [],
+      ABS: [],
+      CEIL: [],
+      FLOOR: [],
+      ROUND: [],
+      CONCAT: [],
+      STRLEN: [],
+      UCASE: [],
+      LCASE: [],
+      ENCODE_FOR_URI: [],
+      CONTAINS: [],
+      STRSTARTS: [],
+      STRENDS: [],
+      STRBEFORE: [],
+      STRAFTER: [],
+      YEAR: [],
+      MONTH: [],
+      DAY: [],
+      HOURS: [],
+      MINUTES: [],
+      SECONDS: [],
+      TIMEZONE: [],
+      TZ: [],
+      NOW: [],
+      UUID: [],
+      STRUUID: [],
+      MD5: [],
+      SHA1: [],
+      SHA256: [],
+      SHA384: [],
+      SHA512: [],
+      COALESCE: [],
+      IF: [],
+      STRLANG: [],
+      STRDT: [],
+      SAMETERM: [],
+      ISIRI: [],
+      ISURI: [],
+      ISBLANK: [],
+      ISLITERAL: [],
+      ISNUMERIC: [],
+      TRUE: [],
+      FALSE: [],
+      COUNT: [],
+      SUM: [],
+      MIN: [],
+      MAX: [],
+      AVG: [],
+      SAMPLE: [],
+      GROUP_CONCAT: [],
+      SUBSTR: [],
+      REPLACE: [],
+      REGEX: [],
+      EXISTS: [],
+      NOT: [],
+      IRI_REF: [],
+      STRING_LITERAL1: [],
+      STRING_LITERAL2: [],
+      STRING_LITERAL_LONG1: [],
+      STRING_LITERAL_LONG2: [],
+      INTEGER: [],
+      DECIMAL: [],
+      DOUBLE: [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: [],
+      PNAME_LN: [],
+      PNAME_NS: [],
+      "*": []
+    },
+    "?GRAPH": {
+      GRAPH: ["GRAPH"],
+      IRI_REF: [],
+      PNAME_LN: [],
+      PNAME_NS: []
+    },
+    "?SILENT": {
+      SILENT: ["SILENT"],
+      VAR1: [],
+      VAR2: [],
+      IRI_REF: [],
+      PNAME_LN: [],
+      PNAME_NS: []
+    },
+    "?SILENT_1": {
+      SILENT: ["SILENT"],
+      IRI_REF: [],
+      PNAME_LN: [],
+      PNAME_NS: []
+    },
+    "?SILENT_2": {
+      SILENT: ["SILENT"],
+      GRAPH: [],
+      DEFAULT: [],
+      NAMED: [],
+      ALL: []
+    },
+    "?SILENT_3": {
+      SILENT: ["SILENT"],
+      GRAPH: []
+    },
+    "?SILENT_4": {
+      SILENT: ["SILENT"],
+      DEFAULT: [],
+      GRAPH: [],
+      IRI_REF: [],
+      PNAME_LN: [],
+      PNAME_NS: []
+    },
+    "?WHERE": {
+      WHERE: ["WHERE"],
+      "{": []
+    },
+    "?[,,expression]": {
+      ",": ["[,,expression]"],
+      ")": []
+    },
+    "?[.,?constructTriples]": {
+      ".": ["[.,?constructTriples]"],
+      "}": []
+    },
+    "?[.,?triplesBlock]": {
+      ".": ["[.,?triplesBlock]"],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      GRAPH: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: [],
+      "}": []
+    },
+    "?[.,?triplesTemplate]": {
+      ".": ["[.,?triplesTemplate]"],
+      "}": [],
+      GRAPH: []
+    },
+    "?[;,SEPARATOR,=,string]": {
+      ";": ["[;,SEPARATOR,=,string]"],
+      ")": []
+    },
+    "?[;,update]": {
+      ";": ["[;,update]"],
+      $: []
+    },
+    "?[AS,var]": {
+      AS: ["[AS,var]"],
+      ")": []
+    },
+    "?[INTO,graphRef]": {
+      INTO: ["[INTO,graphRef]"],
+      ";": [],
+      $: []
+    },
+    "?[or([verbPath,verbSimple]),objectList]": {
+      VAR1: ["[or([verbPath,verbSimple]),objectList]"],
+      VAR2: ["[or([verbPath,verbSimple]),objectList]"],
+      "^": ["[or([verbPath,verbSimple]),objectList]"],
+      a: ["[or([verbPath,verbSimple]),objectList]"],
+      "!": ["[or([verbPath,verbSimple]),objectList]"],
+      "(": ["[or([verbPath,verbSimple]),objectList]"],
+      IRI_REF: ["[or([verbPath,verbSimple]),objectList]"],
+      PNAME_LN: ["[or([verbPath,verbSimple]),objectList]"],
+      PNAME_NS: ["[or([verbPath,verbSimple]),objectList]"],
+      ";": [],
+      ".": [],
+      "]": [],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      GRAPH: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: [],
+      "}": []
+    },
+    "?[pathOneInPropertySet,*[|,pathOneInPropertySet]]": {
+      a: ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"],
+      "^": ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"],
+      IRI_REF: ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"],
+      PNAME_LN: ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"],
+      PNAME_NS: ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"],
+      ")": []
+    },
+    "?[update1,?[;,update]]": {
+      INSERT: ["[update1,?[;,update]]"],
+      DELETE: ["[update1,?[;,update]]"],
+      LOAD: ["[update1,?[;,update]]"],
+      CLEAR: ["[update1,?[;,update]]"],
+      DROP: ["[update1,?[;,update]]"],
+      ADD: ["[update1,?[;,update]]"],
+      MOVE: ["[update1,?[;,update]]"],
+      COPY: ["[update1,?[;,update]]"],
+      CREATE: ["[update1,?[;,update]]"],
+      WITH: ["[update1,?[;,update]]"],
+      $: []
+    },
+    "?[verb,objectList]": {
+      a: ["[verb,objectList]"],
+      VAR1: ["[verb,objectList]"],
+      VAR2: ["[verb,objectList]"],
+      IRI_REF: ["[verb,objectList]"],
+      PNAME_LN: ["[verb,objectList]"],
+      PNAME_NS: ["[verb,objectList]"],
+      ";": [],
+      ".": [],
+      "]": [],
+      "}": [],
+      GRAPH: [],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: []
+    },
+    "?argList": {
+      NIL: ["argList"],
+      "(": ["argList"],
+      AS: [],
+      ")": [],
+      ",": [],
+      "||": [],
+      "&&": [],
+      "=": [],
+      "!=": [],
+      "<": [],
+      ">": [],
+      "<=": [],
+      ">=": [],
+      IN: [],
+      NOT: [],
+      "+": [],
+      "-": [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: [],
+      "*": [],
+      "/": [],
+      ";": []
+    },
+    "?constructTriples": {
+      VAR1: ["constructTriples"],
+      VAR2: ["constructTriples"],
+      NIL: ["constructTriples"],
+      "(": ["constructTriples"],
+      "[": ["constructTriples"],
+      IRI_REF: ["constructTriples"],
+      TRUE: ["constructTriples"],
+      FALSE: ["constructTriples"],
+      BLANK_NODE_LABEL: ["constructTriples"],
+      ANON: ["constructTriples"],
+      PNAME_LN: ["constructTriples"],
+      PNAME_NS: ["constructTriples"],
+      STRING_LITERAL1: ["constructTriples"],
+      STRING_LITERAL2: ["constructTriples"],
+      STRING_LITERAL_LONG1: ["constructTriples"],
+      STRING_LITERAL_LONG2: ["constructTriples"],
+      INTEGER: ["constructTriples"],
+      DECIMAL: ["constructTriples"],
+      DOUBLE: ["constructTriples"],
+      INTEGER_POSITIVE: ["constructTriples"],
+      DECIMAL_POSITIVE: ["constructTriples"],
+      DOUBLE_POSITIVE: ["constructTriples"],
+      INTEGER_NEGATIVE: ["constructTriples"],
+      DECIMAL_NEGATIVE: ["constructTriples"],
+      DOUBLE_NEGATIVE: ["constructTriples"],
+      "}": []
+    },
+    "?groupClause": {
+      GROUP: ["groupClause"],
+      VALUES: [],
+      LIMIT: [],
+      OFFSET: [],
+      ORDER: [],
+      HAVING: [],
+      $: [],
+      "}": []
+    },
+    "?havingClause": {
+      HAVING: ["havingClause"],
+      VALUES: [],
+      LIMIT: [],
+      OFFSET: [],
+      ORDER: [],
+      $: [],
+      "}": []
+    },
+    "?insertClause": {
+      INSERT: ["insertClause"],
+      WHERE: [],
+      USING: []
+    },
+    "?limitClause": {
+      LIMIT: ["limitClause"],
+      VALUES: [],
+      $: [],
+      "}": []
+    },
+    "?limitOffsetClauses": {
+      LIMIT: ["limitOffsetClauses"],
+      OFFSET: ["limitOffsetClauses"],
+      VALUES: [],
+      $: [],
+      "}": []
+    },
+    "?offsetClause": {
+      OFFSET: ["offsetClause"],
+      VALUES: [],
+      $: [],
+      "}": []
+    },
+    "?or([DISTINCT,REDUCED])": {
+      DISTINCT: ["or([DISTINCT,REDUCED])"],
+      REDUCED: ["or([DISTINCT,REDUCED])"],
+      "*": [],
+      "(": [],
+      VAR1: [],
+      VAR2: []
+    },
+    "?or([LANGTAG,[^^,iriRef]])": {
+      LANGTAG: ["or([LANGTAG,[^^,iriRef]])"],
+      "^^": ["or([LANGTAG,[^^,iriRef]])"],
+      UNDEF: [],
+      IRI_REF: [],
+      TRUE: [],
+      FALSE: [],
+      PNAME_LN: [],
+      PNAME_NS: [],
+      STRING_LITERAL1: [],
+      STRING_LITERAL2: [],
+      STRING_LITERAL_LONG1: [],
+      STRING_LITERAL_LONG2: [],
+      INTEGER: [],
+      DECIMAL: [],
+      DOUBLE: [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: [],
+      a: [],
+      VAR1: [],
+      VAR2: [],
+      "^": [],
+      "!": [],
+      "(": [],
+      ".": [],
+      ";": [],
+      ",": [],
+      AS: [],
+      ")": [],
+      "||": [],
+      "&&": [],
+      "=": [],
+      "!=": [],
+      "<": [],
+      ">": [],
+      "<=": [],
+      ">=": [],
+      IN: [],
+      NOT: [],
+      "+": [],
+      "-": [],
+      "*": [],
+      "/": [],
+      "}": [],
+      "[": [],
+      NIL: [],
+      BLANK_NODE_LABEL: [],
+      ANON: [],
+      "]": [],
+      GRAPH: [],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: []
+    },
+    "?or([[*,unaryExpression],[/,unaryExpression]])": {
+      "*": ["or([[*,unaryExpression],[/,unaryExpression]])"],
+      "/": ["or([[*,unaryExpression],[/,unaryExpression]])"],
+      "+": [],
+      "-": [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: [],
+      AS: [],
+      ")": [],
+      ",": [],
+      "||": [],
+      "&&": [],
+      "=": [],
+      "!=": [],
+      "<": [],
+      ">": [],
+      "<=": [],
+      ">=": [],
+      IN: [],
+      NOT: [],
+      ";": []
+    },
+    "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])": {
+      "=": [
+        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      "!=": [
+        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      "<": [
+        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      ">": [
+        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      "<=": [
+        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      ">=": [
+        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      IN: [
+        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      NOT: [
+        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      AS: [],
+      ")": [],
+      ",": [],
+      "||": [],
+      "&&": [],
+      ";": []
+    },
+    "?orderClause": {
+      ORDER: ["orderClause"],
+      VALUES: [],
+      LIMIT: [],
+      OFFSET: [],
+      $: [],
+      "}": []
+    },
+    "?pathMod": {
+      "*": ["pathMod"],
+      "?": ["pathMod"],
+      "+": ["pathMod"],
+      "{": ["pathMod"],
+      "|": [],
+      "/": [],
+      ")": [],
+      "(": [],
+      "[": [],
+      VAR1: [],
+      VAR2: [],
+      NIL: [],
+      IRI_REF: [],
+      TRUE: [],
+      FALSE: [],
+      BLANK_NODE_LABEL: [],
+      ANON: [],
+      PNAME_LN: [],
+      PNAME_NS: [],
+      STRING_LITERAL1: [],
+      STRING_LITERAL2: [],
+      STRING_LITERAL_LONG1: [],
+      STRING_LITERAL_LONG2: [],
+      INTEGER: [],
+      DECIMAL: [],
+      DOUBLE: [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: []
+    },
+    "?triplesBlock": {
+      VAR1: ["triplesBlock"],
+      VAR2: ["triplesBlock"],
+      NIL: ["triplesBlock"],
+      "(": ["triplesBlock"],
+      "[": ["triplesBlock"],
+      IRI_REF: ["triplesBlock"],
+      TRUE: ["triplesBlock"],
+      FALSE: ["triplesBlock"],
+      BLANK_NODE_LABEL: ["triplesBlock"],
+      ANON: ["triplesBlock"],
+      PNAME_LN: ["triplesBlock"],
+      PNAME_NS: ["triplesBlock"],
+      STRING_LITERAL1: ["triplesBlock"],
+      STRING_LITERAL2: ["triplesBlock"],
+      STRING_LITERAL_LONG1: ["triplesBlock"],
+      STRING_LITERAL_LONG2: ["triplesBlock"],
+      INTEGER: ["triplesBlock"],
+      DECIMAL: ["triplesBlock"],
+      DOUBLE: ["triplesBlock"],
+      INTEGER_POSITIVE: ["triplesBlock"],
+      DECIMAL_POSITIVE: ["triplesBlock"],
+      DOUBLE_POSITIVE: ["triplesBlock"],
+      INTEGER_NEGATIVE: ["triplesBlock"],
+      DECIMAL_NEGATIVE: ["triplesBlock"],
+      DOUBLE_NEGATIVE: ["triplesBlock"],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      GRAPH: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: [],
+      "}": []
+    },
+    "?triplesTemplate": {
+      VAR1: ["triplesTemplate"],
+      VAR2: ["triplesTemplate"],
+      NIL: ["triplesTemplate"],
+      "(": ["triplesTemplate"],
+      "[": ["triplesTemplate"],
+      IRI_REF: ["triplesTemplate"],
+      TRUE: ["triplesTemplate"],
+      FALSE: ["triplesTemplate"],
+      BLANK_NODE_LABEL: ["triplesTemplate"],
+      ANON: ["triplesTemplate"],
+      PNAME_LN: ["triplesTemplate"],
+      PNAME_NS: ["triplesTemplate"],
+      STRING_LITERAL1: ["triplesTemplate"],
+      STRING_LITERAL2: ["triplesTemplate"],
+      STRING_LITERAL_LONG1: ["triplesTemplate"],
+      STRING_LITERAL_LONG2: ["triplesTemplate"],
+      INTEGER: ["triplesTemplate"],
+      DECIMAL: ["triplesTemplate"],
+      DOUBLE: ["triplesTemplate"],
+      INTEGER_POSITIVE: ["triplesTemplate"],
+      DECIMAL_POSITIVE: ["triplesTemplate"],
+      DOUBLE_POSITIVE: ["triplesTemplate"],
+      INTEGER_NEGATIVE: ["triplesTemplate"],
+      DECIMAL_NEGATIVE: ["triplesTemplate"],
+      DOUBLE_NEGATIVE: ["triplesTemplate"],
+      "}": [],
+      GRAPH: []
+    },
+    "?whereClause": {
+      WHERE: ["whereClause"],
+      "{": ["whereClause"],
+      ORDER: [],
+      HAVING: [],
+      GROUP: [],
+      LIMIT: [],
+      OFFSET: [],
+      VALUES: [],
+      $: []
+    },
+    "[ (,*dataBlockValue,)]": {
+      "(": ["(", "*dataBlockValue", ")"]
+    },
+    "[ (,*var,)]": {
+      "(": ["(", "*var", ")"]
+    },
+    "[ (,expression,)]": {
+      "(": ["(", "expression", ")"]
+    },
+    "[ (,expression,AS,var,)]": {
+      "(": ["(", "expression", "AS", "var", ")"]
+    },
+    "[!=,numericExpression]": {
+      "!=": ["!=", "numericExpression"]
+    },
+    "[&&,valueLogical]": {
+      "&&": ["&&", "valueLogical"]
+    },
+    "[*,unaryExpression]": {
+      "*": ["*", "unaryExpression"]
+    },
+    "[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]": {
+      WHERE: ["*datasetClause", "WHERE", "{", "?triplesTemplate", "}", "solutionModifier"],
+      FROM: ["*datasetClause", "WHERE", "{", "?triplesTemplate", "}", "solutionModifier"]
+    },
+    "[+,multiplicativeExpression]": {
+      "+": ["+", "multiplicativeExpression"]
+    },
+    "[,,expression]": {
+      ",": [",", "expression"]
+    },
+    "[,,integer,}]": {
+      ",": [",", "integer", "}"]
+    },
+    "[,,objectPath]": {
+      ",": [",", "objectPath"]
+    },
+    "[,,object]": {
+      ",": [",", "object"]
+    },
+    "[,,or([},[integer,}]])]": {
+      ",": [",", "or([},[integer,}]])"]
+    },
+    "[-,multiplicativeExpression]": {
+      "-": ["-", "multiplicativeExpression"]
+    },
+    "[.,?constructTriples]": {
+      ".": [".", "?constructTriples"]
+    },
+    "[.,?triplesBlock]": {
+      ".": [".", "?triplesBlock"]
+    },
+    "[.,?triplesTemplate]": {
+      ".": [".", "?triplesTemplate"]
+    },
+    "[/,pathEltOrInverse]": {
+      "/": ["/", "pathEltOrInverse"]
+    },
+    "[/,unaryExpression]": {
+      "/": ["/", "unaryExpression"]
+    },
+    "[;,?[or([verbPath,verbSimple]),objectList]]": {
+      ";": [";", "?[or([verbPath,verbSimple]),objectList]"]
+    },
+    "[;,?[verb,objectList]]": {
+      ";": [";", "?[verb,objectList]"]
+    },
+    "[;,SEPARATOR,=,string]": {
+      ";": [";", "SEPARATOR", "=", "string"]
+    },
+    "[;,update]": {
+      ";": [";", "update"]
+    },
+    "[<,numericExpression]": {
+      "<": ["<", "numericExpression"]
+    },
+    "[<=,numericExpression]": {
+      "<=": ["<=", "numericExpression"]
+    },
+    "[=,numericExpression]": {
+      "=": ["=", "numericExpression"]
+    },
+    "[>,numericExpression]": {
+      ">": [">", "numericExpression"]
+    },
+    "[>=,numericExpression]": {
+      ">=": [">=", "numericExpression"]
+    },
+    "[AS,var]": {
+      AS: ["AS", "var"]
+    },
+    "[IN,expressionList]": {
+      IN: ["IN", "expressionList"]
+    },
+    "[INTO,graphRef]": {
+      INTO: ["INTO", "graphRef"]
+    },
+    "[NAMED,iriRef]": {
+      NAMED: ["NAMED", "iriRef"]
+    },
+    "[NOT,IN,expressionList]": {
+      NOT: ["NOT", "IN", "expressionList"]
+    },
+    "[UNION,groupGraphPattern]": {
+      UNION: ["UNION", "groupGraphPattern"]
+    },
+    "[^^,iriRef]": {
+      "^^": ["^^", "iriRef"]
+    },
+    "[constructTemplate,*datasetClause,whereClause,solutionModifier]": {
+      "{": ["constructTemplate", "*datasetClause", "whereClause", "solutionModifier"]
+    },
+    "[deleteClause,?insertClause]": {
+      DELETE: ["deleteClause", "?insertClause"]
+    },
+    "[graphPatternNotTriples,?.,?triplesBlock]": {
+      "{": ["graphPatternNotTriples", "?.", "?triplesBlock"],
+      OPTIONAL: ["graphPatternNotTriples", "?.", "?triplesBlock"],
+      MINUS: ["graphPatternNotTriples", "?.", "?triplesBlock"],
+      GRAPH: ["graphPatternNotTriples", "?.", "?triplesBlock"],
+      SERVICE: ["graphPatternNotTriples", "?.", "?triplesBlock"],
+      FILTER: ["graphPatternNotTriples", "?.", "?triplesBlock"],
+      BIND: ["graphPatternNotTriples", "?.", "?triplesBlock"],
+      VALUES: ["graphPatternNotTriples", "?.", "?triplesBlock"]
+    },
+    "[integer,or([[,,or([},[integer,}]])],}])]": {
+      INTEGER: ["integer", "or([[,,or([},[integer,}]])],}])"]
+    },
+    "[integer,}]": {
+      INTEGER: ["integer", "}"]
+    },
+    "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]": {
+      INTEGER_POSITIVE: [
+        "or([numericLiteralPositive,numericLiteralNegative])",
+        "?or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DECIMAL_POSITIVE: [
+        "or([numericLiteralPositive,numericLiteralNegative])",
+        "?or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DOUBLE_POSITIVE: [
+        "or([numericLiteralPositive,numericLiteralNegative])",
+        "?or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      INTEGER_NEGATIVE: [
+        "or([numericLiteralPositive,numericLiteralNegative])",
+        "?or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DECIMAL_NEGATIVE: [
+        "or([numericLiteralPositive,numericLiteralNegative])",
+        "?or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DOUBLE_NEGATIVE: [
+        "or([numericLiteralPositive,numericLiteralNegative])",
+        "?or([[*,unaryExpression],[/,unaryExpression]])"
+      ]
+    },
+    "[or([verbPath,verbSimple]),objectList]": {
+      VAR1: ["or([verbPath,verbSimple])", "objectList"],
+      VAR2: ["or([verbPath,verbSimple])", "objectList"],
+      "^": ["or([verbPath,verbSimple])", "objectList"],
+      a: ["or([verbPath,verbSimple])", "objectList"],
+      "!": ["or([verbPath,verbSimple])", "objectList"],
+      "(": ["or([verbPath,verbSimple])", "objectList"],
+      IRI_REF: ["or([verbPath,verbSimple])", "objectList"],
+      PNAME_LN: ["or([verbPath,verbSimple])", "objectList"],
+      PNAME_NS: ["or([verbPath,verbSimple])", "objectList"]
+    },
+    "[pathOneInPropertySet,*[|,pathOneInPropertySet]]": {
+      a: ["pathOneInPropertySet", "*[|,pathOneInPropertySet]"],
+      "^": ["pathOneInPropertySet", "*[|,pathOneInPropertySet]"],
+      IRI_REF: ["pathOneInPropertySet", "*[|,pathOneInPropertySet]"],
+      PNAME_LN: ["pathOneInPropertySet", "*[|,pathOneInPropertySet]"],
+      PNAME_NS: ["pathOneInPropertySet", "*[|,pathOneInPropertySet]"]
+    },
+    "[quadsNotTriples,?.,?triplesTemplate]": {
+      GRAPH: ["quadsNotTriples", "?.", "?triplesTemplate"]
+    },
+    "[update1,?[;,update]]": {
+      INSERT: ["update1", "?[;,update]"],
+      DELETE: ["update1", "?[;,update]"],
+      LOAD: ["update1", "?[;,update]"],
+      CLEAR: ["update1", "?[;,update]"],
+      DROP: ["update1", "?[;,update]"],
+      ADD: ["update1", "?[;,update]"],
+      MOVE: ["update1", "?[;,update]"],
+      COPY: ["update1", "?[;,update]"],
+      CREATE: ["update1", "?[;,update]"],
+      WITH: ["update1", "?[;,update]"]
+    },
+    "[verb,objectList]": {
+      a: ["verb", "objectList"],
+      VAR1: ["verb", "objectList"],
+      VAR2: ["verb", "objectList"],
+      IRI_REF: ["verb", "objectList"],
+      PNAME_LN: ["verb", "objectList"],
+      PNAME_NS: ["verb", "objectList"]
+    },
+    "[|,pathOneInPropertySet]": {
+      "|": ["|", "pathOneInPropertySet"]
+    },
+    "[|,pathSequence]": {
+      "|": ["|", "pathSequence"]
+    },
+    "[||,conditionalAndExpression]": {
+      "||": ["||", "conditionalAndExpression"]
+    },
+    add: {
+      ADD: ["ADD", "?SILENT_4", "graphOrDefault", "TO", "graphOrDefault"]
+    },
+    additiveExpression: {
+      "!": [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      "+": [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      "-": [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      VAR1: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      VAR2: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      "(": [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STR: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      LANG: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      LANGMATCHES: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DATATYPE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      BOUND: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      IRI: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      URI: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      BNODE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      RAND: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      ABS: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      CEIL: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      FLOOR: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      ROUND: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      CONCAT: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRLEN: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      UCASE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      LCASE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      ENCODE_FOR_URI: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      CONTAINS: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRSTARTS: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRENDS: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRBEFORE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRAFTER: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      YEAR: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      MONTH: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DAY: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      HOURS: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      MINUTES: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      SECONDS: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      TIMEZONE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      TZ: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      NOW: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      UUID: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRUUID: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      MD5: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      SHA1: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      SHA256: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      SHA384: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      SHA512: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      COALESCE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      IF: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRLANG: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRDT: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      SAMETERM: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      ISIRI: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      ISURI: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      ISBLANK: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      ISLITERAL: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      ISNUMERIC: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      TRUE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      FALSE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      COUNT: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      SUM: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      MIN: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      MAX: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      AVG: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      SAMPLE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      GROUP_CONCAT: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      SUBSTR: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      REPLACE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      REGEX: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      EXISTS: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      NOT: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      IRI_REF: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRING_LITERAL1: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRING_LITERAL2: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRING_LITERAL_LONG1: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      STRING_LITERAL_LONG2: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      INTEGER: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DECIMAL: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DOUBLE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      INTEGER_POSITIVE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DECIMAL_POSITIVE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DOUBLE_POSITIVE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      INTEGER_NEGATIVE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DECIMAL_NEGATIVE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      DOUBLE_NEGATIVE: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      PNAME_LN: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ],
+      PNAME_NS: [
+        "multiplicativeExpression",
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+      ]
+    },
+    aggregate: {
+      COUNT: ["COUNT", "(", "?DISTINCT", "or([*,expression])", ")"],
+      SUM: ["SUM", "(", "?DISTINCT", "expression", ")"],
+      MIN: ["MIN", "(", "?DISTINCT", "expression", ")"],
+      MAX: ["MAX", "(", "?DISTINCT", "expression", ")"],
+      AVG: ["AVG", "(", "?DISTINCT", "expression", ")"],
+      SAMPLE: ["SAMPLE", "(", "?DISTINCT", "expression", ")"],
+      GROUP_CONCAT: ["GROUP_CONCAT", "(", "?DISTINCT", "expression", "?[;,SEPARATOR,=,string]", ")"]
+    },
+    allowBnodes: {
+      "}": []
+    },
+    allowVars: {
+      "}": []
+    },
+    argList: {
+      NIL: ["NIL"],
+      "(": ["(", "?DISTINCT", "expression", "*[,,expression]", ")"]
+    },
+    askQuery: {
+      ASK: ["ASK", "*datasetClause", "whereClause", "solutionModifier"]
+    },
+    baseDecl: {
+      BASE: ["BASE", "IRI_REF"]
+    },
+    bind: {
+      BIND: ["BIND", "(", "expression", "AS", "var", ")"]
+    },
+    blankNode: {
+      BLANK_NODE_LABEL: ["BLANK_NODE_LABEL"],
+      ANON: ["ANON"]
+    },
+    blankNodePropertyList: {
+      "[": ["[", "propertyListNotEmpty", "]"]
+    },
+    blankNodePropertyListPath: {
+      "[": ["[", "propertyListPathNotEmpty", "]"]
+    },
+    booleanLiteral: {
+      TRUE: ["TRUE"],
+      FALSE: ["FALSE"]
+    },
+    brackettedExpression: {
+      "(": ["(", "expression", ")"]
+    },
+    builtInCall: {
+      STR: ["STR", "(", "expression", ")"],
+      LANG: ["LANG", "(", "expression", ")"],
+      LANGMATCHES: ["LANGMATCHES", "(", "expression", ",", "expression", ")"],
+      DATATYPE: ["DATATYPE", "(", "expression", ")"],
+      BOUND: ["BOUND", "(", "var", ")"],
+      IRI: ["IRI", "(", "expression", ")"],
+      URI: ["URI", "(", "expression", ")"],
+      BNODE: ["BNODE", "or([[ (,expression,)],NIL])"],
+      RAND: ["RAND", "NIL"],
+      ABS: ["ABS", "(", "expression", ")"],
+      CEIL: ["CEIL", "(", "expression", ")"],
+      FLOOR: ["FLOOR", "(", "expression", ")"],
+      ROUND: ["ROUND", "(", "expression", ")"],
+      CONCAT: ["CONCAT", "expressionList"],
+      SUBSTR: ["substringExpression"],
+      STRLEN: ["STRLEN", "(", "expression", ")"],
+      REPLACE: ["strReplaceExpression"],
+      UCASE: ["UCASE", "(", "expression", ")"],
+      LCASE: ["LCASE", "(", "expression", ")"],
+      ENCODE_FOR_URI: ["ENCODE_FOR_URI", "(", "expression", ")"],
+      CONTAINS: ["CONTAINS", "(", "expression", ",", "expression", ")"],
+      STRSTARTS: ["STRSTARTS", "(", "expression", ",", "expression", ")"],
+      STRENDS: ["STRENDS", "(", "expression", ",", "expression", ")"],
+      STRBEFORE: ["STRBEFORE", "(", "expression", ",", "expression", ")"],
+      STRAFTER: ["STRAFTER", "(", "expression", ",", "expression", ")"],
+      YEAR: ["YEAR", "(", "expression", ")"],
+      MONTH: ["MONTH", "(", "expression", ")"],
+      DAY: ["DAY", "(", "expression", ")"],
+      HOURS: ["HOURS", "(", "expression", ")"],
+      MINUTES: ["MINUTES", "(", "expression", ")"],
+      SECONDS: ["SECONDS", "(", "expression", ")"],
+      TIMEZONE: ["TIMEZONE", "(", "expression", ")"],
+      TZ: ["TZ", "(", "expression", ")"],
+      NOW: ["NOW", "NIL"],
+      UUID: ["UUID", "NIL"],
+      STRUUID: ["STRUUID", "NIL"],
+      MD5: ["MD5", "(", "expression", ")"],
+      SHA1: ["SHA1", "(", "expression", ")"],
+      SHA256: ["SHA256", "(", "expression", ")"],
+      SHA384: ["SHA384", "(", "expression", ")"],
+      SHA512: ["SHA512", "(", "expression", ")"],
+      COALESCE: ["COALESCE", "expressionList"],
+      IF: ["IF", "(", "expression", ",", "expression", ",", "expression", ")"],
+      STRLANG: ["STRLANG", "(", "expression", ",", "expression", ")"],
+      STRDT: ["STRDT", "(", "expression", ",", "expression", ")"],
+      SAMETERM: ["SAMETERM", "(", "expression", ",", "expression", ")"],
+      ISIRI: ["ISIRI", "(", "expression", ")"],
+      ISURI: ["ISURI", "(", "expression", ")"],
+      ISBLANK: ["ISBLANK", "(", "expression", ")"],
+      ISLITERAL: ["ISLITERAL", "(", "expression", ")"],
+      ISNUMERIC: ["ISNUMERIC", "(", "expression", ")"],
+      REGEX: ["regexExpression"],
+      EXISTS: ["existsFunc"],
+      NOT: ["notExistsFunc"]
+    },
+    clear: {
+      CLEAR: ["CLEAR", "?SILENT_2", "graphRefAll"]
+    },
+    collection: {
+      "(": ["(", "+graphNode", ")"]
+    },
+    collectionPath: {
+      "(": ["(", "+graphNodePath", ")"]
+    },
+    conditionalAndExpression: {
+      "!": ["valueLogical", "*[&&,valueLogical]"],
+      "+": ["valueLogical", "*[&&,valueLogical]"],
+      "-": ["valueLogical", "*[&&,valueLogical]"],
+      VAR1: ["valueLogical", "*[&&,valueLogical]"],
+      VAR2: ["valueLogical", "*[&&,valueLogical]"],
+      "(": ["valueLogical", "*[&&,valueLogical]"],
+      STR: ["valueLogical", "*[&&,valueLogical]"],
+      LANG: ["valueLogical", "*[&&,valueLogical]"],
+      LANGMATCHES: ["valueLogical", "*[&&,valueLogical]"],
+      DATATYPE: ["valueLogical", "*[&&,valueLogical]"],
+      BOUND: ["valueLogical", "*[&&,valueLogical]"],
+      IRI: ["valueLogical", "*[&&,valueLogical]"],
+      URI: ["valueLogical", "*[&&,valueLogical]"],
+      BNODE: ["valueLogical", "*[&&,valueLogical]"],
+      RAND: ["valueLogical", "*[&&,valueLogical]"],
+      ABS: ["valueLogical", "*[&&,valueLogical]"],
+      CEIL: ["valueLogical", "*[&&,valueLogical]"],
+      FLOOR: ["valueLogical", "*[&&,valueLogical]"],
+      ROUND: ["valueLogical", "*[&&,valueLogical]"],
+      CONCAT: ["valueLogical", "*[&&,valueLogical]"],
+      STRLEN: ["valueLogical", "*[&&,valueLogical]"],
+      UCASE: ["valueLogical", "*[&&,valueLogical]"],
+      LCASE: ["valueLogical", "*[&&,valueLogical]"],
+      ENCODE_FOR_URI: ["valueLogical", "*[&&,valueLogical]"],
+      CONTAINS: ["valueLogical", "*[&&,valueLogical]"],
+      STRSTARTS: ["valueLogical", "*[&&,valueLogical]"],
+      STRENDS: ["valueLogical", "*[&&,valueLogical]"],
+      STRBEFORE: ["valueLogical", "*[&&,valueLogical]"],
+      STRAFTER: ["valueLogical", "*[&&,valueLogical]"],
+      YEAR: ["valueLogical", "*[&&,valueLogical]"],
+      MONTH: ["valueLogical", "*[&&,valueLogical]"],
+      DAY: ["valueLogical", "*[&&,valueLogical]"],
+      HOURS: ["valueLogical", "*[&&,valueLogical]"],
+      MINUTES: ["valueLogical", "*[&&,valueLogical]"],
+      SECONDS: ["valueLogical", "*[&&,valueLogical]"],
+      TIMEZONE: ["valueLogical", "*[&&,valueLogical]"],
+      TZ: ["valueLogical", "*[&&,valueLogical]"],
+      NOW: ["valueLogical", "*[&&,valueLogical]"],
+      UUID: ["valueLogical", "*[&&,valueLogical]"],
+      STRUUID: ["valueLogical", "*[&&,valueLogical]"],
+      MD5: ["valueLogical", "*[&&,valueLogical]"],
+      SHA1: ["valueLogical", "*[&&,valueLogical]"],
+      SHA256: ["valueLogical", "*[&&,valueLogical]"],
+      SHA384: ["valueLogical", "*[&&,valueLogical]"],
+      SHA512: ["valueLogical", "*[&&,valueLogical]"],
+      COALESCE: ["valueLogical", "*[&&,valueLogical]"],
+      IF: ["valueLogical", "*[&&,valueLogical]"],
+      STRLANG: ["valueLogical", "*[&&,valueLogical]"],
+      STRDT: ["valueLogical", "*[&&,valueLogical]"],
+      SAMETERM: ["valueLogical", "*[&&,valueLogical]"],
+      ISIRI: ["valueLogical", "*[&&,valueLogical]"],
+      ISURI: ["valueLogical", "*[&&,valueLogical]"],
+      ISBLANK: ["valueLogical", "*[&&,valueLogical]"],
+      ISLITERAL: ["valueLogical", "*[&&,valueLogical]"],
+      ISNUMERIC: ["valueLogical", "*[&&,valueLogical]"],
+      TRUE: ["valueLogical", "*[&&,valueLogical]"],
+      FALSE: ["valueLogical", "*[&&,valueLogical]"],
+      COUNT: ["valueLogical", "*[&&,valueLogical]"],
+      SUM: ["valueLogical", "*[&&,valueLogical]"],
+      MIN: ["valueLogical", "*[&&,valueLogical]"],
+      MAX: ["valueLogical", "*[&&,valueLogical]"],
+      AVG: ["valueLogical", "*[&&,valueLogical]"],
+      SAMPLE: ["valueLogical", "*[&&,valueLogical]"],
+      GROUP_CONCAT: ["valueLogical", "*[&&,valueLogical]"],
+      SUBSTR: ["valueLogical", "*[&&,valueLogical]"],
+      REPLACE: ["valueLogical", "*[&&,valueLogical]"],
+      REGEX: ["valueLogical", "*[&&,valueLogical]"],
+      EXISTS: ["valueLogical", "*[&&,valueLogical]"],
+      NOT: ["valueLogical", "*[&&,valueLogical]"],
+      IRI_REF: ["valueLogical", "*[&&,valueLogical]"],
+      STRING_LITERAL1: ["valueLogical", "*[&&,valueLogical]"],
+      STRING_LITERAL2: ["valueLogical", "*[&&,valueLogical]"],
+      STRING_LITERAL_LONG1: ["valueLogical", "*[&&,valueLogical]"],
+      STRING_LITERAL_LONG2: ["valueLogical", "*[&&,valueLogical]"],
+      INTEGER: ["valueLogical", "*[&&,valueLogical]"],
+      DECIMAL: ["valueLogical", "*[&&,valueLogical]"],
+      DOUBLE: ["valueLogical", "*[&&,valueLogical]"],
+      INTEGER_POSITIVE: ["valueLogical", "*[&&,valueLogical]"],
+      DECIMAL_POSITIVE: ["valueLogical", "*[&&,valueLogical]"],
+      DOUBLE_POSITIVE: ["valueLogical", "*[&&,valueLogical]"],
+      INTEGER_NEGATIVE: ["valueLogical", "*[&&,valueLogical]"],
+      DECIMAL_NEGATIVE: ["valueLogical", "*[&&,valueLogical]"],
+      DOUBLE_NEGATIVE: ["valueLogical", "*[&&,valueLogical]"],
+      PNAME_LN: ["valueLogical", "*[&&,valueLogical]"],
+      PNAME_NS: ["valueLogical", "*[&&,valueLogical]"]
+    },
+    conditionalOrExpression: {
+      "!": ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      "+": ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      "-": ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      VAR1: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      VAR2: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      "(": ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STR: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      LANG: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      LANGMATCHES: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      DATATYPE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      BOUND: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      IRI: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      URI: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      BNODE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      RAND: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      ABS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      CEIL: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      FLOOR: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      ROUND: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      CONCAT: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRLEN: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      UCASE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      LCASE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      ENCODE_FOR_URI: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      CONTAINS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRSTARTS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRENDS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRBEFORE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRAFTER: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      YEAR: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      MONTH: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      DAY: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      HOURS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      MINUTES: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      SECONDS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      TIMEZONE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      TZ: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      NOW: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      UUID: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRUUID: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      MD5: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      SHA1: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      SHA256: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      SHA384: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      SHA512: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      COALESCE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      IF: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRLANG: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRDT: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      SAMETERM: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      ISIRI: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      ISURI: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      ISBLANK: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      ISLITERAL: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      ISNUMERIC: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      TRUE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      FALSE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      COUNT: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      SUM: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      MIN: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      MAX: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      AVG: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      SAMPLE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      GROUP_CONCAT: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      SUBSTR: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      REPLACE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      REGEX: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      EXISTS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      NOT: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      IRI_REF: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRING_LITERAL1: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRING_LITERAL2: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRING_LITERAL_LONG1: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRING_LITERAL_LONG2: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      INTEGER: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      DECIMAL: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      DOUBLE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      INTEGER_POSITIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      DECIMAL_POSITIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      DOUBLE_POSITIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      INTEGER_NEGATIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      DECIMAL_NEGATIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      DOUBLE_NEGATIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      PNAME_LN: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      PNAME_NS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"]
+    },
+    constraint: {
+      "(": ["brackettedExpression"],
+      STR: ["builtInCall"],
+      LANG: ["builtInCall"],
+      LANGMATCHES: ["builtInCall"],
+      DATATYPE: ["builtInCall"],
+      BOUND: ["builtInCall"],
+      IRI: ["builtInCall"],
+      URI: ["builtInCall"],
+      BNODE: ["builtInCall"],
+      RAND: ["builtInCall"],
+      ABS: ["builtInCall"],
+      CEIL: ["builtInCall"],
+      FLOOR: ["builtInCall"],
+      ROUND: ["builtInCall"],
+      CONCAT: ["builtInCall"],
+      STRLEN: ["builtInCall"],
+      UCASE: ["builtInCall"],
+      LCASE: ["builtInCall"],
+      ENCODE_FOR_URI: ["builtInCall"],
+      CONTAINS: ["builtInCall"],
+      STRSTARTS: ["builtInCall"],
+      STRENDS: ["builtInCall"],
+      STRBEFORE: ["builtInCall"],
+      STRAFTER: ["builtInCall"],
+      YEAR: ["builtInCall"],
+      MONTH: ["builtInCall"],
+      DAY: ["builtInCall"],
+      HOURS: ["builtInCall"],
+      MINUTES: ["builtInCall"],
+      SECONDS: ["builtInCall"],
+      TIMEZONE: ["builtInCall"],
+      TZ: ["builtInCall"],
+      NOW: ["builtInCall"],
+      UUID: ["builtInCall"],
+      STRUUID: ["builtInCall"],
+      MD5: ["builtInCall"],
+      SHA1: ["builtInCall"],
+      SHA256: ["builtInCall"],
+      SHA384: ["builtInCall"],
+      SHA512: ["builtInCall"],
+      COALESCE: ["builtInCall"],
+      IF: ["builtInCall"],
+      STRLANG: ["builtInCall"],
+      STRDT: ["builtInCall"],
+      SAMETERM: ["builtInCall"],
+      ISIRI: ["builtInCall"],
+      ISURI: ["builtInCall"],
+      ISBLANK: ["builtInCall"],
+      ISLITERAL: ["builtInCall"],
+      ISNUMERIC: ["builtInCall"],
+      SUBSTR: ["builtInCall"],
+      REPLACE: ["builtInCall"],
+      REGEX: ["builtInCall"],
+      EXISTS: ["builtInCall"],
+      NOT: ["builtInCall"],
+      IRI_REF: ["functionCall"],
+      PNAME_LN: ["functionCall"],
+      PNAME_NS: ["functionCall"]
+    },
+    constructQuery: {
+      CONSTRUCT: [
+        "CONSTRUCT",
+        "or([[constructTemplate,*datasetClause,whereClause,solutionModifier],[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]])"
+      ]
+    },
+    constructTemplate: {
+      "{": ["{", "?constructTriples", "}"]
+    },
+    constructTriples: {
+      VAR1: ["triplesSameSubject", "?[.,?constructTriples]"],
+      VAR2: ["triplesSameSubject", "?[.,?constructTriples]"],
+      NIL: ["triplesSameSubject", "?[.,?constructTriples]"],
+      "(": ["triplesSameSubject", "?[.,?constructTriples]"],
+      "[": ["triplesSameSubject", "?[.,?constructTriples]"],
+      IRI_REF: ["triplesSameSubject", "?[.,?constructTriples]"],
+      TRUE: ["triplesSameSubject", "?[.,?constructTriples]"],
+      FALSE: ["triplesSameSubject", "?[.,?constructTriples]"],
+      BLANK_NODE_LABEL: ["triplesSameSubject", "?[.,?constructTriples]"],
+      ANON: ["triplesSameSubject", "?[.,?constructTriples]"],
+      PNAME_LN: ["triplesSameSubject", "?[.,?constructTriples]"],
+      PNAME_NS: ["triplesSameSubject", "?[.,?constructTriples]"],
+      STRING_LITERAL1: ["triplesSameSubject", "?[.,?constructTriples]"],
+      STRING_LITERAL2: ["triplesSameSubject", "?[.,?constructTriples]"],
+      STRING_LITERAL_LONG1: ["triplesSameSubject", "?[.,?constructTriples]"],
+      STRING_LITERAL_LONG2: ["triplesSameSubject", "?[.,?constructTriples]"],
+      INTEGER: ["triplesSameSubject", "?[.,?constructTriples]"],
+      DECIMAL: ["triplesSameSubject", "?[.,?constructTriples]"],
+      DOUBLE: ["triplesSameSubject", "?[.,?constructTriples]"],
+      INTEGER_POSITIVE: ["triplesSameSubject", "?[.,?constructTriples]"],
+      DECIMAL_POSITIVE: ["triplesSameSubject", "?[.,?constructTriples]"],
+      DOUBLE_POSITIVE: ["triplesSameSubject", "?[.,?constructTriples]"],
+      INTEGER_NEGATIVE: ["triplesSameSubject", "?[.,?constructTriples]"],
+      DECIMAL_NEGATIVE: ["triplesSameSubject", "?[.,?constructTriples]"],
+      DOUBLE_NEGATIVE: ["triplesSameSubject", "?[.,?constructTriples]"]
+    },
+    copy: {
+      COPY: ["COPY", "?SILENT_4", "graphOrDefault", "TO", "graphOrDefault"]
+    },
+    create: {
+      CREATE: ["CREATE", "?SILENT_3", "graphRef"]
+    },
+    dataBlock: {
+      NIL: ["or([inlineDataOneVar,inlineDataFull])"],
+      "(": ["or([inlineDataOneVar,inlineDataFull])"],
+      VAR1: ["or([inlineDataOneVar,inlineDataFull])"],
+      VAR2: ["or([inlineDataOneVar,inlineDataFull])"]
+    },
+    dataBlockValue: {
+      IRI_REF: ["iriRef"],
+      PNAME_LN: ["iriRef"],
+      PNAME_NS: ["iriRef"],
+      STRING_LITERAL1: ["rdfLiteral"],
+      STRING_LITERAL2: ["rdfLiteral"],
+      STRING_LITERAL_LONG1: ["rdfLiteral"],
+      STRING_LITERAL_LONG2: ["rdfLiteral"],
+      INTEGER: ["numericLiteral"],
+      DECIMAL: ["numericLiteral"],
+      DOUBLE: ["numericLiteral"],
+      INTEGER_POSITIVE: ["numericLiteral"],
+      DECIMAL_POSITIVE: ["numericLiteral"],
+      DOUBLE_POSITIVE: ["numericLiteral"],
+      INTEGER_NEGATIVE: ["numericLiteral"],
+      DECIMAL_NEGATIVE: ["numericLiteral"],
+      DOUBLE_NEGATIVE: ["numericLiteral"],
+      TRUE: ["booleanLiteral"],
+      FALSE: ["booleanLiteral"],
+      UNDEF: ["UNDEF"]
+    },
+    datasetClause: {
+      FROM: ["FROM", "or([defaultGraphClause,namedGraphClause])"]
+    },
+    defaultGraphClause: {
+      IRI_REF: ["sourceSelector"],
+      PNAME_LN: ["sourceSelector"],
+      PNAME_NS: ["sourceSelector"]
+    },
+    delete1: {
+      DATA: ["DATA", "quadDataNoBnodes"],
+      WHERE: ["WHERE", "quadPatternNoBnodes"],
+      "{": ["quadPatternNoBnodes", "?insertClause", "*usingClause", "WHERE", "groupGraphPattern"]
+    },
+    deleteClause: {
+      DELETE: ["DELETE", "quadPattern"]
+    },
+    describeDatasetClause: {
+      FROM: ["FROM", "or([defaultGraphClause,namedGraphClause])"]
+    },
+    describeQuery: {
+      DESCRIBE: ["DESCRIBE", "or([+varOrIRIref,*])", "*describeDatasetClause", "?whereClause", "solutionModifier"]
+    },
+    disallowBnodes: {
+      "}": [],
+      GRAPH: [],
+      VAR1: [],
+      VAR2: [],
+      NIL: [],
+      "(": [],
+      "[": [],
+      IRI_REF: [],
+      TRUE: [],
+      FALSE: [],
+      BLANK_NODE_LABEL: [],
+      ANON: [],
+      PNAME_LN: [],
+      PNAME_NS: [],
+      STRING_LITERAL1: [],
+      STRING_LITERAL2: [],
+      STRING_LITERAL_LONG1: [],
+      STRING_LITERAL_LONG2: [],
+      INTEGER: [],
+      DECIMAL: [],
+      DOUBLE: [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: []
+    },
+    disallowVars: {
+      "}": [],
+      GRAPH: [],
+      VAR1: [],
+      VAR2: [],
+      NIL: [],
+      "(": [],
+      "[": [],
+      IRI_REF: [],
+      TRUE: [],
+      FALSE: [],
+      BLANK_NODE_LABEL: [],
+      ANON: [],
+      PNAME_LN: [],
+      PNAME_NS: [],
+      STRING_LITERAL1: [],
+      STRING_LITERAL2: [],
+      STRING_LITERAL_LONG1: [],
+      STRING_LITERAL_LONG2: [],
+      INTEGER: [],
+      DECIMAL: [],
+      DOUBLE: [],
+      INTEGER_POSITIVE: [],
+      DECIMAL_POSITIVE: [],
+      DOUBLE_POSITIVE: [],
+      INTEGER_NEGATIVE: [],
+      DECIMAL_NEGATIVE: [],
+      DOUBLE_NEGATIVE: []
+    },
+    drop: {
+      DROP: ["DROP", "?SILENT_2", "graphRefAll"]
+    },
+    existsFunc: {
+      EXISTS: ["EXISTS", "groupGraphPattern"]
+    },
+    expression: {
+      "!": ["conditionalOrExpression"],
+      "+": ["conditionalOrExpression"],
+      "-": ["conditionalOrExpression"],
+      VAR1: ["conditionalOrExpression"],
+      VAR2: ["conditionalOrExpression"],
+      "(": ["conditionalOrExpression"],
+      STR: ["conditionalOrExpression"],
+      LANG: ["conditionalOrExpression"],
+      LANGMATCHES: ["conditionalOrExpression"],
+      DATATYPE: ["conditionalOrExpression"],
+      BOUND: ["conditionalOrExpression"],
+      IRI: ["conditionalOrExpression"],
+      URI: ["conditionalOrExpression"],
+      BNODE: ["conditionalOrExpression"],
+      RAND: ["conditionalOrExpression"],
+      ABS: ["conditionalOrExpression"],
+      CEIL: ["conditionalOrExpression"],
+      FLOOR: ["conditionalOrExpression"],
+      ROUND: ["conditionalOrExpression"],
+      CONCAT: ["conditionalOrExpression"],
+      STRLEN: ["conditionalOrExpression"],
+      UCASE: ["conditionalOrExpression"],
+      LCASE: ["conditionalOrExpression"],
+      ENCODE_FOR_URI: ["conditionalOrExpression"],
+      CONTAINS: ["conditionalOrExpression"],
+      STRSTARTS: ["conditionalOrExpression"],
+      STRENDS: ["conditionalOrExpression"],
+      STRBEFORE: ["conditionalOrExpression"],
+      STRAFTER: ["conditionalOrExpression"],
+      YEAR: ["conditionalOrExpression"],
+      MONTH: ["conditionalOrExpression"],
+      DAY: ["conditionalOrExpression"],
+      HOURS: ["conditionalOrExpression"],
+      MINUTES: ["conditionalOrExpression"],
+      SECONDS: ["conditionalOrExpression"],
+      TIMEZONE: ["conditionalOrExpression"],
+      TZ: ["conditionalOrExpression"],
+      NOW: ["conditionalOrExpression"],
+      UUID: ["conditionalOrExpression"],
+      STRUUID: ["conditionalOrExpression"],
+      MD5: ["conditionalOrExpression"],
+      SHA1: ["conditionalOrExpression"],
+      SHA256: ["conditionalOrExpression"],
+      SHA384: ["conditionalOrExpression"],
+      SHA512: ["conditionalOrExpression"],
+      COALESCE: ["conditionalOrExpression"],
+      IF: ["conditionalOrExpression"],
+      STRLANG: ["conditionalOrExpression"],
+      STRDT: ["conditionalOrExpression"],
+      SAMETERM: ["conditionalOrExpression"],
+      ISIRI: ["conditionalOrExpression"],
+      ISURI: ["conditionalOrExpression"],
+      ISBLANK: ["conditionalOrExpression"],
+      ISLITERAL: ["conditionalOrExpression"],
+      ISNUMERIC: ["conditionalOrExpression"],
+      TRUE: ["conditionalOrExpression"],
+      FALSE: ["conditionalOrExpression"],
+      COUNT: ["conditionalOrExpression"],
+      SUM: ["conditionalOrExpression"],
+      MIN: ["conditionalOrExpression"],
+      MAX: ["conditionalOrExpression"],
+      AVG: ["conditionalOrExpression"],
+      SAMPLE: ["conditionalOrExpression"],
+      GROUP_CONCAT: ["conditionalOrExpression"],
+      SUBSTR: ["conditionalOrExpression"],
+      REPLACE: ["conditionalOrExpression"],
+      REGEX: ["conditionalOrExpression"],
+      EXISTS: ["conditionalOrExpression"],
+      NOT: ["conditionalOrExpression"],
+      IRI_REF: ["conditionalOrExpression"],
+      STRING_LITERAL1: ["conditionalOrExpression"],
+      STRING_LITERAL2: ["conditionalOrExpression"],
+      STRING_LITERAL_LONG1: ["conditionalOrExpression"],
+      STRING_LITERAL_LONG2: ["conditionalOrExpression"],
+      INTEGER: ["conditionalOrExpression"],
+      DECIMAL: ["conditionalOrExpression"],
+      DOUBLE: ["conditionalOrExpression"],
+      INTEGER_POSITIVE: ["conditionalOrExpression"],
+      DECIMAL_POSITIVE: ["conditionalOrExpression"],
+      DOUBLE_POSITIVE: ["conditionalOrExpression"],
+      INTEGER_NEGATIVE: ["conditionalOrExpression"],
+      DECIMAL_NEGATIVE: ["conditionalOrExpression"],
+      DOUBLE_NEGATIVE: ["conditionalOrExpression"],
+      PNAME_LN: ["conditionalOrExpression"],
+      PNAME_NS: ["conditionalOrExpression"]
+    },
+    expressionList: {
+      NIL: ["NIL"],
+      "(": ["(", "expression", "*[,,expression]", ")"]
+    },
+    filter: {
+      FILTER: ["FILTER", "constraint"]
+    },
+    functionCall: {
+      IRI_REF: ["iriRef", "argList"],
+      PNAME_LN: ["iriRef", "argList"],
+      PNAME_NS: ["iriRef", "argList"]
+    },
+    graphGraphPattern: {
+      GRAPH: ["GRAPH", "varOrIRIref", "groupGraphPattern"]
+    },
+    graphNode: {
+      VAR1: ["varOrTerm"],
+      VAR2: ["varOrTerm"],
+      NIL: ["varOrTerm"],
+      IRI_REF: ["varOrTerm"],
+      TRUE: ["varOrTerm"],
+      FALSE: ["varOrTerm"],
+      BLANK_NODE_LABEL: ["varOrTerm"],
+      ANON: ["varOrTerm"],
+      PNAME_LN: ["varOrTerm"],
+      PNAME_NS: ["varOrTerm"],
+      STRING_LITERAL1: ["varOrTerm"],
+      STRING_LITERAL2: ["varOrTerm"],
+      STRING_LITERAL_LONG1: ["varOrTerm"],
+      STRING_LITERAL_LONG2: ["varOrTerm"],
+      INTEGER: ["varOrTerm"],
+      DECIMAL: ["varOrTerm"],
+      DOUBLE: ["varOrTerm"],
+      INTEGER_POSITIVE: ["varOrTerm"],
+      DECIMAL_POSITIVE: ["varOrTerm"],
+      DOUBLE_POSITIVE: ["varOrTerm"],
+      INTEGER_NEGATIVE: ["varOrTerm"],
+      DECIMAL_NEGATIVE: ["varOrTerm"],
+      DOUBLE_NEGATIVE: ["varOrTerm"],
+      "(": ["triplesNode"],
+      "[": ["triplesNode"]
+    },
+    graphNodePath: {
+      VAR1: ["varOrTerm"],
+      VAR2: ["varOrTerm"],
+      NIL: ["varOrTerm"],
+      IRI_REF: ["varOrTerm"],
+      TRUE: ["varOrTerm"],
+      FALSE: ["varOrTerm"],
+      BLANK_NODE_LABEL: ["varOrTerm"],
+      ANON: ["varOrTerm"],
+      PNAME_LN: ["varOrTerm"],
+      PNAME_NS: ["varOrTerm"],
+      STRING_LITERAL1: ["varOrTerm"],
+      STRING_LITERAL2: ["varOrTerm"],
+      STRING_LITERAL_LONG1: ["varOrTerm"],
+      STRING_LITERAL_LONG2: ["varOrTerm"],
+      INTEGER: ["varOrTerm"],
+      DECIMAL: ["varOrTerm"],
+      DOUBLE: ["varOrTerm"],
+      INTEGER_POSITIVE: ["varOrTerm"],
+      DECIMAL_POSITIVE: ["varOrTerm"],
+      DOUBLE_POSITIVE: ["varOrTerm"],
+      INTEGER_NEGATIVE: ["varOrTerm"],
+      DECIMAL_NEGATIVE: ["varOrTerm"],
+      DOUBLE_NEGATIVE: ["varOrTerm"],
+      "(": ["triplesNodePath"],
+      "[": ["triplesNodePath"]
+    },
+    graphOrDefault: {
+      DEFAULT: ["DEFAULT"],
+      IRI_REF: ["?GRAPH", "iriRef"],
+      PNAME_LN: ["?GRAPH", "iriRef"],
+      PNAME_NS: ["?GRAPH", "iriRef"],
+      GRAPH: ["?GRAPH", "iriRef"]
+    },
+    graphPatternNotTriples: {
+      "{": ["groupOrUnionGraphPattern"],
+      OPTIONAL: ["optionalGraphPattern"],
+      MINUS: ["minusGraphPattern"],
+      GRAPH: ["graphGraphPattern"],
+      SERVICE: ["serviceGraphPattern"],
+      FILTER: ["filter"],
+      BIND: ["bind"],
+      VALUES: ["inlineData"]
+    },
+    graphRef: {
+      GRAPH: ["GRAPH", "iriRef"]
+    },
+    graphRefAll: {
+      GRAPH: ["graphRef"],
+      DEFAULT: ["DEFAULT"],
+      NAMED: ["NAMED"],
+      ALL: ["ALL"]
+    },
+    graphTerm: {
+      IRI_REF: ["iriRef"],
+      PNAME_LN: ["iriRef"],
+      PNAME_NS: ["iriRef"],
+      STRING_LITERAL1: ["rdfLiteral"],
+      STRING_LITERAL2: ["rdfLiteral"],
+      STRING_LITERAL_LONG1: ["rdfLiteral"],
+      STRING_LITERAL_LONG2: ["rdfLiteral"],
+      INTEGER: ["numericLiteral"],
+      DECIMAL: ["numericLiteral"],
+      DOUBLE: ["numericLiteral"],
+      INTEGER_POSITIVE: ["numericLiteral"],
+      DECIMAL_POSITIVE: ["numericLiteral"],
+      DOUBLE_POSITIVE: ["numericLiteral"],
+      INTEGER_NEGATIVE: ["numericLiteral"],
+      DECIMAL_NEGATIVE: ["numericLiteral"],
+      DOUBLE_NEGATIVE: ["numericLiteral"],
+      TRUE: ["booleanLiteral"],
+      FALSE: ["booleanLiteral"],
+      BLANK_NODE_LABEL: ["blankNode"],
+      ANON: ["blankNode"],
+      NIL: ["NIL"]
+    },
+    groupClause: {
+      GROUP: ["GROUP", "BY", "+groupCondition"]
+    },
+    groupCondition: {
+      STR: ["builtInCall"],
+      LANG: ["builtInCall"],
+      LANGMATCHES: ["builtInCall"],
+      DATATYPE: ["builtInCall"],
+      BOUND: ["builtInCall"],
+      IRI: ["builtInCall"],
+      URI: ["builtInCall"],
+      BNODE: ["builtInCall"],
+      RAND: ["builtInCall"],
+      ABS: ["builtInCall"],
+      CEIL: ["builtInCall"],
+      FLOOR: ["builtInCall"],
+      ROUND: ["builtInCall"],
+      CONCAT: ["builtInCall"],
+      STRLEN: ["builtInCall"],
+      UCASE: ["builtInCall"],
+      LCASE: ["builtInCall"],
+      ENCODE_FOR_URI: ["builtInCall"],
+      CONTAINS: ["builtInCall"],
+      STRSTARTS: ["builtInCall"],
+      STRENDS: ["builtInCall"],
+      STRBEFORE: ["builtInCall"],
+      STRAFTER: ["builtInCall"],
+      YEAR: ["builtInCall"],
+      MONTH: ["builtInCall"],
+      DAY: ["builtInCall"],
+      HOURS: ["builtInCall"],
+      MINUTES: ["builtInCall"],
+      SECONDS: ["builtInCall"],
+      TIMEZONE: ["builtInCall"],
+      TZ: ["builtInCall"],
+      NOW: ["builtInCall"],
+      UUID: ["builtInCall"],
+      STRUUID: ["builtInCall"],
+      MD5: ["builtInCall"],
+      SHA1: ["builtInCall"],
+      SHA256: ["builtInCall"],
+      SHA384: ["builtInCall"],
+      SHA512: ["builtInCall"],
+      COALESCE: ["builtInCall"],
+      IF: ["builtInCall"],
+      STRLANG: ["builtInCall"],
+      STRDT: ["builtInCall"],
+      SAMETERM: ["builtInCall"],
+      ISIRI: ["builtInCall"],
+      ISURI: ["builtInCall"],
+      ISBLANK: ["builtInCall"],
+      ISLITERAL: ["builtInCall"],
+      ISNUMERIC: ["builtInCall"],
+      SUBSTR: ["builtInCall"],
+      REPLACE: ["builtInCall"],
+      REGEX: ["builtInCall"],
+      EXISTS: ["builtInCall"],
+      NOT: ["builtInCall"],
+      IRI_REF: ["functionCall"],
+      PNAME_LN: ["functionCall"],
+      PNAME_NS: ["functionCall"],
+      "(": ["(", "expression", "?[AS,var]", ")"],
+      VAR1: ["var"],
+      VAR2: ["var"]
+    },
+    groupGraphPattern: {
+      "{": ["{", "or([subSelect,groupGraphPatternSub])", "}"]
+    },
+    groupGraphPatternSub: {
+      "{": ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      OPTIONAL: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      MINUS: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      GRAPH: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      SERVICE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      FILTER: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      BIND: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      VALUES: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      VAR1: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      VAR2: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      NIL: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      "(": ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      "[": ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      IRI_REF: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      TRUE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      FALSE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      BLANK_NODE_LABEL: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      ANON: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      PNAME_LN: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      PNAME_NS: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      STRING_LITERAL1: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      STRING_LITERAL2: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      STRING_LITERAL_LONG1: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      STRING_LITERAL_LONG2: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      INTEGER: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      DECIMAL: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      DOUBLE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      INTEGER_POSITIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      DECIMAL_POSITIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      DOUBLE_POSITIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      INTEGER_NEGATIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      DECIMAL_NEGATIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      DOUBLE_NEGATIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      "}": ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"]
+    },
+    groupOrUnionGraphPattern: {
+      "{": ["groupGraphPattern", "*[UNION,groupGraphPattern]"]
+    },
+    havingClause: {
+      HAVING: ["HAVING", "+havingCondition"]
+    },
+    havingCondition: {
+      "(": ["constraint"],
+      STR: ["constraint"],
+      LANG: ["constraint"],
+      LANGMATCHES: ["constraint"],
+      DATATYPE: ["constraint"],
+      BOUND: ["constraint"],
+      IRI: ["constraint"],
+      URI: ["constraint"],
+      BNODE: ["constraint"],
+      RAND: ["constraint"],
+      ABS: ["constraint"],
+      CEIL: ["constraint"],
+      FLOOR: ["constraint"],
+      ROUND: ["constraint"],
+      CONCAT: ["constraint"],
+      STRLEN: ["constraint"],
+      UCASE: ["constraint"],
+      LCASE: ["constraint"],
+      ENCODE_FOR_URI: ["constraint"],
+      CONTAINS: ["constraint"],
+      STRSTARTS: ["constraint"],
+      STRENDS: ["constraint"],
+      STRBEFORE: ["constraint"],
+      STRAFTER: ["constraint"],
+      YEAR: ["constraint"],
+      MONTH: ["constraint"],
+      DAY: ["constraint"],
+      HOURS: ["constraint"],
+      MINUTES: ["constraint"],
+      SECONDS: ["constraint"],
+      TIMEZONE: ["constraint"],
+      TZ: ["constraint"],
+      NOW: ["constraint"],
+      UUID: ["constraint"],
+      STRUUID: ["constraint"],
+      MD5: ["constraint"],
+      SHA1: ["constraint"],
+      SHA256: ["constraint"],
+      SHA384: ["constraint"],
+      SHA512: ["constraint"],
+      COALESCE: ["constraint"],
+      IF: ["constraint"],
+      STRLANG: ["constraint"],
+      STRDT: ["constraint"],
+      SAMETERM: ["constraint"],
+      ISIRI: ["constraint"],
+      ISURI: ["constraint"],
+      ISBLANK: ["constraint"],
+      ISLITERAL: ["constraint"],
+      ISNUMERIC: ["constraint"],
+      SUBSTR: ["constraint"],
+      REPLACE: ["constraint"],
+      REGEX: ["constraint"],
+      EXISTS: ["constraint"],
+      NOT: ["constraint"],
+      IRI_REF: ["constraint"],
+      PNAME_LN: ["constraint"],
+      PNAME_NS: ["constraint"]
+    },
+    inlineData: {
+      VALUES: ["VALUES", "dataBlock"]
+    },
+    inlineDataFull: {
+      NIL: ["or([NIL,[ (,*var,)]])", "{", "*or([[ (,*dataBlockValue,)],NIL])", "}"],
+      "(": ["or([NIL,[ (,*var,)]])", "{", "*or([[ (,*dataBlockValue,)],NIL])", "}"]
+    },
+    inlineDataOneVar: {
+      VAR1: ["var", "{", "*dataBlockValue", "}"],
+      VAR2: ["var", "{", "*dataBlockValue", "}"]
+    },
+    insert1: {
+      DATA: ["DATA", "quadData"],
+      "{": ["quadPattern", "*usingClause", "WHERE", "groupGraphPattern"]
+    },
+    insertClause: {
+      INSERT: ["INSERT", "quadPattern"]
+    },
+    integer: {
+      INTEGER: ["INTEGER"]
+    },
+    iriRef: {
+      IRI_REF: ["IRI_REF"],
+      PNAME_LN: ["prefixedName"],
+      PNAME_NS: ["prefixedName"]
+    },
+    iriRefOrFunction: {
+      IRI_REF: ["iriRef", "?argList"],
+      PNAME_LN: ["iriRef", "?argList"],
+      PNAME_NS: ["iriRef", "?argList"]
+    },
+    limitClause: {
+      LIMIT: ["LIMIT", "INTEGER"]
+    },
+    limitOffsetClauses: {
+      LIMIT: ["limitClause", "?offsetClause"],
+      OFFSET: ["offsetClause", "?limitClause"]
+    },
+    load: {
+      LOAD: ["LOAD", "?SILENT_1", "iriRef", "?[INTO,graphRef]"]
+    },
+    minusGraphPattern: {
+      MINUS: ["MINUS", "groupGraphPattern"]
+    },
+    modify: {
+      WITH: [
+        "WITH",
+        "iriRef",
+        "or([[deleteClause,?insertClause],insertClause])",
+        "*usingClause",
+        "WHERE",
+        "groupGraphPattern"
+      ]
+    },
+    move: {
+      MOVE: ["MOVE", "?SILENT_4", "graphOrDefault", "TO", "graphOrDefault"]
+    },
+    multiplicativeExpression: {
+      "!": ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      "+": ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      "-": ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      VAR1: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      VAR2: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      "(": ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STR: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      LANG: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      LANGMATCHES: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      DATATYPE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      BOUND: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      IRI: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      URI: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      BNODE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      RAND: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      ABS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      CEIL: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      FLOOR: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      ROUND: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      CONCAT: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRLEN: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      UCASE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      LCASE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      ENCODE_FOR_URI: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      CONTAINS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRSTARTS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRENDS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRBEFORE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRAFTER: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      YEAR: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      MONTH: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      DAY: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      HOURS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      MINUTES: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      SECONDS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      TIMEZONE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      TZ: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      NOW: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      UUID: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRUUID: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      MD5: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      SHA1: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      SHA256: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      SHA384: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      SHA512: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      COALESCE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      IF: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRLANG: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRDT: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      SAMETERM: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      ISIRI: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      ISURI: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      ISBLANK: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      ISLITERAL: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      ISNUMERIC: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      TRUE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      FALSE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      COUNT: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      SUM: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      MIN: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      MAX: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      AVG: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      SAMPLE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      GROUP_CONCAT: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      SUBSTR: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      REPLACE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      REGEX: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      EXISTS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      NOT: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      IRI_REF: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRING_LITERAL1: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRING_LITERAL2: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRING_LITERAL_LONG1: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      STRING_LITERAL_LONG2: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      INTEGER: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      DECIMAL: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      DOUBLE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      INTEGER_POSITIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      DECIMAL_POSITIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      DOUBLE_POSITIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      INTEGER_NEGATIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      DECIMAL_NEGATIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      DOUBLE_NEGATIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      PNAME_LN: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      PNAME_NS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"]
+    },
+    namedGraphClause: {
+      NAMED: ["NAMED", "sourceSelector"]
+    },
+    notExistsFunc: {
+      NOT: ["NOT", "EXISTS", "groupGraphPattern"]
+    },
+    numericExpression: {
+      "!": ["additiveExpression"],
+      "+": ["additiveExpression"],
+      "-": ["additiveExpression"],
+      VAR1: ["additiveExpression"],
+      VAR2: ["additiveExpression"],
+      "(": ["additiveExpression"],
+      STR: ["additiveExpression"],
+      LANG: ["additiveExpression"],
+      LANGMATCHES: ["additiveExpression"],
+      DATATYPE: ["additiveExpression"],
+      BOUND: ["additiveExpression"],
+      IRI: ["additiveExpression"],
+      URI: ["additiveExpression"],
+      BNODE: ["additiveExpression"],
+      RAND: ["additiveExpression"],
+      ABS: ["additiveExpression"],
+      CEIL: ["additiveExpression"],
+      FLOOR: ["additiveExpression"],
+      ROUND: ["additiveExpression"],
+      CONCAT: ["additiveExpression"],
+      STRLEN: ["additiveExpression"],
+      UCASE: ["additiveExpression"],
+      LCASE: ["additiveExpression"],
+      ENCODE_FOR_URI: ["additiveExpression"],
+      CONTAINS: ["additiveExpression"],
+      STRSTARTS: ["additiveExpression"],
+      STRENDS: ["additiveExpression"],
+      STRBEFORE: ["additiveExpression"],
+      STRAFTER: ["additiveExpression"],
+      YEAR: ["additiveExpression"],
+      MONTH: ["additiveExpression"],
+      DAY: ["additiveExpression"],
+      HOURS: ["additiveExpression"],
+      MINUTES: ["additiveExpression"],
+      SECONDS: ["additiveExpression"],
+      TIMEZONE: ["additiveExpression"],
+      TZ: ["additiveExpression"],
+      NOW: ["additiveExpression"],
+      UUID: ["additiveExpression"],
+      STRUUID: ["additiveExpression"],
+      MD5: ["additiveExpression"],
+      SHA1: ["additiveExpression"],
+      SHA256: ["additiveExpression"],
+      SHA384: ["additiveExpression"],
+      SHA512: ["additiveExpression"],
+      COALESCE: ["additiveExpression"],
+      IF: ["additiveExpression"],
+      STRLANG: ["additiveExpression"],
+      STRDT: ["additiveExpression"],
+      SAMETERM: ["additiveExpression"],
+      ISIRI: ["additiveExpression"],
+      ISURI: ["additiveExpression"],
+      ISBLANK: ["additiveExpression"],
+      ISLITERAL: ["additiveExpression"],
+      ISNUMERIC: ["additiveExpression"],
+      TRUE: ["additiveExpression"],
+      FALSE: ["additiveExpression"],
+      COUNT: ["additiveExpression"],
+      SUM: ["additiveExpression"],
+      MIN: ["additiveExpression"],
+      MAX: ["additiveExpression"],
+      AVG: ["additiveExpression"],
+      SAMPLE: ["additiveExpression"],
+      GROUP_CONCAT: ["additiveExpression"],
+      SUBSTR: ["additiveExpression"],
+      REPLACE: ["additiveExpression"],
+      REGEX: ["additiveExpression"],
+      EXISTS: ["additiveExpression"],
+      NOT: ["additiveExpression"],
+      IRI_REF: ["additiveExpression"],
+      STRING_LITERAL1: ["additiveExpression"],
+      STRING_LITERAL2: ["additiveExpression"],
+      STRING_LITERAL_LONG1: ["additiveExpression"],
+      STRING_LITERAL_LONG2: ["additiveExpression"],
+      INTEGER: ["additiveExpression"],
+      DECIMAL: ["additiveExpression"],
+      DOUBLE: ["additiveExpression"],
+      INTEGER_POSITIVE: ["additiveExpression"],
+      DECIMAL_POSITIVE: ["additiveExpression"],
+      DOUBLE_POSITIVE: ["additiveExpression"],
+      INTEGER_NEGATIVE: ["additiveExpression"],
+      DECIMAL_NEGATIVE: ["additiveExpression"],
+      DOUBLE_NEGATIVE: ["additiveExpression"],
+      PNAME_LN: ["additiveExpression"],
+      PNAME_NS: ["additiveExpression"]
+    },
+    numericLiteral: {
+      INTEGER: ["numericLiteralUnsigned"],
+      DECIMAL: ["numericLiteralUnsigned"],
+      DOUBLE: ["numericLiteralUnsigned"],
+      INTEGER_POSITIVE: ["numericLiteralPositive"],
+      DECIMAL_POSITIVE: ["numericLiteralPositive"],
+      DOUBLE_POSITIVE: ["numericLiteralPositive"],
+      INTEGER_NEGATIVE: ["numericLiteralNegative"],
+      DECIMAL_NEGATIVE: ["numericLiteralNegative"],
+      DOUBLE_NEGATIVE: ["numericLiteralNegative"]
+    },
+    numericLiteralNegative: {
+      INTEGER_NEGATIVE: ["INTEGER_NEGATIVE"],
+      DECIMAL_NEGATIVE: ["DECIMAL_NEGATIVE"],
+      DOUBLE_NEGATIVE: ["DOUBLE_NEGATIVE"]
+    },
+    numericLiteralPositive: {
+      INTEGER_POSITIVE: ["INTEGER_POSITIVE"],
+      DECIMAL_POSITIVE: ["DECIMAL_POSITIVE"],
+      DOUBLE_POSITIVE: ["DOUBLE_POSITIVE"]
+    },
+    numericLiteralUnsigned: {
+      INTEGER: ["INTEGER"],
+      DECIMAL: ["DECIMAL"],
+      DOUBLE: ["DOUBLE"]
+    },
+    object: {
+      "(": ["graphNode"],
+      "[": ["graphNode"],
+      VAR1: ["graphNode"],
+      VAR2: ["graphNode"],
+      NIL: ["graphNode"],
+      IRI_REF: ["graphNode"],
+      TRUE: ["graphNode"],
+      FALSE: ["graphNode"],
+      BLANK_NODE_LABEL: ["graphNode"],
+      ANON: ["graphNode"],
+      PNAME_LN: ["graphNode"],
+      PNAME_NS: ["graphNode"],
+      STRING_LITERAL1: ["graphNode"],
+      STRING_LITERAL2: ["graphNode"],
+      STRING_LITERAL_LONG1: ["graphNode"],
+      STRING_LITERAL_LONG2: ["graphNode"],
+      INTEGER: ["graphNode"],
+      DECIMAL: ["graphNode"],
+      DOUBLE: ["graphNode"],
+      INTEGER_POSITIVE: ["graphNode"],
+      DECIMAL_POSITIVE: ["graphNode"],
+      DOUBLE_POSITIVE: ["graphNode"],
+      INTEGER_NEGATIVE: ["graphNode"],
+      DECIMAL_NEGATIVE: ["graphNode"],
+      DOUBLE_NEGATIVE: ["graphNode"]
+    },
+    objectList: {
+      "(": ["object", "*[,,object]"],
+      "[": ["object", "*[,,object]"],
+      VAR1: ["object", "*[,,object]"],
+      VAR2: ["object", "*[,,object]"],
+      NIL: ["object", "*[,,object]"],
+      IRI_REF: ["object", "*[,,object]"],
+      TRUE: ["object", "*[,,object]"],
+      FALSE: ["object", "*[,,object]"],
+      BLANK_NODE_LABEL: ["object", "*[,,object]"],
+      ANON: ["object", "*[,,object]"],
+      PNAME_LN: ["object", "*[,,object]"],
+      PNAME_NS: ["object", "*[,,object]"],
+      STRING_LITERAL1: ["object", "*[,,object]"],
+      STRING_LITERAL2: ["object", "*[,,object]"],
+      STRING_LITERAL_LONG1: ["object", "*[,,object]"],
+      STRING_LITERAL_LONG2: ["object", "*[,,object]"],
+      INTEGER: ["object", "*[,,object]"],
+      DECIMAL: ["object", "*[,,object]"],
+      DOUBLE: ["object", "*[,,object]"],
+      INTEGER_POSITIVE: ["object", "*[,,object]"],
+      DECIMAL_POSITIVE: ["object", "*[,,object]"],
+      DOUBLE_POSITIVE: ["object", "*[,,object]"],
+      INTEGER_NEGATIVE: ["object", "*[,,object]"],
+      DECIMAL_NEGATIVE: ["object", "*[,,object]"],
+      DOUBLE_NEGATIVE: ["object", "*[,,object]"]
+    },
+    objectListPath: {
+      "(": ["objectPath", "*[,,objectPath]"],
+      "[": ["objectPath", "*[,,objectPath]"],
+      VAR1: ["objectPath", "*[,,objectPath]"],
+      VAR2: ["objectPath", "*[,,objectPath]"],
+      NIL: ["objectPath", "*[,,objectPath]"],
+      IRI_REF: ["objectPath", "*[,,objectPath]"],
+      TRUE: ["objectPath", "*[,,objectPath]"],
+      FALSE: ["objectPath", "*[,,objectPath]"],
+      BLANK_NODE_LABEL: ["objectPath", "*[,,objectPath]"],
+      ANON: ["objectPath", "*[,,objectPath]"],
+      PNAME_LN: ["objectPath", "*[,,objectPath]"],
+      PNAME_NS: ["objectPath", "*[,,objectPath]"],
+      STRING_LITERAL1: ["objectPath", "*[,,objectPath]"],
+      STRING_LITERAL2: ["objectPath", "*[,,objectPath]"],
+      STRING_LITERAL_LONG1: ["objectPath", "*[,,objectPath]"],
+      STRING_LITERAL_LONG2: ["objectPath", "*[,,objectPath]"],
+      INTEGER: ["objectPath", "*[,,objectPath]"],
+      DECIMAL: ["objectPath", "*[,,objectPath]"],
+      DOUBLE: ["objectPath", "*[,,objectPath]"],
+      INTEGER_POSITIVE: ["objectPath", "*[,,objectPath]"],
+      DECIMAL_POSITIVE: ["objectPath", "*[,,objectPath]"],
+      DOUBLE_POSITIVE: ["objectPath", "*[,,objectPath]"],
+      INTEGER_NEGATIVE: ["objectPath", "*[,,objectPath]"],
+      DECIMAL_NEGATIVE: ["objectPath", "*[,,objectPath]"],
+      DOUBLE_NEGATIVE: ["objectPath", "*[,,objectPath]"]
+    },
+    objectPath: {
+      "(": ["graphNodePath"],
+      "[": ["graphNodePath"],
+      VAR1: ["graphNodePath"],
+      VAR2: ["graphNodePath"],
+      NIL: ["graphNodePath"],
+      IRI_REF: ["graphNodePath"],
+      TRUE: ["graphNodePath"],
+      FALSE: ["graphNodePath"],
+      BLANK_NODE_LABEL: ["graphNodePath"],
+      ANON: ["graphNodePath"],
+      PNAME_LN: ["graphNodePath"],
+      PNAME_NS: ["graphNodePath"],
+      STRING_LITERAL1: ["graphNodePath"],
+      STRING_LITERAL2: ["graphNodePath"],
+      STRING_LITERAL_LONG1: ["graphNodePath"],
+      STRING_LITERAL_LONG2: ["graphNodePath"],
+      INTEGER: ["graphNodePath"],
+      DECIMAL: ["graphNodePath"],
+      DOUBLE: ["graphNodePath"],
+      INTEGER_POSITIVE: ["graphNodePath"],
+      DECIMAL_POSITIVE: ["graphNodePath"],
+      DOUBLE_POSITIVE: ["graphNodePath"],
+      INTEGER_NEGATIVE: ["graphNodePath"],
+      DECIMAL_NEGATIVE: ["graphNodePath"],
+      DOUBLE_NEGATIVE: ["graphNodePath"]
+    },
+    offsetClause: {
+      OFFSET: ["OFFSET", "INTEGER"]
+    },
+    optionalGraphPattern: {
+      OPTIONAL: ["OPTIONAL", "groupGraphPattern"]
+    },
+    "or([*,expression])": {
+      "*": ["*"],
+      "!": ["expression"],
+      "+": ["expression"],
+      "-": ["expression"],
+      VAR1: ["expression"],
+      VAR2: ["expression"],
+      "(": ["expression"],
+      STR: ["expression"],
+      LANG: ["expression"],
+      LANGMATCHES: ["expression"],
+      DATATYPE: ["expression"],
+      BOUND: ["expression"],
+      IRI: ["expression"],
+      URI: ["expression"],
+      BNODE: ["expression"],
+      RAND: ["expression"],
+      ABS: ["expression"],
+      CEIL: ["expression"],
+      FLOOR: ["expression"],
+      ROUND: ["expression"],
+      CONCAT: ["expression"],
+      STRLEN: ["expression"],
+      UCASE: ["expression"],
+      LCASE: ["expression"],
+      ENCODE_FOR_URI: ["expression"],
+      CONTAINS: ["expression"],
+      STRSTARTS: ["expression"],
+      STRENDS: ["expression"],
+      STRBEFORE: ["expression"],
+      STRAFTER: ["expression"],
+      YEAR: ["expression"],
+      MONTH: ["expression"],
+      DAY: ["expression"],
+      HOURS: ["expression"],
+      MINUTES: ["expression"],
+      SECONDS: ["expression"],
+      TIMEZONE: ["expression"],
+      TZ: ["expression"],
+      NOW: ["expression"],
+      UUID: ["expression"],
+      STRUUID: ["expression"],
+      MD5: ["expression"],
+      SHA1: ["expression"],
+      SHA256: ["expression"],
+      SHA384: ["expression"],
+      SHA512: ["expression"],
+      COALESCE: ["expression"],
+      IF: ["expression"],
+      STRLANG: ["expression"],
+      STRDT: ["expression"],
+      SAMETERM: ["expression"],
+      ISIRI: ["expression"],
+      ISURI: ["expression"],
+      ISBLANK: ["expression"],
+      ISLITERAL: ["expression"],
+      ISNUMERIC: ["expression"],
+      TRUE: ["expression"],
+      FALSE: ["expression"],
+      COUNT: ["expression"],
+      SUM: ["expression"],
+      MIN: ["expression"],
+      MAX: ["expression"],
+      AVG: ["expression"],
+      SAMPLE: ["expression"],
+      GROUP_CONCAT: ["expression"],
+      SUBSTR: ["expression"],
+      REPLACE: ["expression"],
+      REGEX: ["expression"],
+      EXISTS: ["expression"],
+      NOT: ["expression"],
+      IRI_REF: ["expression"],
+      STRING_LITERAL1: ["expression"],
+      STRING_LITERAL2: ["expression"],
+      STRING_LITERAL_LONG1: ["expression"],
+      STRING_LITERAL_LONG2: ["expression"],
+      INTEGER: ["expression"],
+      DECIMAL: ["expression"],
+      DOUBLE: ["expression"],
+      INTEGER_POSITIVE: ["expression"],
+      DECIMAL_POSITIVE: ["expression"],
+      DOUBLE_POSITIVE: ["expression"],
+      INTEGER_NEGATIVE: ["expression"],
+      DECIMAL_NEGATIVE: ["expression"],
+      DOUBLE_NEGATIVE: ["expression"],
+      PNAME_LN: ["expression"],
+      PNAME_NS: ["expression"]
+    },
+    "or([+or([var,[ (,expression,AS,var,)]]),*])": {
+      "(": ["+or([var,[ (,expression,AS,var,)]])"],
+      VAR1: ["+or([var,[ (,expression,AS,var,)]])"],
+      VAR2: ["+or([var,[ (,expression,AS,var,)]])"],
+      "*": ["*"]
+    },
+    "or([+varOrIRIref,*])": {
+      VAR1: ["+varOrIRIref"],
+      VAR2: ["+varOrIRIref"],
+      IRI_REF: ["+varOrIRIref"],
+      PNAME_LN: ["+varOrIRIref"],
+      PNAME_NS: ["+varOrIRIref"],
+      "*": ["*"]
+    },
+    "or([ASC,DESC])": {
+      ASC: ["ASC"],
+      DESC: ["DESC"]
+    },
+    "or([DISTINCT,REDUCED])": {
+      DISTINCT: ["DISTINCT"],
+      REDUCED: ["REDUCED"]
+    },
+    "or([LANGTAG,[^^,iriRef]])": {
+      LANGTAG: ["LANGTAG"],
+      "^^": ["[^^,iriRef]"]
+    },
+    "or([NIL,[ (,*var,)]])": {
+      NIL: ["NIL"],
+      "(": ["[ (,*var,)]"]
+    },
+    "or([[ (,*dataBlockValue,)],NIL])": {
+      "(": ["[ (,*dataBlockValue,)]"],
+      NIL: ["NIL"]
+    },
+    "or([[ (,expression,)],NIL])": {
+      "(": ["[ (,expression,)]"],
+      NIL: ["NIL"]
+    },
+    "or([[*,unaryExpression],[/,unaryExpression]])": {
+      "*": ["[*,unaryExpression]"],
+      "/": ["[/,unaryExpression]"]
+    },
+    "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])": {
+      "+": ["[+,multiplicativeExpression]"],
+      "-": ["[-,multiplicativeExpression]"],
+      INTEGER_POSITIVE: [
+        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
+      ],
+      DECIMAL_POSITIVE: [
+        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
+      ],
+      DOUBLE_POSITIVE: [
+        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
+      ],
+      INTEGER_NEGATIVE: [
+        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
+      ],
+      DECIMAL_NEGATIVE: [
+        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
+      ],
+      DOUBLE_NEGATIVE: [
+        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
+      ]
+    },
+    "or([[,,or([},[integer,}]])],}])": {
+      ",": ["[,,or([},[integer,}]])]"],
+      "}": ["}"]
+    },
+    "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])": {
+      "=": ["[=,numericExpression]"],
+      "!=": ["[!=,numericExpression]"],
+      "<": ["[<,numericExpression]"],
+      ">": ["[>,numericExpression]"],
+      "<=": ["[<=,numericExpression]"],
+      ">=": ["[>=,numericExpression]"],
+      IN: ["[IN,expressionList]"],
+      NOT: ["[NOT,IN,expressionList]"]
+    },
+    "or([[constructTemplate,*datasetClause,whereClause,solutionModifier],[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]])": {
+      "{": ["[constructTemplate,*datasetClause,whereClause,solutionModifier]"],
+      WHERE: ["[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]"],
+      FROM: ["[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]"]
+    },
+    "or([[deleteClause,?insertClause],insertClause])": {
+      DELETE: ["[deleteClause,?insertClause]"],
+      INSERT: ["insertClause"]
+    },
+    "or([[integer,or([[,,or([},[integer,}]])],}])],[,,integer,}]])": {
+      INTEGER: ["[integer,or([[,,or([},[integer,}]])],}])]"],
+      ",": ["[,,integer,}]"]
+    },
+    "or([baseDecl,prefixDecl])": {
+      BASE: ["baseDecl"],
+      PREFIX: ["prefixDecl"]
+    },
+    "or([defaultGraphClause,namedGraphClause])": {
+      IRI_REF: ["defaultGraphClause"],
+      PNAME_LN: ["defaultGraphClause"],
+      PNAME_NS: ["defaultGraphClause"],
+      NAMED: ["namedGraphClause"]
+    },
+    "or([inlineDataOneVar,inlineDataFull])": {
+      VAR1: ["inlineDataOneVar"],
+      VAR2: ["inlineDataOneVar"],
+      NIL: ["inlineDataFull"],
+      "(": ["inlineDataFull"]
+    },
+    "or([iriRef,[NAMED,iriRef]])": {
+      IRI_REF: ["iriRef"],
+      PNAME_LN: ["iriRef"],
+      PNAME_NS: ["iriRef"],
+      NAMED: ["[NAMED,iriRef]"]
+    },
+    "or([iriRef,a])": {
+      IRI_REF: ["iriRef"],
+      PNAME_LN: ["iriRef"],
+      PNAME_NS: ["iriRef"],
+      a: ["a"]
+    },
+    "or([numericLiteralPositive,numericLiteralNegative])": {
+      INTEGER_POSITIVE: ["numericLiteralPositive"],
+      DECIMAL_POSITIVE: ["numericLiteralPositive"],
+      DOUBLE_POSITIVE: ["numericLiteralPositive"],
+      INTEGER_NEGATIVE: ["numericLiteralNegative"],
+      DECIMAL_NEGATIVE: ["numericLiteralNegative"],
+      DOUBLE_NEGATIVE: ["numericLiteralNegative"]
+    },
+    "or([queryAll,updateAll])": {
+      CONSTRUCT: ["queryAll"],
+      DESCRIBE: ["queryAll"],
+      ASK: ["queryAll"],
+      SELECT: ["queryAll"],
+      INSERT: ["updateAll"],
+      DELETE: ["updateAll"],
+      LOAD: ["updateAll"],
+      CLEAR: ["updateAll"],
+      DROP: ["updateAll"],
+      ADD: ["updateAll"],
+      MOVE: ["updateAll"],
+      COPY: ["updateAll"],
+      CREATE: ["updateAll"],
+      WITH: ["updateAll"],
+      $: ["updateAll"]
+    },
+    "or([selectQuery,constructQuery,describeQuery,askQuery])": {
+      SELECT: ["selectQuery"],
+      CONSTRUCT: ["constructQuery"],
+      DESCRIBE: ["describeQuery"],
+      ASK: ["askQuery"]
+    },
+    "or([subSelect,groupGraphPatternSub])": {
+      SELECT: ["subSelect"],
+      "{": ["groupGraphPatternSub"],
+      OPTIONAL: ["groupGraphPatternSub"],
+      MINUS: ["groupGraphPatternSub"],
+      GRAPH: ["groupGraphPatternSub"],
+      SERVICE: ["groupGraphPatternSub"],
+      FILTER: ["groupGraphPatternSub"],
+      BIND: ["groupGraphPatternSub"],
+      VALUES: ["groupGraphPatternSub"],
+      VAR1: ["groupGraphPatternSub"],
+      VAR2: ["groupGraphPatternSub"],
+      NIL: ["groupGraphPatternSub"],
+      "(": ["groupGraphPatternSub"],
+      "[": ["groupGraphPatternSub"],
+      IRI_REF: ["groupGraphPatternSub"],
+      TRUE: ["groupGraphPatternSub"],
+      FALSE: ["groupGraphPatternSub"],
+      BLANK_NODE_LABEL: ["groupGraphPatternSub"],
+      ANON: ["groupGraphPatternSub"],
+      PNAME_LN: ["groupGraphPatternSub"],
+      PNAME_NS: ["groupGraphPatternSub"],
+      STRING_LITERAL1: ["groupGraphPatternSub"],
+      STRING_LITERAL2: ["groupGraphPatternSub"],
+      STRING_LITERAL_LONG1: ["groupGraphPatternSub"],
+      STRING_LITERAL_LONG2: ["groupGraphPatternSub"],
+      INTEGER: ["groupGraphPatternSub"],
+      DECIMAL: ["groupGraphPatternSub"],
+      DOUBLE: ["groupGraphPatternSub"],
+      INTEGER_POSITIVE: ["groupGraphPatternSub"],
+      DECIMAL_POSITIVE: ["groupGraphPatternSub"],
+      DOUBLE_POSITIVE: ["groupGraphPatternSub"],
+      INTEGER_NEGATIVE: ["groupGraphPatternSub"],
+      DECIMAL_NEGATIVE: ["groupGraphPatternSub"],
+      DOUBLE_NEGATIVE: ["groupGraphPatternSub"],
+      "}": ["groupGraphPatternSub"]
+    },
+    "or([var,[ (,expression,AS,var,)]])": {
+      VAR1: ["var"],
+      VAR2: ["var"],
+      "(": ["[ (,expression,AS,var,)]"]
+    },
+    "or([verbPath,verbSimple])": {
+      "^": ["verbPath"],
+      a: ["verbPath"],
+      "!": ["verbPath"],
+      "(": ["verbPath"],
+      IRI_REF: ["verbPath"],
+      PNAME_LN: ["verbPath"],
+      PNAME_NS: ["verbPath"],
+      VAR1: ["verbSimple"],
+      VAR2: ["verbSimple"]
+    },
+    "or([},[integer,}]])": {
+      "}": ["}"],
+      INTEGER: ["[integer,}]"]
+    },
+    orderClause: {
+      ORDER: ["ORDER", "BY", "+orderCondition"]
+    },
+    orderCondition: {
+      ASC: ["or([ASC,DESC])", "brackettedExpression"],
+      DESC: ["or([ASC,DESC])", "brackettedExpression"],
+      "(": ["constraint"],
+      STR: ["constraint"],
+      LANG: ["constraint"],
+      LANGMATCHES: ["constraint"],
+      DATATYPE: ["constraint"],
+      BOUND: ["constraint"],
+      IRI: ["constraint"],
+      URI: ["constraint"],
+      BNODE: ["constraint"],
+      RAND: ["constraint"],
+      ABS: ["constraint"],
+      CEIL: ["constraint"],
+      FLOOR: ["constraint"],
+      ROUND: ["constraint"],
+      CONCAT: ["constraint"],
+      STRLEN: ["constraint"],
+      UCASE: ["constraint"],
+      LCASE: ["constraint"],
+      ENCODE_FOR_URI: ["constraint"],
+      CONTAINS: ["constraint"],
+      STRSTARTS: ["constraint"],
+      STRENDS: ["constraint"],
+      STRBEFORE: ["constraint"],
+      STRAFTER: ["constraint"],
+      YEAR: ["constraint"],
+      MONTH: ["constraint"],
+      DAY: ["constraint"],
+      HOURS: ["constraint"],
+      MINUTES: ["constraint"],
+      SECONDS: ["constraint"],
+      TIMEZONE: ["constraint"],
+      TZ: ["constraint"],
+      NOW: ["constraint"],
+      UUID: ["constraint"],
+      STRUUID: ["constraint"],
+      MD5: ["constraint"],
+      SHA1: ["constraint"],
+      SHA256: ["constraint"],
+      SHA384: ["constraint"],
+      SHA512: ["constraint"],
+      COALESCE: ["constraint"],
+      IF: ["constraint"],
+      STRLANG: ["constraint"],
+      STRDT: ["constraint"],
+      SAMETERM: ["constraint"],
+      ISIRI: ["constraint"],
+      ISURI: ["constraint"],
+      ISBLANK: ["constraint"],
+      ISLITERAL: ["constraint"],
+      ISNUMERIC: ["constraint"],
+      SUBSTR: ["constraint"],
+      REPLACE: ["constraint"],
+      REGEX: ["constraint"],
+      EXISTS: ["constraint"],
+      NOT: ["constraint"],
+      IRI_REF: ["constraint"],
+      PNAME_LN: ["constraint"],
+      PNAME_NS: ["constraint"],
+      VAR1: ["var"],
+      VAR2: ["var"]
+    },
+    path: {
+      "^": ["pathAlternative"],
+      a: ["pathAlternative"],
+      "!": ["pathAlternative"],
+      "(": ["pathAlternative"],
+      IRI_REF: ["pathAlternative"],
+      PNAME_LN: ["pathAlternative"],
+      PNAME_NS: ["pathAlternative"]
+    },
+    pathAlternative: {
+      "^": ["pathSequence", "*[|,pathSequence]"],
+      a: ["pathSequence", "*[|,pathSequence]"],
+      "!": ["pathSequence", "*[|,pathSequence]"],
+      "(": ["pathSequence", "*[|,pathSequence]"],
+      IRI_REF: ["pathSequence", "*[|,pathSequence]"],
+      PNAME_LN: ["pathSequence", "*[|,pathSequence]"],
+      PNAME_NS: ["pathSequence", "*[|,pathSequence]"]
+    },
+    pathElt: {
+      a: ["pathPrimary", "?pathMod"],
+      "!": ["pathPrimary", "?pathMod"],
+      "(": ["pathPrimary", "?pathMod"],
+      IRI_REF: ["pathPrimary", "?pathMod"],
+      PNAME_LN: ["pathPrimary", "?pathMod"],
+      PNAME_NS: ["pathPrimary", "?pathMod"]
+    },
+    pathEltOrInverse: {
+      a: ["pathElt"],
+      "!": ["pathElt"],
+      "(": ["pathElt"],
+      IRI_REF: ["pathElt"],
+      PNAME_LN: ["pathElt"],
+      PNAME_NS: ["pathElt"],
+      "^": ["^", "pathElt"]
+    },
+    pathMod: {
+      "*": ["*"],
+      "?": ["?"],
+      "+": ["+"],
+      "{": ["{", "or([[integer,or([[,,or([},[integer,}]])],}])],[,,integer,}]])"]
+    },
+    pathNegatedPropertySet: {
+      a: ["pathOneInPropertySet"],
+      "^": ["pathOneInPropertySet"],
+      IRI_REF: ["pathOneInPropertySet"],
+      PNAME_LN: ["pathOneInPropertySet"],
+      PNAME_NS: ["pathOneInPropertySet"],
+      "(": ["(", "?[pathOneInPropertySet,*[|,pathOneInPropertySet]]", ")"]
+    },
+    pathOneInPropertySet: {
+      IRI_REF: ["iriRef"],
+      PNAME_LN: ["iriRef"],
+      PNAME_NS: ["iriRef"],
+      a: ["a"],
+      "^": ["^", "or([iriRef,a])"]
+    },
+    pathPrimary: {
+      IRI_REF: ["storeProperty", "iriRef"],
+      PNAME_LN: ["storeProperty", "iriRef"],
+      PNAME_NS: ["storeProperty", "iriRef"],
+      a: ["storeProperty", "a"],
+      "!": ["!", "pathNegatedPropertySet"],
+      "(": ["(", "path", ")"]
+    },
+    pathSequence: {
+      "^": ["pathEltOrInverse", "*[/,pathEltOrInverse]"],
+      a: ["pathEltOrInverse", "*[/,pathEltOrInverse]"],
+      "!": ["pathEltOrInverse", "*[/,pathEltOrInverse]"],
+      "(": ["pathEltOrInverse", "*[/,pathEltOrInverse]"],
+      IRI_REF: ["pathEltOrInverse", "*[/,pathEltOrInverse]"],
+      PNAME_LN: ["pathEltOrInverse", "*[/,pathEltOrInverse]"],
+      PNAME_NS: ["pathEltOrInverse", "*[/,pathEltOrInverse]"]
+    },
+    prefixDecl: {
+      PREFIX: ["PREFIX", "PNAME_NS", "IRI_REF"]
+    },
+    prefixedName: {
+      PNAME_LN: ["PNAME_LN"],
+      PNAME_NS: ["PNAME_NS"]
+    },
+    primaryExpression: {
+      "(": ["brackettedExpression"],
+      STR: ["builtInCall"],
+      LANG: ["builtInCall"],
+      LANGMATCHES: ["builtInCall"],
+      DATATYPE: ["builtInCall"],
+      BOUND: ["builtInCall"],
+      IRI: ["builtInCall"],
+      URI: ["builtInCall"],
+      BNODE: ["builtInCall"],
+      RAND: ["builtInCall"],
+      ABS: ["builtInCall"],
+      CEIL: ["builtInCall"],
+      FLOOR: ["builtInCall"],
+      ROUND: ["builtInCall"],
+      CONCAT: ["builtInCall"],
+      STRLEN: ["builtInCall"],
+      UCASE: ["builtInCall"],
+      LCASE: ["builtInCall"],
+      ENCODE_FOR_URI: ["builtInCall"],
+      CONTAINS: ["builtInCall"],
+      STRSTARTS: ["builtInCall"],
+      STRENDS: ["builtInCall"],
+      STRBEFORE: ["builtInCall"],
+      STRAFTER: ["builtInCall"],
+      YEAR: ["builtInCall"],
+      MONTH: ["builtInCall"],
+      DAY: ["builtInCall"],
+      HOURS: ["builtInCall"],
+      MINUTES: ["builtInCall"],
+      SECONDS: ["builtInCall"],
+      TIMEZONE: ["builtInCall"],
+      TZ: ["builtInCall"],
+      NOW: ["builtInCall"],
+      UUID: ["builtInCall"],
+      STRUUID: ["builtInCall"],
+      MD5: ["builtInCall"],
+      SHA1: ["builtInCall"],
+      SHA256: ["builtInCall"],
+      SHA384: ["builtInCall"],
+      SHA512: ["builtInCall"],
+      COALESCE: ["builtInCall"],
+      IF: ["builtInCall"],
+      STRLANG: ["builtInCall"],
+      STRDT: ["builtInCall"],
+      SAMETERM: ["builtInCall"],
+      ISIRI: ["builtInCall"],
+      ISURI: ["builtInCall"],
+      ISBLANK: ["builtInCall"],
+      ISLITERAL: ["builtInCall"],
+      ISNUMERIC: ["builtInCall"],
+      SUBSTR: ["builtInCall"],
+      REPLACE: ["builtInCall"],
+      REGEX: ["builtInCall"],
+      EXISTS: ["builtInCall"],
+      NOT: ["builtInCall"],
+      IRI_REF: ["iriRefOrFunction"],
+      PNAME_LN: ["iriRefOrFunction"],
+      PNAME_NS: ["iriRefOrFunction"],
+      STRING_LITERAL1: ["rdfLiteral"],
+      STRING_LITERAL2: ["rdfLiteral"],
+      STRING_LITERAL_LONG1: ["rdfLiteral"],
+      STRING_LITERAL_LONG2: ["rdfLiteral"],
+      INTEGER: ["numericLiteral"],
+      DECIMAL: ["numericLiteral"],
+      DOUBLE: ["numericLiteral"],
+      INTEGER_POSITIVE: ["numericLiteral"],
+      DECIMAL_POSITIVE: ["numericLiteral"],
+      DOUBLE_POSITIVE: ["numericLiteral"],
+      INTEGER_NEGATIVE: ["numericLiteral"],
+      DECIMAL_NEGATIVE: ["numericLiteral"],
+      DOUBLE_NEGATIVE: ["numericLiteral"],
+      TRUE: ["booleanLiteral"],
+      FALSE: ["booleanLiteral"],
+      VAR1: ["var"],
+      VAR2: ["var"],
+      COUNT: ["aggregate"],
+      SUM: ["aggregate"],
+      MIN: ["aggregate"],
+      MAX: ["aggregate"],
+      AVG: ["aggregate"],
+      SAMPLE: ["aggregate"],
+      GROUP_CONCAT: ["aggregate"]
+    },
+    prologue: {
+      BASE: ["*or([baseDecl,prefixDecl])"],
+      PREFIX: ["*or([baseDecl,prefixDecl])"],
+      $: ["*or([baseDecl,prefixDecl])"],
+      CONSTRUCT: ["*or([baseDecl,prefixDecl])"],
+      DESCRIBE: ["*or([baseDecl,prefixDecl])"],
+      ASK: ["*or([baseDecl,prefixDecl])"],
+      INSERT: ["*or([baseDecl,prefixDecl])"],
+      DELETE: ["*or([baseDecl,prefixDecl])"],
+      SELECT: ["*or([baseDecl,prefixDecl])"],
+      LOAD: ["*or([baseDecl,prefixDecl])"],
+      CLEAR: ["*or([baseDecl,prefixDecl])"],
+      DROP: ["*or([baseDecl,prefixDecl])"],
+      ADD: ["*or([baseDecl,prefixDecl])"],
+      MOVE: ["*or([baseDecl,prefixDecl])"],
+      COPY: ["*or([baseDecl,prefixDecl])"],
+      CREATE: ["*or([baseDecl,prefixDecl])"],
+      WITH: ["*or([baseDecl,prefixDecl])"]
+    },
+    propertyList: {
+      a: ["propertyListNotEmpty"],
+      VAR1: ["propertyListNotEmpty"],
+      VAR2: ["propertyListNotEmpty"],
+      IRI_REF: ["propertyListNotEmpty"],
+      PNAME_LN: ["propertyListNotEmpty"],
+      PNAME_NS: ["propertyListNotEmpty"],
+      ".": [],
+      "}": [],
+      GRAPH: []
+    },
+    propertyListNotEmpty: {
+      a: ["verb", "objectList", "*[;,?[verb,objectList]]"],
+      VAR1: ["verb", "objectList", "*[;,?[verb,objectList]]"],
+      VAR2: ["verb", "objectList", "*[;,?[verb,objectList]]"],
+      IRI_REF: ["verb", "objectList", "*[;,?[verb,objectList]]"],
+      PNAME_LN: ["verb", "objectList", "*[;,?[verb,objectList]]"],
+      PNAME_NS: ["verb", "objectList", "*[;,?[verb,objectList]]"]
+    },
+    propertyListPath: {
+      a: ["propertyListNotEmpty"],
+      VAR1: ["propertyListNotEmpty"],
+      VAR2: ["propertyListNotEmpty"],
+      IRI_REF: ["propertyListNotEmpty"],
+      PNAME_LN: ["propertyListNotEmpty"],
+      PNAME_NS: ["propertyListNotEmpty"],
+      ".": [],
+      "{": [],
+      OPTIONAL: [],
+      MINUS: [],
+      GRAPH: [],
+      SERVICE: [],
+      FILTER: [],
+      BIND: [],
+      VALUES: [],
+      "}": []
+    },
+    propertyListPathNotEmpty: {
+      VAR1: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
+      VAR2: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
+      "^": ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
+      a: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
+      "!": ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
+      "(": ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
+      IRI_REF: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
+      PNAME_LN: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
+      PNAME_NS: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"]
+    },
+    quadData: {
+      "{": ["{", "disallowVars", "quads", "allowVars", "}"]
+    },
+    quadDataNoBnodes: {
+      "{": ["{", "disallowBnodes", "disallowVars", "quads", "allowVars", "allowBnodes", "}"]
+    },
+    quadPattern: {
+      "{": ["{", "quads", "}"]
+    },
+    quadPatternNoBnodes: {
+      "{": ["{", "disallowBnodes", "quads", "allowBnodes", "}"]
+    },
+    quads: {
+      GRAPH: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      VAR1: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      VAR2: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      NIL: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      "(": ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      "[": ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      IRI_REF: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      TRUE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      FALSE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      BLANK_NODE_LABEL: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      ANON: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      PNAME_LN: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      PNAME_NS: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      STRING_LITERAL1: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      STRING_LITERAL2: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      STRING_LITERAL_LONG1: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      STRING_LITERAL_LONG2: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      INTEGER: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      DECIMAL: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      DOUBLE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      INTEGER_POSITIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      DECIMAL_POSITIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      DOUBLE_POSITIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      INTEGER_NEGATIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      DECIMAL_NEGATIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      DOUBLE_NEGATIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      "}": ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"]
+    },
+    quadsNotTriples: {
+      GRAPH: ["GRAPH", "varOrIRIref", "{", "?triplesTemplate", "}"]
+    },
+    queryAll: {
+      CONSTRUCT: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"],
+      DESCRIBE: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"],
+      ASK: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"],
+      SELECT: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"]
+    },
+    rdfLiteral: {
+      STRING_LITERAL1: ["string", "?or([LANGTAG,[^^,iriRef]])"],
+      STRING_LITERAL2: ["string", "?or([LANGTAG,[^^,iriRef]])"],
+      STRING_LITERAL_LONG1: ["string", "?or([LANGTAG,[^^,iriRef]])"],
+      STRING_LITERAL_LONG2: ["string", "?or([LANGTAG,[^^,iriRef]])"]
+    },
+    regexExpression: {
+      REGEX: ["REGEX", "(", "expression", ",", "expression", "?[,,expression]", ")"]
+    },
+    relationalExpression: {
+      "!": [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      "+": [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      "-": [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      VAR1: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      VAR2: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      "(": [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STR: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      LANG: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      LANGMATCHES: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      DATATYPE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      BOUND: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      IRI: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      URI: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      BNODE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      RAND: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      ABS: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      CEIL: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      FLOOR: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      ROUND: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      CONCAT: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRLEN: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      UCASE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      LCASE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      ENCODE_FOR_URI: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      CONTAINS: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRSTARTS: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRENDS: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRBEFORE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRAFTER: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      YEAR: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      MONTH: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      DAY: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      HOURS: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      MINUTES: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      SECONDS: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      TIMEZONE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      TZ: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      NOW: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      UUID: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRUUID: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      MD5: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      SHA1: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      SHA256: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      SHA384: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      SHA512: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      COALESCE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      IF: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRLANG: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRDT: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      SAMETERM: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      ISIRI: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      ISURI: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      ISBLANK: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      ISLITERAL: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      ISNUMERIC: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      TRUE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      FALSE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      COUNT: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      SUM: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      MIN: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      MAX: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      AVG: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      SAMPLE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      GROUP_CONCAT: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      SUBSTR: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      REPLACE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      REGEX: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      EXISTS: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      NOT: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      IRI_REF: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRING_LITERAL1: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRING_LITERAL2: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRING_LITERAL_LONG1: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      STRING_LITERAL_LONG2: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      INTEGER: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      DECIMAL: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      DOUBLE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      INTEGER_POSITIVE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      DECIMAL_POSITIVE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      DOUBLE_POSITIVE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      INTEGER_NEGATIVE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      DECIMAL_NEGATIVE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      DOUBLE_NEGATIVE: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      PNAME_LN: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ],
+      PNAME_NS: [
+        "numericExpression",
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+      ]
+    },
+    selectClause: {
+      SELECT: ["SELECT", "?or([DISTINCT,REDUCED])", "or([+or([var,[ (,expression,AS,var,)]]),*])"]
+    },
+    selectQuery: {
+      SELECT: ["selectClause", "*datasetClause", "whereClause", "solutionModifier"]
+    },
+    serviceGraphPattern: {
+      SERVICE: ["SERVICE", "?SILENT", "varOrIRIref", "groupGraphPattern"]
+    },
+    solutionModifier: {
+      LIMIT: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
+      OFFSET: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
+      ORDER: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
+      HAVING: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
+      GROUP: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
+      VALUES: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
+      $: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
+      "}": ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"]
+    },
+    sourceSelector: {
+      IRI_REF: ["iriRef"],
+      PNAME_LN: ["iriRef"],
+      PNAME_NS: ["iriRef"]
+    },
+    sparql11: {
+      $: ["prologue", "or([queryAll,updateAll])", "$"],
+      CONSTRUCT: ["prologue", "or([queryAll,updateAll])", "$"],
+      DESCRIBE: ["prologue", "or([queryAll,updateAll])", "$"],
+      ASK: ["prologue", "or([queryAll,updateAll])", "$"],
+      INSERT: ["prologue", "or([queryAll,updateAll])", "$"],
+      DELETE: ["prologue", "or([queryAll,updateAll])", "$"],
+      SELECT: ["prologue", "or([queryAll,updateAll])", "$"],
+      LOAD: ["prologue", "or([queryAll,updateAll])", "$"],
+      CLEAR: ["prologue", "or([queryAll,updateAll])", "$"],
+      DROP: ["prologue", "or([queryAll,updateAll])", "$"],
+      ADD: ["prologue", "or([queryAll,updateAll])", "$"],
+      MOVE: ["prologue", "or([queryAll,updateAll])", "$"],
+      COPY: ["prologue", "or([queryAll,updateAll])", "$"],
+      CREATE: ["prologue", "or([queryAll,updateAll])", "$"],
+      WITH: ["prologue", "or([queryAll,updateAll])", "$"],
+      BASE: ["prologue", "or([queryAll,updateAll])", "$"],
+      PREFIX: ["prologue", "or([queryAll,updateAll])", "$"]
+    },
+    storeProperty: {
+      VAR1: [],
+      VAR2: [],
+      IRI_REF: [],
+      PNAME_LN: [],
+      PNAME_NS: [],
+      a: []
+    },
+    strReplaceExpression: {
+      REPLACE: ["REPLACE", "(", "expression", ",", "expression", ",", "expression", "?[,,expression]", ")"]
+    },
+    string: {
+      STRING_LITERAL1: ["STRING_LITERAL1"],
+      STRING_LITERAL2: ["STRING_LITERAL2"],
+      STRING_LITERAL_LONG1: ["STRING_LITERAL_LONG1"],
+      STRING_LITERAL_LONG2: ["STRING_LITERAL_LONG2"]
+    },
+    subSelect: {
+      SELECT: ["selectClause", "whereClause", "solutionModifier", "valuesClause"]
+    },
+    substringExpression: {
+      SUBSTR: ["SUBSTR", "(", "expression", ",", "expression", "?[,,expression]", ")"]
+    },
+    triplesBlock: {
+      VAR1: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      VAR2: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      NIL: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      "(": ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      "[": ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      IRI_REF: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      TRUE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      FALSE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      BLANK_NODE_LABEL: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      ANON: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      PNAME_LN: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      PNAME_NS: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      STRING_LITERAL1: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      STRING_LITERAL2: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      STRING_LITERAL_LONG1: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      STRING_LITERAL_LONG2: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      INTEGER: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      DECIMAL: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      DOUBLE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      INTEGER_POSITIVE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      DECIMAL_POSITIVE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      DOUBLE_POSITIVE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      INTEGER_NEGATIVE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      DECIMAL_NEGATIVE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
+      DOUBLE_NEGATIVE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"]
+    },
+    triplesNode: {
+      "(": ["collection"],
+      "[": ["blankNodePropertyList"]
+    },
+    triplesNodePath: {
+      "(": ["collectionPath"],
+      "[": ["blankNodePropertyListPath"]
+    },
+    triplesSameSubject: {
+      VAR1: ["varOrTerm", "propertyListNotEmpty"],
+      VAR2: ["varOrTerm", "propertyListNotEmpty"],
+      NIL: ["varOrTerm", "propertyListNotEmpty"],
+      IRI_REF: ["varOrTerm", "propertyListNotEmpty"],
+      TRUE: ["varOrTerm", "propertyListNotEmpty"],
+      FALSE: ["varOrTerm", "propertyListNotEmpty"],
+      BLANK_NODE_LABEL: ["varOrTerm", "propertyListNotEmpty"],
+      ANON: ["varOrTerm", "propertyListNotEmpty"],
+      PNAME_LN: ["varOrTerm", "propertyListNotEmpty"],
+      PNAME_NS: ["varOrTerm", "propertyListNotEmpty"],
+      STRING_LITERAL1: ["varOrTerm", "propertyListNotEmpty"],
+      STRING_LITERAL2: ["varOrTerm", "propertyListNotEmpty"],
+      STRING_LITERAL_LONG1: ["varOrTerm", "propertyListNotEmpty"],
+      STRING_LITERAL_LONG2: ["varOrTerm", "propertyListNotEmpty"],
+      INTEGER: ["varOrTerm", "propertyListNotEmpty"],
+      DECIMAL: ["varOrTerm", "propertyListNotEmpty"],
+      DOUBLE: ["varOrTerm", "propertyListNotEmpty"],
+      INTEGER_POSITIVE: ["varOrTerm", "propertyListNotEmpty"],
+      DECIMAL_POSITIVE: ["varOrTerm", "propertyListNotEmpty"],
+      DOUBLE_POSITIVE: ["varOrTerm", "propertyListNotEmpty"],
+      INTEGER_NEGATIVE: ["varOrTerm", "propertyListNotEmpty"],
+      DECIMAL_NEGATIVE: ["varOrTerm", "propertyListNotEmpty"],
+      DOUBLE_NEGATIVE: ["varOrTerm", "propertyListNotEmpty"],
+      "(": ["triplesNode", "propertyList"],
+      "[": ["triplesNode", "propertyList"]
+    },
+    triplesSameSubjectPath: {
+      VAR1: ["varOrTerm", "propertyListPathNotEmpty"],
+      VAR2: ["varOrTerm", "propertyListPathNotEmpty"],
+      NIL: ["varOrTerm", "propertyListPathNotEmpty"],
+      IRI_REF: ["varOrTerm", "propertyListPathNotEmpty"],
+      TRUE: ["varOrTerm", "propertyListPathNotEmpty"],
+      FALSE: ["varOrTerm", "propertyListPathNotEmpty"],
+      BLANK_NODE_LABEL: ["varOrTerm", "propertyListPathNotEmpty"],
+      ANON: ["varOrTerm", "propertyListPathNotEmpty"],
+      PNAME_LN: ["varOrTerm", "propertyListPathNotEmpty"],
+      PNAME_NS: ["varOrTerm", "propertyListPathNotEmpty"],
+      STRING_LITERAL1: ["varOrTerm", "propertyListPathNotEmpty"],
+      STRING_LITERAL2: ["varOrTerm", "propertyListPathNotEmpty"],
+      STRING_LITERAL_LONG1: ["varOrTerm", "propertyListPathNotEmpty"],
+      STRING_LITERAL_LONG2: ["varOrTerm", "propertyListPathNotEmpty"],
+      INTEGER: ["varOrTerm", "propertyListPathNotEmpty"],
+      DECIMAL: ["varOrTerm", "propertyListPathNotEmpty"],
+      DOUBLE: ["varOrTerm", "propertyListPathNotEmpty"],
+      INTEGER_POSITIVE: ["varOrTerm", "propertyListPathNotEmpty"],
+      DECIMAL_POSITIVE: ["varOrTerm", "propertyListPathNotEmpty"],
+      DOUBLE_POSITIVE: ["varOrTerm", "propertyListPathNotEmpty"],
+      INTEGER_NEGATIVE: ["varOrTerm", "propertyListPathNotEmpty"],
+      DECIMAL_NEGATIVE: ["varOrTerm", "propertyListPathNotEmpty"],
+      DOUBLE_NEGATIVE: ["varOrTerm", "propertyListPathNotEmpty"],
+      "(": ["triplesNodePath", "propertyListPath"],
+      "[": ["triplesNodePath", "propertyListPath"]
+    },
+    triplesTemplate: {
+      VAR1: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      VAR2: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      NIL: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      "(": ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      "[": ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      IRI_REF: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      TRUE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      FALSE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      BLANK_NODE_LABEL: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      ANON: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      PNAME_LN: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      PNAME_NS: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      STRING_LITERAL1: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      STRING_LITERAL2: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      STRING_LITERAL_LONG1: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      STRING_LITERAL_LONG2: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      INTEGER: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      DECIMAL: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      DOUBLE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      INTEGER_POSITIVE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      DECIMAL_POSITIVE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      DOUBLE_POSITIVE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      INTEGER_NEGATIVE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      DECIMAL_NEGATIVE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
+      DOUBLE_NEGATIVE: ["triplesSameSubject", "?[.,?triplesTemplate]"]
+    },
+    unaryExpression: {
+      "!": ["!", "primaryExpression"],
+      "+": ["+", "primaryExpression"],
+      "-": ["-", "primaryExpression"],
+      VAR1: ["primaryExpression"],
+      VAR2: ["primaryExpression"],
+      "(": ["primaryExpression"],
+      STR: ["primaryExpression"],
+      LANG: ["primaryExpression"],
+      LANGMATCHES: ["primaryExpression"],
+      DATATYPE: ["primaryExpression"],
+      BOUND: ["primaryExpression"],
+      IRI: ["primaryExpression"],
+      URI: ["primaryExpression"],
+      BNODE: ["primaryExpression"],
+      RAND: ["primaryExpression"],
+      ABS: ["primaryExpression"],
+      CEIL: ["primaryExpression"],
+      FLOOR: ["primaryExpression"],
+      ROUND: ["primaryExpression"],
+      CONCAT: ["primaryExpression"],
+      STRLEN: ["primaryExpression"],
+      UCASE: ["primaryExpression"],
+      LCASE: ["primaryExpression"],
+      ENCODE_FOR_URI: ["primaryExpression"],
+      CONTAINS: ["primaryExpression"],
+      STRSTARTS: ["primaryExpression"],
+      STRENDS: ["primaryExpression"],
+      STRBEFORE: ["primaryExpression"],
+      STRAFTER: ["primaryExpression"],
+      YEAR: ["primaryExpression"],
+      MONTH: ["primaryExpression"],
+      DAY: ["primaryExpression"],
+      HOURS: ["primaryExpression"],
+      MINUTES: ["primaryExpression"],
+      SECONDS: ["primaryExpression"],
+      TIMEZONE: ["primaryExpression"],
+      TZ: ["primaryExpression"],
+      NOW: ["primaryExpression"],
+      UUID: ["primaryExpression"],
+      STRUUID: ["primaryExpression"],
+      MD5: ["primaryExpression"],
+      SHA1: ["primaryExpression"],
+      SHA256: ["primaryExpression"],
+      SHA384: ["primaryExpression"],
+      SHA512: ["primaryExpression"],
+      COALESCE: ["primaryExpression"],
+      IF: ["primaryExpression"],
+      STRLANG: ["primaryExpression"],
+      STRDT: ["primaryExpression"],
+      SAMETERM: ["primaryExpression"],
+      ISIRI: ["primaryExpression"],
+      ISURI: ["primaryExpression"],
+      ISBLANK: ["primaryExpression"],
+      ISLITERAL: ["primaryExpression"],
+      ISNUMERIC: ["primaryExpression"],
+      TRUE: ["primaryExpression"],
+      FALSE: ["primaryExpression"],
+      COUNT: ["primaryExpression"],
+      SUM: ["primaryExpression"],
+      MIN: ["primaryExpression"],
+      MAX: ["primaryExpression"],
+      AVG: ["primaryExpression"],
+      SAMPLE: ["primaryExpression"],
+      GROUP_CONCAT: ["primaryExpression"],
+      SUBSTR: ["primaryExpression"],
+      REPLACE: ["primaryExpression"],
+      REGEX: ["primaryExpression"],
+      EXISTS: ["primaryExpression"],
+      NOT: ["primaryExpression"],
+      IRI_REF: ["primaryExpression"],
+      STRING_LITERAL1: ["primaryExpression"],
+      STRING_LITERAL2: ["primaryExpression"],
+      STRING_LITERAL_LONG1: ["primaryExpression"],
+      STRING_LITERAL_LONG2: ["primaryExpression"],
+      INTEGER: ["primaryExpression"],
+      DECIMAL: ["primaryExpression"],
+      DOUBLE: ["primaryExpression"],
+      INTEGER_POSITIVE: ["primaryExpression"],
+      DECIMAL_POSITIVE: ["primaryExpression"],
+      DOUBLE_POSITIVE: ["primaryExpression"],
+      INTEGER_NEGATIVE: ["primaryExpression"],
+      DECIMAL_NEGATIVE: ["primaryExpression"],
+      DOUBLE_NEGATIVE: ["primaryExpression"],
+      PNAME_LN: ["primaryExpression"],
+      PNAME_NS: ["primaryExpression"]
+    },
+    update: {
+      INSERT: ["prologue", "?[update1,?[;,update]]"],
+      DELETE: ["prologue", "?[update1,?[;,update]]"],
+      LOAD: ["prologue", "?[update1,?[;,update]]"],
+      CLEAR: ["prologue", "?[update1,?[;,update]]"],
+      DROP: ["prologue", "?[update1,?[;,update]]"],
+      ADD: ["prologue", "?[update1,?[;,update]]"],
+      MOVE: ["prologue", "?[update1,?[;,update]]"],
+      COPY: ["prologue", "?[update1,?[;,update]]"],
+      CREATE: ["prologue", "?[update1,?[;,update]]"],
+      WITH: ["prologue", "?[update1,?[;,update]]"],
+      BASE: ["prologue", "?[update1,?[;,update]]"],
+      PREFIX: ["prologue", "?[update1,?[;,update]]"],
+      $: ["prologue", "?[update1,?[;,update]]"]
+    },
+    update1: {
+      LOAD: ["load"],
+      CLEAR: ["clear"],
+      DROP: ["drop"],
+      ADD: ["add"],
+      MOVE: ["move"],
+      COPY: ["copy"],
+      CREATE: ["create"],
+      INSERT: ["INSERT", "insert1"],
+      DELETE: ["DELETE", "delete1"],
+      WITH: ["modify"]
+    },
+    updateAll: {
+      INSERT: ["?[update1,?[;,update]]"],
+      DELETE: ["?[update1,?[;,update]]"],
+      LOAD: ["?[update1,?[;,update]]"],
+      CLEAR: ["?[update1,?[;,update]]"],
+      DROP: ["?[update1,?[;,update]]"],
+      ADD: ["?[update1,?[;,update]]"],
+      MOVE: ["?[update1,?[;,update]]"],
+      COPY: ["?[update1,?[;,update]]"],
+      CREATE: ["?[update1,?[;,update]]"],
+      WITH: ["?[update1,?[;,update]]"],
+      $: ["?[update1,?[;,update]]"]
+    },
+    usingClause: {
+      USING: ["USING", "or([iriRef,[NAMED,iriRef]])"]
+    },
+    valueLogical: {
+      "!": ["relationalExpression"],
+      "+": ["relationalExpression"],
+      "-": ["relationalExpression"],
+      VAR1: ["relationalExpression"],
+      VAR2: ["relationalExpression"],
+      "(": ["relationalExpression"],
+      STR: ["relationalExpression"],
+      LANG: ["relationalExpression"],
+      LANGMATCHES: ["relationalExpression"],
+      DATATYPE: ["relationalExpression"],
+      BOUND: ["relationalExpression"],
+      IRI: ["relationalExpression"],
+      URI: ["relationalExpression"],
+      BNODE: ["relationalExpression"],
+      RAND: ["relationalExpression"],
+      ABS: ["relationalExpression"],
+      CEIL: ["relationalExpression"],
+      FLOOR: ["relationalExpression"],
+      ROUND: ["relationalExpression"],
+      CONCAT: ["relationalExpression"],
+      STRLEN: ["relationalExpression"],
+      UCASE: ["relationalExpression"],
+      LCASE: ["relationalExpression"],
+      ENCODE_FOR_URI: ["relationalExpression"],
+      CONTAINS: ["relationalExpression"],
+      STRSTARTS: ["relationalExpression"],
+      STRENDS: ["relationalExpression"],
+      STRBEFORE: ["relationalExpression"],
+      STRAFTER: ["relationalExpression"],
+      YEAR: ["relationalExpression"],
+      MONTH: ["relationalExpression"],
+      DAY: ["relationalExpression"],
+      HOURS: ["relationalExpression"],
+      MINUTES: ["relationalExpression"],
+      SECONDS: ["relationalExpression"],
+      TIMEZONE: ["relationalExpression"],
+      TZ: ["relationalExpression"],
+      NOW: ["relationalExpression"],
+      UUID: ["relationalExpression"],
+      STRUUID: ["relationalExpression"],
+      MD5: ["relationalExpression"],
+      SHA1: ["relationalExpression"],
+      SHA256: ["relationalExpression"],
+      SHA384: ["relationalExpression"],
+      SHA512: ["relationalExpression"],
+      COALESCE: ["relationalExpression"],
+      IF: ["relationalExpression"],
+      STRLANG: ["relationalExpression"],
+      STRDT: ["relationalExpression"],
+      SAMETERM: ["relationalExpression"],
+      ISIRI: ["relationalExpression"],
+      ISURI: ["relationalExpression"],
+      ISBLANK: ["relationalExpression"],
+      ISLITERAL: ["relationalExpression"],
+      ISNUMERIC: ["relationalExpression"],
+      TRUE: ["relationalExpression"],
+      FALSE: ["relationalExpression"],
+      COUNT: ["relationalExpression"],
+      SUM: ["relationalExpression"],
+      MIN: ["relationalExpression"],
+      MAX: ["relationalExpression"],
+      AVG: ["relationalExpression"],
+      SAMPLE: ["relationalExpression"],
+      GROUP_CONCAT: ["relationalExpression"],
+      SUBSTR: ["relationalExpression"],
+      REPLACE: ["relationalExpression"],
+      REGEX: ["relationalExpression"],
+      EXISTS: ["relationalExpression"],
+      NOT: ["relationalExpression"],
+      IRI_REF: ["relationalExpression"],
+      STRING_LITERAL1: ["relationalExpression"],
+      STRING_LITERAL2: ["relationalExpression"],
+      STRING_LITERAL_LONG1: ["relationalExpression"],
+      STRING_LITERAL_LONG2: ["relationalExpression"],
+      INTEGER: ["relationalExpression"],
+      DECIMAL: ["relationalExpression"],
+      DOUBLE: ["relationalExpression"],
+      INTEGER_POSITIVE: ["relationalExpression"],
+      DECIMAL_POSITIVE: ["relationalExpression"],
+      DOUBLE_POSITIVE: ["relationalExpression"],
+      INTEGER_NEGATIVE: ["relationalExpression"],
+      DECIMAL_NEGATIVE: ["relationalExpression"],
+      DOUBLE_NEGATIVE: ["relationalExpression"],
+      PNAME_LN: ["relationalExpression"],
+      PNAME_NS: ["relationalExpression"]
+    },
+    valuesClause: {
+      VALUES: ["VALUES", "dataBlock"],
+      $: [],
+      "}": []
+    },
+    var: {
+      VAR1: ["VAR1"],
+      VAR2: ["VAR2"]
+    },
+    varOrIRIref: {
+      VAR1: ["var"],
+      VAR2: ["var"],
+      IRI_REF: ["iriRef"],
+      PNAME_LN: ["iriRef"],
+      PNAME_NS: ["iriRef"]
+    },
+    varOrTerm: {
+      VAR1: ["var"],
+      VAR2: ["var"],
+      NIL: ["graphTerm"],
+      IRI_REF: ["graphTerm"],
+      TRUE: ["graphTerm"],
+      FALSE: ["graphTerm"],
+      BLANK_NODE_LABEL: ["graphTerm"],
+      ANON: ["graphTerm"],
+      PNAME_LN: ["graphTerm"],
+      PNAME_NS: ["graphTerm"],
+      STRING_LITERAL1: ["graphTerm"],
+      STRING_LITERAL2: ["graphTerm"],
+      STRING_LITERAL_LONG1: ["graphTerm"],
+      STRING_LITERAL_LONG2: ["graphTerm"],
+      INTEGER: ["graphTerm"],
+      DECIMAL: ["graphTerm"],
+      DOUBLE: ["graphTerm"],
+      INTEGER_POSITIVE: ["graphTerm"],
+      DECIMAL_POSITIVE: ["graphTerm"],
+      DOUBLE_POSITIVE: ["graphTerm"],
+      INTEGER_NEGATIVE: ["graphTerm"],
+      DECIMAL_NEGATIVE: ["graphTerm"],
+      DOUBLE_NEGATIVE: ["graphTerm"]
+    },
+    verb: {
+      VAR1: ["storeProperty", "varOrIRIref"],
+      VAR2: ["storeProperty", "varOrIRIref"],
+      IRI_REF: ["storeProperty", "varOrIRIref"],
+      PNAME_LN: ["storeProperty", "varOrIRIref"],
+      PNAME_NS: ["storeProperty", "varOrIRIref"],
+      a: ["storeProperty", "a"]
+    },
+    verbPath: {
+      "^": ["path"],
+      a: ["path"],
+      "!": ["path"],
+      "(": ["path"],
+      IRI_REF: ["path"],
+      PNAME_LN: ["path"],
+      PNAME_NS: ["path"]
+    },
+    verbSimple: {
+      VAR1: ["var"],
+      VAR2: ["var"]
+    },
+    whereClause: {
+      "{": ["?WHERE", "groupGraphPattern"],
+      WHERE: ["?WHERE", "groupGraphPattern"]
+    }
+  },
 
-keywords:/^(GROUP_CONCAT|DATATYPE|BASE|PREFIX|SELECT|CONSTRUCT|DESCRIBE|ASK|FROM|NAMED|ORDER|BY|LIMIT|ASC|DESC|OFFSET|DISTINCT|REDUCED|WHERE|GRAPH|OPTIONAL|UNION|FILTER|GROUP|HAVING|AS|VALUES|LOAD|CLEAR|DROP|CREATE|MOVE|COPY|SILENT|INSERT|DELETE|DATA|WITH|TO|USING|NAMED|MINUS|BIND|LANGMATCHES|LANG|BOUND|SAMETERM|ISIRI|ISURI|ISBLANK|ISLITERAL|REGEX|TRUE|FALSE|UNDEF|ADD|DEFAULT|ALL|SERVICE|INTO|IN|NOT|IRI|URI|BNODE|RAND|ABS|CEIL|FLOOR|ROUND|CONCAT|STRLEN|UCASE|LCASE|ENCODE_FOR_URI|CONTAINS|STRSTARTS|STRENDS|STRBEFORE|STRAFTER|YEAR|MONTH|DAY|HOURS|MINUTES|SECONDS|TIMEZONE|TZ|NOW|UUID|STRUUID|MD5|SHA1|SHA256|SHA384|SHA512|COALESCE|IF|STRLANG|STRDT|ISNUMERIC|SUBSTR|REPLACE|EXISTS|COUNT|SUM|MIN|MAX|AVG|SAMPLE|SEPARATOR|STR)/i ,
+  keywords: /^(GROUP_CONCAT|DATATYPE|BASE|PREFIX|SELECT|CONSTRUCT|DESCRIBE|ASK|FROM|NAMED|ORDER|BY|LIMIT|ASC|DESC|OFFSET|DISTINCT|REDUCED|WHERE|GRAPH|OPTIONAL|UNION|FILTER|GROUP|HAVING|AS|VALUES|LOAD|CLEAR|DROP|CREATE|MOVE|COPY|SILENT|INSERT|DELETE|DATA|WITH|TO|USING|NAMED|MINUS|BIND|LANGMATCHES|LANG|BOUND|SAMETERM|ISIRI|ISURI|ISBLANK|ISLITERAL|REGEX|TRUE|FALSE|UNDEF|ADD|DEFAULT|ALL|SERVICE|INTO|IN|NOT|IRI|URI|BNODE|RAND|ABS|CEIL|FLOOR|ROUND|CONCAT|STRLEN|UCASE|LCASE|ENCODE_FOR_URI|CONTAINS|STRSTARTS|STRENDS|STRBEFORE|STRAFTER|YEAR|MONTH|DAY|HOURS|MINUTES|SECONDS|TIMEZONE|TZ|NOW|UUID|STRUUID|MD5|SHA1|SHA256|SHA384|SHA512|COALESCE|IF|STRLANG|STRDT|ISNUMERIC|SUBSTR|REPLACE|EXISTS|COUNT|SUM|MIN|MAX|AVG|SAMPLE|SEPARATOR|STR)/i,
 
-punct:/^(\*|a|\.|\{|\}|,|\(|\)|;|\[|\]|\|\||&&|=|!=|!|<=|>=|<|>|\+|-|\/|\^\^|\?|\||\^)/ ,
+  punct: /^(\*|a|\.|\{|\}|,|\(|\)|;|\[|\]|\|\||&&|=|!=|!|<=|>=|<|>|\+|-|\/|\^\^|\?|\||\^)/,
 
-startSymbol:"sparql11",
-acceptEmpty:true,
-}
-},{}],53:[function(require,module,exports){
+  startSymbol: "sparql11",
+  acceptEmpty: true
+};
+
+},{}],67:[function(require,module,exports){
 "use strict";
-var CodeMirror = require('codemirror');
+var CodeMirror = require("codemirror");
 CodeMirror.defineMode("sparql11", function(config, parserConfig) {
+  var indentUnit = config.indentUnit;
 
-	var indentUnit = config.indentUnit;
+  var grammar = require("./_tokenizer-table.js");
+  var ll1_table = grammar.table;
 
-	var grammar = require('./_tokenizer-table.js');
-	var ll1_table = grammar.table;
-
-	var IRI_REF = '<[^<>\"`\|\{\}\^\\\x00-\x20]*>';
-	/*
+  var IRI_REF = '<[^<>"`\|\{\}\^\\\x00-\x20]*>';
+  /*
 	 * PN_CHARS_BASE =
 	 * '[A-Z]|[a-z]|[\\u00C0-\\u00D6]|[\\u00D8-\\u00F6]|[\\u00F8-\\u02FF]|[\\u0370-\\u037D]|[\\u037F-\\u1FFF]|[\\u200C-\\u200D]|[\\u2070-\\u218F]|[\\u2C00-\\u2FEF]|[\\u3001-\\uD7FF]|[\\uF900-\\uFDCF]|[\\uFDF0-\\uFFFD]|[\\u10000-\\uEFFFF]';
 	 */
 
-	var PN_CHARS_BASE =
-		'[A-Za-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD]';
-	var PN_CHARS_U = PN_CHARS_BASE+'|_';
-
-	var PN_CHARS= '('+PN_CHARS_U+'|-|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])';
-	var VARNAME = '('+PN_CHARS_U+'|[0-9])'+
-		'('+PN_CHARS_U+'|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])*';
-	var VAR1 = '\\?'+VARNAME;
-	var VAR2 = '\\$'+VARNAME;
-
-	var PN_PREFIX= '('+PN_CHARS_BASE+')((('+PN_CHARS+')|\\.)*('+PN_CHARS+'))?';
-
-	var HEX= '[0-9A-Fa-f]';
-	var PERCENT='(%'+HEX+HEX+')';
-	var PN_LOCAL_ESC='(\\\\[_~\\.\\-!\\$&\'\\(\\)\\*\\+,;=/\\?#@%])';
-	var PLX= '('+PERCENT+'|'+PN_LOCAL_ESC+')';
-	var PN_LOCAL= '('+PN_CHARS_U+'|:|[0-9]|'+PLX+')(('+PN_CHARS+'|\\.|:|'+PLX+')*('+PN_CHARS+'|:|'+PLX+'))?';
-	var BLANK_NODE_LABEL = '_:('+PN_CHARS_U+'|[0-9])(('+PN_CHARS+'|\\.)*'+PN_CHARS+')?';
-	var PNAME_NS = '('+PN_PREFIX+')?:';
-	var PNAME_LN = PNAME_NS+PN_LOCAL;
-	var LANGTAG = '@[a-zA-Z]+(-[a-zA-Z0-9]+)*';
-
-	var EXPONENT = '[eE][\\+-]?[0-9]+';
-	var INTEGER = '[0-9]+';
-	var DECIMAL = '(([0-9]+\\.[0-9]*)|(\\.[0-9]+))';
-	var DOUBLE =
-		'(([0-9]+\\.[0-9]*'+EXPONENT+')|'+
-		'(\\.[0-9]+'+EXPONENT+')|'+
-		'([0-9]+'+EXPONENT+'))';
-
-	var INTEGER_POSITIVE = '\\+' + INTEGER;
-	var DECIMAL_POSITIVE = '\\+' + DECIMAL;
-	var DOUBLE_POSITIVE  = '\\+' + DOUBLE;
-	var INTEGER_NEGATIVE = '-' + INTEGER;
-	var DECIMAL_NEGATIVE = '-' + DECIMAL;
-	var DOUBLE_NEGATIVE  = '-' + DOUBLE;
-
-	var ECHAR = '\\\\[tbnrf\\\\"\']';
-
-
-	 //IMPORTANT: this unicode rule is not in the official grammar.
-      //Reason: https://github.com/YASGUI/YASQE/issues/49
-      //unicode escape sequences (which the sparql spec considers part of the pre-processing of sparql queries)
-      //are marked as invalid. We have little choice (other than adding a layer of complixity) than to modify the grammar accordingly
-      //however, for now only allow these escape sequences in literals (where actually, this should be allows in e.g. prefixes as well)
-	var hex4 = HEX + '{4}'
-	var unicode = '(\\\\u' + hex4 +'|\\\\U00(10|0' + HEX + ')'+ hex4 + ')';
-	var LINE_BREAK = "\n";
-	var STRING_LITERAL1 = "'(([^\\x27\\x5C\\x0A\\x0D])|"+ECHAR+"|" + unicode + ")*'";
-	var STRING_LITERAL2 = '"(([^\\x22\\x5C\\x0A\\x0D])|'+ECHAR+'|' + unicode + ')*"';
-
-	var STRING_LITERAL_LONG = {
-		SINGLE: {
-			CAT: "STRING_LITERAL_LONG1",
-			QUOTES: "'''",
-			CONTENTS: "(('|'')?([^'\\\\]|"+ECHAR+"|"+unicode+"))*",
-
-		},
-		DOUBLE: {
-			CAT: "STRING_LITERAL_LONG2",
-			QUOTES: '"""',
-			CONTENTS: '(("|"")?([^"\\\\]|'+ECHAR+'|'+unicode+'))*',
-		}
-	};
-	for (var key in STRING_LITERAL_LONG) {
-		STRING_LITERAL_LONG[key].COMPLETE = STRING_LITERAL_LONG[key].QUOTES + STRING_LITERAL_LONG[key].CONTENTS + STRING_LITERAL_LONG[key].QUOTES;
-	}
-//	var STRING_LITERAL_LONG_QUOTES = {
-//		"STRING_LITERAL_LONG_QUOTES1": "'''",
-//		"STRING_LITERAL_LONG_QUOTES2": '"""',
-//	}
-//	var STRING_LITERAL_LONG_CONTENTS = {
-//		"STRING_LITERAL_LONG_QUOTES1": "(('|'')?([^'\\\\]|"+ECHAR+"|"+unicode+"))*",
-//		"STRING_LITERAL_LONG_QUOTES2": '(("|"")?([^"\\\\]|'+ECHAR+'|'+unicode+'))*'
-//	};
-//	var STRING_LITERAL_LONG1 = STRING_LITERAL_LONG['SINGLE'].QUOTES + STRING_LITERAL_LONG['SINGLE'].CONTENTS + STRING_LITERAL_LONG['SINGLE'].QUOTES;
-//	var STRING_LITERAL_LONG2 = STRING_LITERAL_LONG['DOUBLE'].QUOTES + STRING_LITERAL_LONG['DOUBLE'].CONTENTS + STRING_LITERAL_LONG['DOUBLE'].QUOTES;
-
-//	var stringLiteralLongContentTerminals = {};
-//	for (var key in STRING_LITERAL_LONG) {
-//		stringLiteralLongContentTerminals[key] = {
-//			name: key,
-//			regex:new RegExp("^"+STRING_LITERAL_LONG_CONTENTS[key]),
-//			style:"string"
-//		};
-//	}
-	//some regular expressions not used in regular terminals, because this is used accross lines
-	var stringLiteralLongRegex = {};
-	for (var key in STRING_LITERAL_LONG) {
-		stringLiteralLongRegex[key] = {
-			complete: {
-				name: "STRING_LITERAL_LONG_" + key,
-				regex:new RegExp("^"+STRING_LITERAL_LONG[key].COMPLETE),
-				style:"string"
-			},
-			contents: {
-				name: "STRING_LITERAL_LONG_" + key,
-				regex:new RegExp("^"+STRING_LITERAL_LONG[key].CONTENTS),
-				style:"string"
-			},
-			closing: {
-				name: "STRING_LITERAL_LONG_" + key,
-				regex:new RegExp("^"+STRING_LITERAL_LONG[key].CONTENTS + STRING_LITERAL_LONG[key].QUOTES),
-				style:"string"
-			},
-			quotes: {
-				name: "STRING_LITERAL_LONG_QUOTES_" + key,
-				regex:new RegExp("^"+STRING_LITERAL_LONG[key].QUOTES),
-				style:"string"
-			},
-
-		}
-	}
-
-	var WS    =        '[\\x20\\x09\\x0D\\x0A]';
-	// Careful! Code mirror feeds one line at a time with no \n
-	// ... but otherwise comment is terminated by \n
-	var COMMENT = '#([^\\n\\r]*[\\n\\r]|[^\\n\\r]*$)';
-	var WS_OR_COMMENT_STAR = '('+WS+'|('+COMMENT+'))*';
-	var NIL   = '\\('+WS_OR_COMMENT_STAR+'\\)';
-	var ANON  = '\\['+WS_OR_COMMENT_STAR+'\\]';
-	var terminals= [
-		{ name: "WS",
-			regex:new RegExp("^"+WS+"+"),
-			style:"ws" },
-
-		{ name: "COMMENT",
-			regex:new RegExp("^"+COMMENT),
-			style:"comment" },
-
-		{ name: "IRI_REF",
-			regex:new RegExp("^"+IRI_REF),
-			style:"variable-3" },
-
-		{ name: "VAR1",
-			regex:new RegExp("^"+VAR1),
-			style:"atom"},
-
-		{ name: "VAR2",
-			regex:new RegExp("^"+VAR2),
-			style:"atom"},
-
-		{ name: "LANGTAG",
-			regex:new RegExp("^"+LANGTAG),
-			style:"meta"},
-
-		{ name: "DOUBLE",
-			regex:new RegExp("^"+DOUBLE),
-			style:"number" },
-
-		{ name: "DECIMAL",
-			regex:new RegExp("^"+DECIMAL),
-			style:"number" },
-
-		{ name: "INTEGER",
-			regex:new RegExp("^"+INTEGER),
-			style:"number" },
-
-		{ name: "DOUBLE_POSITIVE",
-			regex:new RegExp("^"+DOUBLE_POSITIVE),
-			style:"number" },
-
-		{ name: "DECIMAL_POSITIVE",
-			regex:new RegExp("^"+DECIMAL_POSITIVE),
-			style:"number" },
-
-		{ name: "INTEGER_POSITIVE",
-			regex:new RegExp("^"+INTEGER_POSITIVE),
-			style:"number" },
-
-		{ name: "DOUBLE_NEGATIVE",
-			regex:new RegExp("^"+DOUBLE_NEGATIVE),
-			style:"number" },
-
-		{ name: "DECIMAL_NEGATIVE",
-			regex:new RegExp("^"+DECIMAL_NEGATIVE),
-			style:"number" },
-
-		{ name: "INTEGER_NEGATIVE",
-			regex:new RegExp("^"+INTEGER_NEGATIVE),
-			style:"number" },
-//		stringLiteralLongRegex.SINGLE.complete,
-//		stringLiteralLongRegex.DOUBLE.complete,
-//		stringLiteralLongRegex.SINGLE.quotes,
-//		stringLiteralLongRegex.DOUBLE.quotes,
-
-		{ name: "STRING_LITERAL1",
-			regex:new RegExp("^"+STRING_LITERAL1),
-			style:"string" },
-
-		{ name: "STRING_LITERAL2",
-			regex:new RegExp("^"+STRING_LITERAL2),
-			style:"string" },
-
-		// Enclosed comments won't be highlighted
-		{ name: "NIL",
-			regex:new RegExp("^"+NIL),
-			style:"punc" },
-
-		// Enclosed comments won't be highlighted
-		{ name: "ANON",
-			regex:new RegExp("^"+ANON),
-			style:"punc" },
-
-		{ name: "PNAME_LN",
-			regex:new RegExp("^"+PNAME_LN),
-			style:"string-2" },
-
-		{ name: "PNAME_NS",
-			regex:new RegExp("^"+PNAME_NS),
-			style:"string-2" },
-
-		{ name: "BLANK_NODE_LABEL",
-			regex:new RegExp("^"+BLANK_NODE_LABEL),
-			style:"string-2" }
-	];
-
-	function getPossibles(symbol) {
-		var possibles=[], possiblesOb=ll1_table[symbol];
-		if (possiblesOb!=undefined) {
-			for (var property in possiblesOb) {
-				possibles.push(property.toString());
-			}
-		} else {
-			possibles.push(symbol);
-		}
-		return possibles;
-	}
-
-
-	function tokenBase(stream, state) {
-
-		function nextToken() {
-			var consumed=null;
-			if (state.inLiteral) {
-
-				var closingQuotes = false;
-				//multi-line literal. try to parse contents.
-				consumed = stream.match(stringLiteralLongRegex[state.inLiteral].contents.regex, true, false);
-				if (consumed && consumed[0].length == 0) {
-					//try seeing whether we can consume closing quotes, to avoid stopping
-					consumed = stream.match(stringLiteralLongRegex[state.inLiteral].closing.regex, true, false);
-					closingQuotes = true;
-				}
-
-				if (consumed && consumed[0].length > 0) {
-					//some string content here.
-					 var returnObj = {
-						quotePos: (closingQuotes? 'end': 'content'),
-						cat: STRING_LITERAL_LONG[state.inLiteral].CAT,
-						style: stringLiteralLongRegex[state.inLiteral].complete.style,
-						text: consumed[0],
-						start: stream.start
-					};
-					 if (closingQuotes) state.inLiteral = false;
-					 return returnObj;
-				}
-			}
-
-			//Multiline literals
-			for (var quoteType in stringLiteralLongRegex) {
-				consumed= stream.match(stringLiteralLongRegex[quoteType].quotes.regex,true,false);
-				if (consumed) {
-					var quotePos;
-					if (state.inLiteral) {
-						//end of literal. everything is fine
-						state.inLiteral = false;
-						quotePos = 'end';
-					} else {
-						state.inLiteral = quoteType;
-						quotePos = 'start';
-					}
-					return {
-						cat: STRING_LITERAL_LONG[quoteType].CAT,
-						style: stringLiteralLongRegex[quoteType].quotes.style,
-						text: consumed[0],
-						quotePos: quotePos,
-						start: stream.start
-					};
-				}
-			}
-
-
-
-			// Tokens defined by individual regular expressions
-			for (var i=0; i<terminals.length; ++i) {
-				consumed= stream.match(terminals[i].regex,true,false);
-				if (consumed) {
-					return {
-						cat: terminals[i].name,
-						style: terminals[i].style,
-						text: consumed[0],
-						start: stream.start
-					};
-				}
-			}
-
-			// Keywords
-			consumed= stream.match(grammar.keywords,true,false);
-			if (consumed)
-				return { cat: stream.current().toUpperCase(),
-								 style: "keyword",
-								 text: consumed[0],
-								 start: stream.start
-							 };
-
-			// Punctuation
-			consumed= stream.match(grammar.punct,true,false);
-			if (consumed)
-				return { cat: stream.current(),
-								 style: "punc",
-								 text: consumed[0],
-								 start: stream.start
-							 };
-
-			// Token is invalid
-			// better consume something anyway, or else we're stuck
-			consumed= stream.match(/^.[A-Za-z0-9]*/,true,false);
-			return { cat:"<invalid_token>",
-							 style: "error",
-							 text: consumed[0],
-							 start: stream.start
-						 };
-		}
-
-		function recordFailurePos() {
-			// tokenOb.style= "sp-invalid";
-			var col= stream.column();
-			state.errorStartPos= col;
-			state.errorEndPos= col+tokenOb.text.length;
-		};
-		function setQueryType(s) {
-			if (state.queryType==null) {
-				if (s =="SELECT" || s=="CONSTRUCT" || s=="ASK" || s=="DESCRIBE" || s=="INSERT" || s=="DELETE" || s=="LOAD" || s=="CLEAR" || s=="CREATE" || s=="DROP" || s=="COPY" || s=="MOVE" || s=="ADD")
-					state.queryType=s;
-			}
-		}
-
-		// Some fake non-terminals are just there to have side-effect on state
-		// - i.e. allow or disallow variables and bnodes in certain non-nesting
-		// contexts
-		function setSideConditions(topSymbol) {
-			if (topSymbol === "prefixDecl") {
-				state.inPrefixDecl = true;
-			} else {
-				state.inPrefixDecl = false;
-			}
-			switch(topSymbol) {
-				case "disallowVars":
-						state.allowVars=false;break;
-				case "allowVars":
-					state.allowVars=true; break;
-				case "disallowBnodes":
-					state.allowBnodes=false;break;
-				case "allowBnodes":
-					state.allowBnodes=true; break;
-				case "storeProperty":
-					state.storeProperty=true; break;
-			}
-		}
-
-		function checkSideConditions(topSymbol) {
-			return(
-				(state.allowVars || topSymbol!="var") &&
-					(state.allowBnodes ||
-					 (topSymbol!="blankNode" &&
-						topSymbol!="blankNodePropertyList" &&
-						topSymbol!="blankNodePropertyListPath")));
-		}
-
-		// CodeMirror works with one line at a time,
-		// but newline should behave like whitespace
-		// - i.e. a definite break between tokens (for autocompleter)
-		if (stream.pos==0)
-			state.possibleCurrent= state.possibleNext;
-
-		var tokenOb= nextToken();
-
-
-		if (tokenOb.cat=="<invalid_token>") {
-			// set error state, and
-			if (state.OK==true) {
-				state.OK=false;
-				recordFailurePos();
-			}
-			state.complete=false;
-			// alert("Invalid:"+tokenOb.text);
-			return tokenOb.style;
-		}
-
-		if (tokenOb.cat == "WS" || tokenOb.cat == "COMMENT" || (tokenOb.quotePos && tokenOb.quotePos != 'end')) {
-			state.possibleCurrent = state.possibleNext;
-			return(tokenOb.style);
-		}
-		// Otherwise, run the parser until the token is digested
-		// or failure
-		var finished= false;
-		var topSymbol;
-		var token= tokenOb.cat;
-
-		if (!tokenOb.quotePos || tokenOb.quotePos == 'end') {
-		// Incremental LL1 parse
-			while(state.stack.length>0 && token && state.OK && !finished ) {
-				topSymbol= state.stack.pop();
-
-				if (!ll1_table[topSymbol]) {
-					// Top symbol is a terminal
-					if (topSymbol == token) {
-						if (state.inPrefixDecl) {
-							if (topSymbol === "PNAME_NS" && tokenOb.text.length > 0) {
-								state.currentPnameNs = tokenOb.text.slice(0,-1);
-							} else if (state.currentPnameNs !== undefined && tokenOb.text.length > 2) {
-								state.prefixes[state.currentPnameNs] = tokenOb.text.slice(1,-1);
-								//reset current pname ns
-								state.currentPnameNs = undefined;
-							}
-						}
-						// Matching terminals
-						// - consume token from input stream
-						finished=true;
-						setQueryType(topSymbol);
-						// Check whether $ (end of input token) is poss next
-						// for everything on stack
-						var allNillable=true;
-						for(var sp=state.stack.length;sp>0;--sp) {
-							var item=ll1_table[state.stack[sp-1]];
-							if (!item || !item["$"])
-								allNillable=false;
-						}
-						state.complete= allNillable;
-						if (state.storeProperty && token.cat != "punc") {
-							state.lastProperty = tokenOb.text;
-							state.storeProperty = false;
-						}
-
-						//check whether a used prefix is actually defined
-						if (!state.inPrefixDecl && (token === "PNAME_NS" || token === "PNAME_LN")) {
-							var colonIndex = tokenOb.text.indexOf(':');
-							if (colonIndex >= 0) {
-								var prefNs = tokenOb.text.slice(0,colonIndex)
-								//avoid warnings for missing bif prefixes (yuck, virtuoso-specific)
-								if (!state.prefixes[prefNs] && ['bif', 'xsd'].indexOf(prefNs) < 0) {
-									state.OK = false;
-									recordFailurePos();
-									state.errorMsg = "Prefix '" + prefNs + "' is not defined";
-								}
-							}
-
-						}
-					} else {
-						state.OK=false;
-						state.complete=false;
-						recordFailurePos();
-					}
-				} else {
-					// topSymbol is nonterminal
-					// - see if there is an entry for topSymbol
-					// and nextToken in table
-					var nextSymbols= ll1_table[topSymbol][token];
-					if (nextSymbols!=undefined && checkSideConditions(topSymbol)) {
-						// Match - copy RHS of rule to stack
-						for (var i=nextSymbols.length-1; i>=0; --i) {
-							state.stack.push(nextSymbols[i]);
-						}
-						// Peform any non-grammatical side-effects
-						setSideConditions(topSymbol);
-					} else {
-						// No match in table - fail
-						state.OK=false;
-						state.complete=false;
-						recordFailurePos();
-						state.stack.push(topSymbol);  // Shove topSymbol back on stack
-					}
-				}
-			}
-		}
-		if (!finished && state.OK) {
-			state.OK=false; state.complete=false; recordFailurePos();
-		}
-
-		if (state.possibleCurrent.indexOf('a') >= 0){
-			state.lastPredicateOffset = tokenOb.start;
-		}
-		state.possibleCurrent = state.possibleNext;
-
-		state.possibleNext = getPossibles(state.stack[state.stack.length-1]);
-
-		return tokenOb.style;
-	}
-
-	var indentTop={
-		"*[,, object]": 3,
-		"*[(,),object]": 3,
-		"*[(,),objectPath]": 3,
-		"*[/,pathEltOrInverse]": 2,
-		"object": 2,
-		"objectPath": 2,
-		"objectList": 2,
-		"objectListPath": 2,
-		"storeProperty": 2,
-		"pathMod": 2,
-		"?pathMod": 2,
-		"propertyListNotEmpty": 1,
-		"propertyList": 1,
-		"propertyListPath": 1,
-		"propertyListPathNotEmpty": 1,
-		"?[verb,objectList]": 1,
-//		"?[or([verbPath, verbSimple]),objectList]": 1,
-	};
-
-	var indentTable={
-		"}":1,
-		"]":0,
-		")":1,
-		"{":-1,
-		"(":-1,
-//		"*[;,?[or([verbPath,verbSimple]),objectList]]": 1,
-	};
-
-
-	function indent(state, textAfter) {
-		//just avoid we don't indent multi-line  literals
-		if (state.inLiteral) return 0;
-		if (state.stack.length && state.stack[state.stack.length-1] == "?[or([verbPath,verbSimple]),objectList]") {
-			//we are after a semi-colon. I.e., nicely align this line with predicate position of previous line
-			return state.lastPredicateOffset;
-		} else {
-			var n = 0; // indent level
-			var i = state.stack.length-1;
-			if (/^[\}\]\)]/.test(textAfter)) {
-				// Skip stack items until after matching bracket
-				var closeBracket=textAfter.substr(0,1);
-				for( ;i>=0;--i)	{
-					if (state.stack[i]==closeBracket) {
-						--i;
-						break;
-					};
-				}
-			} else {
-				// Consider nullable non-terminals if at top of stack
-				var dn = indentTop[state.stack[i]];
-				if (dn) {
-					n += dn;
-					--i;
-				}
-			}
-			for( ;i>=0;--i)	{
-				var dn = indentTable[state.stack[i]];
-				if (dn) {
-					n+=dn;
-				}
-			}
-			return n * config.indentUnit;
-		}
-	};
-
-	return {
-		token: tokenBase,
-		startState: function(base) {
-			return {
-				tokenize: tokenBase,
-				OK: true,
-				complete: grammar.acceptEmpty,
-				errorStartPos: null,
-				errorEndPos: null,
-				queryType: null,
-				possibleCurrent: getPossibles(grammar.startSymbol),
-				possibleNext: getPossibles(grammar.startSymbol),
-				allowVars : true,
-				allowBnodes : true,
-				storeProperty : false,
-				lastProperty : "",
-				inLiteral: false,
-				stack: [grammar.startSymbol],
-				lastPredicateOffset: config.indentUnit,
-				prefixes: {},
-			};
-		},
-		indent: indent,
-		electricChars: "}])"
-	};
-}
-);
+  var PN_CHARS_BASE = "[A-Za-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD]";
+  var PN_CHARS_U = PN_CHARS_BASE + "|_";
+
+  var PN_CHARS = "(" + PN_CHARS_U + "|-|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])";
+  var VARNAME = "(" + PN_CHARS_U + "|[0-9])" + "(" + PN_CHARS_U + "|[0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040])*";
+  var VAR1 = "\\?" + VARNAME;
+  var VAR2 = "\\$" + VARNAME;
+
+  var PN_PREFIX = "(" + PN_CHARS_BASE + ")(((" + PN_CHARS + ")|\\.)*(" + PN_CHARS + "))?";
+
+  var HEX = "[0-9A-Fa-f]";
+  var PERCENT = "(%" + HEX + HEX + ")";
+  var PN_LOCAL_ESC = "(\\\\[_~\\.\\-!\\$&'\\(\\)\\*\\+,;=/\\?#@%])";
+  var PLX = "(" + PERCENT + "|" + PN_LOCAL_ESC + ")";
+  var PN_LOCAL = "(" +
+    PN_CHARS_U +
+    "|:|[0-9]|" +
+    PLX +
+    ")((" +
+    PN_CHARS +
+    "|\\.|:|" +
+    PLX +
+    ")*(" +
+    PN_CHARS +
+    "|:|" +
+    PLX +
+    "))?";
+  var BLANK_NODE_LABEL = "_:(" + PN_CHARS_U + "|[0-9])((" + PN_CHARS + "|\\.)*" + PN_CHARS + ")?";
+  var PNAME_NS = "(" + PN_PREFIX + ")?:";
+  var PNAME_LN = PNAME_NS + PN_LOCAL;
+  var LANGTAG = "@[a-zA-Z]+(-[a-zA-Z0-9]+)*";
+
+  var EXPONENT = "[eE][\\+-]?[0-9]+";
+  var INTEGER = "[0-9]+";
+  var DECIMAL = "(([0-9]+\\.[0-9]*)|(\\.[0-9]+))";
+  var DOUBLE = "(([0-9]+\\.[0-9]*" + EXPONENT + ")|" + "(\\.[0-9]+" + EXPONENT + ")|" + "([0-9]+" + EXPONENT + "))";
+
+  var INTEGER_POSITIVE = "\\+" + INTEGER;
+  var DECIMAL_POSITIVE = "\\+" + DECIMAL;
+  var DOUBLE_POSITIVE = "\\+" + DOUBLE;
+  var INTEGER_NEGATIVE = "-" + INTEGER;
+  var DECIMAL_NEGATIVE = "-" + DECIMAL;
+  var DOUBLE_NEGATIVE = "-" + DOUBLE;
+
+  var ECHAR = "\\\\[tbnrf\\\\\"']";
+
+  //IMPORTANT: this unicode rule is not in the official grammar.
+  //Reason: https://github.com/YASGUI/YASQE/issues/49
+  //unicode escape sequences (which the sparql spec considers part of the pre-processing of sparql queries)
+  //are marked as invalid. We have little choice (other than adding a layer of complixity) than to modify the grammar accordingly
+  //however, for now only allow these escape sequences in literals (where actually, this should be allows in e.g. prefixes as well)
+  var hex4 = HEX + "{4}";
+  var unicode = "(\\\\u" + hex4 + "|\\\\U00(10|0" + HEX + ")" + hex4 + ")";
+  var LINE_BREAK = "\n";
+  var STRING_LITERAL1 = "'(([^\\x27\\x5C\\x0A\\x0D])|" + ECHAR + "|" + unicode + ")*'";
+  var STRING_LITERAL2 = '"(([^\\x22\\x5C\\x0A\\x0D])|' + ECHAR + "|" + unicode + ')*"';
+
+  var STRING_LITERAL_LONG = {
+    SINGLE: {
+      CAT: "STRING_LITERAL_LONG1",
+      QUOTES: "'''",
+      CONTENTS: "(('|'')?([^'\\\\]|" + ECHAR + "|" + unicode + "))*"
+    },
+    DOUBLE: {
+      CAT: "STRING_LITERAL_LONG2",
+      QUOTES: '"""',
+      CONTENTS: '(("|"")?([^"\\\\]|' + ECHAR + "|" + unicode + "))*"
+    }
+  };
+  for (var key in STRING_LITERAL_LONG) {
+    STRING_LITERAL_LONG[key].COMPLETE = STRING_LITERAL_LONG[key].QUOTES +
+      STRING_LITERAL_LONG[key].CONTENTS +
+      STRING_LITERAL_LONG[key].QUOTES;
+  }
+  //	var STRING_LITERAL_LONG_QUOTES = {
+  //		"STRING_LITERAL_LONG_QUOTES1": "'''",
+  //		"STRING_LITERAL_LONG_QUOTES2": '"""',
+  //	}
+  //	var STRING_LITERAL_LONG_CONTENTS = {
+  //		"STRING_LITERAL_LONG_QUOTES1": "(('|'')?([^'\\\\]|"+ECHAR+"|"+unicode+"))*",
+  //		"STRING_LITERAL_LONG_QUOTES2": '(("|"")?([^"\\\\]|'+ECHAR+'|'+unicode+'))*'
+  //	};
+  //	var STRING_LITERAL_LONG1 = STRING_LITERAL_LONG['SINGLE'].QUOTES + STRING_LITERAL_LONG['SINGLE'].CONTENTS + STRING_LITERAL_LONG['SINGLE'].QUOTES;
+  //	var STRING_LITERAL_LONG2 = STRING_LITERAL_LONG['DOUBLE'].QUOTES + STRING_LITERAL_LONG['DOUBLE'].CONTENTS + STRING_LITERAL_LONG['DOUBLE'].QUOTES;
+
+  //	var stringLiteralLongContentTerminals = {};
+  //	for (var key in STRING_LITERAL_LONG) {
+  //		stringLiteralLongContentTerminals[key] = {
+  //			name: key,
+  //			regex:new RegExp("^"+STRING_LITERAL_LONG_CONTENTS[key]),
+  //			style:"string"
+  //		};
+  //	}
+  //some regular expressions not used in regular terminals, because this is used accross lines
+  var stringLiteralLongRegex = {};
+  for (var key in STRING_LITERAL_LONG) {
+    stringLiteralLongRegex[key] = {
+      complete: {
+        name: "STRING_LITERAL_LONG_" + key,
+        regex: new RegExp("^" + STRING_LITERAL_LONG[key].COMPLETE),
+        style: "string"
+      },
+      contents: {
+        name: "STRING_LITERAL_LONG_" + key,
+        regex: new RegExp("^" + STRING_LITERAL_LONG[key].CONTENTS),
+        style: "string"
+      },
+      closing: {
+        name: "STRING_LITERAL_LONG_" + key,
+        regex: new RegExp("^" + STRING_LITERAL_LONG[key].CONTENTS + STRING_LITERAL_LONG[key].QUOTES),
+        style: "string"
+      },
+      quotes: {
+        name: "STRING_LITERAL_LONG_QUOTES_" + key,
+        regex: new RegExp("^" + STRING_LITERAL_LONG[key].QUOTES),
+        style: "string"
+      }
+    };
+  }
+
+  var WS = "[\\x20\\x09\\x0D\\x0A]";
+  // Careful! Code mirror feeds one line at a time with no \n
+  // ... but otherwise comment is terminated by \n
+  var COMMENT = "#([^\\n\\r]*[\\n\\r]|[^\\n\\r]*$)";
+  var WS_OR_COMMENT_STAR = "(" + WS + "|(" + COMMENT + "))*";
+  var NIL = "\\(" + WS_OR_COMMENT_STAR + "\\)";
+  var ANON = "\\[" + WS_OR_COMMENT_STAR + "\\]";
+  var terminals = [
+    {
+      name: "WS",
+      regex: new RegExp("^" + WS + "+"),
+      style: "ws"
+    },
+
+    {
+      name: "COMMENT",
+      regex: new RegExp("^" + COMMENT),
+      style: "comment"
+    },
+
+    {
+      name: "IRI_REF",
+      regex: new RegExp("^" + IRI_REF),
+      style: "variable-3"
+    },
+
+    {
+      name: "VAR1",
+      regex: new RegExp("^" + VAR1),
+      style: "atom"
+    },
+
+    {
+      name: "VAR2",
+      regex: new RegExp("^" + VAR2),
+      style: "atom"
+    },
+
+    {
+      name: "LANGTAG",
+      regex: new RegExp("^" + LANGTAG),
+      style: "meta"
+    },
+
+    {
+      name: "DOUBLE",
+      regex: new RegExp("^" + DOUBLE),
+      style: "number"
+    },
+
+    {
+      name: "DECIMAL",
+      regex: new RegExp("^" + DECIMAL),
+      style: "number"
+    },
+
+    {
+      name: "INTEGER",
+      regex: new RegExp("^" + INTEGER),
+      style: "number"
+    },
+
+    {
+      name: "DOUBLE_POSITIVE",
+      regex: new RegExp("^" + DOUBLE_POSITIVE),
+      style: "number"
+    },
+
+    {
+      name: "DECIMAL_POSITIVE",
+      regex: new RegExp("^" + DECIMAL_POSITIVE),
+      style: "number"
+    },
+
+    {
+      name: "INTEGER_POSITIVE",
+      regex: new RegExp("^" + INTEGER_POSITIVE),
+      style: "number"
+    },
+
+    {
+      name: "DOUBLE_NEGATIVE",
+      regex: new RegExp("^" + DOUBLE_NEGATIVE),
+      style: "number"
+    },
+
+    {
+      name: "DECIMAL_NEGATIVE",
+      regex: new RegExp("^" + DECIMAL_NEGATIVE),
+      style: "number"
+    },
+
+    {
+      name: "INTEGER_NEGATIVE",
+      regex: new RegExp("^" + INTEGER_NEGATIVE),
+      style: "number"
+    },
+    //		stringLiteralLongRegex.SINGLE.complete,
+    //		stringLiteralLongRegex.DOUBLE.complete,
+    //		stringLiteralLongRegex.SINGLE.quotes,
+    //		stringLiteralLongRegex.DOUBLE.quotes,
+
+    {
+      name: "STRING_LITERAL1",
+      regex: new RegExp("^" + STRING_LITERAL1),
+      style: "string"
+    },
+
+    {
+      name: "STRING_LITERAL2",
+      regex: new RegExp("^" + STRING_LITERAL2),
+      style: "string"
+    },
+
+    // Enclosed comments won't be highlighted
+    {
+      name: "NIL",
+      regex: new RegExp("^" + NIL),
+      style: "punc"
+    },
+
+    // Enclosed comments won't be highlighted
+    {
+      name: "ANON",
+      regex: new RegExp("^" + ANON),
+      style: "punc"
+    },
+
+    {
+      name: "PNAME_LN",
+      regex: new RegExp("^" + PNAME_LN),
+      style: "string-2"
+    },
+
+    {
+      name: "PNAME_NS",
+      regex: new RegExp("^" + PNAME_NS),
+      style: "string-2"
+    },
+
+    {
+      name: "BLANK_NODE_LABEL",
+      regex: new RegExp("^" + BLANK_NODE_LABEL),
+      style: "string-2"
+    }
+  ];
+
+  function getPossibles(symbol) {
+    var possibles = [], possiblesOb = ll1_table[symbol];
+    if (possiblesOb != undefined) {
+      for (var property in possiblesOb) {
+        possibles.push(property.toString());
+      }
+    } else {
+      possibles.push(symbol);
+    }
+    return possibles;
+  }
+
+  function tokenBase(stream, state) {
+    function nextToken() {
+      var consumed = null;
+      if (state.inLiteral) {
+        var closingQuotes = false;
+        //multi-line literal. try to parse contents.
+        consumed = stream.match(stringLiteralLongRegex[state.inLiteral].contents.regex, true, false);
+        if (consumed && consumed[0].length == 0) {
+          //try seeing whether we can consume closing quotes, to avoid stopping
+          consumed = stream.match(stringLiteralLongRegex[state.inLiteral].closing.regex, true, false);
+          closingQuotes = true;
+        }
+
+        if (consumed && consumed[0].length > 0) {
+          //some string content here.
+          var returnObj = {
+            quotePos: closingQuotes ? "end" : "content",
+            cat: STRING_LITERAL_LONG[state.inLiteral].CAT,
+            style: stringLiteralLongRegex[state.inLiteral].complete.style,
+            text: consumed[0],
+            start: stream.start
+          };
+          if (closingQuotes) state.inLiteral = false;
+          return returnObj;
+        }
+      }
+
+      //Multiline literals
+      for (var quoteType in stringLiteralLongRegex) {
+        consumed = stream.match(stringLiteralLongRegex[quoteType].quotes.regex, true, false);
+        if (consumed) {
+          var quotePos;
+          if (state.inLiteral) {
+            //end of literal. everything is fine
+            state.inLiteral = false;
+            quotePos = "end";
+          } else {
+            state.inLiteral = quoteType;
+            quotePos = "start";
+          }
+          return {
+            cat: STRING_LITERAL_LONG[quoteType].CAT,
+            style: stringLiteralLongRegex[quoteType].quotes.style,
+            text: consumed[0],
+            quotePos: quotePos,
+            start: stream.start
+          };
+        }
+      }
+
+      // Tokens defined by individual regular expressions
+      for (var i = 0; i < terminals.length; ++i) {
+        consumed = stream.match(terminals[i].regex, true, false);
+        if (consumed) {
+          return {
+            cat: terminals[i].name,
+            style: terminals[i].style,
+            text: consumed[0],
+            start: stream.start
+          };
+        }
+      }
+
+      // Keywords
+      consumed = stream.match(grammar.keywords, true, false);
+      if (consumed)
+        return {
+          cat: stream.current().toUpperCase(),
+          style: "keyword",
+          text: consumed[0],
+          start: stream.start
+        };
+
+      // Punctuation
+      consumed = stream.match(grammar.punct, true, false);
+      if (consumed)
+        return {
+          cat: stream.current(),
+          style: "punc",
+          text: consumed[0],
+          start: stream.start
+        };
+
+      // Token is invalid
+      // better consume something anyway, or else we're stuck
+      consumed = stream.match(/^.[A-Za-z0-9]*/, true, false);
+      return {
+        cat: "<invalid_token>",
+        style: "error",
+        text: consumed[0],
+        start: stream.start
+      };
+    }
+
+    function recordFailurePos() {
+      // tokenOb.style= "sp-invalid";
+      var col = stream.column();
+      state.errorStartPos = col;
+      state.errorEndPos = col + tokenOb.text.length;
+    }
+    function setQueryType(s) {
+      if (state.queryType == null) {
+        if (
+          s == "SELECT" ||
+          s == "CONSTRUCT" ||
+          s == "ASK" ||
+          s == "DESCRIBE" ||
+          s == "INSERT" ||
+          s == "DELETE" ||
+          s == "LOAD" ||
+          s == "CLEAR" ||
+          s == "CREATE" ||
+          s == "DROP" ||
+          s == "COPY" ||
+          s == "MOVE" ||
+          s == "ADD"
+        )
+          state.queryType = s;
+      }
+    }
+
+    // Some fake non-terminals are just there to have side-effect on state
+    // - i.e. allow or disallow variables and bnodes in certain non-nesting
+    // contexts
+    function setSideConditions(topSymbol) {
+      if (topSymbol === "prefixDecl") {
+        state.inPrefixDecl = true;
+      } else {
+        state.inPrefixDecl = false;
+      }
+      switch (topSymbol) {
+        case "disallowVars":
+          state.allowVars = false;
+          break;
+        case "allowVars":
+          state.allowVars = true;
+          break;
+        case "disallowBnodes":
+          state.allowBnodes = false;
+          break;
+        case "allowBnodes":
+          state.allowBnodes = true;
+          break;
+        case "storeProperty":
+          state.storeProperty = true;
+          break;
+      }
+    }
+
+    function checkSideConditions(topSymbol) {
+      return (state.allowVars || topSymbol != "var") &&
+        (state.allowBnodes ||
+          (topSymbol != "blankNode" &&
+            topSymbol != "blankNodePropertyList" &&
+            topSymbol != "blankNodePropertyListPath"));
+    }
+
+    // CodeMirror works with one line at a time,
+    // but newline should behave like whitespace
+    // - i.e. a definite break between tokens (for autocompleter)
+    if (stream.pos == 0) state.possibleCurrent = state.possibleNext;
+
+    var tokenOb = nextToken();
+
+    if (tokenOb.cat == "<invalid_token>") {
+      // set error state, and
+      if (state.OK == true) {
+        state.OK = false;
+        recordFailurePos();
+      }
+      state.complete = false;
+      // alert("Invalid:"+tokenOb.text);
+      return tokenOb.style;
+    }
+
+    if (tokenOb.cat == "WS" || tokenOb.cat == "COMMENT" || (tokenOb.quotePos && tokenOb.quotePos != "end")) {
+      state.possibleCurrent = state.possibleNext;
+      return tokenOb.style;
+    }
+    // Otherwise, run the parser until the token is digested
+    // or failure
+    var finished = false;
+    var topSymbol;
+    var token = tokenOb.cat;
+
+    if (!tokenOb.quotePos || tokenOb.quotePos == "end") {
+      // Incremental LL1 parse
+      while (state.stack.length > 0 && token && state.OK && !finished) {
+        topSymbol = state.stack.pop();
+
+        if (!ll1_table[topSymbol]) {
+          // Top symbol is a terminal
+          if (topSymbol == token) {
+            if (state.inPrefixDecl) {
+              if (topSymbol === "PNAME_NS" && tokenOb.text.length > 0) {
+                state.currentPnameNs = tokenOb.text.slice(0, -1);
+              } else if (state.currentPnameNs !== undefined && tokenOb.text.length > 2) {
+                state.prefixes[state.currentPnameNs] = tokenOb.text.slice(1, -1);
+                //reset current pname ns
+                state.currentPnameNs = undefined;
+              }
+            }
+            // Matching terminals
+            // - consume token from input stream
+            finished = true;
+            setQueryType(topSymbol);
+            // Check whether $ (end of input token) is poss next
+            // for everything on stack
+            var allNillable = true;
+            for (var sp = state.stack.length; sp > 0; --sp) {
+              var item = ll1_table[state.stack[sp - 1]];
+              if (!item || !item["$"]) allNillable = false;
+            }
+            state.complete = allNillable;
+            if (state.storeProperty && token.cat != "punc") {
+              state.lastProperty = tokenOb.text;
+              state.storeProperty = false;
+            }
+
+            //check whether a used prefix is actually defined
+            if (!state.inPrefixDecl && (token === "PNAME_NS" || token === "PNAME_LN")) {
+              var colonIndex = tokenOb.text.indexOf(":");
+              if (colonIndex >= 0) {
+                var prefNs = tokenOb.text.slice(0, colonIndex);
+                //avoid warnings for missing bif prefixes (yuck, virtuoso-specific)
+                if (!state.prefixes[prefNs] && ["bif", "xsd"].indexOf(prefNs) < 0) {
+                  state.OK = false;
+                  recordFailurePos();
+                  state.errorMsg = "Prefix '" + prefNs + "' is not defined";
+                }
+              }
+            }
+          } else {
+            state.OK = false;
+            state.complete = false;
+            recordFailurePos();
+          }
+        } else {
+          // topSymbol is nonterminal
+          // - see if there is an entry for topSymbol
+          // and nextToken in table
+          var nextSymbols = ll1_table[topSymbol][token];
+          if (nextSymbols != undefined && checkSideConditions(topSymbol)) {
+            // Match - copy RHS of rule to stack
+            for (var i = nextSymbols.length - 1; i >= 0; --i) {
+              state.stack.push(nextSymbols[i]);
+            }
+            // Peform any non-grammatical side-effects
+            setSideConditions(topSymbol);
+          } else {
+            // No match in table - fail
+            state.OK = false;
+            state.complete = false;
+            recordFailurePos();
+            state.stack.push(topSymbol); // Shove topSymbol back on stack
+          }
+        }
+      }
+    }
+    if (!finished && state.OK) {
+      state.OK = false;
+      state.complete = false;
+      recordFailurePos();
+    }
+
+    if (state.possibleCurrent.indexOf("a") >= 0) {
+      state.lastPredicateOffset = tokenOb.start;
+    }
+    state.possibleCurrent = state.possibleNext;
+
+    state.possibleNext = getPossibles(state.stack[state.stack.length - 1]);
+
+    return tokenOb.style;
+  }
+
+  var indentTop = {
+    "*[,, object]": 3,
+    "*[(,),object]": 3,
+    "*[(,),objectPath]": 3,
+    "*[/,pathEltOrInverse]": 2,
+    object: 2,
+    objectPath: 2,
+    objectList: 2,
+    objectListPath: 2,
+    storeProperty: 2,
+    pathMod: 2,
+    "?pathMod": 2,
+    propertyListNotEmpty: 1,
+    propertyList: 1,
+    propertyListPath: 1,
+    propertyListPathNotEmpty: 1,
+    "?[verb,objectList]": 1
+    //		"?[or([verbPath, verbSimple]),objectList]": 1,
+  };
+
+  var indentTable = {
+    "}": 1,
+    "]": 1,
+    ")": 1,
+    "{": -1,
+    "(": -1,
+    "[": -1
+    //		"*[;,?[or([verbPath,verbSimple]),objectList]]": 1,
+  };
+
+  function indent(state, textAfter) {
+    //just avoid we don't indent multi-line  literals
+    if (state.inLiteral) return 0;
+    if (state.stack.length && state.stack[state.stack.length - 1] == "?[or([verbPath,verbSimple]),objectList]") {
+      //we are after a semi-colon. I.e., nicely align this line with predicate position of previous line
+      return state.lastPredicateOffset;
+    } else {
+      var n = 0; // indent level
+      var i = state.stack.length - 1;
+      if (/^[\}\]\)]/.test(textAfter)) {
+        // Skip stack items until after matching bracket
+        var closeBracket = textAfter.substr(0, 1);
+        for (; i >= 0; --i) {
+          if (state.stack[i] == closeBracket) {
+            --i;
+            break;
+          }
+        }
+      } else {
+        // Consider nullable non-terminals if at top of stack
+        var dn = indentTop[state.stack[i]];
+        if (dn) {
+          n += dn;
+          --i;
+        }
+      }
+      for (; i >= 0; --i) {
+        var dn = indentTable[state.stack[i]];
+        if (dn) {
+          n += dn;
+        }
+      }
+      return n * config.indentUnit;
+    }
+  }
+
+  return {
+    token: tokenBase,
+    startState: function(base) {
+      return {
+        tokenize: tokenBase,
+        OK: true,
+        complete: grammar.acceptEmpty,
+        errorStartPos: null,
+        errorEndPos: null,
+        queryType: null,
+        possibleCurrent: getPossibles(grammar.startSymbol),
+        possibleNext: getPossibles(grammar.startSymbol),
+        allowVars: true,
+        allowBnodes: true,
+        storeProperty: false,
+        lastProperty: "",
+        inLiteral: false,
+        stack: [grammar.startSymbol],
+        lastPredicateOffset: config.indentUnit,
+        prefixes: {}
+      };
+    },
+    indent: indent,
+    electricChars: "}])"
+  };
+});
 CodeMirror.defineMIME("application/x-sparql-query", "sparql11");
 
-},{"./_tokenizer-table.js":52,"codemirror":10}],54:[function(require,module,exports){
+},{"./_tokenizer-table.js":66,"codemirror":11}],68:[function(require,module,exports){
 /*
 * TRIE implementation in Javascript
 * Copyright (c) 2010 Saurabh Odhyan | http://odhyan.com
-* 
+*
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
 * in the Software without restriction, including without limitation the rights
 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 * copies of the Software, and to permit persons to whom the Software is
 * furnished to do so, subject to the following conditions:
-* 
+*
 * The above copyright notice and this permission notice shall be included in
 * all copies or substantial portions of the Software.
-* 
+*
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -92674,26 +95892,26 @@ CodeMirror.defineMIME("application/x-sparql-query", "sparql11");
 */
 
 /*
-* A trie, or prefix tree, is a multi-way tree structure useful for storing strings over an alphabet. 
-* It has been used to store large dictionaries of English (say) words in spell-checking programs 
-* and in natural-language "understanding" programs.    
+* A trie, or prefix tree, is a multi-way tree structure useful for storing strings over an alphabet.
+* It has been used to store large dictionaries of English (say) words in spell-checking programs
+* and in natural-language "understanding" programs.
 * @see http://en.wikipedia.org/wiki/Trie
 * @see http://www.csse.monash.edu.au/~lloyd/tildeAlgDS/Tree/Trie/
 /*
 
 * @class Trie
 * @constructor
-*/  
+*/
+
 var Trie = module.exports = function() {
-    this.words = 0;
-    this.prefixes = 0;
-    this.children = [];
+  this.words = 0;
+  this.prefixes = 0;
+  this.children = [];
 };
 
 Trie.prototype = {
-    
-    /*
-    * Insert a word into the dictionary. 
+  /*
+    * Insert a word into the dictionary.
     * Recursively traverse through the trie nodes, and create new node if does not already exist.
     *
     * @method insert
@@ -92701,32 +95919,32 @@ Trie.prototype = {
     * @param {Integer} pos Current index of the string to be inserted
     * @return {Void}
     */
-    insert: function(str, pos) {
-        if(str.length == 0) { //blank string cannot be inserted
-            return;
-        }
-        
-        var T = this,
-            k,
-            child;
-            
-        if(pos === undefined) {
-            pos = 0;
-        }
-        if(pos === str.length) {
-            T.words ++;
-            return;
-        }
-        T.prefixes ++;
-        k = str[pos];
-        if(T.children[k] === undefined) { //if node for this char doesn't exist, create one
-            T.children[k] = new Trie();
-        }
-        child = T.children[k];
-        child.insert(str, pos + 1);
-    },
-    
-    /*
+  insert: function(str, pos) {
+    if (str.length == 0) {
+      //blank string cannot be inserted
+      return;
+    }
+
+    var T = this, k, child;
+
+    if (pos === undefined) {
+      pos = 0;
+    }
+    if (pos === str.length) {
+      T.words++;
+      return;
+    }
+    T.prefixes++;
+    k = str[pos];
+    if (T.children[k] === undefined) {
+      //if node for this char doesn't exist, create one
+      T.children[k] = new Trie();
+    }
+    child = T.children[k];
+    child.insert(str, pos + 1);
+  },
+
+  /*
     * Remove a word from the dictionary.
     *
     * @method remove
@@ -92734,33 +95952,31 @@ Trie.prototype = {
     * @param {Integer} pos Current index of the string to be removed
     * @return {Void}
     */
-    remove: function(str, pos) {
-        if(str.length == 0) {
-            return;
-        }
-        
-        var T = this,
-            k,
-            child;
-        
-        if(pos === undefined) {
-            pos = 0;
-        }   
-        if(T === undefined) {
-            return;
-        }
-        if(pos === str.length) {
-            T.words --;
-            return;
-        }
-        T.prefixes --;
-        k = str[pos];
-        child = T.children[k];
-        child.remove(str, pos + 1);
-    },
-    
-    /*
-    * Update an existing word in the dictionary. 
+  remove: function(str, pos) {
+    if (str.length == 0) {
+      return;
+    }
+
+    var T = this, k, child;
+
+    if (pos === undefined) {
+      pos = 0;
+    }
+    if (T === undefined) {
+      return;
+    }
+    if (pos === str.length) {
+      T.words--;
+      return;
+    }
+    T.prefixes--;
+    k = str[pos];
+    child = T.children[k];
+    child.remove(str, pos + 1);
+  },
+
+  /*
+    * Update an existing word in the dictionary.
     * This method removes the old word from the dictionary and inserts the new word.
     *
     * @method update
@@ -92768,15 +95984,15 @@ Trie.prototype = {
     * @param {String} strNew The new word to be inserted
     * @return {Void}
     */
-    update: function(strOld, strNew) {
-        if(strOld.length == 0 || strNew.length == 0) {
-            return;
-        }
-        this.remove(strOld);
-        this.insert(strNew);
-    },
-    
-    /*
+  update: function(strOld, strNew) {
+    if (strOld.length == 0 || strNew.length == 0) {
+      return;
+    }
+    this.remove(strOld);
+    this.insert(strNew);
+  },
+
+  /*
     * Count the number of times a given word has been inserted into the dictionary
     *
     * @method countWord
@@ -92784,31 +96000,29 @@ Trie.prototype = {
     * @param {Integer} pos Current index of the given word
     * @return {Integer} The number of times a given word exists in the dictionary
     */
-    countWord: function(str, pos) {
-        if(str.length == 0) {
-            return 0;
-        }
-        
-        var T = this,
-            k,
-            child,
-            ret = 0;
-        
-        if(pos === undefined) {
-            pos = 0;
-        }   
-        if(pos === str.length) {
-            return T.words;
-        }
-        k = str[pos];
-        child = T.children[k];
-        if(child !== undefined) { //node exists
-            ret = child.countWord(str, pos + 1);
-        }
-        return ret;
-    },
-    
-    /*
+  countWord: function(str, pos) {
+    if (str.length == 0) {
+      return 0;
+    }
+
+    var T = this, k, child, ret = 0;
+
+    if (pos === undefined) {
+      pos = 0;
+    }
+    if (pos === str.length) {
+      return T.words;
+    }
+    k = str[pos];
+    child = T.children[k];
+    if (child !== undefined) {
+      //node exists
+      ret = child.countWord(str, pos + 1);
+    }
+    return ret;
+  },
+
+  /*
     * Count the number of times a given prefix exists in the dictionary
     *
     * @method countPrefix
@@ -92816,78 +96030,75 @@ Trie.prototype = {
     * @param {Integer} pos Current index of the given prefix
     * @return {Integer} The number of times a given prefix exists in the dictionary
     */
-    countPrefix: function(str, pos) {
-        if(str.length == 0) {
-            return 0;
-        }
-        
-        var T = this,
-            k,
-            child,
-            ret = 0;
+  countPrefix: function(str, pos) {
+    if (str.length == 0) {
+      return 0;
+    }
 
-        if(pos === undefined) {
-            pos = 0;
-        }
-        if(pos === str.length) {
-            return T.prefixes;
-        }
-        var k = str[pos];
-        child = T.children[k];
-        if(child !== undefined) { //node exists
-            ret = child.countPrefix(str, pos + 1); 
-        }
-        return ret; 
-    },
-    
-    /*
+    var T = this, k, child, ret = 0;
+
+    if (pos === undefined) {
+      pos = 0;
+    }
+    if (pos === str.length) {
+      return T.prefixes;
+    }
+    var k = str[pos];
+    child = T.children[k];
+    if (child !== undefined) {
+      //node exists
+      ret = child.countPrefix(str, pos + 1);
+    }
+    return ret;
+  },
+
+  /*
     * Find a word in the dictionary
     *
     * @method find
     * @param {String} str The word to find in the dictionary
     * @return {Boolean} True if the word exists in the dictionary, else false
     */
-    find: function(str) {
-        if(str.length == 0) {
-            return false;
-        }
-        
-        if(this.countWord(str) > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    },
-    
-    /*
+  find: function(str) {
+    if (str.length == 0) {
+      return false;
+    }
+
+    if (this.countWord(str) > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  },
+
+  /*
     * Get all words in the dictionary
     *
     * @method getAllWords
     * @param {String} str Prefix of current word
     * @return {Array} Array of words in the dictionary
     */
-    getAllWords: function(str) {
-        var T = this,
-            k,
-            child,
-            ret = [];
-        if(str === undefined) {
-            str = "";
-        }
-        if(T === undefined) {
-            return [];
-        }
-        if(T.words > 0) {
-            ret.push(str);
-        }
-        for(k in T.children) {
-            child = T.children[k];
-            ret = ret.concat(child.getAllWords(str + k));
-        }
-        return ret;
-    },
-    
-    /*
+  getAllWords: function(str) {
+    var T = this, k, child, ret = [];
+    if (str === undefined) {
+      str = "";
+    }
+    if (T === undefined) {
+      return [];
+    }
+    if (T.words > 0) {
+      ret.push(str);
+    }
+    for (k in T.children) {
+      if (T.children.hasOwnProperty(k)) {
+        child = T.children[k];
+        ret = ret.concat(child.getAllWords(str + k));
+      }
+    }
+    return ret;
+  },
+
+  /*
     * Autocomplete a given prefix
     *
     * @method autoComplete
@@ -92895,82 +96106,79 @@ Trie.prototype = {
     * @param {Integer} pos Current index of the prefix
     * @return {Array} Array of possible suggestions
     */
-    autoComplete: function(str, pos) {
-        
-        
-        var T = this,
-            k,
-            child;
-        if(str.length == 0) {
-			if (pos === undefined) {
-				return T.getAllWords(str);
-			} else {
-				return [];
-			}
-        }
-        if(pos === undefined) {
-            pos = 0;
-        }   
-        k = str[pos];
-        child = T.children[k];
-        if(child === undefined) { //node doesn't exist
-            return [];
-        }
-        if(pos === str.length - 1) {
-            return child.getAllWords(str);
-        }
-        return child.autoComplete(str, pos + 1);
+  autoComplete: function(str, pos) {
+    var T = this, k, child;
+    if (str.length == 0) {
+      if (pos === undefined) {
+        return T.getAllWords(str);
+      } else {
+        return [];
+      }
     }
+    if (pos === undefined) {
+      pos = 0;
+    }
+    k = str[pos];
+    child = T.children[k];
+    if (child === undefined) {
+      //node doesn't exist
+      return [];
+    }
+    if (pos === str.length - 1) {
+      return child.getAllWords(str);
+    }
+    return child.autoComplete(str, pos + 1);
+  }
 };
 
-},{}],55:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 module.exports={
   "_args": [
     [
       {
-        "raw": "yasgui-yasqe@2.11.7",
+        "raw": "yasgui-yasqe@2.11.12",
         "scope": null,
         "escapedName": "yasgui-yasqe",
         "name": "yasgui-yasqe",
-        "rawSpec": "2.11.7",
-        "spec": "2.11.7",
+        "rawSpec": "2.11.12",
+        "spec": "2.11.12",
         "type": "version"
       },
       "/home/lrd900/yasgui/yasgui"
     ]
   ],
-  "_from": "yasgui-yasqe@2.11.7",
-  "_id": "yasgui-yasqe@2.11.7",
+  "_from": "yasgui-yasqe@2.11.12",
+  "_id": "yasgui-yasqe@2.11.12",
   "_inCache": true,
   "_location": "/yasgui-yasqe",
-  "_nodeVersion": "7.4.0",
+  "_nodeVersion": "7.10.0",
   "_npmOperationalInternal": {
-    "host": "packages-12-west.internal.npmjs.com",
-    "tmp": "tmp/yasgui-yasqe-2.11.7.tgz_1483956200361_0.051466147881001234"
+    "host": "packages-18-east.internal.npmjs.com",
+    "tmp": "tmp/yasgui-yasqe-2.11.12.tgz_1495121634600_0.3384001385420561"
   },
   "_npmUser": {
     "name": "laurens.rietveld",
     "email": "laurens.rietveld@gmail.com"
   },
-  "_npmVersion": "4.0.5",
+  "_npmVersion": "4.2.0",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "yasgui-yasqe@2.11.7",
+    "raw": "yasgui-yasqe@2.11.12",
     "scope": null,
     "escapedName": "yasgui-yasqe",
     "name": "yasgui-yasqe",
-    "rawSpec": "2.11.7",
-    "spec": "2.11.7",
+    "rawSpec": "2.11.12",
+    "spec": "2.11.12",
     "type": "version"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.7.tgz",
-  "_shasum": "211073113c79e43c6a7d15d8cb6d9ffd2393cf5b",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.12.tgz",
+  "_shasum": "a844f3c82611bcb509509c37209caa9bb5cef7b7",
   "_shrinkwrap": null,
-  "_spec": "yasgui-yasqe@2.11.7",
+  "_spec": "yasgui-yasqe@2.11.12",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -92979,25 +96187,7 @@ module.exports={
     "url": "https://github.com/YASGUI/YASQE/issues/"
   },
   "dependencies": {
-    "bootstrap-sass": "^3.3.7",
-    "browserify": "^13.1.0",
-    "browserify-shim": "^3.8.12",
-    "browserify-transform-tools": "^1.6.0",
     "codemirror": "5.17.0",
-    "exorcist": "^0.4.0",
-    "gulp": "^3.9.1",
-    "gulp-autoprefixer": "^3.1.0",
-    "gulp-concat": "^2.6.0",
-    "gulp-cssimport": "^3.1.0",
-    "gulp-cssnano": "^2.1.2",
-    "gulp-filter": "^4.0.0",
-    "gulp-jsvalidate": "^2.1.0",
-    "gulp-notify": "^2.2.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-sass": "^2.3.2",
-    "gulp-sourcemaps": "^1.6.0",
-    "gulp-streamify": "1.0.2",
-    "gulp-uglify": "^1.5.4",
     "jquery": "^2.2.4",
     "node-sass": "^3.8.0",
     "require-dir": "^0.3.0",
@@ -93005,24 +96195,48 @@ module.exports={
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "~1.1.0",
     "vinyl-transform": "1.0.0",
-    "yasgui-utils": "^1.6.0"
+    "yasgui-utils": "^1.6.6"
   },
   "description": "Yet Another SPARQL Query Editor",
   "devDependencies": {
+    "bootstrap-sass": "^3.3.7",
+    "browserify": "^13.1.0",
+    "browserify-shim": "^3.8.12",
+    "browserify-transform-tools": "^1.6.0",
+    "exorcist": "^0.4.0",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.1.0",
     "gulp-bump": "^2.2.0",
+    "gulp-concat": "^2.6.0",
     "gulp-connect": "^4.2.0",
+    "gulp-cssimport": "^3.1.0",
+    "gulp-cssnano": "^2.1.2",
     "gulp-embedlr": "^0.5.2",
+    "gulp-filter": "^4.0.0",
     "gulp-git": "^1.10.0",
+    "gulp-jsvalidate": "^2.1.0",
     "gulp-livereload": "^3.8.1",
+    "gulp-notify": "^2.2.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^2.3.2",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-streamify": "1.0.2",
     "gulp-tag-version": "^1.3.0",
+    "gulp-uglify": "^1.5.4",
+    "node-sass": "^3.8.0",
+    "require-dir": "^0.3.0",
+    "run-sequence": "^1.2.2",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "~1.1.0",
+    "vinyl-transform": "1.0.0",
     "watchify": "^3.7.0"
   },
   "directories": {},
   "dist": {
-    "shasum": "211073113c79e43c6a7d15d8cb6d9ffd2393cf5b",
-    "tarball": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.7.tgz"
+    "shasum": "a844f3c82611bcb509509c37209caa9bb5cef7b7",
+    "tarball": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.12.tgz"
   },
-  "gitHead": "68a22f03933a16dbea8ab3a458c8c9fe194e6913",
+  "gitHead": "f997d59b51f1e05673586677d6f563f3c2e88ce7",
   "homepage": "http://yasqe.yasgui.org",
   "keywords": [
     "JavaScript",
@@ -93067,288 +96281,269 @@ module.exports={
     "minor": "gulp minor",
     "patch": "gulp patch"
   },
-  "version": "2.11.7"
+  "version": "2.11.12"
 }
 
-},{}],56:[function(require,module,exports){
-'use strict';
-var $ = require('jquery'),
-	utils = require('../utils.js'),
-	yutils = require('yasgui-utils'),
-	Trie = require('../../lib/trie.js'),
-	YASQE = require('../main.js');
+},{}],70:[function(require,module,exports){
+"use strict";
+var $ = require("jquery"),
+  utils = require("../utils.js"),
+  yutils = require("yasgui-utils"),
+  Trie = require("../../lib/trie.js"),
+  YASQE = require("../main.js");
 
 module.exports = function(YASQE, yasqe) {
-	var completionNotifications = {};
-	var completers = {};
-	var tries = {};
+  var completionNotifications = {};
+  var completers = {};
+  var tries = {};
 
-	yasqe.on('cursorActivity', function(yasqe, eventInfo) {
-		autoComplete(true);
-	});
-	yasqe.on('change', function() {
-		var needPossibleAdjustment = [];
-		for (var notificationName in completionNotifications) {
-			if (completionNotifications[notificationName].is(':visible')) {
-				needPossibleAdjustment.push(completionNotifications[notificationName]);
-			}
-		}
-		if (needPossibleAdjustment.length > 0) {
-			//position completion notifications
-			var scrollBar = $(yasqe.getWrapperElement()).find(".CodeMirror-vscrollbar");
-			var offset = 0;
-			if (scrollBar.is(":visible")) {
-				offset = scrollBar.outerWidth();
-			}
-			needPossibleAdjustment.forEach(function(notification) {
-				notification.css("right", offset)
-			});
-		}
-	});
+  yasqe.on("cursorActivity", function(yasqe, eventInfo) {
+    autoComplete(true);
+  });
+  yasqe.on("change", function() {
+    var needPossibleAdjustment = [];
+    for (var notificationName in completionNotifications) {
+      if (completionNotifications[notificationName].is(":visible")) {
+        needPossibleAdjustment.push(completionNotifications[notificationName]);
+      }
+    }
+    if (needPossibleAdjustment.length > 0) {
+      //position completion notifications
+      var scrollBar = $(yasqe.getWrapperElement()).find(".CodeMirror-vscrollbar");
+      var offset = 0;
+      if (scrollBar.is(":visible")) {
+        offset = scrollBar.outerWidth();
+      }
+      needPossibleAdjustment.forEach(function(notification) {
+        notification.css("right", offset);
+      });
+    }
+  });
 
-
-
-	/**
+  /**
 	 * Store bulk completions in memory as trie, and store these in localstorage as well (if enabled)
-	 * 
+	 *
 	 * @method doc.storeBulkCompletions
 	 * @param completions {array}
 	 */
-	var storeBulkCompletions = function(completer, completions) {
-		// store array as trie
-		tries[completer.name] = new Trie();
-		for (var i = 0; i < completions.length; i++) {
-			tries[completer.name].insert(completions[i]);
-		}
-		// store in localstorage as well
-		var storageId = utils.getPersistencyId(yasqe, completer.persistent);
-		if (storageId) yutils.storage.set(storageId, completions, "month");
-	};
+  var storeBulkCompletions = function(completer, completions) {
+    // store array as trie
+    tries[completer.name] = new Trie();
+    for (var i = 0; i < completions.length; i++) {
+      tries[completer.name].insert(completions[i]);
+    }
+    // store in localstorage as well
+    var storageId = utils.getPersistencyId(yasqe, completer.persistent);
+    if (storageId) yutils.storage.set(storageId, completions, "month", yasqe.options.onQuotaExceeded);
+  };
 
-	var initCompleter = function(name, completionInit) {
-		var completer = completers[name] = new completionInit(yasqe, name);
-		completer.name = name;
-		if (completer.bulk) {
-			var storeArrayAsBulk = function(suggestions) {
-				if (suggestions && suggestions instanceof Array && suggestions.length > 0) {
-					storeBulkCompletions(completer, suggestions);
-				}
-			}
-			if (completer.get instanceof Array) {
-				// we don't care whether the completions are already stored in
-				// localstorage. just use this one
-				storeArrayAsBulk(completer.get);
-			} else {
-				// if completions are defined in localstorage, use those! (calling the
-				// function may come with overhead (e.g. async calls))
-				var completionsFromStorage = null;
-				var persistencyIdentifier = utils.getPersistencyId(yasqe, completer.persistent);
-				if (persistencyIdentifier)
-					completionsFromStorage = yutils.storage.get(persistencyIdentifier);
-				if (completionsFromStorage && completionsFromStorage.length > 0) {
-					storeArrayAsBulk(completionsFromStorage);
-				} else {
-					// nothing in storage. check whether we have a function via which we
-					// can get our prefixes
-					if (completer.get instanceof Function) {
-						if (completer.async) {
-							completer.get(null, storeArrayAsBulk);
-						} else {
-							storeArrayAsBulk(completer.get());
-						}
-					}
-				}
-			}
-		}
-	};
+  var initCompleter = function(name, completionInit) {
+    var completer = (completers[name] = new completionInit(yasqe, name));
+    completer.name = name;
+    if (completer.bulk) {
+      var storeArrayAsBulk = function(suggestions) {
+        if (suggestions && suggestions instanceof Array && suggestions.length > 0) {
+          storeBulkCompletions(completer, suggestions);
+        }
+      };
+      if (completer.get instanceof Array) {
+        // we don't care whether the completions are already stored in
+        // localstorage. just use this one
+        storeArrayAsBulk(completer.get);
+      } else {
+        // if completions are defined in localstorage, use those! (calling the
+        // function may come with overhead (e.g. async calls))
+        var completionsFromStorage = null;
+        var persistencyIdentifier = utils.getPersistencyId(yasqe, completer.persistent);
+        if (persistencyIdentifier) completionsFromStorage = yutils.storage.get(persistencyIdentifier);
+        if (completionsFromStorage && completionsFromStorage.length > 0) {
+          storeArrayAsBulk(completionsFromStorage);
+        } else {
+          // nothing in storage. check whether we have a function via which we
+          // can get our prefixes
+          if (completer.get instanceof Function) {
+            if (completer.async) {
+              completer.get(null, storeArrayAsBulk);
+            } else {
+              storeArrayAsBulk(completer.get());
+            }
+          }
+        }
+      }
+    }
+  };
 
-	var autoComplete = function(fromAutoShow) {
-		if (yasqe.somethingSelected())
-			return;
-		var tryHintType = function(completer) {
-			if (fromAutoShow // from autoShow, i.e. this gets called each time the editor content changes
-				&& (!completer.autoShow // autoshow for  this particular type of autocompletion is -not- enabled
-					|| (!completer.bulk && completer.async)) // async is enabled (don't want to re-do ajax-like request for every editor change)
-			) {
-				return false;
-			}
+  var autoComplete = function(fromAutoShow) {
+    if (yasqe.somethingSelected()) return;
+    var tryHintType = function(completer) {
+      if (
+        fromAutoShow && // from autoShow, i.e. this gets called each time the editor content changes
+        (!completer.autoShow || // autoshow for  this particular type of autocompletion is -not- enabled
+          (!completer.bulk && completer.async)) // async is enabled (don't want to re-do ajax-like request for every editor change)
+      ) {
+        return false;
+      }
 
-			var hintConfig = {
-				closeCharacters: /(?=a)b/,
-				completeSingle: false
-			};
-			if (!completer.bulk && completer.async) {
-				hintConfig.async = true;
-			}
-			var wrappedHintCallback = function(yasqe, callback) {
-				return getCompletionHintsObject(completer, callback);
-			};
-			var result = YASQE.showHint(yasqe, wrappedHintCallback, hintConfig);
-			return true;
-		};
-		for (var completerName in completers) {
-			if ($.inArray(completerName, yasqe.options.autocompleters) == -1) continue; //this completer is disabled
-			var completer = completers[completerName];
-			if (!completer.isValidCompletionPosition) continue; //no way to check whether we are in a valid position
+      var hintConfig = {
+        closeCharacters: /(?=a)b/,
+        completeSingle: false
+      };
+      if (!completer.bulk && completer.async) {
+        hintConfig.async = true;
+      }
+      var wrappedHintCallback = function(yasqe, callback) {
+        return getCompletionHintsObject(completer, callback);
+      };
+      var result = YASQE.showHint(yasqe, wrappedHintCallback, hintConfig);
+      return true;
+    };
+    for (var completerName in completers) {
+      if ($.inArray(completerName, yasqe.options.autocompleters) == -1) continue; //this completer is disabled
+      var completer = completers[completerName];
+      if (!completer.isValidCompletionPosition) continue; //no way to check whether we are in a valid position
 
-			if (!completer.isValidCompletionPosition()) {
-				//if needed, fire callbacks for when we are -not- in valid completion position
-				if (completer.callbacks && completer.callbacks.invalidPosition) {
-					completer.callbacks.invalidPosition(yasqe, completer);
-				}
-				//not in a valid position, so continue to next completion candidate type
-				continue;
-			}
-			// run valid position handler, if there is one (if it returns false, stop the autocompletion!)
-			if (completer.callbacks && completer.callbacks.validPosition) {
-				if (completer.callbacks.validPosition(yasqe, completer) === false)
-					continue;
-			}
-			var success = tryHintType(completer);
-			if (success)
-				break;
-		}
-	};
+      if (!completer.isValidCompletionPosition()) {
+        //if needed, fire callbacks for when we are -not- in valid completion position
+        if (completer.callbacks && completer.callbacks.invalidPosition) {
+          completer.callbacks.invalidPosition(yasqe, completer);
+        }
+        //not in a valid position, so continue to next completion candidate type
+        continue;
+      }
+      // run valid position handler, if there is one (if it returns false, stop the autocompletion!)
+      if (completer.callbacks && completer.callbacks.validPosition) {
+        if (completer.callbacks.validPosition(yasqe, completer) === false) continue;
+      }
+      var success = tryHintType(completer);
+      if (success) break;
+    }
+  };
 
+  var getCompletionHintsObject = function(completer, callback) {
+    var getSuggestionsFromToken = function(partialToken) {
+      var stringToAutocomplete = partialToken.autocompletionString || partialToken.string;
+      var suggestions = [];
+      if (tries[completer.name]) {
+        suggestions = tries[completer.name].autoComplete(stringToAutocomplete);
+      } else if (typeof completer.get == "function" && completer.async == false) {
+        suggestions = completer.get(stringToAutocomplete);
+      } else if (typeof completer.get == "object") {
+        var partialTokenLength = stringToAutocomplete.length;
+        for (var i = 0; i < completer.get.length; i++) {
+          var completion = completer.get[i];
+          if (completion.slice(0, partialTokenLength) == stringToAutocomplete) {
+            suggestions.push(completion);
+          }
+        }
+      }
+      return getSuggestionsAsHintObject(suggestions, completer, partialToken);
+    };
 
+    var token = yasqe.getCompleteToken();
+    if (completer.preProcessToken) {
+      token = completer.preProcessToken(token);
+    }
 
-	var getCompletionHintsObject = function(completer, callback) {
-		var getSuggestionsFromToken = function(partialToken) {
-			var stringToAutocomplete = partialToken.autocompletionString || partialToken.string;
-			var suggestions = [];
-			if (tries[completer.name]) {
-				suggestions = tries[completer.name].autoComplete(stringToAutocomplete);
-			} else if (typeof completer.get == "function" && completer.async == false) {
-				suggestions = completer.get(stringToAutocomplete);
-			} else if (typeof completer.get == "object") {
-				var partialTokenLength = stringToAutocomplete.length;
-				for (var i = 0; i < completer.get.length; i++) {
-					var completion = completer.get[i];
-					if (completion.slice(0, partialTokenLength) == stringToAutocomplete) {
-						suggestions.push(completion);
-					}
-				}
-			}
-			return getSuggestionsAsHintObject(suggestions, completer, partialToken);
+    if (token) {
+      // use custom completionhint function, to avoid reaching a loop when the
+      // completionhint is the same as the current token
+      // regular behaviour would keep changing the codemirror dom, hence
+      // constantly calling this callback
+      if (!completer.bulk && completer.async) {
+        var wrappedCallback = function(suggestions) {
+          callback(getSuggestionsAsHintObject(suggestions, completer, token));
+        };
+        completer.get(token, wrappedCallback);
+      } else {
+        return getSuggestionsFromToken(token);
+      }
+    }
+  };
 
-		};
-
-
-		var token = yasqe.getCompleteToken();
-		if (completer.preProcessToken) {
-			token = completer.preProcessToken(token);
-		}
-
-		if (token) {
-			// use custom completionhint function, to avoid reaching a loop when the
-			// completionhint is the same as the current token
-			// regular behaviour would keep changing the codemirror dom, hence
-			// constantly calling this callback
-			if (!completer.bulk && completer.async) {
-				var wrappedCallback = function(suggestions) {
-					callback(getSuggestionsAsHintObject(suggestions, completer, token));
-				};
-				completer.get(token, wrappedCallback);
-			} else {
-				return getSuggestionsFromToken(token);
-
-			}
-		}
-	};
-
-
-	/**
+  /**
 	 *  get our array of suggestions (strings) in the codemirror hint format
 	 */
-	var getSuggestionsAsHintObject = function(suggestions, completer, token) {
-		var hintList = [];
-		for (var i = 0; i < suggestions.length; i++) {
-			var suggestedString = suggestions[i];
-			if (completer.postProcessToken) {
-				suggestedString = completer.postProcessToken(token, suggestedString);
-			}
-			hintList.push({
-				text: suggestedString,
-				displayText: suggestedString,
-				hint: selectHint,
-			});
-		}
+  var getSuggestionsAsHintObject = function(suggestions, completer, token) {
+    var hintList = [];
+    for (var i = 0; i < suggestions.length; i++) {
+      var suggestedString = suggestions[i];
+      if (completer.postProcessToken) {
+        suggestedString = completer.postProcessToken(token, suggestedString);
+      }
+      hintList.push({
+        text: suggestedString,
+        displayText: suggestedString,
+        hint: selectHint
+      });
+    }
 
-		var cur = yasqe.getCursor();
-		var returnObj = {
-			completionToken: token.string,
-			list: hintList,
-			from: {
-				line: cur.line,
-				ch: token.start
-			},
-			to: {
-				line: cur.line,
-				ch: token.end
-			}
-		};
-		//if we have some autocompletion handlers specified, add these these to the object. Codemirror will take care of firing these
-		if (completer.callbacks) {
-			for (var callbackName in completer.callbacks) {
-				if (completer.callbacks[callbackName]) {
-					YASQE.on(returnObj, callbackName, completer.callbacks[callbackName]);
-				}
-			}
-		}
-		return returnObj;
-	};
+    var cur = yasqe.getCursor();
+    var returnObj = {
+      completionToken: token.string,
+      list: hintList,
+      from: {
+        line: cur.line,
+        ch: token.start
+      },
+      to: {
+        line: cur.line,
+        ch: token.end
+      }
+    };
+    //if we have some autocompletion handlers specified, add these these to the object. Codemirror will take care of firing these
+    if (completer.callbacks) {
+      for (var callbackName in completer.callbacks) {
+        if (completer.callbacks[callbackName]) {
+          YASQE.on(returnObj, callbackName, completer.callbacks[callbackName]);
+        }
+      }
+    }
+    return returnObj;
+  };
 
-	return {
-		init: initCompleter,
-		completers: completers,
-		notifications: {
-			getEl: function(completer) {
-				return $(completionNotifications[completer.name]);
-			},
-			show: function(yasqe, completer) {
-				//only draw when the user needs to use a keypress to summon autocompletions
-				if (!completer.autoshow) {
-					if (!completionNotifications[completer.name]) completionNotifications[completer.name] = $("<div class='completionNotification'></div>");
-					completionNotifications[completer.name]
-						.show()
-						.text("Press " + (navigator.userAgent.indexOf('Mac OS X') != -1 ? "CMD" : "CTRL") + " - <spacebar> to autocomplete")
-						.appendTo($(yasqe.getWrapperElement()));
-				}
-			},
-			hide: function(yasqe, completer) {
-				if (completionNotifications[completer.name]) {
-					completionNotifications[completer.name].hide();
-				}
-			}
-
-		},
-		autoComplete: autoComplete,
-		getTrie: function(completer) {
-			return (typeof completer == "string" ? tries[completer] : tries[completer.name]);
-		}
-	}
+  return {
+    init: initCompleter,
+    completers: completers,
+    notifications: {
+      getEl: function(completer) {
+        return $(completionNotifications[completer.name]);
+      },
+      show: function(yasqe, completer) {
+        //only draw when the user needs to use a keypress to summon autocompletions
+        if (!completer.autoshow) {
+          if (!completionNotifications[completer.name])
+            completionNotifications[completer.name] = $("<div class='completionNotification'></div>");
+          completionNotifications[completer.name]
+            .show()
+            .text(
+              "Press " +
+                (navigator.userAgent.indexOf("Mac OS X") != -1 ? "CMD" : "CTRL") +
+                " - <spacebar> to autocomplete"
+            )
+            .appendTo($(yasqe.getWrapperElement()));
+        }
+      },
+      hide: function(yasqe, completer) {
+        if (completionNotifications[completer.name]) {
+          completionNotifications[completer.name].hide();
+        }
+      }
+    },
+    autoComplete: autoComplete,
+    getTrie: function(completer) {
+      return typeof completer == "string" ? tries[completer] : tries[completer.name];
+    }
+  };
 };
-
-
-
-
-
-
-
-
 
 /**
  * function which fires after the user selects a completion. this function checks whether we actually need to store this one (if completion is same as current token, don't do anything)
  */
 var selectHint = function(yasqe, data, completion) {
-	if (completion.text != yasqe.getTokenAt(yasqe.getCursor()).string) {
-		yasqe.replaceRange(completion.text, data.from, data.to);
-	}
+  if (completion.text != yasqe.getTokenAt(yasqe.getCursor()).string) {
+    yasqe.replaceRange(completion.text, data.from, data.to);
+  }
 };
-
-
-
-
 
 //
 //module.exports = {
@@ -93364,146 +96559,138 @@ var selectHint = function(yasqe, data, completion) {
 ////	storeBulkCompletions: storeBulkCompletions,
 //	loadBulkCompletions: loadBulkCompletions,
 //};
-},{"../../lib/trie.js":54,"../main.js":65,"../utils.js":71,"jquery":26,"yasgui-utils":48}],57:[function(require,module,exports){
-'use strict';
-var $ = require('jquery');
+
+},{"../../lib/trie.js":68,"../main.js":79,"../utils.js":85,"jquery":29,"yasgui-utils":62}],71:[function(require,module,exports){
+"use strict";
+var $ = require("jquery");
 module.exports = function(yasqe, name) {
-	return {
-		isValidCompletionPosition: function() {
-			return module.exports.isValidCompletionPosition(yasqe);
-		},
-		get: function(token, callback) {
-			return require('./utils').fetchFromLov(yasqe, this, token, callback);
-		},
-		preProcessToken: function(token) {
-			return module.exports.preProcessToken(yasqe, token)
-		},
-		postProcessToken: function(token, suggestedString) {
-			return module.exports.postProcessToken(yasqe, token, suggestedString);
-		},
-		async: true,
-		bulk: false,
-		autoShow: false,
-		persistent: name,
-		callbacks: {
-			validPosition: yasqe.autocompleters.notifications.show,
-			invalidPosition: yasqe.autocompleters.notifications.hide,
-		}
-	}
+  return {
+    isValidCompletionPosition: function() {
+      return module.exports.isValidCompletionPosition(yasqe);
+    },
+    get: function(token, callback) {
+      return require("./utils").fetchFromLov(yasqe, this, token, callback);
+    },
+    preProcessToken: function(token) {
+      return module.exports.preProcessToken(yasqe, token);
+    },
+    postProcessToken: function(token, suggestedString) {
+      return module.exports.postProcessToken(yasqe, token, suggestedString);
+    },
+    async: true,
+    bulk: false,
+    autoShow: false,
+    persistent: name,
+    callbacks: {
+      validPosition: yasqe.autocompleters.notifications.show,
+      invalidPosition: yasqe.autocompleters.notifications.hide
+    }
+  };
 };
 
 module.exports.isValidCompletionPosition = function(yasqe) {
-	var token = yasqe.getCompleteToken();
-	if (token.string.indexOf("?") == 0)
-		return false;
-	var cur = yasqe.getCursor();
-	var previousToken = yasqe.getPreviousNonWsToken(cur.line, token);
-	if (previousToken.string == "a")
-		return true;
-	if (previousToken.string == "rdf:type")
-		return true;
-	if (previousToken.string == "rdfs:domain")
-		return true;
-	if (previousToken.string == "rdfs:range")
-		return true;
-	return false;
+  var token = yasqe.getCompleteToken();
+  if (token.string.indexOf("?") == 0) return false;
+  var cur = yasqe.getCursor();
+  var previousToken = yasqe.getPreviousNonWsToken(cur.line, token);
+  if (previousToken.string == "a") return true;
+  if (previousToken.string == "rdf:type") return true;
+  if (previousToken.string == "rdfs:domain") return true;
+  if (previousToken.string == "rdfs:range") return true;
+  return false;
 };
 module.exports.preProcessToken = function(yasqe, token) {
-	return require('./utils.js').preprocessResourceTokenForCompletion(yasqe, token);
+  return require("./utils.js").preprocessResourceTokenForCompletion(yasqe, token);
 };
 module.exports.postProcessToken = function(yasqe, token, suggestedString) {
-	return require('./utils.js').postprocessResourceTokenForCompletion(yasqe, token, suggestedString)
+  return require("./utils.js").postprocessResourceTokenForCompletion(yasqe, token, suggestedString);
 };
-},{"./utils":60,"./utils.js":60,"jquery":26}],58:[function(require,module,exports){
-'use strict';
-var $ = require('jquery');
+
+},{"./utils":74,"./utils.js":74,"jquery":29}],72:[function(require,module,exports){
+"use strict";
+var $ = require("jquery");
 //this is a mapping from the class names (generic ones, for compatability with codemirror themes), to what they -actually- represent
 var tokenTypes = {
-	"string-2": "prefixed",
-	"atom": "var"
+  "string-2": "prefixed",
+  atom: "var"
 };
 
 module.exports = function(yasqe, completerName) {
-	//this autocompleter also fires on-change!
-	yasqe.on("change", function() {
-		module.exports.appendPrefixIfNeeded(yasqe, completerName);
-	});
+  //this autocompleter also fires on-change!
+  yasqe.on("change", function() {
+    module.exports.appendPrefixIfNeeded(yasqe, completerName);
+  });
 
+  return {
+    isValidCompletionPosition: function() {
+      return module.exports.isValidCompletionPosition(yasqe);
+    },
+    get: function(token, callback) {
+      $.get(module.exports.fetchFrom, function(data) {
+        var prefixArray = [];
+        for (var prefix in data) {
+          if (prefix == "bif") continue; // skip this one! see #231
+          var completeString = prefix + ": <" + data[prefix] + ">";
+          prefixArray.push(completeString); // the array we want to store in localstorage
+        }
 
-	return {
-		isValidCompletionPosition: function() {
-			return module.exports.isValidCompletionPosition(yasqe);
-		},
-		get: function(token, callback) {
-			$.get(module.exports.fetchFrom, function(data) {
-				var prefixArray = [];
-				for (var prefix in data) {
-					if (prefix == "bif")
-						continue; // skip this one! see #231
-					var completeString = prefix + ": <" + data[prefix] + ">";
-					prefixArray.push(completeString); // the array we want to store in localstorage
-				}
-
-				prefixArray.sort();
-				callback(prefixArray);
-			});
-		},
-		preProcessToken: function(token) {
-			return module.exports.preprocessPrefixTokenForCompletion(yasqe, token)
-		},
-		async: true,
-		bulk: true,
-		autoShow: true,
-		persistent: completerName,
-		callbacks: {
-			pick: function() {
-				yasqe.collapsePrefixes(false);
-			}
-		}
-	};
+        prefixArray.sort();
+        callback(prefixArray);
+      });
+    },
+    preProcessToken: function(token) {
+      return module.exports.preprocessPrefixTokenForCompletion(yasqe, token);
+    },
+    async: true,
+    bulk: true,
+    autoShow: true,
+    persistent: completerName,
+    callbacks: {
+      pick: function() {
+        yasqe.collapsePrefixes(false);
+      }
+    }
+  };
 };
 module.exports.isValidCompletionPosition = function(yasqe) {
-	var cur = yasqe.getCursor(),
-		token = yasqe.getTokenAt(cur);
+  var cur = yasqe.getCursor(), token = yasqe.getTokenAt(cur);
 
-	// not at end of line
-	if (yasqe.getLine(cur.line).length > cur.ch)
-		return false;
+  // not at end of line
+  if (yasqe.getLine(cur.line).length > cur.ch) return false;
 
-	if (token.type != "ws") {
-		// we want to complete token, e.g. when the prefix starts with an a
-		// (treated as a token in itself..)
-		// but we to avoid including the PREFIX tag. So when we have just
-		// typed a space after the prefix tag, don't get the complete token
-		token = yasqe.getCompleteToken();
-	}
+  if (token.type != "ws") {
+    // we want to complete token, e.g. when the prefix starts with an a
+    // (treated as a token in itself..)
+    // but we to avoid including the PREFIX tag. So when we have just
+    // typed a space after the prefix tag, don't get the complete token
+    token = yasqe.getCompleteToken();
+  }
 
-	// we shouldnt be at the uri part the prefix declaration
-	// also check whether current token isnt 'a' (that makes codemirror
-	// thing a namespace is a possiblecurrent
-	if (!token.string.indexOf("a") == 0 && $.inArray("PNAME_NS", token.state.possibleCurrent) == -1)
-		return false;
+  // we shouldnt be at the uri part the prefix declaration
+  // also check whether current token isnt 'a' (that makes codemirror
+  // thing a namespace is a possiblecurrent
+  if (!token.string.indexOf("a") == 0 && $.inArray("PNAME_NS", token.state.possibleCurrent) == -1) return false;
 
-	// First token of line needs to be PREFIX,
-	// there should be no trailing text (otherwise, text is wrongly inserted
-	// in between)
-	var previousToken = yasqe.getPreviousNonWsToken(cur.line, token);
-	if (!previousToken || previousToken.string.toUpperCase() != "PREFIX") return false;
-	return true;
+  // First token of line needs to be PREFIX,
+  // there should be no trailing text (otherwise, text is wrongly inserted
+  // in between)
+  var previousToken = yasqe.getPreviousNonWsToken(cur.line, token);
+  if (!previousToken || previousToken.string.toUpperCase() != "PREFIX") return false;
+  return true;
 };
 module.exports.preprocessPrefixTokenForCompletion = function(yasqe, token) {
-	var previousToken = yasqe.getPreviousNonWsToken(yasqe.getCursor().line, token);
-	if (previousToken && previousToken.string && previousToken.string.slice(-1) == ":") {
-		//combine both tokens! In this case we have the cursor at the end of line "PREFIX bla: <".
-		//we want the token to be "bla: <", en not "<"
-		token = {
-			start: previousToken.start,
-			end: token.end,
-			string: previousToken.string + " " + token.string,
-			state: token.state
-		};
-	}
-	return token;
+  var previousToken = yasqe.getPreviousNonWsToken(yasqe.getCursor().line, token);
+  if (previousToken && previousToken.string && previousToken.string.slice(-1) == ":") {
+    //combine both tokens! In this case we have the cursor at the end of line "PREFIX bla: <".
+    //we want the token to be "bla: <", en not "<"
+    token = {
+      start: previousToken.start,
+      end: token.end,
+      string: previousToken.string + " " + token.string,
+      state: token.state
+    };
+  }
+  return token;
 };
 /**
  * Check whether typed prefix is declared. If not, automatically add declaration
@@ -93512,297 +96699,281 @@ module.exports.preprocessPrefixTokenForCompletion = function(yasqe, token) {
  * @param yasqe
  */
 module.exports.appendPrefixIfNeeded = function(yasqe, completerName) {
-	if (!yasqe.autocompleters.getTrie(completerName))
-		return; // no prefixed defined. just stop
-	if (!yasqe.options.autocompleters || yasqe.options.autocompleters.indexOf(completerName) == -1) return; //this autocompleter is disabled
-	var cur = yasqe.getCursor();
+  if (!yasqe.autocompleters.getTrie(completerName)) return; // no prefixed defined. just stop
+  if (!yasqe.options.autocompleters || yasqe.options.autocompleters.indexOf(completerName) == -1) return; //this autocompleter is disabled
+  var cur = yasqe.getCursor();
 
-	var token = yasqe.getTokenAt(cur);
-	if (tokenTypes[token.type] == "prefixed") {
-		var colonIndex = token.string.indexOf(":");
-		if (colonIndex !== -1) {
-			// check previous token isnt PREFIX, or a '<'(which would mean we are in a uri)
-			//			var firstTokenString = yasqe.getNextNonWsToken(cur.line).string.toUpperCase();
-			var lastNonWsTokenString = yasqe.getPreviousNonWsToken(cur.line, token).string.toUpperCase();
-			var previousToken = yasqe.getTokenAt({
-				line: cur.line,
-				ch: token.start
-			}); // needs to be null (beginning of line), or whitespace
-			if (lastNonWsTokenString != "PREFIX" && (previousToken.type == "ws" || previousToken.type == null)) {
-				// check whether it isnt defined already (saves us from looping
-				// through the array)
-				var currentPrefix = token.string.substring(0, colonIndex + 1);
-				var queryPrefixes = yasqe.getPrefixesFromQuery();
-				if (queryPrefixes[currentPrefix.slice(0, -1)] == null) {
-					// ok, so it isnt added yet!
-					var completions = yasqe.autocompleters.getTrie(completerName).autoComplete(currentPrefix);
-					if (completions.length > 0) {
-						yasqe.addPrefixes(completions[0]);
-					}
-				}
-			}
-		}
-	}
+  var token = yasqe.getTokenAt(cur);
+  if (tokenTypes[token.type] == "prefixed") {
+    var colonIndex = token.string.indexOf(":");
+    if (colonIndex !== -1) {
+      // check previous token isnt PREFIX, or a '<'(which would mean we are in a uri)
+      //			var firstTokenString = yasqe.getNextNonWsToken(cur.line).string.toUpperCase();
+      var lastNonWsTokenString = yasqe.getPreviousNonWsToken(cur.line, token).string.toUpperCase();
+      var previousToken = yasqe.getTokenAt({
+        line: cur.line,
+        ch: token.start
+      }); // needs to be null (beginning of line), or whitespace
+      if (lastNonWsTokenString != "PREFIX" && (previousToken.type == "ws" || previousToken.type == null)) {
+        // check whether it isnt defined already (saves us from looping
+        // through the array)
+        var currentPrefix = token.string.substring(0, colonIndex + 1);
+        var queryPrefixes = yasqe.getPrefixesFromQuery();
+        if (queryPrefixes[currentPrefix.slice(0, -1)] == null) {
+          // ok, so it isnt added yet!
+          var completions = yasqe.autocompleters.getTrie(completerName).autoComplete(currentPrefix);
+          if (completions.length > 0) {
+            yasqe.addPrefixes(completions[0]);
+          }
+        }
+      }
+    }
+  }
 };
 
-module.exports.fetchFrom = (window.location.protocol.indexOf('http') === 0? '//': 'http://') + 'prefix.cc/popular/all.file.json'
+module.exports.fetchFrom = (window.location.protocol.indexOf("http") === 0 ? "//" : "http://") +
+  "prefix.cc/popular/all.file.json";
 
-},{"jquery":26}],59:[function(require,module,exports){
-'use strict';
-var $ = require('jquery');
+},{"jquery":29}],73:[function(require,module,exports){
+"use strict";
+var $ = require("jquery");
 module.exports = function(yasqe, name) {
-	return {
-		isValidCompletionPosition: function() {
-			return module.exports.isValidCompletionPosition(yasqe);
-		},
-		get: function(token, callback) {
-			return require('./utils').fetchFromLov(yasqe, this, token, callback);
-		},
-		preProcessToken: function(token) {
-			return module.exports.preProcessToken(yasqe, token)
-		},
-		postProcessToken: function(token, suggestedString) {
-			return module.exports.postProcessToken(yasqe, token, suggestedString);
-		},
-		async: true,
-		bulk: false,
-		autoShow: false,
-		persistent: name,
-		callbacks: {
-			validPosition: yasqe.autocompleters.notifications.show,
-			invalidPosition: yasqe.autocompleters.notifications.hide,
-		}
-	}
+  return {
+    isValidCompletionPosition: function() {
+      return module.exports.isValidCompletionPosition(yasqe);
+    },
+    get: function(token, callback) {
+      return require("./utils").fetchFromLov(yasqe, this, token, callback);
+    },
+    preProcessToken: function(token) {
+      return module.exports.preProcessToken(yasqe, token);
+    },
+    postProcessToken: function(token, suggestedString) {
+      return module.exports.postProcessToken(yasqe, token, suggestedString);
+    },
+    async: true,
+    bulk: false,
+    autoShow: false,
+    persistent: name,
+    callbacks: {
+      validPosition: yasqe.autocompleters.notifications.show,
+      invalidPosition: yasqe.autocompleters.notifications.hide
+    }
+  };
 };
 
 module.exports.isValidCompletionPosition = function(yasqe) {
-	var token = yasqe.getCompleteToken();
-	if (token.string.length == 0)
-		return false; //we want -something- to autocomplete
-	if (token.string.indexOf("?") == 0)
-		return false; // we are typing a var
-	if ($.inArray("a", token.state.possibleCurrent) >= 0)
-		return true; // predicate pos
-	var cur = yasqe.getCursor();
-	var previousToken = yasqe.getPreviousNonWsToken(cur.line, token);
-	if (previousToken.string == "rdfs:subPropertyOf")
-		return true;
+  var token = yasqe.getCompleteToken();
+  if (token.string.length == 0) return false; //we want -something- to autocomplete
+  if (token.string.indexOf("?") == 0) return false; // we are typing a var
+  if ($.inArray("a", token.state.possibleCurrent) >= 0) return true; // predicate pos
+  var cur = yasqe.getCursor();
+  var previousToken = yasqe.getPreviousNonWsToken(cur.line, token);
+  if (previousToken.string == "rdfs:subPropertyOf") return true;
 
-	// hmm, we would like -better- checks here, e.g. checking whether we are
-	// in a subject, and whether next item is a rdfs:subpropertyof.
-	// difficult though... the grammar we use is unreliable when the query
-	// is invalid (i.e. during typing), and often the predicate is not typed
-	// yet, when we are busy writing the subject...
-	return false;
+  // hmm, we would like -better- checks here, e.g. checking whether we are
+  // in a subject, and whether next item is a rdfs:subpropertyof.
+  // difficult though... the grammar we use is unreliable when the query
+  // is invalid (i.e. during typing), and often the predicate is not typed
+  // yet, when we are busy writing the subject...
+  return false;
 };
 module.exports.preProcessToken = function(yasqe, token) {
-	return require('./utils.js').preprocessResourceTokenForCompletion(yasqe, token);
+  return require("./utils.js").preprocessResourceTokenForCompletion(yasqe, token);
 };
 module.exports.postProcessToken = function(yasqe, token, suggestedString) {
-	return require('./utils.js').postprocessResourceTokenForCompletion(yasqe, token, suggestedString)
+  return require("./utils.js").postprocessResourceTokenForCompletion(yasqe, token, suggestedString);
 };
-},{"./utils":60,"./utils.js":60,"jquery":26}],60:[function(require,module,exports){
-'use strict';
-var $ = require('jquery'),
-	utils = require('./utils.js'),
-	yutils = require('yasgui-utils');
+
+},{"./utils":74,"./utils.js":74,"jquery":29}],74:[function(require,module,exports){
+"use strict";
+var $ = require("jquery"), utils = require("./utils.js"), yutils = require("yasgui-utils");
 /**
  * Where the base class only contains functionality related to -all- completions, this class contains some utils used here and there in our autocompletions
  */
-
-
 
 /**
  * Converts rdf:type to http://.../type and converts <http://...> to http://...
  * Stores additional info such as the used namespace and prefix in the token object
  */
 var preprocessResourceTokenForCompletion = function(yasqe, token) {
-	var queryPrefixes = yasqe.getPrefixesFromQuery();
-	if (!token.string.indexOf("<") == 0) {
-		token.tokenPrefix = token.string.substring(0, token.string.indexOf(":") + 1);
+  var queryPrefixes = yasqe.getPrefixesFromQuery();
+  if (!token.string.indexOf("<") == 0) {
+    token.tokenPrefix = token.string.substring(0, token.string.indexOf(":") + 1);
 
-		if (queryPrefixes[token.tokenPrefix.slice(0, -1)] != null) {
-			token.tokenPrefixUri = queryPrefixes[token.tokenPrefix.slice(0, -1)];
-		}
-	}
+    if (queryPrefixes[token.tokenPrefix.slice(0, -1)] != null) {
+      token.tokenPrefixUri = queryPrefixes[token.tokenPrefix.slice(0, -1)];
+    }
+  }
 
-	token.autocompletionString = token.string.trim();
-	if (!token.string.indexOf("<") == 0 && token.string.indexOf(":") > -1) {
-		// hmm, the token is prefixed. We still need the complete uri for autocompletions. generate this!
-		for (var prefix in queryPrefixes) {
-			if (token.tokenPrefix === prefix + ':') {
-				token.autocompletionString = queryPrefixes[prefix];
-				token.autocompletionString += token.string.substring(prefix.length + 1);
-				break;
-			}
-		}
-	}
+  token.autocompletionString = token.string.trim();
+  if (!token.string.indexOf("<") == 0 && token.string.indexOf(":") > -1) {
+    // hmm, the token is prefixed. We still need the complete uri for autocompletions. generate this!
+    for (var prefix in queryPrefixes) {
+      if (token.tokenPrefix === prefix + ":") {
+        token.autocompletionString = queryPrefixes[prefix];
+        token.autocompletionString += token.string.substring(prefix.length + 1);
+        break;
+      }
+    }
+  }
 
-	if (token.autocompletionString.indexOf("<") == 0) token.autocompletionString = token.autocompletionString.substring(1);
-	if (token.autocompletionString.indexOf(">", token.length - 1) !== -1) token.autocompletionString = token.autocompletionString.substring(0, token.autocompletionString.length - 1);
-	return token;
+  if (token.autocompletionString.indexOf("<") == 0)
+    token.autocompletionString = token.autocompletionString.substring(1);
+  if (token.autocompletionString.indexOf(">", token.length - 1) !== -1)
+    token.autocompletionString = token.autocompletionString.substring(0, token.autocompletionString.length - 1);
+  return token;
 };
 
 var postprocessResourceTokenForCompletion = function(yasqe, token, suggestedString) {
-	if (token.tokenPrefix && token.autocompletionString && token.tokenPrefixUri) {
-		// we need to get the suggested string back to prefixed form
-		suggestedString = token.tokenPrefix + suggestedString.substring(token.tokenPrefixUri.length);
-	} else {
-		// it is a regular uri. add '<' and '>' to string
-		suggestedString = "<" + suggestedString + ">";
-	}
-	return suggestedString;
+  if (token.tokenPrefix && token.autocompletionString && token.tokenPrefixUri) {
+    // we need to get the suggested string back to prefixed form
+    suggestedString = token.tokenPrefix + suggestedString.substring(token.tokenPrefixUri.length);
+  } else {
+    // it is a regular uri. add '<' and '>' to string
+    suggestedString = "<" + suggestedString + ">";
+  }
+  return suggestedString;
 };
 
 //Use protocol relative request when served via http[s]*. Otherwise (e.g. file://, fetch via http)
-var reqProtocol = (window.location.protocol.indexOf('http') === 0? '//': 'http://')
+var reqProtocol = window.location.protocol.indexOf("http") === 0 ? "//" : "http://";
 var fetchFromLov = function(yasqe, completer, token, callback) {
-	if (!token || !token.string || token.string.trim().length == 0) {
-		yasqe.autocompleters.notifications.getEl(completer)
-			.empty()
-			.append("Nothing to autocomplete yet!");
-		return false;
-	}
-	var maxResults = 50;
+  if (!token || !token.string || token.string.trim().length == 0) {
+    yasqe.autocompleters.notifications.getEl(completer).empty().append("Nothing to autocomplete yet!");
+    return false;
+  }
+  var maxResults = 50;
 
-	var args = {
-		q: token.autocompletionString,
-		page: 1
-	};
-	if (completer.name == "classes") {
-		args.type = "class";
-	} else {
-		args.type = "property";
-	}
-	var results = [];
-	var url = "";
-	var updateUrl = function() {
-		url = reqProtocol + "lov.okfn.org/dataset/lov/api/v2/autocomplete/terms?" + $.param(args);
-	};
-	updateUrl();
-	var increasePage = function() {
-		args.page++;
-		updateUrl();
-	};
-	var doRequests = function() {
-		$.get(
-			url,
-			function(data) {
-				for (var i = 0; i < data.results.length; i++) {
-					if ($.isArray(data.results[i].uri) && data.results[i].uri.length > 0) {
-						results.push(data.results[i].uri[0]);
-					} else {
-						results.push(data.results[i].uri);
-					}
-
-				}
-				if (results.length < data.total_results && results.length < maxResults) {
-					increasePage();
-					doRequests();
-				} else {
-					//if notification bar is there, show feedback, or close
-					if (results.length > 0) {
-						yasqe.autocompleters.notifications.hide(yasqe, completer)
-					} else {
-						yasqe.autocompleters.notifications.getEl(completer).text("0 matches found...");
-					}
-					callback(results);
-					// requests done! Don't call this function again
-				}
-			}).fail(function(jqXHR, textStatus, errorThrown) {
-			yasqe.autocompleters.notifications.getEl(completer)
-				.empty()
-				.append("Failed fetching suggestions..");
-
-		});
-	};
-	//if notification bar is there, show a loader
-	yasqe.autocompleters.notifications.getEl(completer)
-		.empty()
-		.append($("<span>Fetchting autocompletions &nbsp;</span>"))
-		.append($(yutils.svg.getElement(require('../imgs.js').loader)).addClass("notificationLoader"));
-	doRequests();
+  var args = {
+    q: token.autocompletionString,
+    page: 1
+  };
+  if (completer.name == "classes") {
+    args.type = "class";
+  } else {
+    args.type = "property";
+  }
+  var results = [];
+  var url = "";
+  var updateUrl = function() {
+    url = reqProtocol + "lov.okfn.org/dataset/lov/api/v2/autocomplete/terms?" + $.param(args);
+  };
+  updateUrl();
+  var increasePage = function() {
+    args.page++;
+    updateUrl();
+  };
+  var doRequests = function() {
+    $.get(url, function(data) {
+      for (var i = 0; i < data.results.length; i++) {
+        if ($.isArray(data.results[i].uri) && data.results[i].uri.length > 0) {
+          results.push(data.results[i].uri[0]);
+        } else {
+          results.push(data.results[i].uri);
+        }
+      }
+      if (results.length < data.total_results && results.length < maxResults) {
+        increasePage();
+        doRequests();
+      } else {
+        //if notification bar is there, show feedback, or close
+        if (results.length > 0) {
+          yasqe.autocompleters.notifications.hide(yasqe, completer);
+        } else {
+          yasqe.autocompleters.notifications.getEl(completer).text("0 matches found...");
+        }
+        callback(results);
+        // requests done! Don't call this function again
+      }
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+      yasqe.autocompleters.notifications.getEl(completer).empty().append("Failed fetching suggestions..");
+    });
+  };
+  //if notification bar is there, show a loader
+  yasqe.autocompleters.notifications
+    .getEl(completer)
+    .empty()
+    .append($("<span>Fetchting autocompletions &nbsp;</span>"))
+    .append($(yutils.svg.getElement(require("../imgs.js").loader)).addClass("notificationLoader"));
+  doRequests();
 };
-
-
 
 module.exports = {
-	fetchFromLov: fetchFromLov,
-	preprocessResourceTokenForCompletion: preprocessResourceTokenForCompletion,
-	postprocessResourceTokenForCompletion: postprocessResourceTokenForCompletion,
+  fetchFromLov: fetchFromLov,
+  preprocessResourceTokenForCompletion: preprocessResourceTokenForCompletion,
+  postprocessResourceTokenForCompletion: postprocessResourceTokenForCompletion
 };
 
-},{"../imgs.js":64,"./utils.js":60,"jquery":26,"yasgui-utils":48}],61:[function(require,module,exports){
-'use strict';
-var $ = require('jquery');
+},{"../imgs.js":78,"./utils.js":74,"jquery":29,"yasgui-utils":62}],75:[function(require,module,exports){
+"use strict";
+var $ = require("jquery");
 module.exports = function(yasqe) {
-	return {
-		isValidCompletionPosition: function() {
-			var token = yasqe.getTokenAt(yasqe.getCursor());
-			if (token.type != "ws") {
-				token = yasqe.getCompleteToken(token);
-				if (token && token.string.indexOf("?") == 0) {
-					return true;
-				}
-			}
-			return false;
-		},
-		get: function(token) {
-			if (token.trim().length == 0) return []; //nothing to autocomplete
-			var distinctVars = {};
-			//do this outside of codemirror. I expect jquery to be faster here (just finding dom elements with classnames)
-			$(yasqe.getWrapperElement()).find(".cm-atom").each(function() {
-				var variable = this.innerHTML;
-				if (variable.indexOf("?") == 0) {
-					//ok, lets check if the next element in the div is an atom as well. In that case, they belong together (may happen sometimes when query is not syntactically valid)
-					var nextEl = $(this).next();
-					var nextElClass = nextEl.attr('class');
-					if (nextElClass && nextEl.attr('class').indexOf("cm-atom") >= 0) {
-						variable += nextEl.text();
-					}
+  return {
+    isValidCompletionPosition: function() {
+      var token = yasqe.getTokenAt(yasqe.getCursor());
+      if (token.type != "ws") {
+        token = yasqe.getCompleteToken(token);
+        if (token && token.string.indexOf("?") == 0) {
+          return true;
+        }
+      }
+      return false;
+    },
+    get: function(token) {
+      if (token.trim().length == 0) return []; //nothing to autocomplete
+      var distinctVars = {};
+      //do this outside of codemirror. I expect jquery to be faster here (just finding dom elements with classnames)
+      $(yasqe.getWrapperElement()).find(".cm-atom").each(function() {
+        var variable = this.innerHTML;
+        if (variable.indexOf("?") == 0) {
+          //ok, lets check if the next element in the div is an atom as well. In that case, they belong together (may happen sometimes when query is not syntactically valid)
+          var nextEl = $(this).next();
+          var nextElClass = nextEl.attr("class");
+          if (nextElClass && nextEl.attr("class").indexOf("cm-atom") >= 0) {
+            variable += nextEl.text();
+          }
 
-					//skip single questionmarks
-					if (variable.length <= 1) return;
+          //skip single questionmarks
+          if (variable.length <= 1) return;
 
-					//it should match our token ofcourse
-					if (variable.indexOf(token) !== 0) return;
+          //it should match our token ofcourse
+          if (variable.indexOf(token) !== 0) return;
 
-					//skip exact matches
-					if (variable == token) return;
+          //skip exact matches
+          if (variable == token) return;
 
-					//store in map so we have a unique list 
-					distinctVars[variable] = true;
-
-
-				}
-			});
-			var variables = [];
-			for (var variable in distinctVars) {
-				variables.push(variable);
-			}
-			variables.sort();
-			return variables;
-		},
-		async: false,
-		bulk: false,
-		autoShow: true,
-	}
+          //store in map so we have a unique list
+          distinctVars[variable] = true;
+        }
+      });
+      var variables = [];
+      for (var variable in distinctVars) {
+        variables.push(variable);
+      }
+      variables.sort();
+      return variables;
+    },
+    async: false,
+    bulk: false,
+    autoShow: true
+  };
 };
-},{"jquery":26}],62:[function(require,module,exports){
-var sparql = require('./sparql.js'),
-    $ = require('jquery');
+
+},{"jquery":29}],76:[function(require,module,exports){
+var sparql = require("./sparql.js"), $ = require("jquery");
 var quote = function(string) {
   return "'" + string + "'";
-}
+};
 module.exports = {
-  createCurlString : function(yasqe, config) {
+  createCurlString: function(yasqe, config) {
     var ajaxConfig = sparql.getAjaxConfig(yasqe, config);
     var url = ajaxConfig.url;
-    if (ajaxConfig.url.indexOf('http') !== 0) {
+    if (ajaxConfig.url.indexOf("http") !== 0) {
       //this is either a relative or absolute url, which is not supported by CURL.
       //Add domain, schema, etc etc
-      var url = window.location.protocol + '//' + window.location.host;
-      if (ajaxConfig.url.indexOf('/') === 0) {
+      var url = window.location.protocol + "//" + window.location.host;
+      if (ajaxConfig.url.indexOf("/") === 0) {
         //its an absolute path
         url += ajaxConfig.url;
       } else {
@@ -93810,112 +96981,108 @@ module.exports = {
         url += window.location.pathname + ajaxConfig.url;
       }
     }
-    var cmds = [
-      'curl', url,
-      '-X', yasqe.options.sparql.requestMethod
-    ];
-    if (yasqe.options.sparql.requestMethod == 'POST') {
-      cmds.push('--data ' + quote($.param(ajaxConfig.data)));
+    var cmds = ["curl", url, "-X", yasqe.options.sparql.requestMethod];
+    if (yasqe.options.sparql.requestMethod == "POST") {
+      cmds.push("--data " + quote($.param(ajaxConfig.data)));
     }
     for (var header in ajaxConfig.headers) {
-      cmds.push('-H ' + quote(header + ': ' + ajaxConfig.headers[header]));
+      cmds.push("-H " + quote(header + ": " + ajaxConfig.headers[header]));
     }
-    return cmds.join(' ');
+    return cmds.join(" ");
   }
-}
+};
 
-},{"./sparql.js":68,"jquery":26}],63:[function(require,module,exports){
+},{"./sparql.js":82,"jquery":29}],77:[function(require,module,exports){
 /**
  * The default options of YASQE (check the CodeMirror documentation for even
  * more options, such as disabling line numbers, or changing keyboard shortcut
  * keys). Either change the default options by setting YASQE.defaults, or by
  * passing your own options as second argument to the YASQE constructor
  */
-var $ = require('jquery'),
-	YASQE = require('./main.js');
+var $ = require("jquery"), YASQE = require("./main.js");
 YASQE.defaults = $.extend(true, {}, YASQE.defaults, {
-	mode: "sparql11",
-	/**
+  mode: "sparql11",
+  /**
 	 * Query string
 	 */
-	value: "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT * WHERE {\n  ?sub ?pred ?obj .\n} \nLIMIT 10",
-	highlightSelectionMatches: {
-		showToken: /\w/
-	},
-	tabMode: "indent",
-	lineNumbers: true,
-	lineWrapping: true,
-	backdrop: false,
-	foldGutter: {
-		rangeFinder: new YASQE.fold.combine(YASQE.fold.brace, YASQE.fold.prefix)
-	},
-	collapsePrefixesOnLoad: false,
-	gutters: ["gutterErrorBar", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-	matchBrackets: true,
-	fixedGutter: true,
-	syntaxErrorCheck: true,
-	/**
+  value: "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT * WHERE {\n  ?sub ?pred ?obj .\n} \nLIMIT 10",
+  highlightSelectionMatches: {
+    showToken: /\w/
+  },
+  tabMode: "indent",
+  lineNumbers: true,
+  lineWrapping: true,
+  backdrop: false,
+  foldGutter: {
+    rangeFinder: new YASQE.fold.combine(YASQE.fold.brace, YASQE.fold.prefix)
+  },
+  collapsePrefixesOnLoad: false,
+  gutters: ["gutterErrorBar", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+  matchBrackets: true,
+  fixedGutter: true,
+  syntaxErrorCheck: true,
+  onQuotaExceeded: function(e) {
+    //fail silently
+    console.warn("Could not store in localstorage. Skipping..", e);
+  },
+  /**
 	 * Extra shortcut keys. Check the CodeMirror manual on how to add your own
 	 *
 	 * @property extraKeys
 	 * @type object
 	 */
-	extraKeys: {
-		//					"Ctrl-Space" : function(yasqe) {
-		//						YASQE.autoComplete(yasqe);
-		//					},
-		"Ctrl-Space": YASQE.autoComplete,
+  extraKeys: {
+    //					"Ctrl-Space" : function(yasqe) {
+    //						YASQE.autoComplete(yasqe);
+    //					},
+    "Ctrl-Space": YASQE.autoComplete,
 
-		"Cmd-Space": YASQE.autoComplete,
-		"Ctrl-D": YASQE.deleteLine,
-		"Ctrl-K": YASQE.deleteLine,
-		"Shift-Ctrl-K": YASQE.deleteLine,
-		"Cmd-D": YASQE.deleteLine,
-		"Cmd-K": YASQE.deleteLine,
-		"Ctrl-/": YASQE.commentLines,
-		"Cmd-/": YASQE.commentLines,
-		"Ctrl-Alt-Down": YASQE.copyLineDown,
-		"Ctrl-Alt-Up": YASQE.copyLineUp,
-		"Cmd-Alt-Down": YASQE.copyLineDown,
-		"Cmd-Alt-Up": YASQE.copyLineUp,
-		"Shift-Ctrl-F": YASQE.doAutoFormat,
-		"Shift-Cmd-F": YASQE.doAutoFormat,
-		"Ctrl-]": YASQE.indentMore,
-		"Cmd-]": YASQE.indentMore,
-		"Ctrl-[": YASQE.indentLess,
-		"Cmd-[": YASQE.indentLess,
-		"Ctrl-S": YASQE.storeQuery,
-		"Cmd-S": YASQE.storeQuery,
-		"Ctrl-Enter": YASQE.executeQuery,
-		"Cmd-Enter": YASQE.executeQuery,
-		"F11": function(yasqe) {
-			yasqe.setOption("fullScreen", !yasqe.getOption("fullScreen"));
-		},
-		"Esc": function(yasqe) {
-			if (yasqe.getOption("fullScreen")) yasqe.setOption("fullScreen", false);
-		}
-	},
-	cursorHeight: 0.9,
+    "Cmd-Space": YASQE.autoComplete,
+    "Ctrl-D": YASQE.deleteLine,
+    "Ctrl-K": YASQE.deleteLine,
+    "Shift-Ctrl-K": YASQE.deleteLine,
+    "Cmd-D": YASQE.deleteLine,
+    "Cmd-K": YASQE.deleteLine,
+    "Ctrl-/": YASQE.commentLines,
+    "Cmd-/": YASQE.commentLines,
+    "Ctrl-Alt-Down": YASQE.copyLineDown,
+    "Ctrl-Alt-Up": YASQE.copyLineUp,
+    "Cmd-Alt-Down": YASQE.copyLineDown,
+    "Cmd-Alt-Up": YASQE.copyLineUp,
+    "Shift-Ctrl-F": YASQE.doAutoFormat,
+    "Shift-Cmd-F": YASQE.doAutoFormat,
+    "Ctrl-]": YASQE.indentMore,
+    "Cmd-]": YASQE.indentMore,
+    "Ctrl-[": YASQE.indentLess,
+    "Cmd-[": YASQE.indentLess,
+    "Ctrl-S": YASQE.storeQuery,
+    "Cmd-S": YASQE.storeQuery,
+    "Ctrl-Enter": YASQE.executeQuery,
+    "Cmd-Enter": YASQE.executeQuery,
+    F11: function(yasqe) {
+      yasqe.setOption("fullScreen", !yasqe.getOption("fullScreen"));
+    },
+    Esc: function(yasqe) {
+      if (yasqe.getOption("fullScreen")) yasqe.setOption("fullScreen", false);
+    }
+  },
+  cursorHeight: 0.9,
 
-
-	/**
+  /**
 	 * Show a button with which users can create a link to this query. Set this value to null to disable this functionality.
 	 * By default, this feature is enabled, and the only the query value is appended to the link.
 	 * ps. This function should return an object which is parseable by jQuery.param (http://api.jquery.com/jQuery.param/)
 	 */
-	createShareLink: YASQE.createShareLink,
+  createShareLink: YASQE.createShareLink,
 
-	createShortLink: null,
+  createShortLink: null,
 
-	/**
+  /**
 	 * Consume links shared by others, by checking the url for arguments coming from a query link. Defaults by only checking the 'query=' argument in the url
 	 */
-	consumeShareLink: YASQE.consumeShareLink,
+  consumeShareLink: YASQE.consumeShareLink,
 
-
-
-
-	/**
+  /**
 	 * Change persistency settings for the YASQE query value. Setting the values
 	 * to null, will disable persistancy: nothing is stored between browser
 	 * sessions Setting the values to a string (or a function which returns a
@@ -93925,121 +97092,120 @@ YASQE.defaults = $.extend(true, {}, YASQE.defaults, {
 	 *
 	 * @type function|string
 	 */
-	persistent: function(yasqe) {
-		return "yasqe_" + $(yasqe.getWrapperElement()).closest('[id]').attr('id') + "_queryVal";
-	},
+  persistent: function(yasqe) {
+    return "yasqe_" + $(yasqe.getWrapperElement()).closest("[id]").attr("id") + "_queryVal";
+  },
 
-
-	/**
+  /**
 	 * Settings for querying sparql endpoints
 	 */
-	sparql: {
-		queryName: function(yasqe) {return yasqe.getQueryMode()},
-		showQueryButton: false,
+  sparql: {
+    queryName: function(yasqe) {
+      return yasqe.getQueryMode();
+    },
+    showQueryButton: false,
 
-		/**f
+    /**f
 		 * Endpoint to query
 		 *
 		 * @property sparql.endpoint
 		 * @type String|function
 		 */
-		endpoint: "http://dbpedia.org/sparql",
-		/**
+    endpoint: "http://dbpedia.org/sparql",
+    /**
 		 * Request method via which to access SPARQL endpoint
 		 *
 		 * @property sparql.requestMethod
 		 * @type String|function
 		 */
-		requestMethod: "POST",
+    requestMethod: "POST",
 
-		/**
+    /**
 		 * @type String|function
 		 */
-		acceptHeaderGraph: "text/turtle,*/*;q=0.9",
-		/**
+    acceptHeaderGraph: "text/turtle,*/*;q=0.9",
+    /**
 		 * @type String|function
 		 */
-		acceptHeaderSelect: "application/sparql-results+json,*/*;q=0.9",
-		/**
+    acceptHeaderSelect: "application/sparql-results+json,*/*;q=0.9",
+    /**
 		 * @type String|function
 		 */
-		acceptHeaderUpdate: "text/plain,*/*;q=0.9",
+    acceptHeaderUpdate: "text/plain,*/*;q=0.9",
 
-		/**
+    /**
 		 * Named graphs to query.
 		 */
-		namedGraphs: [],
-		/**
+    namedGraphs: [],
+    /**
 		 * Default graphs to query.
 		 */
-		defaultGraphs: [],
+    defaultGraphs: [],
 
-		/**
+    /**
 		 * Additional request arguments. Add them in the form: {name: "name", value: "value"}
 		 */
-		args: [],
+    args: [],
 
-		/**
+    /**
 		 * Additional request headers
 		 */
-		headers: {},
+    headers: {},
 
-		getQueryForAjax: null,
-		/**
+    getQueryForAjax: null,
+    /**
 		 * Set of ajax callbacks
 		 */
-		callbacks: {
-			beforeSend: null,
-			complete: null,
-			error: null,
-			success: null
-		},
-		handlers: {} //keep here for backwards compatability
-	},
+    callbacks: {
+      beforeSend: null,
+      complete: null,
+      error: null,
+      success: null
+    },
+    handlers: {} //keep here for backwards compatability
+  }
 });
 
-},{"./main.js":65,"jquery":26}],64:[function(require,module,exports){
-'use strict';
+},{"./main.js":79,"jquery":29}],78:[function(require,module,exports){
+"use strict";
 module.exports = {
-	query: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 80 80" enable-background="new 0 0 80 80" xml:space="preserve"><g ></g><g >	<path d="M64.622,2.411H14.995c-6.627,0-12,5.373-12,12v49.897c0,6.627,5.373,12,12,12h49.627c6.627,0,12-5.373,12-12V14.411   C76.622,7.783,71.249,2.411,64.622,2.411z M24.125,63.906V15.093L61,39.168L24.125,63.906z"/></g></svg>',
-	queryInvalid: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"   x="0px"   y="0px"   width="100%"   height="100%"   viewBox="0 0 73.627 73.897"   enable-background="new 0 0 80 80"   xml:space="preserve"      inkscape:version="0.48.4 r9939"   sodipodi:docname="warning.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     inkscape:zoom="3.1936344"     inkscape:cx="36.8135"     inkscape:cy="36.9485"     inkscape:window-x="2625"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2" /><g     transform="translate(-2.995,-2.411)"      /><g     transform="translate(-2.995,-2.411)"     ><path       d="M 64.622,2.411 H 14.995 c -6.627,0 -12,5.373 -12,12 v 49.897 c 0,6.627 5.373,12 12,12 h 49.627 c 6.627,0 12,-5.373 12,-12 V 14.411 c 0,-6.628 -5.373,-12 -12,-12 z M 24.125,63.906 V 15.093 L 61,39.168 24.125,63.906 z"       inkscape:connector-curvature="0"        /></g><path     d="M 66.129381,65.903784 H 49.769875 c -1.64721,0 -2.889385,-0.581146 -3.498678,-1.63595 -0.609293,-1.055608 -0.491079,-2.422161 0.332391,-3.848223 l 8.179753,-14.167069 c 0.822934,-1.42633 1.9477,-2.211737 3.166018,-2.211737 1.218319,0 2.343086,0.785407 3.166019,2.211737 l 8.179751,14.167069 c 0.823472,1.426062 0.941686,2.792615 0.33239,3.848223 -0.609023,1.054804 -1.851197,1.63595 -3.498138,1.63595 z M 59.618815,60.91766 c 0,-0.850276 -0.68944,-1.539719 -1.539717,-1.539719 -0.850276,0 -1.539718,0.689443 -1.539718,1.539719 0,0.850277 0.689442,1.539718 1.539718,1.539718 0.850277,0 1.539717,-0.689441 1.539717,-1.539718 z m 0.04155,-9.265919 c 0,-0.873061 -0.707939,-1.580998 -1.580999,-1.580998 -0.873061,0 -1.580999,0.707937 -1.580999,1.580998 l 0.373403,5.610965 h 0.0051 c 0.05415,0.619747 0.568548,1.10761 1.202504,1.10761 0.586239,0 1.075443,-0.415756 1.188563,-0.968489 0.0092,-0.04476 0.0099,-0.09248 0.01392,-0.138854 h 0.01072 l 0.367776,-5.611232 z"          inkscape:connector-curvature="0"     style="fill:#aa8800" /></svg>',
-	download: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" baseProfile="tiny" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 100 100" xml:space="preserve"><g ></g><g >	<path fill-rule="evenodd" fill="#000000" d="M88,84v-2c0-2.961-0.859-4-4-4H16c-2.961,0-4,0.98-4,4v2c0,3.102,1.039,4,4,4h68   C87.02,88,88,87.039,88,84z M58,12H42c-5,0-6,0.941-6,6v22H16l34,34l34-34H64V18C64,12.941,62.939,12,58,12z"/></g></svg>',
-	share: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"  x="0px" y="0px" width="100%" height="100%" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100;" xml:space="preserve"><path d="M36.764,50c0,0.308-0.07,0.598-0.088,0.905l32.247,16.119c2.76-2.338,6.293-3.797,10.195-3.797  C87.89,63.228,95,70.338,95,79.109C95,87.89,87.89,95,79.118,95c-8.78,0-15.882-7.11-15.882-15.891c0-0.316,0.07-0.598,0.088-0.905  L31.077,62.085c-2.769,2.329-6.293,3.788-10.195,3.788C12.11,65.873,5,58.771,5,50c0-8.78,7.11-15.891,15.882-15.891  c3.902,0,7.427,1.468,10.195,3.797l32.247-16.119c-0.018-0.308-0.088-0.598-0.088-0.914C63.236,12.11,70.338,5,79.118,5  C87.89,5,95,12.11,95,20.873c0,8.78-7.11,15.891-15.882,15.891c-3.911,0-7.436-1.468-10.195-3.806L36.676,49.086  C36.693,49.394,36.764,49.684,36.764,50z"/></svg>',
-	warning: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"   x="0px"   y="0px"   viewBox="0 0 66.399998 66.399998"   enable-background="new 0 0 69.3 69.3"   xml:space="preserve"   height="100%"   width="100%"   inkscape:version="0.48.4 r9939"   ><g      transform="translate(-1.5,-1.5)"     style="fill:#ff0000"><path       d="M 34.7,1.5 C 16.4,1.5 1.5,16.4 1.5,34.7 1.5,53 16.4,67.9 34.7,67.9 53,67.9 67.9,53 67.9,34.7 67.9,16.4 53,1.5 34.7,1.5 z m 0,59.4 C 20.2,60.9 8.5,49.1 8.5,34.7 8.5,20.2 20.3,8.5 34.7,8.5 c 14.4,0 26.2,11.8 26.2,26.2 0,14.4 -11.8,26.2 -26.2,26.2 z"      inkscape:connector-curvature="0"       style="fill:#ff0000" /><path       d="m 34.6,47.1 c -1.4,0 -2.5,0.5 -3.5,1.5 -0.9,1 -1.4,2.2 -1.4,3.6 0,1.6 0.5,2.8 1.5,3.8 1,0.9 2.1,1.3 3.4,1.3 1.3,0 2.4,-0.5 3.4,-1.4 1,-0.9 1.5,-2.2 1.5,-3.7 0,-1.4 -0.5,-2.6 -1.4,-3.6 -0.9,-1 -2.1,-1.5 -3.5,-1.5 z"       inkscape:connector-curvature="0"       style="fill:#ff0000" /><path       d="m 34.8,13.9 c -1.5,0 -2.8,0.5 -3.7,1.6 -0.9,1 -1.4,2.4 -1.4,4.2 0,1.1 0.1,2.9 0.2,5.6 l 0.8,13.1 c 0.2,1.8 0.4,3.2 0.9,4.1 0.5,1.2 1.5,1.8 2.9,1.8 1.3,0 2.3,-0.7 2.9,-1.9 0.5,-1 0.7,-2.3 0.9,-4 L 39.4,25 c 0.1,-1.3 0.2,-2.5 0.2,-3.8 0,-2.2 -0.3,-3.9 -0.8,-5.1 -0.5,-1 -1.6,-2.2 -4,-2.2 z"       inkscape:connector-curvature="0"       style="fill:#ff0000" /></g></svg>',
-	fullscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="640"     inkscape:window-height="480"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="0"     inkscape:current-layer="Layer_1" /><path     d="m -7.962963,-10 v 38.889 l 16.667,-16.667 16.667,16.667 5.555,-5.555 -16.667,-16.667 16.667,-16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 92.037037,-10 v 38.889 l -16.667,-16.667 -16.666,16.667 -5.556,-5.555 16.666,-16.667 -16.666,-16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M -7.962963,90 V 51.111 l 16.667,16.666 16.667,-16.666 5.555,5.556 -16.667,16.666 16.667,16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M 92.037037,90 V 51.111 l -16.667,16.666 -16.666,-16.666 -5.556,5.556 16.666,16.666 -16.666,16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
-	smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
+  query: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 80 80" enable-background="new 0 0 80 80" xml:space="preserve"><g ></g><g >	<path d="M64.622,2.411H14.995c-6.627,0-12,5.373-12,12v49.897c0,6.627,5.373,12,12,12h49.627c6.627,0,12-5.373,12-12V14.411   C76.622,7.783,71.249,2.411,64.622,2.411z M24.125,63.906V15.093L61,39.168L24.125,63.906z"/></g></svg>',
+  queryInvalid: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"   x="0px"   y="0px"   width="100%"   height="100%"   viewBox="0 0 73.627 73.897"   enable-background="new 0 0 80 80"   xml:space="preserve"      inkscape:version="0.48.4 r9939"   sodipodi:docname="warning.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     inkscape:zoom="3.1936344"     inkscape:cx="36.8135"     inkscape:cy="36.9485"     inkscape:window-x="2625"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2" /><g     transform="translate(-2.995,-2.411)"      /><g     transform="translate(-2.995,-2.411)"     ><path       d="M 64.622,2.411 H 14.995 c -6.627,0 -12,5.373 -12,12 v 49.897 c 0,6.627 5.373,12 12,12 h 49.627 c 6.627,0 12,-5.373 12,-12 V 14.411 c 0,-6.628 -5.373,-12 -12,-12 z M 24.125,63.906 V 15.093 L 61,39.168 24.125,63.906 z"       inkscape:connector-curvature="0"        /></g><path     d="M 66.129381,65.903784 H 49.769875 c -1.64721,0 -2.889385,-0.581146 -3.498678,-1.63595 -0.609293,-1.055608 -0.491079,-2.422161 0.332391,-3.848223 l 8.179753,-14.167069 c 0.822934,-1.42633 1.9477,-2.211737 3.166018,-2.211737 1.218319,0 2.343086,0.785407 3.166019,2.211737 l 8.179751,14.167069 c 0.823472,1.426062 0.941686,2.792615 0.33239,3.848223 -0.609023,1.054804 -1.851197,1.63595 -3.498138,1.63595 z M 59.618815,60.91766 c 0,-0.850276 -0.68944,-1.539719 -1.539717,-1.539719 -0.850276,0 -1.539718,0.689443 -1.539718,1.539719 0,0.850277 0.689442,1.539718 1.539718,1.539718 0.850277,0 1.539717,-0.689441 1.539717,-1.539718 z m 0.04155,-9.265919 c 0,-0.873061 -0.707939,-1.580998 -1.580999,-1.580998 -0.873061,0 -1.580999,0.707937 -1.580999,1.580998 l 0.373403,5.610965 h 0.0051 c 0.05415,0.619747 0.568548,1.10761 1.202504,1.10761 0.586239,0 1.075443,-0.415756 1.188563,-0.968489 0.0092,-0.04476 0.0099,-0.09248 0.01392,-0.138854 h 0.01072 l 0.367776,-5.611232 z"          inkscape:connector-curvature="0"     style="fill:#aa8800" /></svg>',
+  download: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" baseProfile="tiny" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 100 100" xml:space="preserve"><g ></g><g >	<path fill-rule="evenodd" fill="#000000" d="M88,84v-2c0-2.961-0.859-4-4-4H16c-2.961,0-4,0.98-4,4v2c0,3.102,1.039,4,4,4h68   C87.02,88,88,87.039,88,84z M58,12H42c-5,0-6,0.941-6,6v22H16l34,34l34-34H64V18C64,12.941,62.939,12,58,12z"/></g></svg>',
+  share: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"  x="0px" y="0px" width="100%" height="100%" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100;" xml:space="preserve"><path d="M36.764,50c0,0.308-0.07,0.598-0.088,0.905l32.247,16.119c2.76-2.338,6.293-3.797,10.195-3.797  C87.89,63.228,95,70.338,95,79.109C95,87.89,87.89,95,79.118,95c-8.78,0-15.882-7.11-15.882-15.891c0-0.316,0.07-0.598,0.088-0.905  L31.077,62.085c-2.769,2.329-6.293,3.788-10.195,3.788C12.11,65.873,5,58.771,5,50c0-8.78,7.11-15.891,15.882-15.891  c3.902,0,7.427,1.468,10.195,3.797l32.247-16.119c-0.018-0.308-0.088-0.598-0.088-0.914C63.236,12.11,70.338,5,79.118,5  C87.89,5,95,12.11,95,20.873c0,8.78-7.11,15.891-15.882,15.891c-3.911,0-7.436-1.468-10.195-3.806L36.676,49.086  C36.693,49.394,36.764,49.684,36.764,50z"/></svg>',
+  warning: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"   x="0px"   y="0px"   viewBox="0 0 66.399998 66.399998"   enable-background="new 0 0 69.3 69.3"   xml:space="preserve"   height="100%"   width="100%"   inkscape:version="0.48.4 r9939"   ><g      transform="translate(-1.5,-1.5)"     style="fill:#ff0000"><path       d="M 34.7,1.5 C 16.4,1.5 1.5,16.4 1.5,34.7 1.5,53 16.4,67.9 34.7,67.9 53,67.9 67.9,53 67.9,34.7 67.9,16.4 53,1.5 34.7,1.5 z m 0,59.4 C 20.2,60.9 8.5,49.1 8.5,34.7 8.5,20.2 20.3,8.5 34.7,8.5 c 14.4,0 26.2,11.8 26.2,26.2 0,14.4 -11.8,26.2 -26.2,26.2 z"      inkscape:connector-curvature="0"       style="fill:#ff0000" /><path       d="m 34.6,47.1 c -1.4,0 -2.5,0.5 -3.5,1.5 -0.9,1 -1.4,2.2 -1.4,3.6 0,1.6 0.5,2.8 1.5,3.8 1,0.9 2.1,1.3 3.4,1.3 1.3,0 2.4,-0.5 3.4,-1.4 1,-0.9 1.5,-2.2 1.5,-3.7 0,-1.4 -0.5,-2.6 -1.4,-3.6 -0.9,-1 -2.1,-1.5 -3.5,-1.5 z"       inkscape:connector-curvature="0"       style="fill:#ff0000" /><path       d="m 34.8,13.9 c -1.5,0 -2.8,0.5 -3.7,1.6 -0.9,1 -1.4,2.4 -1.4,4.2 0,1.1 0.1,2.9 0.2,5.6 l 0.8,13.1 c 0.2,1.8 0.4,3.2 0.9,4.1 0.5,1.2 1.5,1.8 2.9,1.8 1.3,0 2.3,-0.7 2.9,-1.9 0.5,-1 0.7,-2.3 0.9,-4 L 39.4,25 c 0.1,-1.3 0.2,-2.5 0.2,-3.8 0,-2.2 -0.3,-3.9 -0.8,-5.1 -0.5,-1 -1.6,-2.2 -4,-2.2 z"       inkscape:connector-curvature="0"       style="fill:#ff0000" /></g></svg>',
+  fullscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="640"     inkscape:window-height="480"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="0"     inkscape:current-layer="Layer_1" /><path     d="m -7.962963,-10 v 38.889 l 16.667,-16.667 16.667,16.667 5.555,-5.555 -16.667,-16.667 16.667,-16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 92.037037,-10 v 38.889 l -16.667,-16.667 -16.666,16.667 -5.556,-5.555 16.666,-16.667 -16.666,-16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M -7.962963,90 V 51.111 l 16.667,16.666 16.667,-16.666 5.555,5.556 -16.667,16.666 16.667,16.667 h -38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="M 92.037037,90 V 51.111 l -16.667,16.666 -16.666,-16.666 -5.556,5.556 16.666,16.666 -16.666,16.667 h 38.889 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>',
+  smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>'
 };
 
-},{}],65:[function(require,module,exports){
-'use strict';
+},{}],79:[function(require,module,exports){
+"use strict";
 //make sure any console statements
 window.console = window.console || {
-	"log": function() {}
+  log: function() {}
 };
 
 /**
  * Load libraries
  */
 var $ = require("jquery"),
-	CodeMirror = require("codemirror"),
-	utils = require('./utils.js'),
-	yutils = require('yasgui-utils'),
-	imgs = require('./imgs.js');
+  CodeMirror = require("codemirror"),
+  utils = require("./utils.js"),
+  yutils = require("yasgui-utils"),
+  imgs = require("./imgs.js");
 
 require("../lib/deparam.js");
-require('codemirror/addon/fold/foldcode.js');
-require('codemirror/addon/fold/foldgutter.js');
-require('codemirror/addon/fold/xml-fold.js');
-require('codemirror/addon/fold/brace-fold.js');
-require('./prefixFold.js');
-require('codemirror/addon/hint/show-hint.js');
-require('codemirror/addon/search/searchcursor.js');
-require('codemirror/addon/edit/matchbrackets.js');
-require('codemirror/addon/runmode/runmode.js');
-require('codemirror/addon/display/fullscreen.js');
-require('../lib/grammar/tokenizer.js');
-
-
+require("codemirror/addon/fold/foldcode.js");
+require("codemirror/addon/fold/foldgutter.js");
+require("codemirror/addon/fold/xml-fold.js");
+require("codemirror/addon/fold/brace-fold.js");
+require("./prefixFold.js");
+require("codemirror/addon/hint/show-hint.js");
+require("codemirror/addon/search/searchcursor.js");
+require("codemirror/addon/edit/matchbrackets.js");
+require("codemirror/addon/runmode/runmode.js");
+require("codemirror/addon/display/fullscreen.js");
+require("../lib/grammar/tokenizer.js");
 
 /**
  * Main YASQE constructor. Pass a DOM element as argument to append the editor to, and (optionally) pass along config settings (see the YASQE.defaults object below, as well as the regular CodeMirror documentation, for more information on configurability)
@@ -94050,15 +97216,15 @@ require('../lib/grammar/tokenizer.js');
  * @class YASQE
  * @return {doc} YASQE document
  */
-var root = module.exports = function(parent, config) {
-	var rootEl = $("<div>", {
-		class: 'yasqe'
-	}).appendTo($(parent));
-	config = extendConfig(config);
-	var yasqe = extendCmInstance(CodeMirror(rootEl[0], config));
-	postProcessCmElement(yasqe);
-	return yasqe;
-};
+var root = (module.exports = function(parent, config) {
+  var rootEl = $("<div>", {
+    class: "yasqe"
+  }).appendTo($(parent));
+  config = extendConfig(config);
+  var yasqe = extendCmInstance(CodeMirror(rootEl[0], config));
+  postProcessCmElement(yasqe);
+  return yasqe;
+});
 
 /**
  * Extend config object, which we will pass on to the CM constructor later on.
@@ -94071,13 +97237,12 @@ var root = module.exports = function(parent, config) {
  * @private
  */
 var extendConfig = function(config) {
-	var extendedConfig = $.extend(true, {}, root.defaults, config);
+  var extendedConfig = $.extend(true, {}, root.defaults, config);
 
-	// I know, codemirror deals with  default options as well.
-	//However, it does not do this recursively (i.e. the persistency option)
+  // I know, codemirror deals with  default options as well.
+  //However, it does not do this recursively (i.e. the persistency option)
 
-
-	return extendedConfig;
+  return extendedConfig;
 };
 /**
  * Add extra functions to the CM document (i.e. the codemirror instantiated
@@ -94086,59 +97251,60 @@ var extendConfig = function(config) {
  * @private
  */
 var extendCmInstance = function(yasqe) {
-	//instantiate autocompleters
-	yasqe.autocompleters = require('./autocompleters/autocompleterBase.js')(root, yasqe);
-	if (yasqe.options.autocompleters) {
-		yasqe.options.autocompleters.forEach(function(name) {
-			if (root.Autocompleters[name]) yasqe.autocompleters.init(name, root.Autocompleters[name]);
-		})
-	}
-	yasqe.lastQueryDuration = null;
-	yasqe.getCompleteToken = function(token, cur) {
-		return require('./tokenUtils.js').getCompleteToken(yasqe, token, cur);
-	};
-	yasqe.getPreviousNonWsToken = function(line, token) {
-		return require('./tokenUtils.js').getPreviousNonWsToken(yasqe, line, token);
-	};
-	yasqe.getNextNonWsToken = function(lineNumber, charNumber) {
-		return require('./tokenUtils.js').getNextNonWsToken(yasqe, lineNumber, charNumber);
-	};
-	yasqe.collapsePrefixes = function(collapse) {
-		if (collapse === undefined) collapse = true;
-		yasqe.foldCode(require('./prefixFold.js').findFirstPrefixLine(yasqe), root.fold.prefix, (collapse ? "fold" : "unfold"));
-	};
-	var backdrop = null;
-	var animateSpeed = null;
-	yasqe.setBackdrop = function(show) {
+  //instantiate autocompleters
+  yasqe.autocompleters = require("./autocompleters/autocompleterBase.js")(root, yasqe);
+  if (yasqe.options.autocompleters) {
+    yasqe.options.autocompleters.forEach(function(name) {
+      if (root.Autocompleters[name]) yasqe.autocompleters.init(name, root.Autocompleters[name]);
+    });
+  }
+  yasqe.lastQueryDuration = null;
+  yasqe.getCompleteToken = function(token, cur) {
+    return require("./tokenUtils.js").getCompleteToken(yasqe, token, cur);
+  };
+  yasqe.getPreviousNonWsToken = function(line, token) {
+    return require("./tokenUtils.js").getPreviousNonWsToken(yasqe, line, token);
+  };
+  yasqe.getNextNonWsToken = function(lineNumber, charNumber) {
+    return require("./tokenUtils.js").getNextNonWsToken(yasqe, lineNumber, charNumber);
+  };
+  yasqe.collapsePrefixes = function(collapse) {
+    if (collapse === undefined) collapse = true;
+    yasqe.foldCode(
+      require("./prefixFold.js").findFirstPrefixLine(yasqe),
+      root.fold.prefix,
+      collapse ? "fold" : "unfold"
+    );
+  };
+  var backdrop = null;
+  var animateSpeed = null;
+  yasqe.setBackdrop = function(show) {
+    if (yasqe.options.backdrop || yasqe.options.backdrop === 0 || yasqe.options.backdrop === "0") {
+      if (animateSpeed === null) {
+        animateSpeed = +yasqe.options.backdrop;
+        if (animateSpeed === 1) {
+          //ah, yasqe.options.backdrop was 'true'. Set this to default animate speed 400
+          animateSpeed = 400;
+        }
+      }
 
-
-		if (yasqe.options.backdrop || yasqe.options.backdrop === 0 || yasqe.options.backdrop === '0') {
-			if (animateSpeed === null) {
-				animateSpeed = +yasqe.options.backdrop;
-				if (animateSpeed === 1) {
-					//ah, yasqe.options.backdrop was 'true'. Set this to default animate speed 400
-					animateSpeed = 400;
-				}
-			}
-
-
-			if (!backdrop) {
-				backdrop = $('<div>', {
-						class: 'backdrop'
-					})
-					.click(function() {
-						$(this).hide();
-					})
-					.insertAfter($(yasqe.getWrapperElement()));
-			}
-			if (show) {
-				backdrop.show(animateSpeed);
-			} else {
-				backdrop.hide(animateSpeed);
-			}
-		}
-	};
-	/**
+      if (!backdrop) {
+        backdrop = $("<div>", {
+          class: "backdrop"
+        })
+          .click(function() {
+            $(this).hide();
+          })
+          .insertAfter($(yasqe.getWrapperElement()));
+      }
+      if (show) {
+        backdrop.show(animateSpeed);
+      } else {
+        backdrop.hide(animateSpeed);
+      }
+    }
+  };
+  /**
 	 * Execute query. Pass a callback function, or a configuration object (see
 	 * default settings below for possible values) I.e., you can change the
 	 * query configuration by either changing the default settings, changing the
@@ -94147,268 +97313,273 @@ var extendCmInstance = function(yasqe) {
 	 * @method doc.query
 	 * @param function|object
 	 */
-	yasqe.query = function(callbackOrConfig) {
-		root.executeQuery(yasqe, callbackOrConfig);
-	};
+  yasqe.query = function(callbackOrConfig) {
+    root.executeQuery(yasqe, callbackOrConfig);
+  };
 
-	yasqe.getUrlArguments = function(config) {
-		return root.getUrlArguments(yasqe, config);
-	};
+  yasqe.getUrlArguments = function(config) {
+    return root.getUrlArguments(yasqe, config);
+  };
 
-	/**
+  /**
 	 * Fetch defined prefixes from query string
 	 *
 	 * @method doc.getPrefixesFromQuery
 	 * @return object
 	 */
-	yasqe.getPrefixesFromQuery = function() {
-		return require('./prefixUtils.js').getPrefixesFromQuery(yasqe);
-	};
+  yasqe.getPrefixesFromQuery = function() {
+    return require("./prefixUtils.js").getPrefixesFromQuery(yasqe);
+  };
 
-	yasqe.addPrefixes = function(prefixes) {
-		return require('./prefixUtils.js').addPrefixes(yasqe, prefixes);
-	};
-	yasqe.removePrefixes = function(prefixes) {
-		return require('./prefixUtils.js').removePrefixes(yasqe, prefixes);
-	};
+  yasqe.addPrefixes = function(prefixes) {
+    return require("./prefixUtils.js").addPrefixes(yasqe, prefixes);
+  };
+  yasqe.removePrefixes = function(prefixes) {
+    return require("./prefixUtils.js").removePrefixes(yasqe, prefixes);
+  };
 
-	yasqe.getValueWithoutComments = function() {
-		var cleanedQuery = "";
-		root.runMode(yasqe.getValue(), "sparql11", function(stringVal, className) {
-			if (className != "comment") {
-				cleanedQuery += stringVal;
-			}
-		});
-		return cleanedQuery;
-	};
-	/**
+  yasqe.getValueWithoutComments = function() {
+    var cleanedQuery = "";
+    root.runMode(yasqe.getValue(), "sparql11", function(stringVal, className) {
+      if (className != "comment") {
+        cleanedQuery += stringVal;
+      }
+    });
+    return cleanedQuery;
+  };
+  /**
 	 * Fetch the query type (e.g., SELECT||DESCRIBE||INSERT||DELETE||ASK||CONSTRUCT)
 	 *
 	 * @method doc.getQueryType
 	 * @return string
 	 *
 	 */
-	yasqe.getQueryType = function() {
-		return yasqe.queryType;
-	};
-	/**
+  yasqe.getQueryType = function() {
+    return yasqe.queryType;
+  };
+  /**
 	 * Fetch the query mode: 'query' or 'update'
 	 *
 	 * @method doc.getQueryMode
 	 * @return string
 	 *
 	 */
-	yasqe.getQueryMode = function() {
-		var type = yasqe.getQueryType();
-		if (type == "INSERT" || type == "DELETE" || type == "LOAD" || type == "CLEAR" || type == "CREATE" || type == "DROP" || type == "COPY" || type == "MOVE" || type == "ADD") {
-			return "update";
-		} else {
-			return "query";
-		}
+  yasqe.getQueryMode = function() {
+    var type = yasqe.getQueryType();
+    if (
+      type == "INSERT" ||
+      type == "DELETE" ||
+      type == "LOAD" ||
+      type == "CLEAR" ||
+      type == "CREATE" ||
+      type == "DROP" ||
+      type == "COPY" ||
+      type == "MOVE" ||
+      type == "ADD"
+    ) {
+      return "update";
+    } else {
+      return "query";
+    }
+  };
 
-	};
+  yasqe.setCheckSyntaxErrors = function(isEnabled) {
+    yasqe.options.syntaxErrorCheck = isEnabled;
+    checkSyntax(yasqe);
+  };
 
-	yasqe.setCheckSyntaxErrors = function(isEnabled) {
-		yasqe.options.syntaxErrorCheck = isEnabled;
-		checkSyntax(yasqe);
-	};
-
-	yasqe.enableCompleter = function(name) {
-		addCompleterToSettings(yasqe.options, name);
-		if (root.Autocompleters[name]) yasqe.autocompleters.init(name, root.Autocompleters[name]);
-	};
-	yasqe.disableCompleter = function(name) {
-		removeCompleterFromSettings(yasqe.options, name);
-	};
-	return yasqe;
+  yasqe.enableCompleter = function(name) {
+    addCompleterToSettings(yasqe.options, name);
+    if (root.Autocompleters[name]) yasqe.autocompleters.init(name, root.Autocompleters[name]);
+  };
+  yasqe.disableCompleter = function(name) {
+    removeCompleterFromSettings(yasqe.options, name);
+  };
+  return yasqe;
 };
 
 var addCompleterToSettings = function(settings, name) {
-	if (!settings.autocompleters) settings.autocompleters = [];
-	settings.autocompleters.push(name);
+  if (!settings.autocompleters) settings.autocompleters = [];
+  settings.autocompleters.push(name);
 };
 var removeCompleterFromSettings = function(settings, name) {
-	if (typeof settings.autocompleters == "object") {
-		var index = $.inArray(name, settings.autocompleters);
-		if (index >= 0) {
-			settings.autocompleters.splice(index, 1);
-			removeCompleterFromSettings(settings, name); //just in case. suppose 1 completer is listed twice
-		}
-	}
+  if (typeof settings.autocompleters == "object") {
+    var index = $.inArray(name, settings.autocompleters);
+    if (index >= 0) {
+      settings.autocompleters.splice(index, 1);
+      removeCompleterFromSettings(settings, name); //just in case. suppose 1 completer is listed twice
+    }
+  }
 };
 var postProcessCmElement = function(yasqe) {
-	/**
+  /**
 	 * Set doc value
 	 */
-	var storageId = utils.getPersistencyId(yasqe, yasqe.options.persistent);
-	if (storageId) {
-		var valueFromStorage = yutils.storage.get(storageId);
-		if (valueFromStorage)
-			yasqe.setValue(valueFromStorage);
-	}
+  var storageId = utils.getPersistencyId(yasqe, yasqe.options.persistent);
+  if (storageId) {
+    var valueFromStorage = yutils.storage.get(storageId);
+    if (valueFromStorage) yasqe.setValue(valueFromStorage);
+  }
 
-	root.drawButtons(yasqe);
+  root.drawButtons(yasqe);
 
-	/**
+  /**
 	 * Add event handlers
 	 */
-	yasqe.on('blur', function(yasqe, eventInfo) {
-		root.storeQuery(yasqe);
-	});
-	yasqe.on('change', function(yasqe, eventInfo) {
-		checkSyntax(yasqe);
-		root.updateQueryButton(yasqe);
-		root.positionButtons(yasqe);
-	});
-	yasqe.on('changes', function() {
-		//e.g. on paste
-		checkSyntax(yasqe);
-		root.updateQueryButton(yasqe);
-		root.positionButtons(yasqe);
-	});
+  yasqe.on("blur", function(yasqe, eventInfo) {
+    root.storeQuery(yasqe);
+  });
+  yasqe.on("change", function(yasqe, eventInfo) {
+    checkSyntax(yasqe);
+    root.updateQueryButton(yasqe);
+    root.positionButtons(yasqe);
+  });
+  yasqe.on("changes", function() {
+    //e.g. on paste
+    checkSyntax(yasqe);
+    root.updateQueryButton(yasqe);
+    root.positionButtons(yasqe);
+  });
 
-	yasqe.on('cursorActivity', function(yasqe, eventInfo) {
-		updateButtonsTransparency(yasqe);
-	});
-	yasqe.prevQueryValid = false;
-	checkSyntax(yasqe); // on first load, check as well (our stored or default query might be incorrect)
-	root.positionButtons(yasqe);
+  yasqe.on("cursorActivity", function(yasqe, eventInfo) {
+    updateButtonsTransparency(yasqe);
+  });
+  yasqe.prevQueryValid = false;
+  checkSyntax(yasqe); // on first load, check as well (our stored or default query might be incorrect)
+  root.positionButtons(yasqe);
 
-	$(yasqe.getWrapperElement()).on('mouseenter', '.cm-atom', function() {
-		var matchText = $(this).text();
-		$(yasqe.getWrapperElement()).find('.cm-atom').filter(function() {
-			return $(this).text() === matchText;
-		}).addClass('matchingVar');
-	}).on('mouseleave', '.cm-atom', function() {
-		$(yasqe.getWrapperElement()).find('.matchingVar').removeClass('matchingVar');
-	});
-	/**
+  $(yasqe.getWrapperElement())
+    .on("mouseenter", ".cm-atom", function() {
+      var matchText = $(this).text();
+      $(yasqe.getWrapperElement())
+        .find(".cm-atom")
+        .filter(function() {
+          return $(this).text() === matchText;
+        })
+        .addClass("matchingVar");
+    })
+    .on("mouseleave", ".cm-atom", function() {
+      $(yasqe.getWrapperElement()).find(".matchingVar").removeClass("matchingVar");
+    });
+  /**
 	 * check url args and modify yasqe settings if needed
 	 */
-	if (yasqe.options.consumeShareLink) {
-		yasqe.options.consumeShareLink(yasqe, getUrlParams());
-		//and: add a hash listener!
-		window.addEventListener("hashchange", function() {
-			yasqe.options.consumeShareLink(yasqe, getUrlParams());
-		});
-	}
-	if (yasqe.options.collapsePrefixesOnLoad) yasqe.collapsePrefixes(true);
+  if (yasqe.options.consumeShareLink) {
+    yasqe.options.consumeShareLink(yasqe, getUrlParams());
+    //and: add a hash listener!
+    window.addEventListener("hashchange", function() {
+      yasqe.options.consumeShareLink(yasqe, getUrlParams());
+    });
+  }
+  if (yasqe.options.collapsePrefixesOnLoad) yasqe.collapsePrefixes(true);
 };
 
 /**
  * get url params. first try fetching using hash. If it fails, try the regular query parameters (for backwards compatability)
  */
 var getUrlParams = function() {
-	//first try hash
-	var urlParams = null;
-	if (window.location.hash.length > 1) {
-		//firefox does some decoding if we're using window.location.hash (e.g. the + sign in contentType settings)
-		//Don't want this. So simply get the hash string ourselves
-		urlParams = $.deparam(location.href.split("#")[1])
-	}
-	if ((!urlParams || !('query' in urlParams)) && window.location.search.length > 1) {
-		//ok, then just try regular url params
-		urlParams = $.deparam(window.location.search.substring(1));
-	}
-	return urlParams;
+  //first try hash
+  var urlParams = null;
+  if (window.location.hash.length > 1) {
+    //firefox does some decoding if we're using window.location.hash (e.g. the + sign in contentType settings)
+    //Don't want this. So simply get the hash string ourselves
+    urlParams = $.deparam(location.href.split("#")[1]);
+  }
+  if ((!urlParams || !("query" in urlParams)) && window.location.search.length > 1) {
+    //ok, then just try regular url params
+    urlParams = $.deparam(window.location.search.substring(1));
+  }
+  return urlParams;
 };
-
-
 
 /**
  * Update transparency of buttons. Increase transparency when cursor is below buttons
  */
 
 var updateButtonsTransparency = function(yasqe) {
-	yasqe.cursor = $(".CodeMirror-cursor");
-	if (yasqe.buttons && yasqe.buttons.is(":visible") && yasqe.cursor.length > 0) {
-		if (utils.elementsOverlap(yasqe.cursor, yasqe.buttons)) {
-			yasqe.buttons.find("svg").attr("opacity", "0.2");
-		} else {
-			yasqe.buttons.find("svg").attr("opacity", "1.0");
-		}
-	}
+  yasqe.cursor = $(".CodeMirror-cursor");
+  if (yasqe.buttons && yasqe.buttons.is(":visible") && yasqe.cursor.length > 0) {
+    if (utils.elementsOverlap(yasqe.cursor, yasqe.buttons)) {
+      yasqe.buttons.find("svg").attr("opacity", "0.2");
+    } else {
+      yasqe.buttons.find("svg").attr("opacity", "1.0");
+    }
+  }
 };
-
-
-
-
-
-
-
-
 
 var clearError = null;
 var checkSyntax = function(yasqe, deepcheck) {
+  yasqe.queryValid = true;
 
-	yasqe.queryValid = true;
+  yasqe.clearGutter("gutterErrorBar");
 
-	yasqe.clearGutter("gutterErrorBar");
+  var state = null;
+  for (var l = 0; l < yasqe.lineCount(); ++l) {
+    var precise = false;
+    if (!yasqe.prevQueryValid) {
+      // we don't want cached information in this case, otherwise the
+      // previous error sign might still show up,
+      // even though the syntax error might be gone already
+      precise = true;
+    }
 
-	var state = null;
-	for (var l = 0; l < yasqe.lineCount(); ++l) {
-		var precise = false;
-		if (!yasqe.prevQueryValid) {
-			// we don't want cached information in this case, otherwise the
-			// previous error sign might still show up,
-			// even though the syntax error might be gone already
-			precise = true;
-		}
+    var token = yasqe.getTokenAt(
+      {
+        line: l,
+        ch: yasqe.getLine(l).length
+      },
+      precise
+    );
+    var state = token.state;
+    yasqe.queryType = state.queryType;
+    if (state.OK == false) {
+      if (!yasqe.options.syntaxErrorCheck) {
+        //the library we use already marks everything as being an error. Overwrite this class attribute.
+        $(yasqe.getWrapperElement).find(".sp-error").css("color", "black");
+        //we don't want to gutter error, so return
+        return;
+      }
 
-		var token = yasqe.getTokenAt({
-			line: l,
-			ch: yasqe.getLine(l).length
-		}, precise);
-		var state = token.state;
-		yasqe.queryType = state.queryType;
-		if (state.OK == false) {
-			if (!yasqe.options.syntaxErrorCheck) {
-				//the library we use already marks everything as being an error. Overwrite this class attribute.
-				$(yasqe.getWrapperElement).find(".sp-error").css("color", "black");
-				//we don't want to gutter error, so return
-				return;
-			}
+      var warningEl = yutils.svg.getElement(imgs.warning);
+      if (state.errorMsg) {
+        require("./tooltip")(yasqe, warningEl, function() {
+          return $("<div/>").text(token.state.errorMsg).html();
+        });
+      } else if (state.possibleCurrent && state.possibleCurrent.length > 0) {
+        //				warningEl.style.zIndex = "99999999";
+        require("./tooltip")(yasqe, warningEl, function() {
+          var expectedEncoded = [];
+          state.possibleCurrent.forEach(function(expected) {
+            expectedEncoded.push(
+              "<strong style='text-decoration:underline'>" + $("<div/>").text(expected).html() + "</strong>"
+            );
+          });
+          return "This line is invalid. Expected: " + expectedEncoded.join(", ");
+        });
+      }
+      warningEl.style.marginTop = "2px";
+      warningEl.style.marginLeft = "2px";
+      warningEl.className = "parseErrorIcon";
+      yasqe.setGutterMarker(l, "gutterErrorBar", warningEl);
 
-			var warningEl = yutils.svg.getElement(imgs.warning);
-			if (state.errorMsg) {
-				require('./tooltip')(yasqe, warningEl, function() {
-					return $("<div/>").text(token.state.errorMsg).html();
-				});
-			} else if (state.possibleCurrent && state.possibleCurrent.length > 0) {
-				//				warningEl.style.zIndex = "99999999";
-				require('./tooltip')(yasqe, warningEl, function() {
-					var expectedEncoded = [];
-					state.possibleCurrent.forEach(function(expected) {
-						expectedEncoded.push("<strong style='text-decoration:underline'>" + $("<div/>").text(expected).html() + "</strong>");
-					});
-					return "This line is invalid. Expected: " + expectedEncoded.join(", ");
-				});
-			}
-			warningEl.style.marginTop = "2px";
-			warningEl.style.marginLeft = "2px";
-			warningEl.className = 'parseErrorIcon';
-			yasqe.setGutterMarker(l, "gutterErrorBar", warningEl);
-
-			yasqe.queryValid = false;
-			break;
-		}
-	}
-	yasqe.prevQueryValid = yasqe.queryValid;
-	if (deepcheck) {
-		if (state != null && state.stack != undefined) {
-			var stack = state.stack,
-				len = state.stack.length;
-			// Because incremental parser doesn't receive end-of-input
-			// it can't clear stack, so we have to check that whatever
-			// is left on the stack is nillable
-			if (len > 1)
-				yasqe.queryValid = false;
-			else if (len == 1) {
-				if (stack[0] != "solutionModifier" && stack[0] != "?limitOffsetClauses" && stack[0] != "?offsetClause")
-					yasqe.queryValid = false;
-			}
-		}
-	}
+      yasqe.queryValid = false;
+      break;
+    }
+  }
+  yasqe.prevQueryValid = yasqe.queryValid;
+  if (deepcheck) {
+    if (state != null && state.stack != undefined) {
+      var stack = state.stack, len = state.stack.length;
+      // Because incremental parser doesn't receive end-of-input
+      // it can't clear stack, so we have to check that whatever
+      // is left on the stack is nillable
+      if (len > 1) yasqe.queryValid = false;
+      else if (len == 1) {
+        if (stack[0] != "solutionModifier" && stack[0] != "?limitOffsetClauses" && stack[0] != "?offsetClause")
+          yasqe.queryValid = false;
+      }
+    }
+  }
 };
 /**
  * Static Utils
@@ -94416,17 +97587,16 @@ var checkSyntax = function(yasqe, deepcheck) {
 // first take all CodeMirror references and store them in the YASQE object
 $.extend(root, CodeMirror);
 
-
 //add registrar for autocompleters
 root.Autocompleters = {};
 root.registerAutocompleter = function(name, constructor) {
-	root.Autocompleters[name] = constructor;
-	addCompleterToSettings(root.defaults, name);
-}
+  root.Autocompleters[name] = constructor;
+  addCompleterToSettings(root.defaults, name);
+};
 
 root.autoComplete = function(yasqe) {
-	//this function gets called when pressing the keyboard shortcut. I.e., autoShow = false
-	yasqe.autocompleters.autoComplete(false);
+  //this function gets called when pressing the keyboard shortcut. I.e., autoShow = false
+  yasqe.autocompleters.autoComplete(false);
 };
 //include the autocompleters we provide out-of-the-box
 root.registerAutocompleter("prefixes", require("./autocompleters/prefixes.js"));
@@ -94434,14 +97604,13 @@ root.registerAutocompleter("properties", require("./autocompleters/properties.js
 root.registerAutocompleter("classes", require("./autocompleters/classes.js"));
 root.registerAutocompleter("variables", require("./autocompleters/variables.js"));
 
-
 root.positionButtons = function(yasqe) {
-	var scrollBar = $(yasqe.getWrapperElement()).find(".CodeMirror-vscrollbar");
-	var offset = 0;
-	if (scrollBar.is(":visible")) {
-		offset = scrollBar.outerWidth();
-	}
-	if (yasqe.buttons.is(":visible")) yasqe.buttons.css("right", offset + 4);
+  var scrollBar = $(yasqe.getWrapperElement()).find(".CodeMirror-vscrollbar");
+  var offset = 0;
+  if (scrollBar.is(":visible")) {
+    offset = scrollBar.outerWidth();
+  }
+  if (yasqe.buttons.is(":visible")) yasqe.buttons.css("right", offset + 4);
 };
 
 /**
@@ -94453,15 +97622,15 @@ root.positionButtons = function(yasqe) {
  * @return object
  */
 root.createShareLink = function(yasqe) {
-	//extend existing link, so first fetch current arguments
-	var urlParams = {};
-	if (window.location.hash.length > 1) urlParams = $.deparam(window.location.hash.substring(1));
-	urlParams['query'] = yasqe.getValue();
-	return urlParams;
+  //extend existing link, so first fetch current arguments
+  var urlParams = {};
+  if (window.location.hash.length > 1) urlParams = $.deparam(window.location.hash.substring(1));
+  urlParams["query"] = yasqe.getValue();
+  return urlParams;
 };
 root.getAsCurl = function(yasqe, ajaxConfig) {
-	var curl = require('./curl.js');
-	return curl.createCurlString(yasqe, ajaxConfig);
+  var curl = require("./curl.js");
+  return curl.createCurlString(yasqe, ajaxConfig);
 };
 /**
  * Consume the share link, by parsing the document URL for possible yasqe arguments, and setting the appropriate values in the YASQE doc
@@ -94470,123 +97639,133 @@ root.getAsCurl = function(yasqe, ajaxConfig) {
  * @param {doc} YASQE document
  */
 root.consumeShareLink = function(yasqe, urlParams) {
-	if (urlParams && urlParams.query) {
-		yasqe.setValue(urlParams.query);
-	}
+  if (urlParams && urlParams.query) {
+    yasqe.setValue(urlParams.query);
+  }
 };
 root.drawButtons = function(yasqe) {
-	yasqe.buttons = $("<div class='yasqe_buttons'></div>").appendTo($(yasqe.getWrapperElement()));
+  yasqe.buttons = $("<div class='yasqe_buttons'></div>").appendTo($(yasqe.getWrapperElement()));
 
-	/**
+  /**
 	 * draw share link button
 	 */
-	if (yasqe.options.createShareLink) {
+  if (yasqe.options.createShareLink) {
+    var svgShare = $(yutils.svg.getElement(imgs.share));
+    svgShare
+      .click(function(event) {
+        event.stopPropagation();
+        var popup = $("<div class='yasqe_sharePopup'></div>").appendTo(yasqe.buttons);
+        $("html").click(function() {
+          if (popup) popup.remove();
+        });
 
-		var svgShare = $(yutils.svg.getElement(imgs.share));
-		svgShare.click(function(event) {
-				event.stopPropagation();
-				var popup = $("<div class='yasqe_sharePopup'></div>").appendTo(yasqe.buttons);
-				$('html').click(function() {
-					if (popup) popup.remove();
-				});
+        popup.click(function(event) {
+          event.stopPropagation();
+        });
+        var $input = $("<input>").val(
+          location.protocol +
+            "//" +
+            location.host +
+            location.pathname +
+            location.search +
+            "#" +
+            $.param(yasqe.options.createShareLink(yasqe))
+        );
 
-				popup.click(function(event) {
-					event.stopPropagation();
-				});
-				var $input = $("<input>").val(location.protocol + '//' + location.host + location.pathname + location.search + "#" + $.param(yasqe.options.createShareLink(yasqe)));
+        $input.focus(function() {
+          var $this = $(this);
+          $this.select();
 
-				$input.focus(function() {
-					var $this = $(this);
-					$this.select();
+          // Work around Chrome's little problem
+          $this.mouseup(function() {
+            // Prevent further mouseup intervention
+            $this.unbind("mouseup");
+            return false;
+          });
+        });
 
-					// Work around Chrome's little problem
-					$this.mouseup(function() {
-						// Prevent further mouseup intervention
-						$this.unbind("mouseup");
-						return false;
-					});
-				});
+        popup.empty().append($("<div>", { class: "inputWrapper" }).append($input));
+        if (yasqe.options.createShortLink) {
+          popup.addClass("enableShort");
+          $("<button>Shorten</button>")
+            .addClass("yasqe_btn yasqe_btn-sm yasqe_btn-primary")
+            .click(function() {
+              $(this).parent().find("button").attr("disabled", "disabled");
+              yasqe.options.createShortLink($input.val(), function(errString, shortLink) {
+                if (errString) {
+                  $input.remove();
+                  popup.find(".inputWrapper").append($("<span>", { class: "shortlinkErr" }).text(errString));
+                } else {
+                  $input.val(shortLink).focus();
+                }
+              });
+            })
+            .appendTo(popup);
+        }
+        $("<button>CURL</button>")
+          .addClass("yasqe_btn yasqe_btn-sm yasqe_btn-primary")
+          .click(function() {
+            $(this).parent().find("button").attr("disabled", "disabled");
+            $input.val(root.getAsCurl(yasqe)).focus();
+          })
+          .appendTo(popup);
+        var positions = svgShare.position();
+        popup
+          .css("top", positions.top + svgShare.outerHeight() + parseInt(popup.css("padding-top")) + "px")
+          .css("left", positions.left + svgShare.outerWidth() - popup.outerWidth() + "px");
+        $input.focus();
+      })
+      .addClass("yasqe_share")
+      .attr("title", "Share your query")
+      .appendTo(yasqe.buttons);
+  }
 
-				popup.empty().append($('<div>', {class:'inputWrapper'}).append($input));
-				if (yasqe.options.createShortLink) {
-					popup.addClass('enableShort');
-					$('<button>Shorten</button>')
-						.addClass('yasqe_btn yasqe_btn-sm yasqe_btn-primary')
-						.click(function() {
-							$(this).parent().find('button').attr('disabled', 'disabled');
-							yasqe.options.createShortLink($input.val(), function(errString, shortLink) {
-								if (errString) {
-									$input.remove();
-									popup.find('.inputWrapper').append($('<span>', {class:"shortlinkErr"}).text(errString));
-								} else {
-									$input.val(shortLink).focus();
-								}
-							})
-						}).appendTo(popup);
-				}
-				$('<button>CURL</button>')
-					.addClass('yasqe_btn yasqe_btn-sm yasqe_btn-primary')
-					.click(function() {
-
-						$(this).parent().find('button').attr('disabled', 'disabled');
-						$input.val(root.getAsCurl(yasqe)).focus();
-					}).appendTo(popup);
-				var positions = svgShare.position();
-				popup.css("top", (positions.top + svgShare.outerHeight() + parseInt(popup.css('padding-top')) ) + "px").css("left", ((positions.left + svgShare.outerWidth()) - popup.outerWidth()) + "px");
-				$input.focus();
-			})
-			.addClass("yasqe_share")
-			.attr("title", "Share your query")
-			.appendTo(yasqe.buttons);
-
-	}
-
-
-	/**
+  /**
 	 * draw fullscreen button
 	 */
 
-	var toggleFullscreen = $('<div>', {
-			class: 'fullscreenToggleBtns'
-		})
-		.append($(yutils.svg.getElement(imgs.fullscreen))
-			.addClass("yasqe_fullscreenBtn")
-			.attr("title", "Set editor full screen")
-			.click(function() {
-				yasqe.setOption("fullScreen", true);
-			}))
-		.append($(yutils.svg.getElement(imgs.smallscreen))
-			.addClass("yasqe_smallscreenBtn")
-			.attr("title", "Set editor to normale size")
-			.click(function() {
-				yasqe.setOption("fullScreen", false);
-			}))
-	yasqe.buttons.append(toggleFullscreen);
+  var toggleFullscreen = $("<div>", {
+    class: "fullscreenToggleBtns"
+  })
+    .append(
+      $(yutils.svg.getElement(imgs.fullscreen))
+        .addClass("yasqe_fullscreenBtn")
+        .attr("title", "Set editor full screen")
+        .click(function() {
+          yasqe.setOption("fullScreen", true);
+        })
+    )
+    .append(
+      $(yutils.svg.getElement(imgs.smallscreen))
+        .addClass("yasqe_smallscreenBtn")
+        .attr("title", "Set editor to normale size")
+        .click(function() {
+          yasqe.setOption("fullScreen", false);
+        })
+    );
+  yasqe.buttons.append(toggleFullscreen);
 
-
-	if (yasqe.options.sparql.showQueryButton) {
-		$("<div>", {
-				class: 'yasqe_queryButton'
-			})
-			.click(function() {
-				if ($(this).hasClass("query_busy")) {
-					if (yasqe.xhr) yasqe.xhr.abort();
-					root.updateQueryButton(yasqe);
-				} else {
-					yasqe.query();
-				}
-			})
-			.appendTo(yasqe.buttons);
-		root.updateQueryButton(yasqe);
-	}
-
+  if (yasqe.options.sparql.showQueryButton) {
+    $("<div>", {
+      class: "yasqe_queryButton"
+    })
+      .click(function() {
+        if ($(this).hasClass("query_busy")) {
+          if (yasqe.xhr) yasqe.xhr.abort();
+          root.updateQueryButton(yasqe);
+        } else {
+          yasqe.query();
+        }
+      })
+      .appendTo(yasqe.buttons);
+    root.updateQueryButton(yasqe);
+  }
 };
 
-
 var queryButtonIds = {
-	"busy": "loader",
-	"valid": "query",
-	"error": "queryInvalid"
+  busy: "loader",
+  valid: "query",
+  error: "queryInvalid"
 };
 
 /**
@@ -94596,36 +97775,39 @@ var queryButtonIds = {
  * @param status {string|null, "busy"|"valid"|"error"}
  */
 root.updateQueryButton = function(yasqe, status) {
-	var queryButton = $(yasqe.getWrapperElement()).find(".yasqe_queryButton");
-	if (queryButton.length == 0) return; //no query button drawn
+  var queryButton = $(yasqe.getWrapperElement()).find(".yasqe_queryButton");
+  if (queryButton.length == 0) return; //no query button drawn
 
-	//detect status
-	if (!status) {
-		status = "valid";
-		if (yasqe.queryValid === false) status = "error";
-	}
+  //detect status
+  if (!status) {
+    status = "valid";
+    if (yasqe.queryValid === false) status = "error";
+  }
 
-	if (status != yasqe.queryStatus) {
-		queryButton
-			.empty()
-			.removeClass(function(index, classNames) {
-				return classNames.split(" ").filter(function(c) {
-					//remove classname from previous status
-					return c.indexOf("query_") == 0;
-				}).join(" ");
-			});
+  if (status != yasqe.queryStatus) {
+    queryButton.empty().removeClass(function(index, classNames) {
+      return classNames
+        .split(" ")
+        .filter(function(c) {
+          //remove classname from previous status
+          return c.indexOf("query_") == 0;
+        })
+        .join(" ");
+    });
 
-		if (status == "busy") {
-			queryButton.append($('<div>', {
-				class: 'loader',
-			}));
-			yasqe.queryStatus = status;
-		} else if (status == "valid" || status == "error") {
-			queryButton.addClass("query_" + status);
-			yutils.svg.draw(queryButton, imgs[queryButtonIds[status]]);
-			yasqe.queryStatus = status;
-		}
-	}
+    if (status == "busy") {
+      queryButton.append(
+        $("<div>", {
+          class: "loader"
+        })
+      );
+      yasqe.queryStatus = status;
+    } else if (status == "valid" || status == "error") {
+      queryButton.addClass("query_" + status);
+      yutils.svg.draw(queryButton, imgs[queryButtonIds[status]]);
+      yasqe.queryStatus = status;
+    }
+  }
 };
 /**
  * Initialize YASQE from an existing text area (see http://codemirror.net/doc/manual.html#fromTextArea for more info)
@@ -94636,324 +97818,304 @@ root.updateQueryButton = function(yasqe, status) {
  * @returns {doc} YASQE document
  */
 root.fromTextArea = function(textAreaEl, config) {
-	config = extendConfig(config);
-	//add yasqe div as parent (needed for styles to be manageable and scoped).
-	//In this case, I -also- put it as parent el of the text area. This is wrapped in a div now
-	var rootEl = $("<div>", {
-		class: 'yasqe'
-	}).insertBefore($(textAreaEl)).append($(textAreaEl));
-	var yasqe = extendCmInstance(CodeMirror.fromTextArea(textAreaEl, config));
-	postProcessCmElement(yasqe);
-	return yasqe;
+  config = extendConfig(config);
+  //add yasqe div as parent (needed for styles to be manageable and scoped).
+  //In this case, I -also- put it as parent el of the text area. This is wrapped in a div now
+  var rootEl = $("<div>", {
+    class: "yasqe"
+  })
+    .insertBefore($(textAreaEl))
+    .append($(textAreaEl));
+  var yasqe = extendCmInstance(CodeMirror.fromTextArea(textAreaEl, config));
+  postProcessCmElement(yasqe);
+  return yasqe;
 };
-
 
 root.storeQuery = function(yasqe) {
-	var storageId = utils.getPersistencyId(yasqe, yasqe.options.persistent);
-	if (storageId) {
-		yutils.storage.set(storageId, yasqe.getValue(), "month");
-	}
+  var storageId = utils.getPersistencyId(yasqe, yasqe.options.persistent);
+  if (storageId) {
+    yutils.storage.set(storageId, yasqe.getValue(), "month", yasqe.options.onQuotaExceeded);
+  }
 };
 root.commentLines = function(yasqe) {
-	var startLine = yasqe.getCursor(true).line;
-	var endLine = yasqe.getCursor(false).line;
-	var min = Math.min(startLine, endLine);
-	var max = Math.max(startLine, endLine);
+  var startLine = yasqe.getCursor(true).line;
+  var endLine = yasqe.getCursor(false).line;
+  var min = Math.min(startLine, endLine);
+  var max = Math.max(startLine, endLine);
 
-	// if all lines start with #, remove this char. Otherwise add this char
-	var linesAreCommented = true;
-	for (var i = min; i <= max; i++) {
-		var line = yasqe.getLine(i);
-		if (line.length == 0 || line.substring(0, 1) != "#") {
-			linesAreCommented = false;
-			break;
-		}
-	}
-	for (var i = min; i <= max; i++) {
-		if (linesAreCommented) {
-			// lines are commented, so remove comments
-			yasqe.replaceRange("", {
-				line: i,
-				ch: 0
-			}, {
-				line: i,
-				ch: 1
-			});
-		} else {
-			// Not all lines are commented, so add comments
-			yasqe.replaceRange("#", {
-				line: i,
-				ch: 0
-			});
-		}
-
-	}
+  // if all lines start with #, remove this char. Otherwise add this char
+  var linesAreCommented = true;
+  for (var i = min; i <= max; i++) {
+    var line = yasqe.getLine(i);
+    if (line.length == 0 || line.substring(0, 1) != "#") {
+      linesAreCommented = false;
+      break;
+    }
+  }
+  for (var i = min; i <= max; i++) {
+    if (linesAreCommented) {
+      // lines are commented, so remove comments
+      yasqe.replaceRange(
+        "",
+        {
+          line: i,
+          ch: 0
+        },
+        {
+          line: i,
+          ch: 1
+        }
+      );
+    } else {
+      // Not all lines are commented, so add comments
+      yasqe.replaceRange("#", {
+        line: i,
+        ch: 0
+      });
+    }
+  }
 };
 
 root.copyLineUp = function(yasqe) {
-	var cursor = yasqe.getCursor();
-	var lineCount = yasqe.lineCount();
-	// First create new empty line at end of text
-	yasqe.replaceRange("\n", {
-		line: lineCount - 1,
-		ch: yasqe.getLine(lineCount - 1).length
-	});
-	// Copy all lines to their next line
-	for (var i = lineCount; i > cursor.line; i--) {
-		var line = yasqe.getLine(i - 1);
-		yasqe.replaceRange(line, {
-			line: i,
-			ch: 0
-		}, {
-			line: i,
-			ch: yasqe.getLine(i).length
-		});
-	}
+  var cursor = yasqe.getCursor();
+  var lineCount = yasqe.lineCount();
+  // First create new empty line at end of text
+  yasqe.replaceRange("\n", {
+    line: lineCount - 1,
+    ch: yasqe.getLine(lineCount - 1).length
+  });
+  // Copy all lines to their next line
+  for (var i = lineCount; i > cursor.line; i--) {
+    var line = yasqe.getLine(i - 1);
+    yasqe.replaceRange(
+      line,
+      {
+        line: i,
+        ch: 0
+      },
+      {
+        line: i,
+        ch: yasqe.getLine(i).length
+      }
+    );
+  }
 };
 root.copyLineDown = function(yasqe) {
-	root.copyLineUp(yasqe);
-	// Make sure cursor goes one down (we are copying downwards)
-	var cursor = yasqe.getCursor();
-	cursor.line++;
-	yasqe.setCursor(cursor);
+  root.copyLineUp(yasqe);
+  // Make sure cursor goes one down (we are copying downwards)
+  var cursor = yasqe.getCursor();
+  cursor.line++;
+  yasqe.setCursor(cursor);
 };
 root.doAutoFormat = function(yasqe) {
-	if (yasqe.somethingSelected()) {
-		var to = {
-			line: yasqe.getCursor(false).line,
-			ch: yasqe.getSelection().length
-		};
-		autoFormatRange(yasqe, yasqe.getCursor(true), to);
-	} else {
-		var totalLines = yasqe.lineCount();
-		var totalChars = yasqe.getTextArea().value.length;
-		autoFormatRange(yasqe, {
-			line: 0,
-			ch: 0
-		}, {
-			line: totalLines,
-			ch: totalChars
-		});
-	}
-
+  if (!yasqe.somethingSelected()) yasqe.execCommand("selectAll");
+  var to = {
+    line: yasqe.getCursor(false).line,
+    ch: yasqe.getSelection().length
+  };
+  autoFormatRange(yasqe, yasqe.getCursor(true), to);
 };
 
-
 var autoFormatRange = function(yasqe, from, to) {
-	var absStart = yasqe.indexFromPos(from);
-	var absEnd = yasqe.indexFromPos(to);
-	// Insert additional line breaks where necessary according to the
-	// mode's syntax
-	var res = autoFormatLineBreaks(yasqe.getValue(), absStart, absEnd);
+  var absStart = yasqe.indexFromPos(from);
+  var absEnd = yasqe.indexFromPos(to);
+  // Insert additional line breaks where necessary according to the
+  // mode's syntax
+  var res = autoFormatLineBreaks(yasqe.getValue(), absStart, absEnd);
 
-	// Replace and auto-indent the range
-	yasqe.operation(function() {
-		yasqe.replaceRange(res, from, to);
-		var startLine = yasqe.posFromIndex(absStart).line;
-		var endLine = yasqe.posFromIndex(absStart + res.length).line;
-		for (var i = startLine; i <= endLine; i++) {
-			yasqe.indentLine(i, "smart");
-		}
-	});
+  // Replace and auto-indent the range
+  yasqe.operation(function() {
+    yasqe.replaceRange(res, from, to);
+    var startLine = yasqe.posFromIndex(absStart).line;
+    var endLine = yasqe.posFromIndex(absStart + res.length).line;
+    for (var i = startLine; i <= endLine; i++) {
+      yasqe.indentLine(i, "smart");
+    }
+  });
 };
 
 var autoFormatLineBreaks = function(text, start, end) {
-	text = text.substring(start, end);
-	var breakAfterArray = [
-		["keyword", "ws", "prefixed", "ws", "uri"], // i.e. prefix declaration
-		["keyword", "ws", "uri"] // i.e. base
-	];
-	var breakAfterCharacters = ["{", ".", ";"];
-	var breakBeforeCharacters = ["}"];
-	var getBreakType = function(stringVal, type) {
-		for (var i = 0; i < breakAfterArray.length; i++) {
-			if (stackTrace.valueOf().toString() == breakAfterArray[i].valueOf()
-				.toString()) {
-				return 1;
-			}
-		}
-		for (var i = 0; i < breakAfterCharacters.length; i++) {
-			if (stringVal == breakAfterCharacters[i]) {
-				return 1;
-			}
-		}
-		for (var i = 0; i < breakBeforeCharacters.length; i++) {
-			// don't want to issue 'breakbefore' AND 'breakafter', so check
-			// current line
-			if ($.trim(currentLine) != '' && stringVal == breakBeforeCharacters[i]) {
-				return -1;
-			}
-		}
-		return 0;
-	};
-	var formattedQuery = "";
-	var currentLine = "";
-	var stackTrace = [];
-	CodeMirror.runMode(text, "sparql11", function(stringVal, type) {
-		stackTrace.push(type);
-		var breakType = getBreakType(stringVal, type);
-		if (breakType != 0) {
-			if (breakType == 1) {
-				formattedQuery += stringVal + "\n";
-				currentLine = "";
-			} else { // (-1)
-				formattedQuery += "\n" + stringVal;
-				currentLine = stringVal;
-			}
-			stackTrace = [];
-		} else {
-			currentLine += stringVal;
-			formattedQuery += stringVal;
-		}
-		if (stackTrace.length == 1 && stackTrace[0] == "sp-ws")
-			stackTrace = [];
-	});
-	return $.trim(formattedQuery.replace(/\n\s*\n/g, '\n'));
+  text = text.substring(start, end);
+  var breakAfterArray = [
+    ["keyword", "ws", "prefixed", "ws", "uri"], // i.e. prefix declaration
+    ["keyword", "ws", "uri"] // i.e. base
+  ];
+  var breakAfterCharacters = ["{", ".", ";"];
+  var breakBeforeCharacters = ["}"];
+  var getBreakType = function(stringVal, type) {
+    for (var i = 0; i < breakAfterArray.length; i++) {
+      if (stackTrace.valueOf().toString() == breakAfterArray[i].valueOf().toString()) {
+        return 1;
+      }
+    }
+    for (var i = 0; i < breakAfterCharacters.length; i++) {
+      if (stringVal == breakAfterCharacters[i]) {
+        return 1;
+      }
+    }
+    for (var i = 0; i < breakBeforeCharacters.length; i++) {
+      // don't want to issue 'breakbefore' AND 'breakafter', so check
+      // current line
+      if ($.trim(currentLine) != "" && stringVal == breakBeforeCharacters[i]) {
+        return -1;
+      }
+    }
+    return 0;
+  };
+  var formattedQuery = "";
+  var currentLine = "";
+  var stackTrace = [];
+  CodeMirror.runMode(text, "sparql11", function(stringVal, type) {
+    stackTrace.push(type);
+    var breakType = getBreakType(stringVal, type);
+    if (breakType != 0) {
+      if (breakType == 1) {
+        formattedQuery += stringVal + "\n";
+        currentLine = "";
+      } else {
+        // (-1)
+        formattedQuery += "\n" + stringVal;
+        currentLine = stringVal;
+      }
+      stackTrace = [];
+    } else {
+      currentLine += stringVal;
+      formattedQuery += stringVal;
+    }
+    if (stackTrace.length == 1 && stackTrace[0] == "sp-ws") stackTrace = [];
+  });
+  return $.trim(formattedQuery.replace(/\n\s*\n/g, "\n"));
 };
 
-require('./sparql.js'),
-	require('./defaults.js');
+require("./sparql.js"), require("./defaults.js");
 root.$ = $;
 root.version = {
-	"CodeMirror": CodeMirror.version,
-	"YASQE": require("../package.json").version,
-	"jquery": $.fn.jquery,
-	"yasgui-utils": yutils.version
+  CodeMirror: CodeMirror.version,
+  YASQE: require("../package.json").version,
+  jquery: $.fn.jquery,
+  "yasgui-utils": yutils.version
 };
 
-},{"../lib/deparam.js":51,"../lib/grammar/tokenizer.js":53,"../package.json":55,"./autocompleters/autocompleterBase.js":56,"./autocompleters/classes.js":57,"./autocompleters/prefixes.js":58,"./autocompleters/properties.js":59,"./autocompleters/variables.js":61,"./curl.js":62,"./defaults.js":63,"./imgs.js":64,"./prefixFold.js":66,"./prefixUtils.js":67,"./sparql.js":68,"./tokenUtils.js":69,"./tooltip":70,"./utils.js":71,"codemirror":10,"codemirror/addon/display/fullscreen.js":1,"codemirror/addon/edit/matchbrackets.js":2,"codemirror/addon/fold/brace-fold.js":3,"codemirror/addon/fold/foldcode.js":4,"codemirror/addon/fold/foldgutter.js":5,"codemirror/addon/fold/xml-fold.js":6,"codemirror/addon/hint/show-hint.js":7,"codemirror/addon/runmode/runmode.js":8,"codemirror/addon/search/searchcursor.js":9,"jquery":26,"yasgui-utils":48}],66:[function(require,module,exports){
-var CodeMirror = require('codemirror'),
-	tokenUtils = require('./tokenUtils.js');
+},{"../lib/deparam.js":65,"../lib/grammar/tokenizer.js":67,"../package.json":69,"./autocompleters/autocompleterBase.js":70,"./autocompleters/classes.js":71,"./autocompleters/prefixes.js":72,"./autocompleters/properties.js":73,"./autocompleters/variables.js":75,"./curl.js":76,"./defaults.js":77,"./imgs.js":78,"./prefixFold.js":80,"./prefixUtils.js":81,"./sparql.js":82,"./tokenUtils.js":83,"./tooltip":84,"./utils.js":85,"codemirror":11,"codemirror/addon/display/fullscreen.js":2,"codemirror/addon/edit/matchbrackets.js":3,"codemirror/addon/fold/brace-fold.js":4,"codemirror/addon/fold/foldcode.js":5,"codemirror/addon/fold/foldgutter.js":6,"codemirror/addon/fold/xml-fold.js":7,"codemirror/addon/hint/show-hint.js":8,"codemirror/addon/runmode/runmode.js":9,"codemirror/addon/search/searchcursor.js":10,"jquery":29,"yasgui-utils":62}],80:[function(require,module,exports){
+var CodeMirror = require("codemirror"), tokenUtils = require("./tokenUtils.js");
 
-"use strict";
+("use strict");
 var lookFor = "PREFIX";
 module.exports = {
-	findFirstPrefixLine: function(cm) {
-		var lastLine = cm.lastLine();
-		for (var i = 0; i <= lastLine; ++i) {
-			if (findFirstPrefix(cm, i) >= 0) {
-				return i;
-			}
-		}
-	}
-}
+  findFirstPrefixLine: function(cm) {
+    var lastLine = cm.lastLine();
+    for (var i = 0; i <= lastLine; ++i) {
+      if (findFirstPrefix(cm, i) >= 0) {
+        return i;
+      }
+    }
+  }
+};
 
 function findFirstPrefix(cm, line, ch, lineText) {
-	if (!ch) ch = 0;
-	if (!lineText) lineText = cm.getLine(line);
-	lineText = lineText.toUpperCase();
-	for (var at = ch, pass = 0;;) {
-		var found = lineText.indexOf(lookFor, at);
-		if (found == -1) {
-			if (pass == 1)
-				break;
-			pass = 1;
-			at = lineText.length;
-			continue;
-		}
-		if (pass == 1 && found < ch)
-			break;
-		tokenType = cm.getTokenTypeAt(CodeMirror.Pos(line, found + 1));
-		if (!/^(string)/.test(tokenType))
-			return found + 1;
-		at = found - 1;
-	}
+  if (!ch) ch = 0;
+  if (!lineText) lineText = cm.getLine(line);
+  lineText = lineText.toUpperCase();
+  for (var at = ch, pass = 0; ; ) {
+    var found = lineText.indexOf(lookFor, at);
+    if (found == -1) {
+      //no prefix on this line
+      if (pass == 1) break;
+      pass = 1;
+      at = lineText.length;
+      continue;
+    }
+    if (pass == 1 && found < ch) break;
+    var tokenType = cm.getTokenTypeAt(CodeMirror.Pos(line, found + 1));
+    if (!/^(comment|string)/.test(tokenType)) return found + 1;
+    at = found - 1;
+    //Could not find a prefix, no use looping any further. Probably invalid query
+    if (at === pass) break;
+  }
 }
 
 CodeMirror.registerHelper("fold", "prefix", function(cm, start) {
-	var line = start.line,
-		lineText = cm.getLine(line);
+  var line = start.line, lineText = cm.getLine(line);
 
-	var startCh, tokenType;
+  var startCh, tokenType;
 
-	function hasPreviousPrefix() {
-		var hasPreviousPrefix = false;
-		for (var i = line - 1; i >= 0; i--) {
-			if (cm.getLine(i).toUpperCase().indexOf(lookFor) >= 0) {
-				hasPreviousPrefix = true;
-				break;
-			}
-		}
-		return hasPreviousPrefix;
-	}
+  function hasPreviousPrefix() {
+    var hasPreviousPrefix = false;
+    for (var i = line - 1; i >= 0; i--) {
+      if (cm.getLine(i).toUpperCase().indexOf(lookFor) >= 0) {
+        hasPreviousPrefix = true;
+        break;
+      }
+    }
+    return hasPreviousPrefix;
+  }
 
+  function findOpening(openCh) {
+    for (var at = start.ch, pass = 0; ; ) {
+      var found = at <= 0 ? -1 : lineText.lastIndexOf(openCh, at - 1);
+      if (found == -1) {
+        if (pass == 1) break;
+        pass = 1;
+        at = lineText.length;
+        continue;
+      }
+      if (pass == 1 && found < start.ch) break;
+      tokenType = cm.getTokenTypeAt(CodeMirror.Pos(line, found + 1));
+      if (!/^(comment|string)/.test(tokenType)) return found + 1;
+      at = found - 1;
+    }
+  }
+  var getLastPrefixPos = function(line, ch) {
+    var prefixKeywordToken = cm.getTokenAt(CodeMirror.Pos(line, ch + 1));
+    if (!prefixKeywordToken || prefixKeywordToken.type != "keyword") return -1;
+    var prefixShortname = tokenUtils.getNextNonWsToken(cm, line, prefixKeywordToken.end + 1);
+    if (!prefixShortname || prefixShortname.type != "string-2") return -1; //missing prefix keyword shortname
+    var prefixUri = tokenUtils.getNextNonWsToken(cm, line, prefixShortname.end + 1);
+    if (!prefixUri || prefixUri.type != "variable-3") return -1; //missing prefix uri
+    return prefixUri.end;
+  };
 
-	function findOpening(openCh) {
-		for (var at = start.ch, pass = 0;;) {
-			var found = at <= 0 ? -1 : lineText.lastIndexOf(openCh, at - 1);
-			if (found == -1) {
-				if (pass == 1)
-					break;
-				pass = 1;
-				at = lineText.length;
-				continue;
-			}
-			if (pass == 1 && found < start.ch)
-				break;
-			tokenType = cm.getTokenTypeAt(CodeMirror.Pos(line, found + 1));
-			if (!/^(comment|string)/.test(tokenType))
-				return found + 1;
-			at = found - 1;
-		}
-	}
-	var getLastPrefixPos = function(line, ch) {
-		var prefixKeywordToken = cm.getTokenAt(CodeMirror.Pos(line, ch + 1));
-		if (!prefixKeywordToken || prefixKeywordToken.type != "keyword") return -1;
-		var prefixShortname = tokenUtils.getNextNonWsToken(cm, line, prefixKeywordToken.end + 1);
-		if (!prefixShortname || prefixShortname.type != "string-2") return -1; //missing prefix keyword shortname
-		var prefixUri = tokenUtils.getNextNonWsToken(cm, line, prefixShortname.end + 1);
-		if (!prefixUri || prefixUri.type != "variable-3") return -1; //missing prefix uri
-		return prefixUri.end;
-	}
+  //only use opening prefix declaration
+  if (hasPreviousPrefix()) return;
+  var prefixStart = findFirstPrefix(cm, line, start.ch, lineText);
 
-	//only use opening prefix declaration
-	if (hasPreviousPrefix())
-		return;
-	var prefixStart = findFirstPrefix(cm, line, start.ch, lineText);
+  if (prefixStart == null) return;
+  var stopAt = "{"; //if this char is there, we won't have a chance of finding more prefixes
+  var stopAtNextLine = false;
+  var count = 1, lastLine = cm.lastLine(), end, endCh;
+  var prefixEndChar = getLastPrefixPos(line, prefixStart);
+  var prefixEndLine = line;
 
-	if (prefixStart == null)
-		return;
-	var stopAt = '{'; //if this char is there, we won't have a chance of finding more prefixes
-	var stopAtNextLine = false;
-	var count = 1,
-		lastLine = cm.lastLine(),
-		end, endCh;
-	var prefixEndChar = getLastPrefixPos(line, prefixStart);
-	var prefixEndLine = line;
+  outer:
+  for (var i = line; i <= lastLine; ++i) {
+    if (stopAtNextLine) break;
+    var text = cm.getLine(i), pos = i == line ? prefixStart + 1 : 0;
 
-	outer: for (var i = line; i <= lastLine; ++i) {
-		if (stopAtNextLine)
-			break;
-		var text = cm.getLine(i),
-			pos = i == line ? prefixStart + 1 : 0;
+    for (;;) {
+      if (!stopAtNextLine && text.indexOf(stopAt) >= 0) stopAtNextLine = true;
 
-		for (;;) {
-			if (!stopAtNextLine && text.indexOf(stopAt) >= 0)
-				stopAtNextLine = true;
+      var nextPrefixDeclaration = text.toUpperCase().indexOf(lookFor, pos);
 
-			var nextPrefixDeclaration = text.toUpperCase()
-				.indexOf(lookFor, pos);
-
-			if (nextPrefixDeclaration >= 0) {
-				if ((endCh = getLastPrefixPos(i, nextPrefixDeclaration)) > 0) {
-					prefixEndChar = endCh;
-					prefixEndLine = i;
-					pos = prefixEndChar;
-				}
-				pos++;
-			} else {
-				break;
-			}
-		}
-	}
-	return {
-		from: CodeMirror.Pos(line, prefixStart + lookFor.length),
-		to: CodeMirror.Pos(prefixEndLine, prefixEndChar)
-	};
+      if (nextPrefixDeclaration >= 0) {
+        if ((endCh = getLastPrefixPos(i, nextPrefixDeclaration)) > 0) {
+          prefixEndChar = endCh;
+          prefixEndLine = i;
+          pos = prefixEndChar;
+        }
+        pos++;
+      } else {
+        break;
+      }
+    }
+  }
+  return {
+    from: CodeMirror.Pos(line, prefixStart + lookFor.length),
+    to: CodeMirror.Pos(prefixEndLine, prefixEndChar)
+  };
 });
 
-},{"./tokenUtils.js":69,"codemirror":10}],67:[function(require,module,exports){
-'use strict';
+},{"./tokenUtils.js":83,"codemirror":11}],81:[function(require,module,exports){
+"use strict";
 /**
  * Append prefix declaration to list of prefixes in query window.
  *
@@ -94961,54 +98123,56 @@ CodeMirror.registerHelper("fold", "prefix", function(cm, start) {
  * @param prefix
  */
 var addPrefixes = function(yasqe, prefixes) {
-	var existingPrefixes = yasqe.getPrefixesFromQuery();
-	//for backwards compatability, we stil support prefixes value as string (e.g. 'rdf: <http://fbfgfgf>'
-	if (typeof prefixes == "string") {
-		addPrefixAsString(yasqe, prefixes);
-	} else {
-		for (var pref in prefixes) {
-			if (!(pref in existingPrefixes))
-				addPrefixAsString(yasqe, pref + ": <" + prefixes[pref] + ">");
-		}
-	}
-	yasqe.collapsePrefixes(false);
+  var existingPrefixes = yasqe.getPrefixesFromQuery();
+  //for backwards compatability, we stil support prefixes value as string (e.g. 'rdf: <http://fbfgfgf>'
+  if (typeof prefixes == "string") {
+    addPrefixAsString(yasqe, prefixes);
+  } else {
+    for (var pref in prefixes) {
+      if (!(pref in existingPrefixes)) addPrefixAsString(yasqe, pref + ": <" + prefixes[pref] + ">");
+    }
+  }
+  yasqe.collapsePrefixes(false);
 };
 
 var addPrefixAsString = function(yasqe, prefixString) {
-	var lastPrefix = null;
-	var lastPrefixLine = 0;
-	var numLines = yasqe.lineCount();
-	for (var i = 0; i < numLines; i++) {
-		var firstToken = yasqe.getNextNonWsToken(i);
-		if (firstToken != null && (firstToken.string == "PREFIX" || firstToken.string == "BASE")) {
-			lastPrefix = firstToken;
-			lastPrefixLine = i;
-		}
-	}
+  var lastPrefix = null;
+  var lastPrefixLine = 0;
+  var numLines = yasqe.lineCount();
+  for (var i = 0; i < numLines; i++) {
+    var firstToken = yasqe.getNextNonWsToken(i);
+    if (firstToken != null && (firstToken.string == "PREFIX" || firstToken.string == "BASE")) {
+      lastPrefix = firstToken;
+      lastPrefixLine = i;
+    }
+  }
 
-	if (lastPrefix == null) {
-		yasqe.replaceRange("PREFIX " + prefixString + "\n", {
-			line: 0,
-			ch: 0
-		});
-	} else {
-		var previousIndent = getIndentFromLine(yasqe, lastPrefixLine);
-		yasqe.replaceRange("\n" + previousIndent + "PREFIX " + prefixString, {
-			line: lastPrefixLine
-		});
-	}
-	yasqe.collapsePrefixes(false);
+  if (lastPrefix == null) {
+    yasqe.replaceRange("PREFIX " + prefixString + "\n", {
+      line: 0,
+      ch: 0
+    });
+  } else {
+    var previousIndent = getIndentFromLine(yasqe, lastPrefixLine);
+    yasqe.replaceRange("\n" + previousIndent + "PREFIX " + prefixString, {
+      line: lastPrefixLine
+    });
+  }
+  yasqe.collapsePrefixes(false);
 };
 var removePrefixes = function(yasqe, prefixes) {
-	var escapeRegex = function(string) {
-		//taken from http://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript/3561711#3561711
-		return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-	}
-	for (var pref in prefixes) {
-		yasqe.setValue(yasqe.getValue().replace(new RegExp("PREFIX\\s*" + pref + ":\\s*" + escapeRegex("<" + prefixes[pref] + ">") + "\\s*", "ig"), ''));
-	}
-	yasqe.collapsePrefixes(false);
-
+  var escapeRegex = function(string) {
+    //taken from http://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript/3561711#3561711
+    return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+  };
+  for (var pref in prefixes) {
+    yasqe.setValue(
+      yasqe
+        .getValue()
+        .replace(new RegExp("PREFIX\\s*" + pref + ":\\s*" + escapeRegex("<" + prefixes[pref] + ">") + "\\s*", "ig"), "")
+    );
+  }
+  yasqe.collapsePrefixes(false);
 };
 
 /**
@@ -95018,10 +98182,10 @@ var removePrefixes = function(yasqe, prefixes) {
  * @returns {Array}
  */
 var getPrefixesFromQuery = function(yasqe) {
-	//Use precise here. We want to be sure we use the most up to date state. If we're
-	//not, we might get outdated prefixes from the current query (creating loops such
-	//as https://github.com/OpenTriply/YASGUI/issues/84)
-	return yasqe.getTokenAt({line: yasqe.lastLine(), ch:yasqe.getLine(yasqe.lastLine()).length}, true).state.prefixes;
+  //Use precise here. We want to be sure we use the most up to date state. If we're
+  //not, we might get outdated prefixes from the current query (creating loops such
+  //as https://github.com/OpenTriply/YASGUI/issues/84)
+  return yasqe.getTokenAt({ line: yasqe.lastLine(), ch: yasqe.getLine(yasqe.lastLine()).length }, true).state.prefixes;
 };
 
 /**
@@ -95033,192 +98197,186 @@ var getPrefixesFromQuery = function(yasqe) {
  * @returns
  */
 var getIndentFromLine = function(yasqe, line, charNumber) {
-	if (charNumber == undefined)
-		charNumber = 1;
-	var token = yasqe.getTokenAt({
-		line: line,
-		ch: charNumber
-	});
-	if (token == null || token == undefined || token.type != "ws") {
-		return "";
-	} else {
-		return token.string + getIndentFromLine(yasqe, line, token.end + 1);
-	};
+  if (charNumber == undefined) charNumber = 1;
+  var token = yasqe.getTokenAt({
+    line: line,
+    ch: charNumber
+  });
+  if (token == null || token == undefined || token.type != "ws") {
+    return "";
+  } else {
+    return token.string + getIndentFromLine(yasqe, line, token.end + 1);
+  }
 };
 
 module.exports = {
-	addPrefixes: addPrefixes,
-	getPrefixesFromQuery: getPrefixesFromQuery,
-	removePrefixes: removePrefixes
+  addPrefixes: addPrefixes,
+  getPrefixesFromQuery: getPrefixesFromQuery,
+  removePrefixes: removePrefixes
 };
 
-},{}],68:[function(require,module,exports){
-'use strict';
-var $ = require('jquery'),
-	utils = require('./utils.js'),
-	YASQE = require('./main.js');
+},{}],82:[function(require,module,exports){
+"use strict";
+var $ = require("jquery"), utils = require("./utils.js"), YASQE = require("./main.js");
 
 YASQE.getAjaxConfig = function(yasqe, callbackOrConfig) {
-	var callback = (typeof callbackOrConfig == "function" ? callbackOrConfig : null);
-	var config = (typeof callbackOrConfig == "object" ? callbackOrConfig : {});
+  var callback = typeof callbackOrConfig == "function" ? callbackOrConfig : null;
+  var config = typeof callbackOrConfig == "object" ? callbackOrConfig : {};
 
-	if (yasqe.options.sparql)
-		config = $.extend({}, yasqe.options.sparql, config);
+  if (yasqe.options.sparql) config = $.extend({}, yasqe.options.sparql, config);
 
-	//for backwards compatability, make sure we copy sparql handlers to sparql callbacks
-	if (config.handlers)
-		$.extend(true, config.callbacks, config.handlers);
+  //for backwards compatability, make sure we copy sparql handlers to sparql callbacks
+  if (config.handlers) $.extend(true, config.callbacks, config.handlers);
 
+  if (!config.endpoint || config.endpoint.length == 0) return; // nothing to query!
 
-	if (!config.endpoint || config.endpoint.length == 0)
-		return; // nothing to query!
-
-	/**
+  /**
 	 * initialize ajax config
 	 */
-	var ajaxConfig = {
-		url: (typeof config.endpoint == "function" ? config.endpoint(yasqe) : config.endpoint),
-		type: (typeof config.requestMethod == "function" ? config.requestMethod(yasqe) : config.requestMethod),
-		headers: {
-			Accept: getAcceptHeader(yasqe, config),
-		}
-	};
-	if (config.xhrFields) ajaxConfig.xhrFields = config.xhrFields;
-	/**
+  var ajaxConfig = {
+    url: typeof config.endpoint == "function" ? config.endpoint(yasqe) : config.endpoint,
+    type: typeof config.requestMethod == "function" ? config.requestMethod(yasqe) : config.requestMethod,
+    headers: {
+      Accept: getAcceptHeader(yasqe, config)
+    }
+  };
+  if (config.xhrFields) ajaxConfig.xhrFields = config.xhrFields;
+  /**
 	 * add complete, beforesend, etc callbacks (if specified)
 	 */
-	var handlerDefined = false;
-	if (config.callbacks) {
-		for (var handler in config.callbacks) {
-			if (config.callbacks[handler]) {
-				handlerDefined = true;
-				ajaxConfig[handler] = config.callbacks[handler];
-			}
-		}
-	}
-	if (ajaxConfig.type === 'GET') {
-		//we need to do encoding ourselve, as jquery does not properly encode the url string
-		//https://github.com/OpenTriply/YASGUI/issues/75
-		var first = true;
-		$.each(yasqe.getUrlArguments(config), function(key, val) {
-			ajaxConfig.url += (first?'?': '&') + val.name + '=' + encodeURIComponent(val.value);
-			first = false;
-		});
-	} else {
-		ajaxConfig.data = yasqe.getUrlArguments(config);
-	}
-	if (!handlerDefined && !callback)
-		return; // ok, we can query, but have no callbacks. just stop now
+  var handlerDefined = false;
+  if (config.callbacks) {
+    for (var handler in config.callbacks) {
+      if (config.callbacks[handler]) {
+        handlerDefined = true;
+        ajaxConfig[handler] = config.callbacks[handler];
+      }
+    }
+  }
+  if (ajaxConfig.type === "GET") {
+    //we need to do encoding ourselve, as jquery does not properly encode the url string
+    //https://github.com/OpenTriply/YASGUI/issues/75
+    var first = true;
+    $.each(yasqe.getUrlArguments(config), function(key, val) {
+      ajaxConfig.url += (first ? "?" : "&") + val.name + "=" + encodeURIComponent(val.value);
+      first = false;
+    });
+  } else {
+    ajaxConfig.data = yasqe.getUrlArguments(config);
+  }
+  if (!handlerDefined && !callback) return; // ok, we can query, but have no callbacks. just stop now
 
-	// if only callback is passed as arg, add that on as 'onComplete' callback
-	if (callback)
-		ajaxConfig.complete = callback;
+  // if only callback is passed as arg, add that on as 'onComplete' callback
+  if (callback) ajaxConfig.complete = callback;
 
-
-
-	/**
+  /**
 	 * merge additional request headers
 	 */
-	if (config.headers && !$.isEmptyObject(config.headers))
-		$.extend(ajaxConfig.headers, config.headers);
+  if (config.headers && !$.isEmptyObject(config.headers)) $.extend(ajaxConfig.headers, config.headers);
 
+  var queryStart = new Date();
+  var updateYasqe = function() {
+    yasqe.lastQueryDuration = new Date() - queryStart;
+    YASQE.updateQueryButton(yasqe);
+    yasqe.setBackdrop(false);
+  };
+  //Make sure the query button is updated again on complete
+  var completeCallbacks = [
+    function() {
+      require("./main.js").signal(yasqe, "queryFinish", arguments);
+    },
+    updateYasqe
+  ];
 
-	var queryStart = new Date();
-	var updateYasqe = function() {
-		yasqe.lastQueryDuration = new Date() - queryStart;
-		YASQE.updateQueryButton(yasqe);
-		yasqe.setBackdrop(false);
-	};
-	//Make sure the query button is updated again on complete
-	var completeCallbacks = [
-		function(){require('./main.js').signal(yasqe, 'queryFinish', arguments)},
-		updateYasqe
-	];
-
-	if (ajaxConfig.complete) {
-		completeCallbacks.push(ajaxConfig.complete);
-	}
-	ajaxConfig.complete = completeCallbacks;
-	return ajaxConfig;
+  if (ajaxConfig.complete) {
+    completeCallbacks.push(ajaxConfig.complete);
+  }
+  ajaxConfig.complete = completeCallbacks;
+  return ajaxConfig;
 };
-
-
 
 YASQE.executeQuery = function(yasqe, callbackOrConfig) {
-	YASQE.signal(yasqe, 'query', yasqe, callbackOrConfig);
-	YASQE.updateQueryButton(yasqe, "busy");
-	yasqe.setBackdrop(true);
-	yasqe.xhr = $.ajax(YASQE.getAjaxConfig(yasqe, callbackOrConfig));
+  YASQE.signal(yasqe, "query", yasqe, callbackOrConfig);
+  YASQE.updateQueryButton(yasqe, "busy");
+  yasqe.setBackdrop(true);
+  yasqe.xhr = $.ajax(YASQE.getAjaxConfig(yasqe, callbackOrConfig));
 };
 
-
 YASQE.getUrlArguments = function(yasqe, config) {
-	var queryMode = yasqe.getQueryMode();
-	var data = [{
-		name: utils.getString(yasqe, yasqe.options.sparql.queryName),
-		value: (config.getQueryForAjax? config.getQueryForAjax(yasqe): yasqe.getValue())
-	}];
+  var queryMode = yasqe.getQueryMode();
+  var data = [
+    {
+      name: utils.getString(yasqe, yasqe.options.sparql.queryName),
+      value: config.getQueryForAjax ? config.getQueryForAjax(yasqe) : yasqe.getValue()
+    }
+  ];
 
-	/**
+  /**
 	 * add named graphs to ajax config
 	 */
-	if (config.namedGraphs && config.namedGraphs.length > 0) {
-		var argName = (queryMode == "query" ? "named-graph-uri" : "using-named-graph-uri ");
-		for (var i = 0; i < config.namedGraphs.length; i++)
-			data.push({
-				name: argName,
-				value: config.namedGraphs[i]
-			});
-	}
-	/**
+  if (config.namedGraphs && config.namedGraphs.length > 0) {
+    var argName = queryMode == "query" ? "named-graph-uri" : "using-named-graph-uri ";
+    for (var i = 0; i < config.namedGraphs.length; i++)
+      data.push({
+        name: argName,
+        value: config.namedGraphs[i]
+      });
+  }
+  /**
 	 * add default graphs to ajax config
 	 */
-	if (config.defaultGraphs && config.defaultGraphs.length > 0) {
-		var argName = (queryMode == "query" ? "default-graph-uri" : "using-graph-uri ");
-		for (var i = 0; i < config.defaultGraphs.length; i++)
-			data.push({
-				name: argName,
-				value: config.defaultGraphs[i]
-			});
-	}
+  if (config.defaultGraphs && config.defaultGraphs.length > 0) {
+    var argName = queryMode == "query" ? "default-graph-uri" : "using-graph-uri ";
+    for (var i = 0; i < config.defaultGraphs.length; i++)
+      data.push({
+        name: argName,
+        value: config.defaultGraphs[i]
+      });
+  }
 
-	/**
+  /**
 	 * add additional request args
 	 */
-	if (config.args && config.args.length > 0) $.merge(data, config.args);
+  if (config.args && config.args.length > 0) $.merge(data, config.args);
 
-	return data;
-}
+  return data;
+};
 var getAcceptHeader = function(yasqe, config) {
-	var acceptHeader = null;
-	if (config.acceptHeader && !config.acceptHeaderGraph && !config.acceptHeaderSelect && !config.acceptHeaderUpdate) {
-		//this is the old config. For backwards compatability, keep supporting it
-		if (typeof config.acceptHeader == "function") {
-			acceptHeader = config.acceptHeader(yasqe);
-		} else {
-			acceptHeader = config.acceptHeader;
-		}
-	} else {
-		if (yasqe.getQueryMode() == "update") {
-			acceptHeader = (typeof config.acceptHeader == "function" ? config.acceptHeaderUpdate(yasqe) : config.acceptHeaderUpdate);
-		} else {
-			var qType = yasqe.getQueryType();
-			if (qType == "DESCRIBE" || qType == "CONSTRUCT") {
-				acceptHeader = (typeof config.acceptHeaderGraph == "function" ? config.acceptHeaderGraph(yasqe) : config.acceptHeaderGraph);
-			} else {
-				acceptHeader = (typeof config.acceptHeaderSelect == "function" ? config.acceptHeaderSelect(yasqe) : config.acceptHeaderSelect);
-			}
-		}
-	}
-	return acceptHeader;
+  var acceptHeader = null;
+  if (config.acceptHeader && !config.acceptHeaderGraph && !config.acceptHeaderSelect && !config.acceptHeaderUpdate) {
+    //this is the old config. For backwards compatability, keep supporting it
+    if (typeof config.acceptHeader == "function") {
+      acceptHeader = config.acceptHeader(yasqe);
+    } else {
+      acceptHeader = config.acceptHeader;
+    }
+  } else {
+    if (yasqe.getQueryMode() == "update") {
+      acceptHeader = typeof config.acceptHeader == "function"
+        ? config.acceptHeaderUpdate(yasqe)
+        : config.acceptHeaderUpdate;
+    } else {
+      var qType = yasqe.getQueryType();
+      if (qType == "DESCRIBE" || qType == "CONSTRUCT") {
+        acceptHeader = typeof config.acceptHeaderGraph == "function"
+          ? config.acceptHeaderGraph(yasqe)
+          : config.acceptHeaderGraph;
+      } else {
+        acceptHeader = typeof config.acceptHeaderSelect == "function"
+          ? config.acceptHeaderSelect(yasqe)
+          : config.acceptHeaderSelect;
+      }
+    }
+  }
+  return acceptHeader;
 };
 
 module.exports = {
-	getAjaxConfig: YASQE.getAjaxConfig
-}
+  getAjaxConfig: YASQE.getAjaxConfig
+};
 
-},{"./main.js":65,"./utils.js":71,"jquery":26}],69:[function(require,module,exports){
-'use strict';
+},{"./main.js":79,"./utils.js":85,"jquery":29}],83:[function(require,module,exports){
+"use strict";
 /**
  * When typing a query, this query is sometimes syntactically invalid, causing
  * the current tokens to be incorrect This causes problem for autocompletion.
@@ -95232,70 +98390,67 @@ module.exports = {
  * @method YASQE.getCompleteToken
  */
 var getCompleteToken = function(yasqe, token, cur) {
-	if (!cur) {
-		cur = yasqe.getCursor();
-	}
-	if (!token) {
-		token = yasqe.getTokenAt(cur);
-	}
-	var prevToken = yasqe.getTokenAt({
-		line: cur.line,
-		ch: token.start
-	});
-	// not start of line, and not whitespace
-	if (
-		prevToken.type != null && prevToken.type != "ws" && token.type != null && token.type != "ws"
-	) {
-		token.start = prevToken.start;
-		token.string = prevToken.string + token.string;
-		return getCompleteToken(yasqe, token, {
-			line: cur.line,
-			ch: prevToken.start
-		}); // recursively, might have multiple tokens which it should include
-	} else if (token.type != null && token.type == "ws") {
-		//always keep 1 char of whitespace between tokens. Otherwise, autocompletions might end up next to the previous node, without whitespace between them
-		token.start = token.start + 1;
-		token.string = token.string.substring(1);
-		return token;
-	} else {
-		return token;
-	}
+  if (!cur) {
+    cur = yasqe.getCursor();
+  }
+  if (!token) {
+    token = yasqe.getTokenAt(cur);
+  }
+  var prevToken = yasqe.getTokenAt({
+    line: cur.line,
+    ch: token.start
+  });
+  // not start of line, and not whitespace
+  if (prevToken.type != null && prevToken.type != "ws" && token.type != null && token.type != "ws") {
+    token.start = prevToken.start;
+    token.string = prevToken.string + token.string;
+    return getCompleteToken(yasqe, token, {
+      line: cur.line,
+      ch: prevToken.start
+    }); // recursively, might have multiple tokens which it should include
+  } else if (token.type != null && token.type == "ws") {
+    //always keep 1 char of whitespace between tokens. Otherwise, autocompletions might end up next to the previous node, without whitespace between them
+    token.start = token.start + 1;
+    token.string = token.string.substring(1);
+    return token;
+  } else {
+    return token;
+  }
 };
 var getPreviousNonWsToken = function(yasqe, line, token) {
-	var previousToken = yasqe.getTokenAt({
-		line: line,
-		ch: token.start
-	});
-	if (previousToken != null && previousToken.type == "ws") {
-		previousToken = getPreviousNonWsToken(yasqe, line, previousToken);
-	}
-	return previousToken;
-}
+  var previousToken = yasqe.getTokenAt({
+    line: line,
+    ch: token.start
+  });
+  if (previousToken != null && previousToken.type == "ws") {
+    previousToken = getPreviousNonWsToken(yasqe, line, previousToken);
+  }
+  return previousToken;
+};
 var getNextNonWsToken = function(yasqe, lineNumber, charNumber) {
-	if (charNumber == undefined)
-		charNumber = 1;
-	var token = yasqe.getTokenAt({
-		line: lineNumber,
-		ch: charNumber
-	});
-	if (token == null || token == undefined || token.end < charNumber) {
-		return null;
-	}
-	if (token.type == "ws") {
-		return getNextNonWsToken(yasqe, lineNumber, token.end + 1);
-	}
-	return token;
+  if (charNumber == undefined) charNumber = 1;
+  var token = yasqe.getTokenAt({
+    line: lineNumber,
+    ch: charNumber
+  });
+  if (token == null || token == undefined || token.end < charNumber) {
+    return null;
+  }
+  if (token.type == "ws") {
+    return getNextNonWsToken(yasqe, lineNumber, token.end + 1);
+  }
+  return token;
 };
 
 module.exports = {
-	getPreviousNonWsToken: getPreviousNonWsToken,
-	getCompleteToken: getCompleteToken,
-	getNextNonWsToken: getNextNonWsToken,
+  getPreviousNonWsToken: getPreviousNonWsToken,
+  getCompleteToken: getCompleteToken,
+  getNextNonWsToken: getNextNonWsToken
 };
-},{}],70:[function(require,module,exports){
-'use strict';
-var $ = require('jquery'),
-	utils = require('./utils.js');
+
+},{}],84:[function(require,module,exports){
+"use strict";
+var $ = require("jquery"), utils = require("./utils.js");
 
 /**
  * Write our own tooltip, to avoid loading another library for just this functionality. For now, we only use tooltip for showing parse errors, so this is quite a tailored solution
@@ -95304,97 +98459,93 @@ var $ = require('jquery'),
  * 		use html as content
  */
 module.exports = function(yasqe, parent, html) {
-	var parent = $(parent);
-	var tooltip;
-	parent.hover(function() {
-			if (typeof html == "function") html = html();
-			tooltip = $("<div>").addClass('yasqe_tooltip').html(html).appendTo(parent);
-			repositionTooltip();
-		},
-		function() {
-			$(".yasqe_tooltip").remove();
-		});
+  var parent = $(parent);
+  var tooltip;
+  parent.hover(
+    function() {
+      if (typeof html == "function") html = html();
+      tooltip = $("<div>").addClass("yasqe_tooltip").html(html).appendTo(parent);
+      repositionTooltip();
+    },
+    function() {
+      $(".yasqe_tooltip").remove();
+    }
+  );
 
-
-
-	/**
+  /**
 	 * only need to take into account top and bottom offset for this usecase
 	 */
-	var repositionTooltip = function() {
-		if ($(yasqe.getWrapperElement()).offset().top >= tooltip.offset().top) {
-			//shit, move the tooltip down. The tooltip now hovers over the top edge of the yasqe instance
-			tooltip.css('bottom', 'auto');
-			tooltip.css('top', '26px');
-		}
-	};
+  var repositionTooltip = function() {
+    if ($(yasqe.getWrapperElement()).offset().top >= tooltip.offset().top) {
+      //shit, move the tooltip down. The tooltip now hovers over the top edge of the yasqe instance
+      tooltip.css("bottom", "auto");
+      tooltip.css("top", "26px");
+    }
+  };
 };
-},{"./utils.js":71,"jquery":26}],71:[function(require,module,exports){
-'use strict';
-var $ = require('jquery');
+
+},{"./utils.js":85,"jquery":29}],85:[function(require,module,exports){
+"use strict";
+var $ = require("jquery");
 
 var keyExists = function(objectToTest, key) {
-	var exists = false;
-	try {
-		if (objectToTest[key] !== undefined)
-			exists = true;
-	} catch (e) {}
-	return exists;
+  var exists = false;
+  try {
+    if (objectToTest[key] !== undefined) exists = true;
+  } catch (e) {}
+  return exists;
 };
 
 var getPersistencyId = function(yasqe, persistentIdCreator) {
-	var persistencyId = null;
+  var persistencyId = null;
 
-	if (persistentIdCreator) {
-		if (typeof persistentIdCreator == "string") {
-			persistencyId = persistentIdCreator;
-		} else {
-			persistencyId = persistentIdCreator(yasqe);
-		}
-	}
-	return persistencyId;
+  if (persistentIdCreator) {
+    if (typeof persistentIdCreator == "string") {
+      persistencyId = persistentIdCreator;
+    } else {
+      persistencyId = persistentIdCreator(yasqe);
+    }
+  }
+  return persistencyId;
 };
 
 var elementsOverlap = (function() {
-	function getPositions(elem) {
-		var pos, width, height;
-		pos = $(elem).offset();
-		width = $(elem).width();
-		height = $(elem).height();
-		return [
-			[pos.left, pos.left + width],
-			[pos.top, pos.top + height]
-		];
-	}
+  function getPositions(elem) {
+    var pos, width, height;
+    pos = $(elem).offset();
+    width = $(elem).width();
+    height = $(elem).height();
+    return [[pos.left, pos.left + width], [pos.top, pos.top + height]];
+  }
 
-	function comparePositions(p1, p2) {
-		var r1, r2;
-		r1 = p1[0] < p2[0] ? p1 : p2;
-		r2 = p1[0] < p2[0] ? p2 : p1;
-		return r1[1] > r2[0] || r1[0] === r2[0];
-	}
+  function comparePositions(p1, p2) {
+    var r1, r2;
+    r1 = p1[0] < p2[0] ? p1 : p2;
+    r2 = p1[0] < p2[0] ? p2 : p1;
+    return r1[1] > r2[0] || r1[0] === r2[0];
+  }
 
-	return function(a, b) {
-		var pos1 = getPositions(a),
-			pos2 = getPositions(b);
-		return comparePositions(pos1[0], pos2[0]) && comparePositions(pos1[1], pos2[1]);
-	};
+  return function(a, b) {
+    var pos1 = getPositions(a), pos2 = getPositions(b);
+    return comparePositions(pos1[0], pos2[0]) && comparePositions(pos1[1], pos2[1]);
+  };
 })();
 
 var getString = function(yasqe, item) {
-	if (typeof item == "function") {
-		return item(yasqe);
-	} else {
-		return item;
-	}
-}
+  if (typeof item == "function") {
+    return item(yasqe);
+  } else {
+    return item;
+  }
+};
 module.exports = {
-	keyExists: keyExists,
-	getPersistencyId: getPersistencyId,
-	elementsOverlap: elementsOverlap,
-	getString:getString
+  keyExists: keyExists,
+  getPersistencyId: getPersistencyId,
+  elementsOverlap: elementsOverlap,
+  getString: getString
 };
 
-},{"jquery":26}],72:[function(require,module,exports){
+},{"jquery":29}],86:[function(require,module,exports){
 /**
                _ _____           _          _     _      
               | |  __ \         (_)        | |   | |     
@@ -95709,7 +98860,7 @@ var $ = require('jquery');
     });
 
 
-},{"jquery":26}],73:[function(require,module,exports){
+},{"jquery":29}],87:[function(require,module,exports){
 /**
  * jQuery-csv (jQuery Plugin)
  * version: 0.71 (2012-11-19)
@@ -96559,723 +99710,7 @@ RegExp.escape= function(s) {
 
 
 
-},{"jquery":26}],74:[function(require,module,exports){
-/* MIT license */
-var colorNames = require('color-name');
-var swizzle = require('simple-swizzle');
-
-var reverseNames = {};
-
-// create a list of reverse color names
-for (var name in colorNames) {
-	if (colorNames.hasOwnProperty(name)) {
-		reverseNames[colorNames[name]] = name;
-	}
-}
-
-var cs = module.exports = {
-	to: {}
-};
-
-cs.get = function (string) {
-	var prefix = string.substring(0, 3).toLowerCase();
-	var val;
-	var model;
-	switch (prefix) {
-		case 'hsl':
-			val = cs.get.hsl(string);
-			model = 'hsl';
-			break;
-		case 'hwb':
-			val = cs.get.hwb(string);
-			model = 'hwb';
-			break;
-		default:
-			val = cs.get.rgb(string);
-			model = 'rgb';
-			break;
-	}
-
-	if (!val) {
-		return null;
-	}
-
-	return {model: model, value: val};
-};
-
-cs.get.rgb = function (string) {
-	if (!string) {
-		return null;
-	}
-
-	var abbr = /^#([a-f0-9]{3,4})$/i;
-	var hex = /^#([a-f0-9]{6})([a-f0-9]{2})?$/i;
-	var rgba = /^rgba?\(\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
-	var per = /^rgba?\(\s*([+-]?[\d\.]+)\%\s*,\s*([+-]?[\d\.]+)\%\s*,\s*([+-]?[\d\.]+)\%\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
-	var keyword = /(\D+)/;
-
-	var rgb = [0, 0, 0, 1];
-	var match;
-	var i;
-	var hexAlpha;
-
-	if (match = string.match(hex)) {
-		hexAlpha = match[2];
-		match = match[1];
-
-		for (i = 0; i < 3; i++) {
-			// https://jsperf.com/slice-vs-substr-vs-substring-methods-long-string/19
-			var i2 = i * 2;
-			rgb[i] = parseInt(match.slice(i2, i2 + 2), 16);
-		}
-
-		if (hexAlpha) {
-			rgb[3] = Math.round((parseInt(hexAlpha, 16) / 255) * 100) / 100;
-		}
-	} else if (match = string.match(abbr)) {
-		match = match[1];
-		hexAlpha = match[3];
-
-		for (i = 0; i < 3; i++) {
-			rgb[i] = parseInt(match[i] + match[i], 16);
-		}
-
-		if (hexAlpha) {
-			rgb[3] = Math.round((parseInt(hexAlpha + hexAlpha, 16) / 255) * 100) / 100;
-		}
-	} else if (match = string.match(rgba)) {
-		for (i = 0; i < 3; i++) {
-			rgb[i] = parseInt(match[i + 1], 0);
-		}
-
-		if (match[4]) {
-			rgb[3] = parseFloat(match[4]);
-		}
-	} else if (match = string.match(per)) {
-		for (i = 0; i < 3; i++) {
-			rgb[i] = Math.round(parseFloat(match[i + 1]) * 2.55);
-		}
-
-		if (match[4]) {
-			rgb[3] = parseFloat(match[4]);
-		}
-	} else if (match = string.match(keyword)) {
-		if (match[1] === 'transparent') {
-			return [0, 0, 0, 0];
-		}
-
-		rgb = colorNames[match[1]];
-
-		if (!rgb) {
-			return null;
-		}
-
-		rgb[3] = 1;
-
-		return rgb;
-	} else {
-		return null;
-	}
-
-	for (i = 0; i < 3; i++) {
-		rgb[i] = clamp(rgb[i], 0, 255);
-	}
-	rgb[3] = clamp(rgb[3], 0, 1);
-
-	return rgb;
-};
-
-cs.get.hsl = function (string) {
-	if (!string) {
-		return null;
-	}
-
-	var hsl = /^hsla?\(\s*([+-]?\d*[\.]?\d+)(?:deg)?\s*,\s*([+-]?[\d\.]+)%\s*,\s*([+-]?[\d\.]+)%\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
-	var match = string.match(hsl);
-
-	if (match) {
-		var alpha = parseFloat(match[4]);
-		var h = ((parseFloat(match[1]) % 360) + 360) % 360;
-		var s = clamp(parseFloat(match[2]), 0, 100);
-		var l = clamp(parseFloat(match[3]), 0, 100);
-		var a = clamp(isNaN(alpha) ? 1 : alpha, 0, 1);
-
-		return [h, s, l, a];
-	}
-
-	return null;
-};
-
-cs.get.hwb = function (string) {
-	if (!string) {
-		return null;
-	}
-
-	var hwb = /^hwb\(\s*([+-]?\d*[\.]?\d+)(?:deg)?\s*,\s*([+-]?[\d\.]+)%\s*,\s*([+-]?[\d\.]+)%\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
-	var match = string.match(hwb);
-
-	if (match) {
-		var alpha = parseFloat(match[4]);
-		var h = ((parseFloat(match[1]) % 360) + 360) % 360;
-		var w = clamp(parseFloat(match[2]), 0, 100);
-		var b = clamp(parseFloat(match[3]), 0, 100);
-		var a = clamp(isNaN(alpha) ? 1 : alpha, 0, 1);
-		return [h, w, b, a];
-	}
-
-	return null;
-};
-
-cs.to.hex = function () {
-	var rgba = swizzle(arguments);
-
-	return (
-		'#' +
-		hexDouble(rgba[0]) +
-		hexDouble(rgba[1]) +
-		hexDouble(rgba[2]) +
-		(rgba[3] < 1
-			? (hexDouble(Math.round(rgba[3] * 255)))
-			: '')
-	);
-};
-
-cs.to.rgb = function () {
-	var rgba = swizzle(arguments);
-
-	return rgba.length < 4 || rgba[3] === 1
-		? 'rgb(' + Math.round(rgba[0]) + ', ' + Math.round(rgba[1]) + ', ' + Math.round(rgba[2]) + ')'
-		: 'rgba(' + Math.round(rgba[0]) + ', ' + Math.round(rgba[1]) + ', ' + Math.round(rgba[2]) + ', ' + rgba[3] + ')';
-};
-
-cs.to.rgb.percent = function () {
-	var rgba = swizzle(arguments);
-
-	var r = Math.round(rgba[0] / 255 * 100);
-	var g = Math.round(rgba[1] / 255 * 100);
-	var b = Math.round(rgba[2] / 255 * 100);
-
-	return rgba.length < 4 || rgba[3] === 1
-		? 'rgb(' + r + '%, ' + g + '%, ' + b + '%)'
-		: 'rgba(' + r + '%, ' + g + '%, ' + b + '%, ' + rgba[3] + ')';
-};
-
-cs.to.hsl = function () {
-	var hsla = swizzle(arguments);
-	return hsla.length < 4 || hsla[3] === 1
-		? 'hsl(' + hsla[0] + ', ' + hsla[1] + '%, ' + hsla[2] + '%)'
-		: 'hsla(' + hsla[0] + ', ' + hsla[1] + '%, ' + hsla[2] + '%, ' + hsla[3] + ')';
-};
-
-// hwb is a bit different than rgb(a) & hsl(a) since there is no alpha specific syntax
-// (hwb have alpha optional & 1 is default value)
-cs.to.hwb = function () {
-	var hwba = swizzle(arguments);
-
-	var a = '';
-	if (hwba.length >= 4 && hwba[3] !== 1) {
-		a = ', ' + hwba[3];
-	}
-
-	return 'hwb(' + hwba[0] + ', ' + hwba[1] + '%, ' + hwba[2] + '%' + a + ')';
-};
-
-cs.to.keyword = function (rgb) {
-	return reverseNames[rgb.slice(0, 3)];
-};
-
-// helpers
-function clamp(num, min, max) {
-	return Math.min(Math.max(min, num), max);
-}
-
-function hexDouble(num) {
-	var str = num.toString(16).toUpperCase();
-	return (str.length < 2) ? '0' + str : str;
-}
-
-},{"color-name":16,"simple-swizzle":39}],75:[function(require,module,exports){
-'use strict';
-
-var colorString = require('color-string');
-var convert = require('color-convert');
-
-var _slice = [].slice;
-
-var skippedModels = [
-	// to be honest, I don't really feel like keyword belongs in color convert, but eh.
-	'keyword',
-
-	// gray conflicts with some method names, and has its own method defined.
-	'gray',
-
-	// shouldn't really be in color-convert either...
-	'hex'
-];
-
-var hashedModelKeys = {};
-Object.keys(convert).forEach(function (model) {
-	hashedModelKeys[_slice.call(convert[model].labels).sort().join('')] = model;
-});
-
-var limiters = {};
-
-function Color(obj, model) {
-	if (!(this instanceof Color)) {
-		return new Color(obj, model);
-	}
-
-	if (model && model in skippedModels) {
-		model = null;
-	}
-
-	if (model && !(model in convert)) {
-		throw new Error('Unknown model: ' + model);
-	}
-
-	var i;
-	var channels;
-
-	if (!obj) {
-		this.model = 'rgb';
-		this.color = [0, 0, 0];
-		this.valpha = 1;
-	} else if (obj instanceof Color) {
-		this.model = obj.model;
-		this.color = obj.color.slice();
-		this.valpha = obj.valpha;
-	} else if (typeof obj === 'string') {
-		var result = colorString.get(obj);
-		if (result === null) {
-			throw new Error('Unable to parse color from string: ' + obj);
-		}
-
-		this.model = result.model;
-		channels = convert[this.model].channels;
-		this.color = result.value.slice(0, channels);
-		this.valpha = typeof result.value[channels] === 'number' ? result.value[channels] : 1;
-	} else if (obj.length) {
-		this.model = model || 'rgb';
-		channels = convert[this.model].channels;
-		var newArr = _slice.call(obj, 0, channels);
-		this.color = zeroArray(newArr, channels);
-		this.valpha = typeof obj[channels] === 'number' ? obj[channels] : 1;
-	} else if (typeof obj === 'number') {
-		// this is always RGB - can be converted later on.
-		obj &= 0xFFFFFF;
-		this.model = 'rgb';
-		this.color = [
-			(obj >> 16) & 0xFF,
-			(obj >> 8) & 0xFF,
-			obj & 0xFF
-		];
-		this.valpha = 1;
-	} else {
-		this.valpha = 1;
-
-		var keys = Object.keys(obj);
-		if ('alpha' in obj) {
-			keys.splice(keys.indexOf('alpha'), 1);
-			this.valpha = typeof obj.alpha === 'number' ? obj.alpha : 0;
-		}
-
-		var hashedKeys = keys.sort().join('');
-		if (!(hashedKeys in hashedModelKeys)) {
-			throw new Error('Unable to parse color from object: ' + JSON.stringify(obj));
-		}
-
-		this.model = hashedModelKeys[hashedKeys];
-
-		var labels = convert[this.model].labels;
-		var color = [];
-		for (i = 0; i < labels.length; i++) {
-			color.push(obj[labels[i]]);
-		}
-
-		this.color = zeroArray(color);
-	}
-
-	// perform limitations (clamping, etc.)
-	if (limiters[this.model]) {
-		channels = convert[this.model].channels;
-		for (i = 0; i < channels; i++) {
-			var limit = limiters[this.model][i];
-			if (limit) {
-				this.color[i] = limit(this.color[i]);
-			}
-		}
-	}
-
-	this.valpha = Math.max(0, Math.min(1, this.valpha));
-
-	if (Object.freeze) {
-		Object.freeze(this);
-	}
-}
-
-Color.prototype = {
-	toString: function () {
-		return this.string();
-	},
-
-	toJSON: function () {
-		return this[this.model]();
-	},
-
-	string: function (places) {
-		var self = this.model in colorString.to ? this : this.rgb();
-		self = self.round(typeof places === 'number' ? places : 1);
-		var args = self.valpha === 1 ? self.color : self.color.concat(this.valpha);
-		return colorString.to[self.model](args);
-	},
-
-	percentString: function (places) {
-		var self = this.rgb().round(typeof places === 'number' ? places : 1);
-		var args = self.valpha === 1 ? self.color : self.color.concat(this.valpha);
-		return colorString.to.rgb.percent(args);
-	},
-
-	array: function () {
-		return this.valpha === 1 ? this.color.slice() : this.color.concat(this.valpha);
-	},
-
-	object: function () {
-		var result = {};
-		var channels = convert[this.model].channels;
-		var labels = convert[this.model].labels;
-
-		for (var i = 0; i < channels; i++) {
-			result[labels[i]] = this.color[i];
-		}
-
-		if (this.valpha !== 1) {
-			result.alpha = this.valpha;
-		}
-
-		return result;
-	},
-
-	unitArray: function () {
-		var rgb = this.rgb().color;
-		rgb[0] /= 255;
-		rgb[1] /= 255;
-		rgb[2] /= 255;
-
-		if (this.valpha !== 1) {
-			rgb.push(this.valpha);
-		}
-
-		return rgb;
-	},
-
-	unitObject: function () {
-		var rgb = this.rgb().object();
-		rgb.r /= 255;
-		rgb.g /= 255;
-		rgb.b /= 255;
-
-		if (this.valpha !== 1) {
-			rgb.alpha = this.valpha;
-		}
-
-		return rgb;
-	},
-
-	round: function (places) {
-		places = Math.max(places || 0, 0);
-		return new Color(this.color.map(roundToPlace(places)).concat(this.valpha), this.model);
-	},
-
-	alpha: function (val) {
-		if (arguments.length) {
-			return new Color(this.color.concat(Math.max(0, Math.min(1, val))), this.model);
-		}
-
-		return this.valpha;
-	},
-
-	// rgb
-	red: getset('rgb', 0, maxfn(255)),
-	green: getset('rgb', 1, maxfn(255)),
-	blue: getset('rgb', 2, maxfn(255)),
-
-	hue: getset(['hsl', 'hsv', 'hsl', 'hwb', 'hcg'], 0, function (val) { return ((val % 360) + 360) % 360; }), // eslint-disable-line brace-style
-
-	saturationl: getset('hsl', 1, maxfn(100)),
-	lightness: getset('hsl', 2, maxfn(100)),
-
-	saturationv: getset('hsv', 1, maxfn(100)),
-	value: getset('hsv', 2, maxfn(100)),
-
-	chroma: getset('hcg', 1, maxfn(100)),
-	gray: getset('hcg', 2, maxfn(100)),
-
-	white: getset('hwb', 1, maxfn(100)),
-	wblack: getset('hwb', 2, maxfn(100)),
-
-	cyan: getset('cmyk', 0, maxfn(100)),
-	magenta: getset('cmyk', 1, maxfn(100)),
-	yellow: getset('cmyk', 2, maxfn(100)),
-	black: getset('cmyk', 3, maxfn(100)),
-
-	x: getset('xyz', 0, maxfn(100)),
-	y: getset('xyz', 1, maxfn(100)),
-	z: getset('xyz', 2, maxfn(100)),
-
-	l: getset('lab', 0, maxfn(100)),
-	a: getset('lab', 1),
-	b: getset('lab', 2),
-
-	keyword: function (val) {
-		if (arguments.length) {
-			return new Color(val);
-		}
-
-		return convert[this.model].keyword(this.color);
-	},
-
-	hex: function (val) {
-		if (arguments.length) {
-			return new Color(val);
-		}
-
-		return colorString.to.hex(this.rgb().round().color);
-	},
-
-	rgbNumber: function () {
-		var rgb = this.rgb().color;
-		return ((rgb[0] & 0xFF) << 16) | ((rgb[1] & 0xFF) << 8) | (rgb[2] & 0xFF);
-	},
-
-	luminosity: function () {
-		// http://www.w3.org/TR/WCAG20/#relativeluminancedef
-		var rgb = this.rgb().color;
-
-		var lum = [];
-		for (var i = 0; i < rgb.length; i++) {
-			var chan = rgb[i] / 255;
-			lum[i] = (chan <= 0.03928) ? chan / 12.92 : Math.pow(((chan + 0.055) / 1.055), 2.4);
-		}
-
-		return 0.2126 * lum[0] + 0.7152 * lum[1] + 0.0722 * lum[2];
-	},
-
-	contrast: function (color2) {
-		// http://www.w3.org/TR/WCAG20/#contrast-ratiodef
-		var lum1 = this.luminosity();
-		var lum2 = color2.luminosity();
-
-		if (lum1 > lum2) {
-			return (lum1 + 0.05) / (lum2 + 0.05);
-		}
-
-		return (lum2 + 0.05) / (lum1 + 0.05);
-	},
-
-	level: function (color2) {
-		var contrastRatio = this.contrast(color2);
-		if (contrastRatio >= 7.1) {
-			return 'AAA';
-		}
-
-		return (contrastRatio >= 4.5) ? 'AA' : '';
-	},
-
-	dark: function () {
-		// YIQ equation from http://24ways.org/2010/calculating-color-contrast
-		var rgb = this.rgb().color;
-		var yiq = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
-		return yiq < 128;
-	},
-
-	light: function () {
-		return !this.dark();
-	},
-
-	negate: function () {
-		var rgb = this.rgb();
-		for (var i = 0; i < 3; i++) {
-			rgb.color[i] = 255 - rgb.color[i];
-		}
-		return rgb;
-	},
-
-	lighten: function (ratio) {
-		var hsl = this.hsl();
-		hsl.color[2] += hsl.color[2] * ratio;
-		return hsl;
-	},
-
-	darken: function (ratio) {
-		var hsl = this.hsl();
-		hsl.color[2] -= hsl.color[2] * ratio;
-		return hsl;
-	},
-
-	saturate: function (ratio) {
-		var hsl = this.hsl();
-		hsl.color[1] += hsl.color[1] * ratio;
-		return hsl;
-	},
-
-	desaturate: function (ratio) {
-		var hsl = this.hsl();
-		hsl.color[1] -= hsl.color[1] * ratio;
-		return hsl;
-	},
-
-	whiten: function (ratio) {
-		var hwb = this.hwb();
-		hwb.color[1] += hwb.color[1] * ratio;
-		return hwb;
-	},
-
-	blacken: function (ratio) {
-		var hwb = this.hwb();
-		hwb.color[2] += hwb.color[2] * ratio;
-		return hwb;
-	},
-
-	grayscale: function () {
-		// http://en.wikipedia.org/wiki/Grayscale#Converting_color_to_grayscale
-		var rgb = this.rgb().color;
-		var val = rgb[0] * 0.3 + rgb[1] * 0.59 + rgb[2] * 0.11;
-		return Color.rgb(val, val, val);
-	},
-
-	fade: function (ratio) {
-		return this.alpha(this.valpha - (this.valpha * ratio));
-	},
-
-	opaquer: function (ratio) {
-		return this.alpha(this.valpha + (this.valpha * ratio));
-	},
-
-	rotate: function (degrees) {
-		var hsl = this.hsl();
-		var hue = hsl.color[0];
-		hue = (hue + degrees) % 360;
-		hue = hue < 0 ? 360 + hue : hue;
-		hsl.color[0] = hue;
-		return hsl;
-	},
-
-	mix: function (mixinColor, weight) {
-		// ported from sass implementation in C
-		// https://github.com/sass/libsass/blob/0e6b4a2850092356aa3ece07c6b249f0221caced/functions.cpp#L209
-		var color1 = this.rgb();
-		var color2 = mixinColor.rgb();
-		var p = weight === undefined ? 0.5 : weight;
-
-		var w = 2 * p - 1;
-		var a = color1.alpha() - color2.alpha();
-
-		var w1 = (((w * a === -1) ? w : (w + a) / (1 + w * a)) + 1) / 2.0;
-		var w2 = 1 - w1;
-
-		return Color.rgb(
-				w1 * color1.red() + w2 * color2.red(),
-				w1 * color1.green() + w2 * color2.green(),
-				w1 * color1.blue() + w2 * color2.blue(),
-				color1.alpha() * p + color2.alpha() * (1 - p));
-	}
-};
-
-// model conversion methods and static constructors
-Object.keys(convert).forEach(function (model) {
-	if (skippedModels.indexOf(model) !== -1) {
-		return;
-	}
-
-	var channels = convert[model].channels;
-
-	// conversion methods
-	Color.prototype[model] = function () {
-		if (this.model === model) {
-			return new Color(this);
-		}
-
-		if (arguments.length) {
-			return new Color(arguments, model);
-		}
-
-		var newAlpha = typeof arguments[channels] === 'number' ? channels : this.valpha;
-		return new Color(assertArray(convert[this.model][model].raw(this.color)).concat(newAlpha), model);
-	};
-
-	// 'static' construction methods
-	Color[model] = function (color) {
-		if (typeof color === 'number') {
-			color = zeroArray(_slice.call(arguments), channels);
-		}
-		return new Color(color, model);
-	};
-});
-
-function roundTo(num, places) {
-	return Number(num.toFixed(places));
-}
-
-function roundToPlace(places) {
-	return function (num) {
-		return roundTo(num, places);
-	};
-}
-
-function getset(model, channel, modifier) {
-	model = Array.isArray(model) ? model : [model];
-
-	model.forEach(function (m) {
-		(limiters[m] || (limiters[m] = []))[channel] = modifier;
-	});
-
-	model = model[0];
-
-	return function (val) {
-		var result;
-
-		if (arguments.length) {
-			if (modifier) {
-				val = modifier(val);
-			}
-
-			result = this[model]();
-			result.color[channel] = val;
-			return result;
-		}
-
-		result = this[model]().color[channel];
-		if (modifier) {
-			result = modifier(result);
-		}
-
-		return result;
-	};
-}
-
-function maxfn(max) {
-	return function (v) {
-		return Math.max(0, Math.min(max, v));
-	};
-}
-
-function assertArray(val) {
-	return Array.isArray(val) ? val : [val];
-}
-
-function zeroArray(arr, length) {
-	for (var i = 0; i < length; i++) {
-		if (typeof arr[i] !== 'number') {
-			arr[i] = 0;
-		}
-	}
-
-	return arr;
-}
-
-module.exports = Color;
-
-},{"color-convert":14,"color-string":74}],76:[function(require,module,exports){
+},{"jquery":29}],88:[function(require,module,exports){
 var getNative = require('./_getNative'),
     root = require('./_root');
 
@@ -97284,7 +99719,7 @@ var DataView = getNative(root, 'DataView');
 
 module.exports = DataView;
 
-},{"./_getNative":131,"./_root":166}],77:[function(require,module,exports){
+},{"./_getNative":143,"./_root":178}],89:[function(require,module,exports){
 var hashClear = require('./_hashClear'),
     hashDelete = require('./_hashDelete'),
     hashGet = require('./_hashGet'),
@@ -97318,7 +99753,7 @@ Hash.prototype.set = hashSet;
 
 module.exports = Hash;
 
-},{"./_hashClear":137,"./_hashDelete":138,"./_hashGet":139,"./_hashHas":140,"./_hashSet":141}],78:[function(require,module,exports){
+},{"./_hashClear":149,"./_hashDelete":150,"./_hashGet":151,"./_hashHas":152,"./_hashSet":153}],90:[function(require,module,exports){
 var listCacheClear = require('./_listCacheClear'),
     listCacheDelete = require('./_listCacheDelete'),
     listCacheGet = require('./_listCacheGet'),
@@ -97352,7 +99787,7 @@ ListCache.prototype.set = listCacheSet;
 
 module.exports = ListCache;
 
-},{"./_listCacheClear":148,"./_listCacheDelete":149,"./_listCacheGet":150,"./_listCacheHas":151,"./_listCacheSet":152}],79:[function(require,module,exports){
+},{"./_listCacheClear":160,"./_listCacheDelete":161,"./_listCacheGet":162,"./_listCacheHas":163,"./_listCacheSet":164}],91:[function(require,module,exports){
 var getNative = require('./_getNative'),
     root = require('./_root');
 
@@ -97361,7 +99796,7 @@ var Map = getNative(root, 'Map');
 
 module.exports = Map;
 
-},{"./_getNative":131,"./_root":166}],80:[function(require,module,exports){
+},{"./_getNative":143,"./_root":178}],92:[function(require,module,exports){
 var mapCacheClear = require('./_mapCacheClear'),
     mapCacheDelete = require('./_mapCacheDelete'),
     mapCacheGet = require('./_mapCacheGet'),
@@ -97395,7 +99830,7 @@ MapCache.prototype.set = mapCacheSet;
 
 module.exports = MapCache;
 
-},{"./_mapCacheClear":153,"./_mapCacheDelete":154,"./_mapCacheGet":155,"./_mapCacheHas":156,"./_mapCacheSet":157}],81:[function(require,module,exports){
+},{"./_mapCacheClear":165,"./_mapCacheDelete":166,"./_mapCacheGet":167,"./_mapCacheHas":168,"./_mapCacheSet":169}],93:[function(require,module,exports){
 var getNative = require('./_getNative'),
     root = require('./_root');
 
@@ -97404,7 +99839,7 @@ var Promise = getNative(root, 'Promise');
 
 module.exports = Promise;
 
-},{"./_getNative":131,"./_root":166}],82:[function(require,module,exports){
+},{"./_getNative":143,"./_root":178}],94:[function(require,module,exports){
 var getNative = require('./_getNative'),
     root = require('./_root');
 
@@ -97413,7 +99848,7 @@ var Set = getNative(root, 'Set');
 
 module.exports = Set;
 
-},{"./_getNative":131,"./_root":166}],83:[function(require,module,exports){
+},{"./_getNative":143,"./_root":178}],95:[function(require,module,exports){
 var MapCache = require('./_MapCache'),
     setCacheAdd = require('./_setCacheAdd'),
     setCacheHas = require('./_setCacheHas');
@@ -97442,7 +99877,7 @@ SetCache.prototype.has = setCacheHas;
 
 module.exports = SetCache;
 
-},{"./_MapCache":80,"./_setCacheAdd":167,"./_setCacheHas":168}],84:[function(require,module,exports){
+},{"./_MapCache":92,"./_setCacheAdd":179,"./_setCacheHas":180}],96:[function(require,module,exports){
 var ListCache = require('./_ListCache'),
     stackClear = require('./_stackClear'),
     stackDelete = require('./_stackDelete'),
@@ -97471,7 +99906,7 @@ Stack.prototype.set = stackSet;
 
 module.exports = Stack;
 
-},{"./_ListCache":78,"./_stackClear":170,"./_stackDelete":171,"./_stackGet":172,"./_stackHas":173,"./_stackSet":174}],85:[function(require,module,exports){
+},{"./_ListCache":90,"./_stackClear":182,"./_stackDelete":183,"./_stackGet":184,"./_stackHas":185,"./_stackSet":186}],97:[function(require,module,exports){
 var root = require('./_root');
 
 /** Built-in value references. */
@@ -97479,7 +99914,7 @@ var Symbol = root.Symbol;
 
 module.exports = Symbol;
 
-},{"./_root":166}],86:[function(require,module,exports){
+},{"./_root":178}],98:[function(require,module,exports){
 var root = require('./_root');
 
 /** Built-in value references. */
@@ -97487,7 +99922,7 @@ var Uint8Array = root.Uint8Array;
 
 module.exports = Uint8Array;
 
-},{"./_root":166}],87:[function(require,module,exports){
+},{"./_root":178}],99:[function(require,module,exports){
 var getNative = require('./_getNative'),
     root = require('./_root');
 
@@ -97496,7 +99931,7 @@ var WeakMap = getNative(root, 'WeakMap');
 
 module.exports = WeakMap;
 
-},{"./_getNative":131,"./_root":166}],88:[function(require,module,exports){
+},{"./_getNative":143,"./_root":178}],100:[function(require,module,exports){
 /**
  * A specialized version of `_.filter` for arrays without support for
  * iteratee shorthands.
@@ -97523,7 +99958,7 @@ function arrayFilter(array, predicate) {
 
 module.exports = arrayFilter;
 
-},{}],89:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 var baseTimes = require('./_baseTimes'),
     isArguments = require('./isArguments'),
     isArray = require('./isArray'),
@@ -97574,7 +100009,7 @@ function arrayLikeKeys(value, inherited) {
 
 module.exports = arrayLikeKeys;
 
-},{"./_baseTimes":116,"./_isIndex":142,"./isArguments":182,"./isArray":183,"./isBuffer":185,"./isTypedArray":191}],90:[function(require,module,exports){
+},{"./_baseTimes":128,"./_isIndex":154,"./isArguments":194,"./isArray":195,"./isBuffer":197,"./isTypedArray":203}],102:[function(require,module,exports){
 /**
  * A specialized version of `_.map` for arrays without support for iteratee
  * shorthands.
@@ -97597,7 +100032,7 @@ function arrayMap(array, iteratee) {
 
 module.exports = arrayMap;
 
-},{}],91:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 /**
  * Appends the elements of `values` to `array`.
  *
@@ -97619,7 +100054,7 @@ function arrayPush(array, values) {
 
 module.exports = arrayPush;
 
-},{}],92:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 /**
  * A specialized version of `_.reduce` for arrays without support for
  * iteratee shorthands.
@@ -97647,7 +100082,7 @@ function arrayReduce(array, iteratee, accumulator, initAccum) {
 
 module.exports = arrayReduce;
 
-},{}],93:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 /**
  * A specialized version of `_.some` for arrays without support for iteratee
  * shorthands.
@@ -97672,7 +100107,7 @@ function arraySome(array, predicate) {
 
 module.exports = arraySome;
 
-},{}],94:[function(require,module,exports){
+},{}],106:[function(require,module,exports){
 var eq = require('./eq');
 
 /**
@@ -97695,7 +100130,7 @@ function assocIndexOf(array, key) {
 
 module.exports = assocIndexOf;
 
-},{"./eq":178}],95:[function(require,module,exports){
+},{"./eq":190}],107:[function(require,module,exports){
 var baseForOwn = require('./_baseForOwn'),
     createBaseEach = require('./_createBaseEach');
 
@@ -97711,7 +100146,7 @@ var baseEach = createBaseEach(baseForOwn);
 
 module.exports = baseEach;
 
-},{"./_baseForOwn":97,"./_createBaseEach":122}],96:[function(require,module,exports){
+},{"./_baseForOwn":109,"./_createBaseEach":134}],108:[function(require,module,exports){
 var createBaseFor = require('./_createBaseFor');
 
 /**
@@ -97729,7 +100164,7 @@ var baseFor = createBaseFor();
 
 module.exports = baseFor;
 
-},{"./_createBaseFor":123}],97:[function(require,module,exports){
+},{"./_createBaseFor":135}],109:[function(require,module,exports){
 var baseFor = require('./_baseFor'),
     keys = require('./keys');
 
@@ -97747,7 +100182,7 @@ function baseForOwn(object, iteratee) {
 
 module.exports = baseForOwn;
 
-},{"./_baseFor":96,"./keys":192}],98:[function(require,module,exports){
+},{"./_baseFor":108,"./keys":204}],110:[function(require,module,exports){
 var castPath = require('./_castPath'),
     toKey = require('./_toKey');
 
@@ -97773,7 +100208,7 @@ function baseGet(object, path) {
 
 module.exports = baseGet;
 
-},{"./_castPath":120,"./_toKey":176}],99:[function(require,module,exports){
+},{"./_castPath":132,"./_toKey":188}],111:[function(require,module,exports){
 var arrayPush = require('./_arrayPush'),
     isArray = require('./isArray');
 
@@ -97795,7 +100230,7 @@ function baseGetAllKeys(object, keysFunc, symbolsFunc) {
 
 module.exports = baseGetAllKeys;
 
-},{"./_arrayPush":91,"./isArray":183}],100:[function(require,module,exports){
+},{"./_arrayPush":103,"./isArray":195}],112:[function(require,module,exports){
 var Symbol = require('./_Symbol'),
     getRawTag = require('./_getRawTag'),
     objectToString = require('./_objectToString');
@@ -97825,7 +100260,7 @@ function baseGetTag(value) {
 
 module.exports = baseGetTag;
 
-},{"./_Symbol":85,"./_getRawTag":132,"./_objectToString":164}],101:[function(require,module,exports){
+},{"./_Symbol":97,"./_getRawTag":144,"./_objectToString":176}],113:[function(require,module,exports){
 /**
  * The base implementation of `_.hasIn` without support for deep paths.
  *
@@ -97840,7 +100275,7 @@ function baseHasIn(object, key) {
 
 module.exports = baseHasIn;
 
-},{}],102:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isObjectLike = require('./isObjectLike');
 
@@ -97860,7 +100295,7 @@ function baseIsArguments(value) {
 
 module.exports = baseIsArguments;
 
-},{"./_baseGetTag":100,"./isObjectLike":189}],103:[function(require,module,exports){
+},{"./_baseGetTag":112,"./isObjectLike":201}],115:[function(require,module,exports){
 var baseIsEqualDeep = require('./_baseIsEqualDeep'),
     isObjectLike = require('./isObjectLike');
 
@@ -97890,7 +100325,7 @@ function baseIsEqual(value, other, bitmask, customizer, stack) {
 
 module.exports = baseIsEqual;
 
-},{"./_baseIsEqualDeep":104,"./isObjectLike":189}],104:[function(require,module,exports){
+},{"./_baseIsEqualDeep":116,"./isObjectLike":201}],116:[function(require,module,exports){
 var Stack = require('./_Stack'),
     equalArrays = require('./_equalArrays'),
     equalByTag = require('./_equalByTag'),
@@ -97975,7 +100410,7 @@ function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
 
 module.exports = baseIsEqualDeep;
 
-},{"./_Stack":84,"./_equalArrays":124,"./_equalByTag":125,"./_equalObjects":126,"./_getTag":134,"./isArray":183,"./isBuffer":185,"./isTypedArray":191}],105:[function(require,module,exports){
+},{"./_Stack":96,"./_equalArrays":136,"./_equalByTag":137,"./_equalObjects":138,"./_getTag":146,"./isArray":195,"./isBuffer":197,"./isTypedArray":203}],117:[function(require,module,exports){
 var Stack = require('./_Stack'),
     baseIsEqual = require('./_baseIsEqual');
 
@@ -98039,7 +100474,7 @@ function baseIsMatch(object, source, matchData, customizer) {
 
 module.exports = baseIsMatch;
 
-},{"./_Stack":84,"./_baseIsEqual":103}],106:[function(require,module,exports){
+},{"./_Stack":96,"./_baseIsEqual":115}],118:[function(require,module,exports){
 var isFunction = require('./isFunction'),
     isMasked = require('./_isMasked'),
     isObject = require('./isObject'),
@@ -98088,7 +100523,7 @@ function baseIsNative(value) {
 
 module.exports = baseIsNative;
 
-},{"./_isMasked":145,"./_toSource":177,"./isFunction":186,"./isObject":188}],107:[function(require,module,exports){
+},{"./_isMasked":157,"./_toSource":189,"./isFunction":198,"./isObject":200}],119:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isLength = require('./isLength'),
     isObjectLike = require('./isObjectLike');
@@ -98150,7 +100585,7 @@ function baseIsTypedArray(value) {
 
 module.exports = baseIsTypedArray;
 
-},{"./_baseGetTag":100,"./isLength":187,"./isObjectLike":189}],108:[function(require,module,exports){
+},{"./_baseGetTag":112,"./isLength":199,"./isObjectLike":201}],120:[function(require,module,exports){
 var baseMatches = require('./_baseMatches'),
     baseMatchesProperty = require('./_baseMatchesProperty'),
     identity = require('./identity'),
@@ -98183,7 +100618,7 @@ function baseIteratee(value) {
 
 module.exports = baseIteratee;
 
-},{"./_baseMatches":111,"./_baseMatchesProperty":112,"./identity":181,"./isArray":183,"./property":195}],109:[function(require,module,exports){
+},{"./_baseMatches":123,"./_baseMatchesProperty":124,"./identity":193,"./isArray":195,"./property":207}],121:[function(require,module,exports){
 var isPrototype = require('./_isPrototype'),
     nativeKeys = require('./_nativeKeys');
 
@@ -98215,7 +100650,7 @@ function baseKeys(object) {
 
 module.exports = baseKeys;
 
-},{"./_isPrototype":146,"./_nativeKeys":162}],110:[function(require,module,exports){
+},{"./_isPrototype":158,"./_nativeKeys":174}],122:[function(require,module,exports){
 var baseEach = require('./_baseEach'),
     isArrayLike = require('./isArrayLike');
 
@@ -98239,7 +100674,7 @@ function baseMap(collection, iteratee) {
 
 module.exports = baseMap;
 
-},{"./_baseEach":95,"./isArrayLike":184}],111:[function(require,module,exports){
+},{"./_baseEach":107,"./isArrayLike":196}],123:[function(require,module,exports){
 var baseIsMatch = require('./_baseIsMatch'),
     getMatchData = require('./_getMatchData'),
     matchesStrictComparable = require('./_matchesStrictComparable');
@@ -98263,7 +100698,7 @@ function baseMatches(source) {
 
 module.exports = baseMatches;
 
-},{"./_baseIsMatch":105,"./_getMatchData":130,"./_matchesStrictComparable":159}],112:[function(require,module,exports){
+},{"./_baseIsMatch":117,"./_getMatchData":142,"./_matchesStrictComparable":171}],124:[function(require,module,exports){
 var baseIsEqual = require('./_baseIsEqual'),
     get = require('./get'),
     hasIn = require('./hasIn'),
@@ -98298,7 +100733,7 @@ function baseMatchesProperty(path, srcValue) {
 
 module.exports = baseMatchesProperty;
 
-},{"./_baseIsEqual":103,"./_isKey":143,"./_isStrictComparable":147,"./_matchesStrictComparable":159,"./_toKey":176,"./get":179,"./hasIn":180}],113:[function(require,module,exports){
+},{"./_baseIsEqual":115,"./_isKey":155,"./_isStrictComparable":159,"./_matchesStrictComparable":171,"./_toKey":188,"./get":191,"./hasIn":192}],125:[function(require,module,exports){
 /**
  * The base implementation of `_.property` without support for deep paths.
  *
@@ -98314,7 +100749,7 @@ function baseProperty(key) {
 
 module.exports = baseProperty;
 
-},{}],114:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 var baseGet = require('./_baseGet');
 
 /**
@@ -98332,7 +100767,7 @@ function basePropertyDeep(path) {
 
 module.exports = basePropertyDeep;
 
-},{"./_baseGet":98}],115:[function(require,module,exports){
+},{"./_baseGet":110}],127:[function(require,module,exports){
 /**
  * The base implementation of `_.reduce` and `_.reduceRight`, without support
  * for iteratee shorthands, which iterates over `collection` using `eachFunc`.
@@ -98357,7 +100792,7 @@ function baseReduce(collection, iteratee, accumulator, initAccum, eachFunc) {
 
 module.exports = baseReduce;
 
-},{}],116:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 /**
  * The base implementation of `_.times` without support for iteratee shorthands
  * or max array length checks.
@@ -98379,7 +100814,7 @@ function baseTimes(n, iteratee) {
 
 module.exports = baseTimes;
 
-},{}],117:[function(require,module,exports){
+},{}],129:[function(require,module,exports){
 var Symbol = require('./_Symbol'),
     arrayMap = require('./_arrayMap'),
     isArray = require('./isArray'),
@@ -98418,7 +100853,7 @@ function baseToString(value) {
 
 module.exports = baseToString;
 
-},{"./_Symbol":85,"./_arrayMap":90,"./isArray":183,"./isSymbol":190}],118:[function(require,module,exports){
+},{"./_Symbol":97,"./_arrayMap":102,"./isArray":195,"./isSymbol":202}],130:[function(require,module,exports){
 /**
  * The base implementation of `_.unary` without support for storing metadata.
  *
@@ -98434,7 +100869,7 @@ function baseUnary(func) {
 
 module.exports = baseUnary;
 
-},{}],119:[function(require,module,exports){
+},{}],131:[function(require,module,exports){
 /**
  * Checks if a `cache` value for `key` exists.
  *
@@ -98449,7 +100884,7 @@ function cacheHas(cache, key) {
 
 module.exports = cacheHas;
 
-},{}],120:[function(require,module,exports){
+},{}],132:[function(require,module,exports){
 var isArray = require('./isArray'),
     isKey = require('./_isKey'),
     stringToPath = require('./_stringToPath'),
@@ -98472,7 +100907,7 @@ function castPath(value, object) {
 
 module.exports = castPath;
 
-},{"./_isKey":143,"./_stringToPath":175,"./isArray":183,"./toString":199}],121:[function(require,module,exports){
+},{"./_isKey":155,"./_stringToPath":187,"./isArray":195,"./toString":211}],133:[function(require,module,exports){
 var root = require('./_root');
 
 /** Used to detect overreaching core-js shims. */
@@ -98480,7 +100915,7 @@ var coreJsData = root['__core-js_shared__'];
 
 module.exports = coreJsData;
 
-},{"./_root":166}],122:[function(require,module,exports){
+},{"./_root":178}],134:[function(require,module,exports){
 var isArrayLike = require('./isArrayLike');
 
 /**
@@ -98514,7 +100949,7 @@ function createBaseEach(eachFunc, fromRight) {
 
 module.exports = createBaseEach;
 
-},{"./isArrayLike":184}],123:[function(require,module,exports){
+},{"./isArrayLike":196}],135:[function(require,module,exports){
 /**
  * Creates a base function for methods like `_.forIn` and `_.forOwn`.
  *
@@ -98541,7 +100976,7 @@ function createBaseFor(fromRight) {
 
 module.exports = createBaseFor;
 
-},{}],124:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 var SetCache = require('./_SetCache'),
     arraySome = require('./_arraySome'),
     cacheHas = require('./_cacheHas');
@@ -98626,7 +101061,7 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
 
 module.exports = equalArrays;
 
-},{"./_SetCache":83,"./_arraySome":93,"./_cacheHas":119}],125:[function(require,module,exports){
+},{"./_SetCache":95,"./_arraySome":105,"./_cacheHas":131}],137:[function(require,module,exports){
 var Symbol = require('./_Symbol'),
     Uint8Array = require('./_Uint8Array'),
     eq = require('./eq'),
@@ -98740,7 +101175,7 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
 
 module.exports = equalByTag;
 
-},{"./_Symbol":85,"./_Uint8Array":86,"./_equalArrays":124,"./_mapToArray":158,"./_setToArray":169,"./eq":178}],126:[function(require,module,exports){
+},{"./_Symbol":97,"./_Uint8Array":98,"./_equalArrays":136,"./_mapToArray":170,"./_setToArray":181,"./eq":190}],138:[function(require,module,exports){
 var getAllKeys = require('./_getAllKeys');
 
 /** Used to compose bitmasks for value comparisons. */
@@ -98831,7 +101266,7 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
 
 module.exports = equalObjects;
 
-},{"./_getAllKeys":128}],127:[function(require,module,exports){
+},{"./_getAllKeys":140}],139:[function(require,module,exports){
 (function (global){
 /** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
@@ -98840,7 +101275,7 @@ module.exports = freeGlobal;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],128:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 var baseGetAllKeys = require('./_baseGetAllKeys'),
     getSymbols = require('./_getSymbols'),
     keys = require('./keys');
@@ -98858,7 +101293,7 @@ function getAllKeys(object) {
 
 module.exports = getAllKeys;
 
-},{"./_baseGetAllKeys":99,"./_getSymbols":133,"./keys":192}],129:[function(require,module,exports){
+},{"./_baseGetAllKeys":111,"./_getSymbols":145,"./keys":204}],141:[function(require,module,exports){
 var isKeyable = require('./_isKeyable');
 
 /**
@@ -98878,7 +101313,7 @@ function getMapData(map, key) {
 
 module.exports = getMapData;
 
-},{"./_isKeyable":144}],130:[function(require,module,exports){
+},{"./_isKeyable":156}],142:[function(require,module,exports){
 var isStrictComparable = require('./_isStrictComparable'),
     keys = require('./keys');
 
@@ -98904,7 +101339,7 @@ function getMatchData(object) {
 
 module.exports = getMatchData;
 
-},{"./_isStrictComparable":147,"./keys":192}],131:[function(require,module,exports){
+},{"./_isStrictComparable":159,"./keys":204}],143:[function(require,module,exports){
 var baseIsNative = require('./_baseIsNative'),
     getValue = require('./_getValue');
 
@@ -98923,7 +101358,7 @@ function getNative(object, key) {
 
 module.exports = getNative;
 
-},{"./_baseIsNative":106,"./_getValue":135}],132:[function(require,module,exports){
+},{"./_baseIsNative":118,"./_getValue":147}],144:[function(require,module,exports){
 var Symbol = require('./_Symbol');
 
 /** Used for built-in method references. */
@@ -98971,7 +101406,7 @@ function getRawTag(value) {
 
 module.exports = getRawTag;
 
-},{"./_Symbol":85}],133:[function(require,module,exports){
+},{"./_Symbol":97}],145:[function(require,module,exports){
 var arrayFilter = require('./_arrayFilter'),
     stubArray = require('./stubArray');
 
@@ -99003,7 +101438,7 @@ var getSymbols = !nativeGetSymbols ? stubArray : function(object) {
 
 module.exports = getSymbols;
 
-},{"./_arrayFilter":88,"./stubArray":197}],134:[function(require,module,exports){
+},{"./_arrayFilter":100,"./stubArray":209}],146:[function(require,module,exports){
 var DataView = require('./_DataView'),
     Map = require('./_Map'),
     Promise = require('./_Promise'),
@@ -99063,7 +101498,7 @@ if ((DataView && getTag(new DataView(new ArrayBuffer(1))) != dataViewTag) ||
 
 module.exports = getTag;
 
-},{"./_DataView":76,"./_Map":79,"./_Promise":81,"./_Set":82,"./_WeakMap":87,"./_baseGetTag":100,"./_toSource":177}],135:[function(require,module,exports){
+},{"./_DataView":88,"./_Map":91,"./_Promise":93,"./_Set":94,"./_WeakMap":99,"./_baseGetTag":112,"./_toSource":189}],147:[function(require,module,exports){
 /**
  * Gets the value at `key` of `object`.
  *
@@ -99078,7 +101513,7 @@ function getValue(object, key) {
 
 module.exports = getValue;
 
-},{}],136:[function(require,module,exports){
+},{}],148:[function(require,module,exports){
 var castPath = require('./_castPath'),
     isArguments = require('./isArguments'),
     isArray = require('./isArray'),
@@ -99119,7 +101554,7 @@ function hasPath(object, path, hasFunc) {
 
 module.exports = hasPath;
 
-},{"./_castPath":120,"./_isIndex":142,"./_toKey":176,"./isArguments":182,"./isArray":183,"./isLength":187}],137:[function(require,module,exports){
+},{"./_castPath":132,"./_isIndex":154,"./_toKey":188,"./isArguments":194,"./isArray":195,"./isLength":199}],149:[function(require,module,exports){
 var nativeCreate = require('./_nativeCreate');
 
 /**
@@ -99136,7 +101571,7 @@ function hashClear() {
 
 module.exports = hashClear;
 
-},{"./_nativeCreate":161}],138:[function(require,module,exports){
+},{"./_nativeCreate":173}],150:[function(require,module,exports){
 /**
  * Removes `key` and its value from the hash.
  *
@@ -99155,7 +101590,7 @@ function hashDelete(key) {
 
 module.exports = hashDelete;
 
-},{}],139:[function(require,module,exports){
+},{}],151:[function(require,module,exports){
 var nativeCreate = require('./_nativeCreate');
 
 /** Used to stand-in for `undefined` hash values. */
@@ -99187,7 +101622,7 @@ function hashGet(key) {
 
 module.exports = hashGet;
 
-},{"./_nativeCreate":161}],140:[function(require,module,exports){
+},{"./_nativeCreate":173}],152:[function(require,module,exports){
 var nativeCreate = require('./_nativeCreate');
 
 /** Used for built-in method references. */
@@ -99212,7 +101647,7 @@ function hashHas(key) {
 
 module.exports = hashHas;
 
-},{"./_nativeCreate":161}],141:[function(require,module,exports){
+},{"./_nativeCreate":173}],153:[function(require,module,exports){
 var nativeCreate = require('./_nativeCreate');
 
 /** Used to stand-in for `undefined` hash values. */
@@ -99237,7 +101672,7 @@ function hashSet(key, value) {
 
 module.exports = hashSet;
 
-},{"./_nativeCreate":161}],142:[function(require,module,exports){
+},{"./_nativeCreate":173}],154:[function(require,module,exports){
 /** Used as references for various `Number` constants. */
 var MAX_SAFE_INTEGER = 9007199254740991;
 
@@ -99261,7 +101696,7 @@ function isIndex(value, length) {
 
 module.exports = isIndex;
 
-},{}],143:[function(require,module,exports){
+},{}],155:[function(require,module,exports){
 var isArray = require('./isArray'),
     isSymbol = require('./isSymbol');
 
@@ -99292,7 +101727,7 @@ function isKey(value, object) {
 
 module.exports = isKey;
 
-},{"./isArray":183,"./isSymbol":190}],144:[function(require,module,exports){
+},{"./isArray":195,"./isSymbol":202}],156:[function(require,module,exports){
 /**
  * Checks if `value` is suitable for use as unique object key.
  *
@@ -99309,7 +101744,7 @@ function isKeyable(value) {
 
 module.exports = isKeyable;
 
-},{}],145:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 var coreJsData = require('./_coreJsData');
 
 /** Used to detect methods masquerading as native. */
@@ -99331,7 +101766,7 @@ function isMasked(func) {
 
 module.exports = isMasked;
 
-},{"./_coreJsData":121}],146:[function(require,module,exports){
+},{"./_coreJsData":133}],158:[function(require,module,exports){
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
 
@@ -99351,7 +101786,7 @@ function isPrototype(value) {
 
 module.exports = isPrototype;
 
-},{}],147:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 var isObject = require('./isObject');
 
 /**
@@ -99368,7 +101803,7 @@ function isStrictComparable(value) {
 
 module.exports = isStrictComparable;
 
-},{"./isObject":188}],148:[function(require,module,exports){
+},{"./isObject":200}],160:[function(require,module,exports){
 /**
  * Removes all key-value entries from the list cache.
  *
@@ -99383,7 +101818,7 @@ function listCacheClear() {
 
 module.exports = listCacheClear;
 
-},{}],149:[function(require,module,exports){
+},{}],161:[function(require,module,exports){
 var assocIndexOf = require('./_assocIndexOf');
 
 /** Used for built-in method references. */
@@ -99420,7 +101855,7 @@ function listCacheDelete(key) {
 
 module.exports = listCacheDelete;
 
-},{"./_assocIndexOf":94}],150:[function(require,module,exports){
+},{"./_assocIndexOf":106}],162:[function(require,module,exports){
 var assocIndexOf = require('./_assocIndexOf');
 
 /**
@@ -99441,7 +101876,7 @@ function listCacheGet(key) {
 
 module.exports = listCacheGet;
 
-},{"./_assocIndexOf":94}],151:[function(require,module,exports){
+},{"./_assocIndexOf":106}],163:[function(require,module,exports){
 var assocIndexOf = require('./_assocIndexOf');
 
 /**
@@ -99459,7 +101894,7 @@ function listCacheHas(key) {
 
 module.exports = listCacheHas;
 
-},{"./_assocIndexOf":94}],152:[function(require,module,exports){
+},{"./_assocIndexOf":106}],164:[function(require,module,exports){
 var assocIndexOf = require('./_assocIndexOf');
 
 /**
@@ -99487,7 +101922,7 @@ function listCacheSet(key, value) {
 
 module.exports = listCacheSet;
 
-},{"./_assocIndexOf":94}],153:[function(require,module,exports){
+},{"./_assocIndexOf":106}],165:[function(require,module,exports){
 var Hash = require('./_Hash'),
     ListCache = require('./_ListCache'),
     Map = require('./_Map');
@@ -99510,7 +101945,7 @@ function mapCacheClear() {
 
 module.exports = mapCacheClear;
 
-},{"./_Hash":77,"./_ListCache":78,"./_Map":79}],154:[function(require,module,exports){
+},{"./_Hash":89,"./_ListCache":90,"./_Map":91}],166:[function(require,module,exports){
 var getMapData = require('./_getMapData');
 
 /**
@@ -99530,7 +101965,7 @@ function mapCacheDelete(key) {
 
 module.exports = mapCacheDelete;
 
-},{"./_getMapData":129}],155:[function(require,module,exports){
+},{"./_getMapData":141}],167:[function(require,module,exports){
 var getMapData = require('./_getMapData');
 
 /**
@@ -99548,7 +101983,7 @@ function mapCacheGet(key) {
 
 module.exports = mapCacheGet;
 
-},{"./_getMapData":129}],156:[function(require,module,exports){
+},{"./_getMapData":141}],168:[function(require,module,exports){
 var getMapData = require('./_getMapData');
 
 /**
@@ -99566,7 +102001,7 @@ function mapCacheHas(key) {
 
 module.exports = mapCacheHas;
 
-},{"./_getMapData":129}],157:[function(require,module,exports){
+},{"./_getMapData":141}],169:[function(require,module,exports){
 var getMapData = require('./_getMapData');
 
 /**
@@ -99590,7 +102025,7 @@ function mapCacheSet(key, value) {
 
 module.exports = mapCacheSet;
 
-},{"./_getMapData":129}],158:[function(require,module,exports){
+},{"./_getMapData":141}],170:[function(require,module,exports){
 /**
  * Converts `map` to its key-value pairs.
  *
@@ -99610,7 +102045,7 @@ function mapToArray(map) {
 
 module.exports = mapToArray;
 
-},{}],159:[function(require,module,exports){
+},{}],171:[function(require,module,exports){
 /**
  * A specialized version of `matchesProperty` for source values suitable
  * for strict equality comparisons, i.e. `===`.
@@ -99632,7 +102067,7 @@ function matchesStrictComparable(key, srcValue) {
 
 module.exports = matchesStrictComparable;
 
-},{}],160:[function(require,module,exports){
+},{}],172:[function(require,module,exports){
 var memoize = require('./memoize');
 
 /** Used as the maximum memoize cache size. */
@@ -99660,7 +102095,7 @@ function memoizeCapped(func) {
 
 module.exports = memoizeCapped;
 
-},{"./memoize":194}],161:[function(require,module,exports){
+},{"./memoize":206}],173:[function(require,module,exports){
 var getNative = require('./_getNative');
 
 /* Built-in method references that are verified to be native. */
@@ -99668,7 +102103,7 @@ var nativeCreate = getNative(Object, 'create');
 
 module.exports = nativeCreate;
 
-},{"./_getNative":131}],162:[function(require,module,exports){
+},{"./_getNative":143}],174:[function(require,module,exports){
 var overArg = require('./_overArg');
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
@@ -99676,7 +102111,7 @@ var nativeKeys = overArg(Object.keys, Object);
 
 module.exports = nativeKeys;
 
-},{"./_overArg":165}],163:[function(require,module,exports){
+},{"./_overArg":177}],175:[function(require,module,exports){
 var freeGlobal = require('./_freeGlobal');
 
 /** Detect free variable `exports`. */
@@ -99700,7 +102135,7 @@ var nodeUtil = (function() {
 
 module.exports = nodeUtil;
 
-},{"./_freeGlobal":127}],164:[function(require,module,exports){
+},{"./_freeGlobal":139}],176:[function(require,module,exports){
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
 
@@ -99724,7 +102159,7 @@ function objectToString(value) {
 
 module.exports = objectToString;
 
-},{}],165:[function(require,module,exports){
+},{}],177:[function(require,module,exports){
 /**
  * Creates a unary function that invokes `func` with its argument transformed.
  *
@@ -99741,7 +102176,7 @@ function overArg(func, transform) {
 
 module.exports = overArg;
 
-},{}],166:[function(require,module,exports){
+},{}],178:[function(require,module,exports){
 var freeGlobal = require('./_freeGlobal');
 
 /** Detect free variable `self`. */
@@ -99752,7 +102187,7 @@ var root = freeGlobal || freeSelf || Function('return this')();
 
 module.exports = root;
 
-},{"./_freeGlobal":127}],167:[function(require,module,exports){
+},{"./_freeGlobal":139}],179:[function(require,module,exports){
 /** Used to stand-in for `undefined` hash values. */
 var HASH_UNDEFINED = '__lodash_hash_undefined__';
 
@@ -99773,7 +102208,7 @@ function setCacheAdd(value) {
 
 module.exports = setCacheAdd;
 
-},{}],168:[function(require,module,exports){
+},{}],180:[function(require,module,exports){
 /**
  * Checks if `value` is in the array cache.
  *
@@ -99789,7 +102224,7 @@ function setCacheHas(value) {
 
 module.exports = setCacheHas;
 
-},{}],169:[function(require,module,exports){
+},{}],181:[function(require,module,exports){
 /**
  * Converts `set` to an array of its values.
  *
@@ -99809,7 +102244,7 @@ function setToArray(set) {
 
 module.exports = setToArray;
 
-},{}],170:[function(require,module,exports){
+},{}],182:[function(require,module,exports){
 var ListCache = require('./_ListCache');
 
 /**
@@ -99826,7 +102261,7 @@ function stackClear() {
 
 module.exports = stackClear;
 
-},{"./_ListCache":78}],171:[function(require,module,exports){
+},{"./_ListCache":90}],183:[function(require,module,exports){
 /**
  * Removes `key` and its value from the stack.
  *
@@ -99846,7 +102281,7 @@ function stackDelete(key) {
 
 module.exports = stackDelete;
 
-},{}],172:[function(require,module,exports){
+},{}],184:[function(require,module,exports){
 /**
  * Gets the stack value for `key`.
  *
@@ -99862,7 +102297,7 @@ function stackGet(key) {
 
 module.exports = stackGet;
 
-},{}],173:[function(require,module,exports){
+},{}],185:[function(require,module,exports){
 /**
  * Checks if a stack value for `key` exists.
  *
@@ -99878,7 +102313,7 @@ function stackHas(key) {
 
 module.exports = stackHas;
 
-},{}],174:[function(require,module,exports){
+},{}],186:[function(require,module,exports){
 var ListCache = require('./_ListCache'),
     Map = require('./_Map'),
     MapCache = require('./_MapCache');
@@ -99914,7 +102349,7 @@ function stackSet(key, value) {
 
 module.exports = stackSet;
 
-},{"./_ListCache":78,"./_Map":79,"./_MapCache":80}],175:[function(require,module,exports){
+},{"./_ListCache":90,"./_Map":91,"./_MapCache":92}],187:[function(require,module,exports){
 var memoizeCapped = require('./_memoizeCapped');
 
 /** Used to match property names within property paths. */
@@ -99944,7 +102379,7 @@ var stringToPath = memoizeCapped(function(string) {
 
 module.exports = stringToPath;
 
-},{"./_memoizeCapped":160}],176:[function(require,module,exports){
+},{"./_memoizeCapped":172}],188:[function(require,module,exports){
 var isSymbol = require('./isSymbol');
 
 /** Used as references for various `Number` constants. */
@@ -99967,7 +102402,7 @@ function toKey(value) {
 
 module.exports = toKey;
 
-},{"./isSymbol":190}],177:[function(require,module,exports){
+},{"./isSymbol":202}],189:[function(require,module,exports){
 /** Used for built-in method references. */
 var funcProto = Function.prototype;
 
@@ -99995,7 +102430,7 @@ function toSource(func) {
 
 module.exports = toSource;
 
-},{}],178:[function(require,module,exports){
+},{}],190:[function(require,module,exports){
 /**
  * Performs a
  * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
@@ -100034,7 +102469,7 @@ function eq(value, other) {
 
 module.exports = eq;
 
-},{}],179:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 var baseGet = require('./_baseGet');
 
 /**
@@ -100069,7 +102504,7 @@ function get(object, path, defaultValue) {
 
 module.exports = get;
 
-},{"./_baseGet":98}],180:[function(require,module,exports){
+},{"./_baseGet":110}],192:[function(require,module,exports){
 var baseHasIn = require('./_baseHasIn'),
     hasPath = require('./_hasPath');
 
@@ -100105,7 +102540,7 @@ function hasIn(object, path) {
 
 module.exports = hasIn;
 
-},{"./_baseHasIn":101,"./_hasPath":136}],181:[function(require,module,exports){
+},{"./_baseHasIn":113,"./_hasPath":148}],193:[function(require,module,exports){
 /**
  * This method returns the first argument it receives.
  *
@@ -100128,7 +102563,7 @@ function identity(value) {
 
 module.exports = identity;
 
-},{}],182:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 var baseIsArguments = require('./_baseIsArguments'),
     isObjectLike = require('./isObjectLike');
 
@@ -100166,7 +102601,7 @@ var isArguments = baseIsArguments(function() { return arguments; }()) ? baseIsAr
 
 module.exports = isArguments;
 
-},{"./_baseIsArguments":102,"./isObjectLike":189}],183:[function(require,module,exports){
+},{"./_baseIsArguments":114,"./isObjectLike":201}],195:[function(require,module,exports){
 /**
  * Checks if `value` is classified as an `Array` object.
  *
@@ -100194,7 +102629,7 @@ var isArray = Array.isArray;
 
 module.exports = isArray;
 
-},{}],184:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 var isFunction = require('./isFunction'),
     isLength = require('./isLength');
 
@@ -100229,7 +102664,7 @@ function isArrayLike(value) {
 
 module.exports = isArrayLike;
 
-},{"./isFunction":186,"./isLength":187}],185:[function(require,module,exports){
+},{"./isFunction":198,"./isLength":199}],197:[function(require,module,exports){
 var root = require('./_root'),
     stubFalse = require('./stubFalse');
 
@@ -100269,7 +102704,7 @@ var isBuffer = nativeIsBuffer || stubFalse;
 
 module.exports = isBuffer;
 
-},{"./_root":166,"./stubFalse":198}],186:[function(require,module,exports){
+},{"./_root":178,"./stubFalse":210}],198:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isObject = require('./isObject');
 
@@ -100308,7 +102743,7 @@ function isFunction(value) {
 
 module.exports = isFunction;
 
-},{"./_baseGetTag":100,"./isObject":188}],187:[function(require,module,exports){
+},{"./_baseGetTag":112,"./isObject":200}],199:[function(require,module,exports){
 /** Used as references for various `Number` constants. */
 var MAX_SAFE_INTEGER = 9007199254740991;
 
@@ -100345,7 +102780,7 @@ function isLength(value) {
 
 module.exports = isLength;
 
-},{}],188:[function(require,module,exports){
+},{}],200:[function(require,module,exports){
 /**
  * Checks if `value` is the
  * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
@@ -100378,7 +102813,7 @@ function isObject(value) {
 
 module.exports = isObject;
 
-},{}],189:[function(require,module,exports){
+},{}],201:[function(require,module,exports){
 /**
  * Checks if `value` is object-like. A value is object-like if it's not `null`
  * and has a `typeof` result of "object".
@@ -100409,7 +102844,7 @@ function isObjectLike(value) {
 
 module.exports = isObjectLike;
 
-},{}],190:[function(require,module,exports){
+},{}],202:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isObjectLike = require('./isObjectLike');
 
@@ -100440,7 +102875,7 @@ function isSymbol(value) {
 
 module.exports = isSymbol;
 
-},{"./_baseGetTag":100,"./isObjectLike":189}],191:[function(require,module,exports){
+},{"./_baseGetTag":112,"./isObjectLike":201}],203:[function(require,module,exports){
 var baseIsTypedArray = require('./_baseIsTypedArray'),
     baseUnary = require('./_baseUnary'),
     nodeUtil = require('./_nodeUtil');
@@ -100469,7 +102904,7 @@ var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedA
 
 module.exports = isTypedArray;
 
-},{"./_baseIsTypedArray":107,"./_baseUnary":118,"./_nodeUtil":163}],192:[function(require,module,exports){
+},{"./_baseIsTypedArray":119,"./_baseUnary":130,"./_nodeUtil":175}],204:[function(require,module,exports){
 var arrayLikeKeys = require('./_arrayLikeKeys'),
     baseKeys = require('./_baseKeys'),
     isArrayLike = require('./isArrayLike');
@@ -100508,7 +102943,7 @@ function keys(object) {
 
 module.exports = keys;
 
-},{"./_arrayLikeKeys":89,"./_baseKeys":109,"./isArrayLike":184}],193:[function(require,module,exports){
+},{"./_arrayLikeKeys":101,"./_baseKeys":121,"./isArrayLike":196}],205:[function(require,module,exports){
 var arrayMap = require('./_arrayMap'),
     baseIteratee = require('./_baseIteratee'),
     baseMap = require('./_baseMap'),
@@ -100563,7 +102998,7 @@ function map(collection, iteratee) {
 
 module.exports = map;
 
-},{"./_arrayMap":90,"./_baseIteratee":108,"./_baseMap":110,"./isArray":183}],194:[function(require,module,exports){
+},{"./_arrayMap":102,"./_baseIteratee":120,"./_baseMap":122,"./isArray":195}],206:[function(require,module,exports){
 var MapCache = require('./_MapCache');
 
 /** Error message constants. */
@@ -100638,7 +103073,7 @@ memoize.Cache = MapCache;
 
 module.exports = memoize;
 
-},{"./_MapCache":80}],195:[function(require,module,exports){
+},{"./_MapCache":92}],207:[function(require,module,exports){
 var baseProperty = require('./_baseProperty'),
     basePropertyDeep = require('./_basePropertyDeep'),
     isKey = require('./_isKey'),
@@ -100672,7 +103107,7 @@ function property(path) {
 
 module.exports = property;
 
-},{"./_baseProperty":113,"./_basePropertyDeep":114,"./_isKey":143,"./_toKey":176}],196:[function(require,module,exports){
+},{"./_baseProperty":125,"./_basePropertyDeep":126,"./_isKey":155,"./_toKey":188}],208:[function(require,module,exports){
 var arrayReduce = require('./_arrayReduce'),
     baseEach = require('./_baseEach'),
     baseIteratee = require('./_baseIteratee'),
@@ -100725,7 +103160,7 @@ function reduce(collection, iteratee, accumulator) {
 
 module.exports = reduce;
 
-},{"./_arrayReduce":92,"./_baseEach":95,"./_baseIteratee":108,"./_baseReduce":115,"./isArray":183}],197:[function(require,module,exports){
+},{"./_arrayReduce":104,"./_baseEach":107,"./_baseIteratee":120,"./_baseReduce":127,"./isArray":195}],209:[function(require,module,exports){
 /**
  * This method returns a new empty array.
  *
@@ -100750,7 +103185,7 @@ function stubArray() {
 
 module.exports = stubArray;
 
-},{}],198:[function(require,module,exports){
+},{}],210:[function(require,module,exports){
 /**
  * This method returns `false`.
  *
@@ -100770,7 +103205,7 @@ function stubFalse() {
 
 module.exports = stubFalse;
 
-},{}],199:[function(require,module,exports){
+},{}],211:[function(require,module,exports){
 var baseToString = require('./_baseToString');
 
 /**
@@ -100800,58 +103235,54 @@ function toString(value) {
 
 module.exports = toString;
 
-},{"./_baseToString":117}],200:[function(require,module,exports){
+},{"./_baseToString":129}],212:[function(require,module,exports){
 module.exports={
   "_args": [
     [
       {
-        "raw": "yasgui-yasr@2.11.0",
+        "raw": "yasgui-yasr@2.11.3",
         "scope": null,
         "escapedName": "yasgui-yasr",
         "name": "yasgui-yasr",
-        "rawSpec": "2.11.0",
-        "spec": "2.11.0",
+        "rawSpec": "2.11.3",
+        "spec": "2.11.3",
         "type": "version"
       },
       "/home/lrd900/yasgui/yasgui"
     ]
   ],
-  "_from": "yasgui-yasr@2.11.0",
-  "_id": "yasgui-yasr@2.11.0",
+  "_from": "yasgui-yasr@2.11.3",
+  "_id": "yasgui-yasr@2.11.3",
   "_inCache": true,
   "_location": "/yasgui-yasr",
   "_nodeVersion": "7.10.0",
   "_npmOperationalInternal": {
     "host": "packages-18-east.internal.npmjs.com",
-    "tmp": "tmp/yasgui-yasr-2.11.0.tgz_1494858302510_0.7455137725919485"
+    "tmp": "tmp/yasgui-yasr-2.11.3.tgz_1495121813958_0.661182492505759"
   },
   "_npmUser": {
     "name": "laurens.rietveld",
     "email": "laurens.rietveld@gmail.com"
   },
   "_npmVersion": "4.2.0",
-  "_phantomChildren": {
-    "color-convert": "1.8.2",
-    "color-name": "1.1.1",
-    "simple-swizzle": "0.2.2"
-  },
+  "_phantomChildren": {},
   "_requested": {
-    "raw": "yasgui-yasr@2.11.0",
+    "raw": "yasgui-yasr@2.11.3",
     "scope": null,
     "escapedName": "yasgui-yasr",
     "name": "yasgui-yasr",
-    "rawSpec": "2.11.0",
-    "spec": "2.11.0",
+    "rawSpec": "2.11.3",
+    "spec": "2.11.3",
     "type": "version"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.11.0.tgz",
-  "_shasum": "4332a80faba00ec75ef23c8208d6857420af3dbb",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.11.3.tgz",
+  "_shasum": "c8c65c30c2ed45f753e6ad80cb00b2b144605a97",
   "_shrinkwrap": null,
-  "_spec": "yasgui-yasr@2.11.0",
+  "_spec": "yasgui-yasr@2.11.3",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -100882,7 +103313,7 @@ module.exports={
     "proj4": "^2.4.3",
     "proj4leaflet": "^1.0.1",
     "wicket": "git+https://github.com/arthur-e/Wicket.git",
-    "yasgui-utils": "^1.6.0"
+    "yasgui-utils": "^1.6.6"
   },
   "description": "Yet Another SPARQL Resultset GUI",
   "devDependencies": {
@@ -100922,10 +103353,10 @@ module.exports={
   },
   "directories": {},
   "dist": {
-    "shasum": "4332a80faba00ec75ef23c8208d6857420af3dbb",
-    "tarball": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.11.0.tgz"
+    "shasum": "c8c65c30c2ed45f753e6ad80cb00b2b144605a97",
+    "tarball": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.11.3.tgz"
   },
-  "gitHead": "c93ca3867915a98ae09c196832c8ca66e9c4ec9e",
+  "gitHead": "e7a1258ae2cf7c801ba921845720850783324f97",
   "homepage": "http://yasr.yasgui.org",
   "keywords": [
     "JavaScript",
@@ -100986,10 +103417,10 @@ module.exports={
     "minor": "gulp minor",
     "patch": "gulp patch"
   },
-  "version": "2.11.0"
+  "version": "2.11.3"
 }
 
-},{}],201:[function(require,module,exports){
+},{}],213:[function(require,module,exports){
 "use strict";
 module.exports = function(result) {
   var quote = '"';
@@ -101052,7 +103483,7 @@ module.exports = function(result) {
   return csvString;
 };
 
-},{}],202:[function(require,module,exports){
+},{}],214:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
@@ -101109,7 +103540,7 @@ root.version = {
   jquery: $.fn.jquery
 };
 
-},{"../package.json":200,"./imgs.js":208,"jquery":26,"yasgui-utils":48}],203:[function(require,module,exports){
+},{"../package.json":212,"./imgs.js":220,"jquery":29,"yasgui-utils":62}],215:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 module.exports = {
@@ -101148,8 +103579,11 @@ module.exports = {
 	 * @type string ('_blank' | '_self')
 	 * @default '_blank'
 	 */
-  uriTarget: '_blank',
-
+  uriTarget: "_blank",
+  onQuotaExceeded: function(e) {
+    //fail silently
+    console.warn("Could not store in localstorage. Skipping..", e);
+  },
   getUsedPrefixes: null,
   /**
 	 * Make certain settings and values of YASR persistent. Setting a key
@@ -101209,7 +103643,7 @@ module.exports = {
   }
 };
 
-},{"jquery":26}],204:[function(require,module,exports){
+},{"jquery":29}],216:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
@@ -101309,7 +103743,7 @@ root.defaults = {
   tryQueryLink: null
 };
 
-},{"jquery":26}],205:[function(require,module,exports){
+},{"jquery":29}],217:[function(require,module,exports){
 module.exports = {
   GoogleTypeException: function(foundTypes, varName) {
     this.foundTypes = foundTypes;
@@ -101334,7 +103768,7 @@ module.exports = {
   }
 };
 
-},{}],206:[function(require,module,exports){
+},{}],218:[function(require,module,exports){
 (function (global){
 var EventEmitter = require("events").EventEmitter, $ = require("jquery");
 //cannot package google loader via browserify....
@@ -101446,7 +103880,7 @@ module.exports = new loader();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"events":19,"jquery":26}],207:[function(require,module,exports){
+},{"events":22,"jquery":29}],219:[function(require,module,exports){
 (function (global){
 "use strict";
 /**
@@ -101781,7 +104215,7 @@ function deepEq$(x, y, type) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./exceptions.js":205,"./gChartLoader.js":206,"./utils.js":223,"jquery":26,"yasgui-utils":48}],208:[function(require,module,exports){
+},{"./exceptions.js":217,"./gChartLoader.js":218,"./utils.js":235,"jquery":29,"yasgui-utils":62}],220:[function(require,module,exports){
 "use strict";
 module.exports = {
   cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
@@ -101795,10 +104229,10 @@ module.exports = {
   smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>'
 };
 
-},{}],209:[function(require,module,exports){
+},{}],221:[function(require,module,exports){
 require("./tableToCsv.js");
 
-},{"./tableToCsv.js":210}],210:[function(require,module,exports){
+},{"./tableToCsv.js":222}],222:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
@@ -101888,7 +104322,7 @@ $.fn.tableToCsv = function(config) {
   return csvString;
 };
 
-},{"jquery":26}],211:[function(require,module,exports){
+},{"jquery":29}],223:[function(require,module,exports){
 (function (global){
 "use strict";
 var $ = require("jquery"), CodeMirror = require("codemirror");
@@ -102142,7 +104576,7 @@ root.version = {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./imgs.js":208,"codemirror":10,"codemirror/addon/edit/matchbrackets.js":2,"codemirror/addon/fold/brace-fold.js":3,"codemirror/addon/fold/foldcode.js":4,"codemirror/addon/fold/foldgutter.js":5,"codemirror/addon/fold/xml-fold.js":6,"codemirror/mode/javascript/javascript.js":11,"codemirror/mode/xml/xml.js":12,"color":75,"jquery":26,"leaflet":27,"proj4":32,"proj4leaflet":33,"wicket/wicket":46,"wicket/wicket-leaflet":45}],212:[function(require,module,exports){
+},{"./imgs.js":220,"codemirror":11,"codemirror/addon/edit/matchbrackets.js":3,"codemirror/addon/fold/brace-fold.js":4,"codemirror/addon/fold/foldcode.js":5,"codemirror/addon/fold/foldgutter.js":6,"codemirror/addon/fold/xml-fold.js":7,"codemirror/mode/javascript/javascript.js":12,"codemirror/mode/xml/xml.js":13,"color":19,"jquery":29,"leaflet":30,"proj4":35,"proj4leaflet":36,"wicket/wicket":60,"wicket/wicket-leaflet":59}],224:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), EventEmitter = require("events").EventEmitter, utils = require("yasgui-utils");
 console = console || {
@@ -102320,7 +104754,7 @@ var YASR = function(parent, options, queryResults) {
         yasr.results.getOriginalResponseAsString &&
         yasr.results.getOriginalResponseAsString().length < yasr.options.persistency.results.maxSize
       ) {
-        utils.storage.set(resultsId, yasr.results.getAsStoreObject(), "month");
+        utils.storage.set(resultsId, yasr.results.getAsStoreObject(), "month", yasr.options.onQuotaExceeded);
       } else {
         //remove old string
         utils.storage.remove(resultsId);
@@ -102505,7 +104939,7 @@ var YASR = function(parent, options, queryResults) {
   yasr.store = function() {
     if (!persistentId) persistentId = yasr.getPersistencyId("main");
     if (persistentId) {
-      utils.storage.set(persistentId, yasr.getPersistentSettings());
+      utils.storage.set(persistentId, yasr.getPersistentSettings(), null, yasr.options.onQuotaExceeded);
     }
   };
 
@@ -102642,14 +105076,14 @@ try {
   console.warn(e);
 }
 
-},{"../package.json":200,"./boolean.js":202,"./defaults.js":203,"./error.js":204,"./gChartLoader.js":206,"./gchart.js":207,"./imgs.js":208,"./jquery/extendJquery.js":209,"./leaflet.js":211,"./parsers/wrapper.js":218,"./pivot.js":220,"./rawResponse.js":221,"./table.js":222,"./utils.js":223,"events":19,"jquery":26,"yasgui-utils":48}],213:[function(require,module,exports){
+},{"../package.json":212,"./boolean.js":214,"./defaults.js":215,"./error.js":216,"./gChartLoader.js":218,"./gchart.js":219,"./imgs.js":220,"./jquery/extendJquery.js":221,"./leaflet.js":223,"./parsers/wrapper.js":230,"./pivot.js":232,"./rawResponse.js":233,"./table.js":234,"./utils.js":235,"events":22,"jquery":29,"yasgui-utils":62}],225:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
   return require("./dlv.js")(queryResponse, ",");
 };
 
-},{"./dlv.js":214,"jquery":26}],214:[function(require,module,exports){
+},{"./dlv.js":226,"jquery":29}],226:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 require("../../lib/jquery.csv-0.71.js");
@@ -102729,7 +105163,7 @@ var root = (module.exports = function(queryResponse, separator, opts) {
   return json;
 });
 
-},{"../../lib/jquery.csv-0.71.js":73,"jquery":26}],215:[function(require,module,exports){
+},{"../../lib/jquery.csv-0.71.js":87,"jquery":29}],227:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 var map = require("lodash/map");
@@ -102814,7 +105248,7 @@ var root = module.exports = function(responseJson) {
   return false;
 };
 
-},{"jquery":26,"lodash/map":193,"lodash/reduce":196}],216:[function(require,module,exports){
+},{"jquery":29,"lodash/map":205,"lodash/reduce":208}],228:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
@@ -102831,7 +105265,7 @@ var root = module.exports = function(queryResponse) {
   return false;
 };
 
-},{"jquery":26}],217:[function(require,module,exports){
+},{"jquery":29}],229:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 var root = (module.exports = function(queryResponse) {
@@ -102847,7 +105281,7 @@ var root = (module.exports = function(queryResponse) {
   });
 });
 
-},{"./dlv.js":214,"jquery":26}],218:[function(require,module,exports){
+},{"./dlv.js":226,"jquery":29}],230:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
@@ -103081,7 +105515,7 @@ var root = (module.exports = function(dataOrJqXhr, textStatus, jqXhrOrErrorStrin
   };
 });
 
-},{"./csv.js":213,"./graphJson.js":215,"./json.js":216,"./tsv.js":217,"./xml.js":219,"jquery":26}],219:[function(require,module,exports){
+},{"./csv.js":225,"./graphJson.js":227,"./json.js":228,"./tsv.js":229,"./xml.js":231,"jquery":29}],231:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 var root = module.exports = function(xml) {
@@ -103162,7 +105596,7 @@ var root = module.exports = function(xml) {
   return json;
 };
 
-},{"jquery":26}],220:[function(require,module,exports){
+},{"jquery":29}],232:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), utils = require("./utils.js"), yUtils = require("yasgui-utils"), imgs = require("./imgs.js");
 require("jquery-ui/sortable");
@@ -103448,7 +105882,7 @@ root.version = {
   jquery: $.fn.jquery
 };
 
-},{"../package.json":200,"./gChartLoader.js":206,"./imgs.js":208,"./utils.js":223,"d3":17,"jquery":26,"jquery-ui/sortable":24,"pivottable":31,"pivottable/dist/d3_renderers.js":29,"pivottable/dist/gchart_renderers.js":30,"yasgui-utils":48}],221:[function(require,module,exports){
+},{"../package.json":212,"./gChartLoader.js":218,"./imgs.js":220,"./utils.js":235,"d3":20,"jquery":29,"jquery-ui/sortable":27,"pivottable":34,"pivottable/dist/d3_renderers.js":32,"pivottable/dist/gchart_renderers.js":33,"yasgui-utils":62}],233:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), CodeMirror = require("codemirror");
 
@@ -103538,7 +105972,7 @@ root.version = {
   CodeMirror: CodeMirror.version
 };
 
-},{"../package.json":200,"codemirror":10,"codemirror/addon/edit/matchbrackets.js":2,"codemirror/addon/fold/brace-fold.js":3,"codemirror/addon/fold/foldcode.js":4,"codemirror/addon/fold/foldgutter.js":5,"codemirror/addon/fold/xml-fold.js":6,"codemirror/mode/javascript/javascript.js":11,"codemirror/mode/xml/xml.js":12,"jquery":26}],222:[function(require,module,exports){
+},{"../package.json":212,"codemirror":11,"codemirror/addon/edit/matchbrackets.js":3,"codemirror/addon/fold/brace-fold.js":4,"codemirror/addon/fold/foldcode.js":5,"codemirror/addon/fold/foldgutter.js":6,"codemirror/addon/fold/xml-fold.js":7,"codemirror/mode/javascript/javascript.js":12,"codemirror/mode/xml/xml.js":13,"jquery":29}],234:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), yutils = require("yasgui-utils"), utils = require("./utils.js"), imgs = require("./imgs.js");
 require("datatables.net")();
@@ -103554,13 +105988,13 @@ require("../lib/colResizable-1.4.js");
  * @return yasr-table (doc)
  *
  */
-var root = module.exports = function(yasr) {
+var root = (module.exports = function(yasr) {
   var table = null;
   var plugin = {
     name: "Table",
     getPriority: 10
   };
-  var options = plugin.options = $.extend(true, {}, root.defaults);
+  var options = (plugin.options = $.extend(true, {}, root.defaults));
   var tableLengthPersistencyId = options.persistency ? yasr.getPersistencyId(options.persistency.tableLength) : null;
 
   var getRows = function() {
@@ -103607,7 +106041,7 @@ var root = module.exports = function(yasr) {
     });
     if (tableLengthPersistencyId) {
       table.on("length.dt", function(e, settings, len) {
-        yutils.storage.set(tableLengthPersistencyId, len, "month");
+        yutils.storage.set(tableLengthPersistencyId, len, "month", yasr.options.onQuotaExceeded);
       });
     }
     $.extend(true, options.callbacks, options.handlers);
@@ -103681,10 +106115,9 @@ var root = module.exports = function(yasr) {
 	 * @default If resultset contains variables in the resultset, return true
 	 */
   plugin.canHandleResults = function() {
-    return yasr.results &&
-      yasr.results.getVariables &&
-      yasr.results.getVariables() &&
-      yasr.results.getVariables().length > 0;
+    return (
+      yasr.results && yasr.results.getVariables && yasr.results.getVariables() && yasr.results.getVariables().length > 0
+    );
   };
 
   plugin.getDownloadInfo = function() {
@@ -103700,7 +106133,7 @@ var root = module.exports = function(yasr) {
   };
 
   return plugin;
-};
+});
 
 var formatLiteral = function(yasr, plugin, literalBinding) {
   var stringRepresentation = utils.escapeHtmlEntities(literalBinding.value);
@@ -103743,9 +106176,12 @@ var getCellContent = function(yasr, plugin, bindings, sparqlVar, context) {
         title = href;
       }
     }
-    value = "<a " +
+    value =
+      "<a " +
       (title ? "title='" + href + "' " : "") +
-      "class='uri' target='" + yasr.options.uriTarget + "' href='" +
+      "class='uri' target='" +
+      yasr.options.uriTarget +
+      "' href='" +
       href +
       "'>" +
       visibleString +
@@ -103927,7 +106363,7 @@ root.version = {
   "jquery-datatables": $.fn.DataTable.version
 };
 
-},{"../lib/colResizable-1.4.js":72,"../package.json":200,"./bindingsToCsv.js":201,"./imgs.js":208,"./utils.js":223,"datatables.net":18,"jquery":26,"yasgui-utils":48}],223:[function(require,module,exports){
+},{"../lib/colResizable-1.4.js":86,"../package.json":212,"./bindingsToCsv.js":213,"./imgs.js":220,"./utils.js":235,"datatables.net":21,"jquery":29,"yasgui-utils":62}],235:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), GoogleTypeException = require("./exceptions.js").GoogleTypeException;
 
@@ -104072,11 +106508,11 @@ var parseXmlSchemaDate = function(dateString) {
   return date;
 };
 
-},{"./exceptions.js":205,"jquery":26}],224:[function(require,module,exports){
+},{"./exceptions.js":217,"jquery":29}],236:[function(require,module,exports){
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -104141,6 +106577,7 @@ module.exports={
     "url": "https://github.com/YASGUI/YASGUI.git"
   },
   "dependencies": {
+    "blueimp-md5": "^2.7.0",
     "bootstrap-contextmenu": "git://github.com/sydcanem/bootstrap-contextmenu",
     "bootstrap-sass": "^3.3.7",
     "browserify-shim": "^3.8.12",
@@ -104150,11 +106587,12 @@ module.exports={
     "minimist": "^1.2.0",
     "promise-polyfill": "^6.0.2",
     "selectize": "^0.12.4",
+    "store": "^2.0.4",
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
-    "yasgui-utils": "^1.6.0",
-    "yasgui-yasqe": "2.x.x",
-    "yasgui-yasr": "2.x.x"
+    "yasgui-utils": "^1.6.6",
+    "yasgui-yasqe": "^2.11.12",
+    "yasgui-yasr": "^2.11.3"
   },
   "browserify-shim": {
     "jQuery": "jquery"
@@ -104183,7 +106621,7 @@ module.exports={
   }
 }
 
-},{}],225:[function(require,module,exports){
+},{}],237:[function(require,module,exports){
 "use strict";
 
 var $ = require("jquery");
@@ -104201,7 +106639,10 @@ module.exports = {
     googleAnalyticsId: null,
     askConsent: true
   },
-
+  onQuotaExceeded: function(e) {
+    //fail silently
+    console.warn("Could not store in localstorage. Skipping..", e);
+  },
   yasqe: $.extend(
     true,
     {},
@@ -104648,13 +107089,13 @@ module.exports = {
   ]
 };
 
-},{"./main.js":232,"jquery":26}],226:[function(require,module,exports){
+},{"./main.js":244,"jquery":29}],238:[function(require,module,exports){
 //this is the entry-point for browserify.
 //the current browserify version does not support require-ing js files which are used as entry-point
 //this way, we can still require our main.js file
 module.exports = require("./main.js");
 
-},{"./main.js":232}],227:[function(require,module,exports){
+},{"./main.js":244}],239:[function(require,module,exports){
 "use strict";
 module.exports = {
   yasgui: '<svg   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="0 0 603.99 522.51"   width="100%"   height="100%"      version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="test.svg">  <defs     >    <linearGradient              osb:paint="solid">      <stop         style="stop-color:#3b3b3b;stop-opacity:1;"         offset="0"          />    </linearGradient>    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />  </defs>  <sodipodi:namedview          pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1.0"     inkscape:pageopacity="0.0"     inkscape:pageshadow="2"     inkscape:zoom="0.35"     inkscape:cx="-469.55507"     inkscape:cy="840.5292"     inkscape:document-units="px"     inkscape:current-layer="layer1"     showgrid="false"     inkscape:window-width="1855"     inkscape:window-height="1056"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0" />  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />        <dc:title />      </cc:Work>    </rdf:RDF>  </metadata>  <g     inkscape:label="Layer 1"     inkscape:groupmode="layer"          transform="translate(-50.966817,-280.33262)">    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="478.57324"       x="-374.48849"       y="103.99496"       transform="matrix(-2.679181e-4,-0.99999996,0.99999993,-3.6684387e-4,0,0)" />    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="560"       x="651.37634"       y="-132.06581"       transform="matrix(0.74639582,0.66550228,-0.66550228,0.74639582,0,0)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,92.132758,620.67568)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,457.84706,214.96137)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,-30.152972,219.81853)" />    <g       transform="matrix(0.68747304,-0.7262099,0.7262099,0.68747304,0,0)"       inkscape:transform-center-x="239.86342"       inkscape:transform-center-y="-26.958107"       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#3b3b3b;fill-opacity:1;stroke:none;font-family:Sans"       >      <path         d="m -320.16655,490.61871 33.2,0 -32.4,75.4 0,64.6 -32.2,0 0,-64.6 -32.4,-75.4 33.2,0 15.2,43 15.4,-43 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -177.4603,630.61871 -32.2,0 -21.6,-80.4 -21.6,80.4 -32.2,0 37.4,-140 0.4,0 32,0 0.4,0 37.4,140 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -84.835303,544.41871 c 5.999926,9e-5 11.59992,1.13342 16.8,3.4 5.19991,2.26675 9.733238,5.40008 13.6,9.4 3.866564,3.86674 6.933228,8.40007 9.2,13.6 2.266556,5.20006 3.399889,10.80005 3.4,16.8 -1.11e-4,6.00004 -1.133444,11.60003 -3.4,16.8 -2.266772,5.20002 -5.333436,9.73335 -9.2,13.6 -3.866762,3.86668 -8.40009,6.93334 -13.6,9.2 -5.20008,2.26667 -10.800074,3.4 -16.8,3.4 l -64.599997,0 0,-32.2 64.599997,0 c 3.066595,-0.1333 5.599926,-1.19996 7.6,-3.2 2.133255,-2.13329 3.199921,-4.66662 3.2,-7.6 -7.9e-5,-3.06662 -1.066745,-5.59995 -3.2,-7.6 -2.000074,-2.13328 -4.533405,-3.19994 -7.6,-3.2 l -21.599997,0 c -6.00004,6e-5 -11.60004,-1.13328 -16.8,-3.4 -5.20003,-2.2666 -9.73336,-5.33327 -13.6,-9.2 -3.86668,-3.99993 -6.93335,-8.59992 -9.2,-13.8 -2.26667,-5.19991 -3.40001,-10.79991 -3.4,-16.8 -10e-6,-5.99989 1.13333,-11.59989 3.4,-16.8 2.26665,-5.19988 5.33332,-9.73321 9.2,-13.6 3.86664,-3.86653 8.39997,-6.9332 13.6,-9.2 5.19996,-2.26652 10.79996,-3.39986 16.8,-3.4 l 42.999997,0 0,32.4 -42.999997,0 c -3.06671,1.1e-4 -5.66671,1.06678 -7.8,3.2 -2.00004,2.00011 -3.00004,4.46677 -3,7.4 -4e-5,3.06676 0.99996,5.66676 3,7.8 2.13329,2.00009 4.73329,3.00009 7.8,3 l 21.599997,0 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />    </g>    <g       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Theorem NBP;-inkscape-font-specification:Theorem NBP"       >      <path         d="m 422.17683,677.02126 36.55,0 -5.44,27.54 -1.87,9.18 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 9.18,-45.9 c 1.01998,-5.09991 2.94664,-9.85991 5.78,-14.28 2.8333,-4.4199 6.17663,-8.27323 10.03,-11.56 3.96662,-3.28656 8.32995,-5.89322 13.09,-7.82 4.87328,-1.92655 9.85994,-2.88988 14.96,-2.89 l 18.36,0 c 5.09991,1.2e-4 9.63324,0.96345 13.6,2.89 4.0799,1.92678 7.42323,4.53344 10.03,7.82 2.71989,3.28677 4.58989,7.1401 5.61,11.56 1.01988,4.42009 1.01988,9.18009 0,14.28 l -27.37,0 c 0.45325,-2.49325 -9e-5,-4.58991 -1.36,-6.29 -1.36009,-1.81324 -3.34342,-2.71991 -5.95,-2.72 l -18.36,0 c -2.60673,9e-5 -4.98672,0.90676 -7.14,2.72 -2.15339,1.70009 -3.45672,3.79675 -3.91,6.29 l -9.18,45.9 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 1.87,-9.18 -9.18,0 5.44,-27.54"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 569.69808,713.74126 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 16.49,-82.45 27.37,0 -16.49,82.45 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 16.49,-82.45 27.37,0 -16.49,82.45"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 613.00933,631.29126 27.37,0 -23.8,119 -27.37,0 23.8,-119 0,0"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />    </g>    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.4331683,0,0,0.38716814,381.83246,155.72497)" />  </g></svg>', //svg with letters as paths (solves font issues)
@@ -104665,7 +107106,7 @@ module.exports = {
   checkCrossMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 49.752653 49.990111"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"     showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="41.024355"     inkscape:cy="53.698163"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2"      />  <g     transform="matrix(0.59034297,0,0,0.59034297,12.298561,2.5312719)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"       inkscape:connector-curvature="0"        />  </g>  <g     transform="matrix(0.46036177,0,0,0.46036177,-0.49935505,-12.592753)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 67.335938,21.40625 60.320312,11.0625 C 50.757812,17.542969 43.875,22.636719 38.28125,27.542969 32.691406,22.636719 25.808594,17.546875 16.242188,11.0625 L 9.230469,21.40625 C 18.03125,27.375 24.3125,31.953125 29.398438,36.351562 23.574219,42.90625 18.523438,50.332031 11.339844,61.183594 l 10.421875,6.902344 C 28.515625,57.886719 33.144531,51.046875 38.28125,45.160156 c 5.140625,5.886719 9.765625,12.726563 16.523438,22.925782 L 65.226562,61.183594 C 58.039062,50.335938 52.988281,42.90625 47.167969,36.351562 52.25,31.953125 58.53125,27.375 67.335938,21.40625 z m 0,0"       inkscape:connector-curvature="0"        />  </g></svg>'
 };
 
-},{}],228:[function(require,module,exports){
+},{}],240:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), selectize = require("selectize"), utils = require("yasgui-utils");
 
@@ -104724,7 +107165,7 @@ $.fn.endpointCombi = function(yasgui, options) {
       }
     }
 
-    utils.storage.set(persistencyId, endpoints);
+    utils.storage.set(persistencyId, endpoints,null, yasgui.options.onQuotaExceeded);
   };
 
   //support callback
@@ -104739,12 +107180,12 @@ $.fn.endpointCombi = function(yasgui, options) {
     if (optGroup == "catalogue" && yasgui.options.catalogueEndpoints) {
       if (typeof yasgui.options.catalogueEndpoints == "function") {
         return yasgui.options.catalogueEndpoints(yasgui, function(endpoints) {
-          if (endpoints) utils.storage.set(persistencyId, endpoints);
+          if (endpoints) utils.storage.set(persistencyId, endpoints,null, yasgui.options.onQuotaExceeded);
           callback(endpoints, optGroup);
         });
       } else if (typeof yasgui.options.catalogueEndpoints == "object") {
         endpoints = yasgui.options.catalogueEndpoints;
-        utils.storage.set(persistencyId, endpoints);
+        utils.storage.set(persistencyId, endpoints,null, yasgui.options.onQuotaExceeded);
         callback(endpoints, optGroup);
       }
     }
@@ -104903,7 +107344,7 @@ $.fn.endpointCombi = function(yasgui, options) {
   return this;
 };
 
-},{"jquery":26,"selectize":37,"yasgui-utils":48}],229:[function(require,module,exports){
+},{"jquery":29,"selectize":40,"yasgui-utils":62}],241:[function(require,module,exports){
 //extend jquery
 require("jquery-ui/resizable.js");
 require("./outsideclick.js");
@@ -104912,7 +107353,7 @@ require("./endpointCombi.js");
 require("jquery-ui/position");
 require("jquery-ui/sortable");
 
-},{"./endpointCombi.js":228,"./outsideclick.js":230,"./tab.js":231,"jquery-ui/position":22,"jquery-ui/resizable.js":23,"jquery-ui/sortable":24}],230:[function(require,module,exports){
+},{"./endpointCombi.js":240,"./outsideclick.js":242,"./tab.js":243,"jquery-ui/position":25,"jquery-ui/resizable.js":26,"jquery-ui/sortable":27}],242:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
@@ -104946,7 +107387,7 @@ $.fn.onOutsideClick = function(onOutsideClick, config) {
   return this;
 };
 
-},{"jquery":26}],231:[function(require,module,exports){
+},{"jquery":29}],243:[function(require,module,exports){
 //Based on Bootstrap: tab.js v3.3.1
 var $ = require("jquery");
 ("use strict");
@@ -105078,13 +107519,14 @@ $(document)
   .on("click.bs.tab.data-api", '[data-toggle="tab"]', clickHandler)
   .on("click.bs.tab.data-api", '[data-toggle="pill"]', clickHandler);
 
-},{"jquery":26}],232:[function(require,module,exports){
+},{"jquery":29}],244:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"),
   EventEmitter = require("events").EventEmitter,
   utils = require("yasgui-utils"),
   imgs = require("./imgs.js"),
-  stories = require("./sparqlStories.js");
+  stories = require("./stories.js"),
+  md5 = require("blueimp-md5");
 require("./jquery/extendJquery.js"); //extend some own jquery plugins
 
 /**
@@ -105106,6 +107548,7 @@ var setYasrOptions = function(options) {
         .append($("<li>").html(corsLiHtml))
     );
 };
+
 var YASGUI = function(parent, options) {
   EventEmitter.call(this);
   var yasgui = this;
@@ -105119,6 +107562,7 @@ var YASGUI = function(parent, options) {
     yasgui.persistencyPrefix = typeof yasgui.options.persistencyPrefix == "function"
       ? yasgui.options.persistencyPrefix(yasgui)
       : yasgui.options.persistencyPrefix;
+    yasgui.persistencyPrefix = md5(yasgui.persistencyPrefix);
   }
 
   if (yasgui.persistencyPrefix) {
@@ -105128,7 +107572,7 @@ var YASGUI = function(parent, options) {
 
   yasgui.store = function() {
     if (yasgui.persistentOptions) {
-      utils.storage.set(yasgui.persistencyPrefix, yasgui.persistentOptions);
+      utils.storage.set(yasgui.persistencyPrefix, yasgui.persistentOptions, null, yasgui.options.onQuotaExceeded);
     }
   };
 
@@ -105197,7 +107641,6 @@ var YASGUI = function(parent, options) {
   var storeRename = function($liEl) {
     var tabId = $liEl.find('a[role="tab"]').attr("aria-controls");
     var val = $liEl.find("input").val();
-    // console.log($liEl)
     $liEl.find("span").text($liEl.find("input").val());
     persistentOptions.tabs[tabId].name = val;
     yasgui.store();
@@ -105517,6 +107960,15 @@ module.exports = function(parent, options) {
   return new YASGUI(parent, options);
 };
 module.exports.sparqlStories = stories;
+module.exports.stories = stories;
+module.exports.shouldResetStorage = function() {
+  return document.location.search.substring(1).split("&").indexOf("_resetYasgui") >= 0;
+};
+
+//Before we start initializing, check whether we need to reset our storage layer
+if (module.exports.shouldResetStorage()) {
+  utils.storage.removeAll();
+}
 module.exports.YASQE = require("./yasqe.js");
 module.exports.YASR = require("./yasr.js");
 module.exports.version = {
@@ -105529,7 +107981,7 @@ module.exports.version = {
 module.exports.$ = $;
 module.exports.defaults = require("./defaults.js");
 
-},{"../package.json":224,"./defaults.js":225,"./imgs.js":227,"./jquery/extendJquery.js":229,"./shareLink.js":233,"./sparqlStories.js":234,"./tab.js":235,"./tracker.js":237,"./yasqe.js":239,"./yasr.js":240,"events":19,"jquery":26,"yasgui-utils":48}],233:[function(require,module,exports){
+},{"../package.json":236,"./defaults.js":237,"./imgs.js":239,"./jquery/extendJquery.js":241,"./shareLink.js":245,"./stories.js":246,"./tab.js":247,"./tracker.js":249,"./yasqe.js":251,"./yasr.js":252,"blueimp-md5":1,"events":22,"jquery":29,"yasgui-utils":62}],245:[function(require,module,exports){
 var $ = require("jquery");
 var urlParse = require('url-parse')
 var deparam = function(queryString) {
@@ -105736,132 +108188,207 @@ module.exports = {
   }
 };
 
-},{"jquery":26,"url-parse":43}],234:[function(require,module,exports){
-var $ = require("jquery");
-var linkUtils = require('./shareLink');
-var Promise = require('promise-polyfill');
-var urlParse = require('url-parse');
-module.exports = function() {
-  $( document ).ready(function() {
-    window.yasgui = []
-    var yasguiDivs = $('div[data-yasgui]');
-    var count = 0;
-    function loadDivs() {
+},{"jquery":29,"url-parse":57}],246:[function(require,module,exports){
+var ATTRS = {
+  URL_LINK: "data-query",
+  SPARQL_REF: "data-query-sparql",
+  ENDPOINT: "data-query-endpoint",
+  OUTPUT: "data-query-output"
+};
 
-      if (count >= yasguiDivs.length) {
+var $ = require("jquery");
+var linkUtils = require("./shareLink");
+var Promise = require("promise-polyfill");
+//This lib _requires_ a catch clause (we use just a second arg in the then)
+//so disable these warning
+Promise._unhandledRejectionFn = function(rejectError) {};
+var urlParse = require("url-parse");
+module.exports = function(yasguiOptions) {
+  $(document).ready(function() {
+    window.yasgui = [];
+    var yasguiStoryItems = $("[" + ATTRS.URL_LINK + "]");
+    var count = 0;
+    function loadEls() {
+      if (count >= yasguiStoryItems.length) {
         //loaded everything, so we're done
       } else {
-        loadDiv(yasguiDivs[count]).then(function() {
+        loadEl(yasguiStoryItems[count], 0, count).then(function() {
           count++;
-          loadDivs();
+          loadEls();
         });
       }
-
     }
-    loadDivs();
-});
-
-}
-function loadDiv(el, retryCount) {
-  if (!retryCount) retryCount = 0;
-
-  var $this = $(el)
-  const url = $this.attr('data-yasgui');
-  return getFullUrl(url)
-    .then(linkUtils.getOptionsFromUrl)
-    .then(function(options) {
-      return cleanConfig(options,url)
-    })
-    .then(function(config) {
-      // config.yasqe.value += 'b;la'
-      if (!retryCount) initializeWrapper($this)
-      window.$el = $this;
-      var yasgui = YASGUI($this, $.extend(config, {
-        //use persistencyPrefix so there are no conflicts between
-        //different yasgui instances
-          persistencyPrefix: function() {
-            return 'yasgui_stories_' + url + Math.random()
+    loadEls();
+  });
+  function getInfoFromParent($el) {
+    var info = {
+      queryRef: undefined,
+      yasguiOptions: {
+        yasqe: {
+          value: undefined,
+          sparql: {
+            endpoint: undefined
           }
-        })
-      )
+        },
+        yasr: {
+          output: undefined
+        }
+      }
+    };
+    var parents = $el.parents().toArray();
+    parents.push($el[0]);
 
-      $this.extend({yasgui:yasgui})
-      window.yasgui.push($this.yasgui);
-      if (!yasgui.current().yasr.results) {
-        return new Promise(function(resolve,reject) {
-          yasgui.current().yasqe.options.sparql.callbacks.error = reject
-          yasgui.current().yasqe.options.sparql.callbacks.success = function() {
-            resolve($this.yasgui);
-          }
-          yasgui.current().query()
-        })
-      }
-      return Promise.resolve($this.yasgui);
-    })
-    .catch(function(e) {
-      if (retryCount < 3) {
-        console.warn('failed request, retrying');
-        return loadDiv(el, retryCount+1)
-      } else {
-        console.error(e);
-      }
-    })
-}
-function cleanConfig(config, originalUrl) {
-  if (config.yasqe.sparql && config.yasqe.sparql.endpoint && config.yasqe.sparql.endpoint.indexOf('http') !== 0) {
-    //hmm, a relative path, do some magic to rewrite the endpoint
-    var parsedOriginalUrl = urlParse(originalUrl);
-    var parsedEndpointUrl = urlParse(config.yasqe.sparql.endpoint);
-    parsedOriginalUrl.set('hash', parsedEndpointUrl.hash)
-    parsedOriginalUrl.set('query', parsedEndpointUrl.query)
-    parsedOriginalUrl.set('pathname', parsedEndpointUrl.pathname)
-    config.yasqe.sparql.endpoint = parsedOriginalUrl.href;
+    parents.reverse().forEach(function(parent) {
+      var $parent = $(parent);
+      if ($parent.attr(ATTRS.SPARQL_REF)) info.queryRef = $parent.attr(ATTRS.SPARQL_REF);
+      if ($parent.attr(ATTRS.ENDPOINT)) info.yasguiOptions.yasqe.sparql.endpoint = $parent.attr(ATTRS.ENDPOINT);
+      if ($parent.attr(ATTRS.OUTPUT)) info.yasguiOptions.yasr.output = $parent.attr(ATTRS.OUTPUT);
+    });
+    return info;
   }
 
-  return config;
-}
+  function getConfigForEl($el) {
+    var url = $el.attr(ATTRS.URL_LINK);
+    var optionsFromUrl = Promise.resolve({});
+    if (url) {
+      optionsFromUrl = getFullUrl(url).then(linkUtils.getOptionsFromUrl).then(function(options) {
+        return cleanConfig(options, url);
+      });
+    }
+    var parentInfo = getInfoFromParent($el);
+    var queryValue = parentInfo.queryRef
+      ? Promise.resolve().then(function() {
+          return $.get(parentInfo.queryRef);
+        })
+      : Promise.resolve(undefined);
 
-function initializeWrapper($el, yasgui) {
-  //  $el.addClass('hideYasqe');
-   $el.addClass('hideTabs').addClass('stories');
-   if ($el.attr('data-showQuery') === undefined) {
-     $el.addClass('hideYasqe')
-   }
-
-   $('<button>')
-    .addClass('btn btn-info')
-    .text(($el.hasClass('hideYasqe') ? 'Show': 'Hide') + ' query')
-    .click(function() {
-      if ($el.hasClass('hideYasqe')) {
-        $(this).text('Hide query')
-        $el.removeClass('hideYasqe')
-        $el.yasgui.current().yasqe.refresh()
-      } else {
-        $(this).text('Show query')
-        $el.addClass('hideYasqe')
-      }
-    })
-    .appendTo($el)
-}
-
-
-function getFullUrl(url) {
-  if (url.indexOf('/short') >= 0) {
-    //append `url` to get the url we're redirecting to
-    if (url.indexOf('/url') < 0) url += '/url';
-
-    return Promise.resolve()
-      .then(function() {
-        return $.get(url);
+    var finalOptions;
+    return optionsFromUrl
+      .then(function(opts) {
+        finalOptions = $.extend(true, opts, parentInfo.yasguiOptions);
+        return queryValue;
       })
-
-
-  } else {
-    return Promise.resolve(url)
+      .then(function(queryValue) {
+        if (queryValue) finalOptions.yasqe.value = queryValue;
+        return finalOptions;
+      });
   }
-}
+  function loadEl(el, retryCount, index) {
+    if (!retryCount) retryCount = 0;
+    var $this = $(el);
 
-},{"./shareLink":233,"jquery":26,"promise-polyfill":34,"url-parse":43}],235:[function(require,module,exports){
+    return getConfigForEl($this).then(
+      function(config) {
+        if (!retryCount) initializeWrapper($this);
+        window.$el = $this;
+        var yasgui = YASGUI(
+          $this,
+          $.extend(
+            config,
+            {
+              //use persistencyPrefix so there are no conflicts between
+              //different yasgui instances
+              persistencyPrefix: function() {
+                //if we're changing one of the attributes (e.g. output, query, endpoint) we don't want the cached value
+                //so take these into account for the persistencyPrefix
+                return (
+                  "yasgui_stories_" +
+                  config.yasqe.value +
+                  config.yasqe.sparql.endpoint +
+                  config.yasr.output +
+                  index +
+                  Math.random()
+                );
+              },
+              onQuotaExceeded: function() {
+                console.log("On quota exceede!");
+                //want to avoid a loop, so first check whether we're not already resetting the localstorage
+                if (!YASGUI.shouldResetStorage()) {
+                  var searchString = window.location.search;
+                  searchString += (searchString.length > 0 ? "&" : "?") + "_resetYasgui";
+                  window.location.search = searchString;
+                }
+              }
+            },
+            yasguiOptions || {}
+          )
+        );
+
+        $this.extend({ yasgui: yasgui });
+        window.yasgui.push($this.yasgui);
+        if (!yasgui.current().yasr.results) {
+          return new Promise(function(resolve, reject) {
+            yasgui.current().yasqe.options.sparql.callbacks.error = reject;
+            yasgui.current().yasqe.options.sparql.callbacks.success = function() {
+              resolve($this.yasgui);
+            };
+            yasgui.current().query();
+          });
+        }
+        return Promise.resolve($this.yasgui);
+      },
+      function(e) {
+        if (retryCount < 3) {
+          console.warn("failed request, retrying");
+          return loadEl(el, retryCount + 1);
+        } else {
+          console.error(e);
+        }
+      }
+    );
+  }
+  function cleanConfig(config, originalUrl) {
+    if (config.yasqe.sparql && config.yasqe.sparql.endpoint && config.yasqe.sparql.endpoint.indexOf("http") !== 0) {
+      //hmm, a relative path, do some magic to rewrite the endpoint
+      var parsedOriginalUrl = urlParse(originalUrl);
+      var parsedEndpointUrl = urlParse(config.yasqe.sparql.endpoint);
+      parsedOriginalUrl.set("hash", parsedEndpointUrl.hash);
+      parsedOriginalUrl.set("query", parsedEndpointUrl.query);
+      parsedOriginalUrl.set("pathname", parsedEndpointUrl.pathname);
+      config.yasqe.sparql.endpoint = parsedOriginalUrl.href;
+    }
+
+    return config;
+  }
+
+  function initializeWrapper($el, yasgui) {
+    //  $el.addClass('hideYasqe');
+    $el.addClass("hideTabs").addClass("stories");
+    if ($el.attr("data-showQuery") === undefined) {
+      $el.addClass("hideYasqe");
+    }
+
+    $("<button>")
+      .addClass("btn btn-info")
+      .text(($el.hasClass("hideYasqe") ? "Show" : "Hide") + " query")
+      .click(function() {
+        if ($el.hasClass("hideYasqe")) {
+          $(this).text("Hide query");
+          $el.removeClass("hideYasqe");
+          $el.yasgui.current().yasqe.refresh();
+        } else {
+          $(this).text("Show query");
+          $el.addClass("hideYasqe");
+        }
+      })
+      .appendTo($el);
+  }
+
+  function getFullUrl(url) {
+    if (url.indexOf("/short") >= 0) {
+      //append `url` to get the url we're redirecting to
+      if (url.indexOf("/url") < 0) url += "/url";
+
+      return Promise.resolve().then(function() {
+        return $.get(url);
+      });
+    } else {
+      return Promise.resolve(url);
+    }
+  }
+};
+
+},{"./shareLink":245,"jquery":29,"promise-polyfill":37,"url-parse":57}],247:[function(require,module,exports){
 "use strict";
 
 //		mod.emit('initError')
@@ -105967,7 +108494,8 @@ var Tab = function(yasgui, options) {
   }).appendTo($paneContent);
 
   var yasqeOptions = {
-    createShareLink: require("./shareLink").getCreateLinkHandler(tab)
+    createShareLink: require("./shareLink").getCreateLinkHandler(tab),
+    onQuotaExceeded: yasgui.options.onQuotaExceeded
   };
   if (yasgui.options.api.urlShortener) {
     yasqeOptions.createShortLink = require("./shareLink").getShortLinkHandler(yasgui);
@@ -105992,7 +108520,7 @@ var Tab = function(yasgui, options) {
 
     //store in localstorage as well
     if (yasgui.persistencyPrefix) {
-      yUtils.storage.set(yasgui.persistencyPrefix + "history", yasgui.history);
+      yUtils.storage.set(yasgui.persistencyPrefix + "history", yasgui.history, null, yasgui.options.onQuotaExceeded);
     }
   };
 
@@ -106009,9 +108537,11 @@ var Tab = function(yasgui, options) {
     if (!tab.yasr) {
       if (!tab.yasqe) initYasqe(); //we need this one to initialize yasr
       var getQueryString = function() {
-        return persistentOptions.yasqe.sparql.endpoint +
+        return (
+          persistentOptions.yasqe.sparql.endpoint +
           "?" +
-          $.param(tab.yasqe.getUrlArguments(persistentOptions.yasqe.sparql));
+          $.param(tab.yasqe.getUrlArguments(persistentOptions.yasqe.sparql))
+        );
       };
       YASGUI.YASR.plugins.error.defaults.tryQueryLink = getQueryString;
 
@@ -106022,7 +108552,10 @@ var Tab = function(yasgui, options) {
             //this way, the URLs in the results are prettified using the defined prefixes in the query
             getUsedPrefixes: tab.yasqe.getPrefixesFromQuery
           },
-          persistentOptions.yasr
+          persistentOptions.yasr,
+          {
+            onQuotaExceeded: yasgui.options.onQuotaExceeded
+          }
         )
       );
       tab.yasr.on("drawn", function(yasr, plugin) {
@@ -106115,13 +108648,10 @@ var Tab = function(yasgui, options) {
         minHeight: 150,
         handles: "s",
         resize: function() {
-          _.debounce(
-            function() {
-              tab.yasqe.setSize("100%", $(this).height());
-              tab.yasqe.refresh();
-            },
-            500
-          );
+          _.debounce(function() {
+            tab.yasqe.setSize("100%", $(this).height());
+            tab.yasqe.refresh();
+          }, 500);
         },
         stop: function() {
           persistentOptions.yasqe.height = $(this).height();
@@ -106176,7 +108706,7 @@ var Tab = function(yasgui, options) {
 
 Tab.prototype = new EventEmitter();
 
-},{"./main.js":232,"./shareLink":233,"./tabPaneMenu.js":236,"./utils.js":238,"events":19,"jquery":26,"underscore":42,"yasgui-utils":48}],236:[function(require,module,exports){
+},{"./main.js":244,"./shareLink":245,"./tabPaneMenu.js":248,"./utils.js":250,"events":22,"jquery":29,"underscore":56,"yasgui-utils":62}],248:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"),
   imgs = require("./imgs.js"),
@@ -106708,7 +109238,7 @@ module.exports = function(yasgui, tab) {
   };
 };
 
-},{"./imgs.js":227,"jquery":26,"selectize":37,"yasgui-utils":48}],237:[function(require,module,exports){
+},{"./imgs.js":239,"jquery":29,"selectize":40,"yasgui-utils":62}],249:[function(require,module,exports){
 var yUtils = require("yasgui-utils"), imgs = require("./imgs.js"), $ = require("jquery");
 module.exports = function(yasgui) {
   var enabled = !!yasgui.options.tracker.googleAnalyticsId;
@@ -106854,7 +109384,7 @@ module.exports = function(yasgui) {
   };
 };
 
-},{"./imgs.js":227,"jquery":26,"yasgui-utils":48}],238:[function(require,module,exports){
+},{"./imgs.js":239,"jquery":29,"yasgui-utils":62}],250:[function(require,module,exports){
 var $ = require("jquery");
 module.exports = {
   escapeHtmlEntities: function(unescapedString) {
@@ -106872,7 +109402,7 @@ module.exports = {
   }
 };
 
-},{"jquery":26}],239:[function(require,module,exports){
+},{"jquery":29}],251:[function(require,module,exports){
 var $ = require("jquery");
 var root = module.exports = require("yasgui-yasqe");
 
@@ -106887,10 +109417,10 @@ root.defaults = $.extend(true, root.defaults, {
   }
 });
 
-},{"jquery":26,"yasgui-yasqe":65}],240:[function(require,module,exports){
+},{"jquery":29,"yasgui-yasqe":79}],252:[function(require,module,exports){
 var $ = require("jquery"), YASGUI = require("./main.js");
 var root = module.exports = require("yasgui-yasr");
 
-},{"./main.js":232,"jquery":26,"yasgui-yasr":212}]},{},[226])(226)
+},{"./main.js":244,"jquery":29,"yasgui-yasr":224}]},{},[238])(238)
 });
 //# sourceMappingURL=yasgui.js.map
