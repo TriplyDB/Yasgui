@@ -90109,25 +90109,25 @@ module.exports={
   "_args": [
     [
       {
-        "raw": "yasgui-utils@1.6.6",
+        "raw": "yasgui-utils@1.6.7",
         "scope": null,
         "escapedName": "yasgui-utils",
         "name": "yasgui-utils",
-        "rawSpec": "1.6.6",
-        "spec": "1.6.6",
+        "rawSpec": "1.6.7",
+        "spec": "1.6.7",
         "type": "version"
       },
       "/home/lrd900/yasgui/yasgui"
     ]
   ],
-  "_from": "yasgui-utils@1.6.6",
-  "_id": "yasgui-utils@1.6.6",
+  "_from": "yasgui-utils@1.6.7",
+  "_id": "yasgui-utils@1.6.7",
   "_inCache": true,
   "_location": "/yasgui-utils",
   "_nodeVersion": "7.10.0",
   "_npmOperationalInternal": {
-    "host": "packages-18-east.internal.npmjs.com",
-    "tmp": "tmp/yasgui-utils-1.6.6.tgz_1495121422173_0.9096360339317471"
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/yasgui-utils-1.6.7.tgz_1495459781202_0.06725964159704745"
   },
   "_npmUser": {
     "name": "laurens.rietveld",
@@ -90136,12 +90136,12 @@ module.exports={
   "_npmVersion": "4.2.0",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "yasgui-utils@1.6.6",
+    "raw": "yasgui-utils@1.6.7",
     "scope": null,
     "escapedName": "yasgui-utils",
     "name": "yasgui-utils",
-    "rawSpec": "1.6.6",
-    "spec": "1.6.6",
+    "rawSpec": "1.6.7",
+    "spec": "1.6.7",
     "type": "version"
   },
   "_requiredBy": [
@@ -90150,10 +90150,10 @@ module.exports={
     "/yasgui-yasqe",
     "/yasgui-yasr"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-utils/-/yasgui-utils-1.6.6.tgz",
-  "_shasum": "90d0756b7c4d6159be601760438d76501f371046",
+  "_resolved": "https://registry.npmjs.org/yasgui-utils/-/yasgui-utils-1.6.7.tgz",
+  "_shasum": "2bcfc5a315688de3ae6057883d9ae342b205f267",
   "_shrinkwrap": null,
-  "_spec": "yasgui-utils@1.6.6",
+  "_spec": "yasgui-utils@1.6.7",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -90168,10 +90168,10 @@ module.exports={
   "devDependencies": {},
   "directories": {},
   "dist": {
-    "shasum": "90d0756b7c4d6159be601760438d76501f371046",
-    "tarball": "https://registry.npmjs.org/yasgui-utils/-/yasgui-utils-1.6.6.tgz"
+    "shasum": "2bcfc5a315688de3ae6057883d9ae342b205f267",
+    "tarball": "https://registry.npmjs.org/yasgui-utils/-/yasgui-utils-1.6.7.tgz"
   },
-  "gitHead": "839f9ee378a7dada8b4a0467f6394fb7f38cc4c9",
+  "gitHead": "6031b1cb732d390b29cd5376dceb9a9d665bbd11",
   "homepage": "https://github.com/YASGUI/Utils",
   "licenses": [
     {
@@ -90194,7 +90194,7 @@ module.exports={
     "url": "git://github.com/YASGUI/Utils.git"
   },
   "scripts": {},
-  "version": "1.6.6"
+  "version": "1.6.7"
 }
 
 },{}],62:[function(require,module,exports){
@@ -90287,9 +90287,9 @@ var root = (module.exports = {
     if (!filter) {
       store.clearAll();
     } else if (typeof filter === "function") {
-      for (var key in store.getAll()) {
-        if (filter(key, root.get(key))) root.remove(key);
-      }
+      store.each(function(value, key) {
+        if (filter(key, value)) root.remove(key);
+      });
     }
   },
   get: function(key) {
@@ -106512,7 +106512,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.6.3",
+  "version": "2.6.4",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -106590,7 +106590,7 @@ module.exports={
     "store": "^2.0.4",
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
-    "yasgui-utils": "^1.6.6",
+    "yasgui-utils": "^1.6.7",
     "yasgui-yasqe": "^2.11.12",
     "yasgui-yasr": "^2.11.3"
   },
@@ -108352,6 +108352,8 @@ module.exports = function(yasguiOptions) {
   }
 
   function initializeWrapper($el, yasgui) {
+    //first clear content. Need this because for a 'retry' we might be adding duplicate els
+    $el.empty();
     //  $el.addClass('hideYasqe');
     $el.addClass("hideTabs").addClass("stories");
     if ($el.attr("data-showQuery") === undefined) {
