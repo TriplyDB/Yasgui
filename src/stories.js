@@ -47,7 +47,7 @@ module.exports = function(yasguiOptions) {
     var parents = $el.parents().toArray();
     parents.push($el[0]);
 
-    parents.reverse().forEach(function(parent) {
+    parents.forEach(function(parent) {
       var $parent = $(parent);
       if ($parent.attr(ATTRS.SPARQL_REF)) info.queryRef = $parent.attr(ATTRS.SPARQL_REF);
       if ($parent.attr(ATTRS.ENDPOINT)) info.yasguiOptions.yasqe.sparql.endpoint = $parent.attr(ATTRS.ENDPOINT);
