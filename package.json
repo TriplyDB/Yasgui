@@ -25,6 +25,7 @@
     "gulp-clean-css": "^2.0.12",
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^4.2.0",
+    "gulp-delete-lines": "0.0.7",
     "gulp-embedlr": "^0.5.2",
     "gulp-filter": "^4.0.0",
     "gulp-git": "^1.10.0",
@@ -80,8 +81,8 @@
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
-    "yasgui-yasqe": "^2.11.12",
-    "yasgui-yasr": "^2.11.3"
+    "yasgui-yasqe": "^2.11.13",
+    "yasgui-yasr": "^2.11.5"
   },
   "browserify-shim": {
     "jQuery": "jquery"
