@@ -96133,52 +96133,29 @@ Trie.prototype = {
 
 },{}],69:[function(require,module,exports){
 module.exports={
-  "_args": [
-    [
-      {
-        "raw": "yasgui-yasqe@2.11.12",
-        "scope": null,
-        "escapedName": "yasgui-yasqe",
-        "name": "yasgui-yasqe",
-        "rawSpec": "2.11.12",
-        "spec": "2.11.12",
-        "type": "version"
-      },
-      "/home/lrd900/yasgui/yasgui"
-    ]
-  ],
-  "_from": "yasgui-yasqe@2.11.12",
-  "_id": "yasgui-yasqe@2.11.12",
-  "_inCache": true,
+  "_from": "yasgui-yasqe@2.11.13",
+  "_id": "yasgui-yasqe@2.11.13",
+  "_inBundle": false,
+  "_integrity": "sha1-jGUpqcStU9IQMIn0QpKm3MQxBec=",
   "_location": "/yasgui-yasqe",
-  "_nodeVersion": "7.10.0",
-  "_npmOperationalInternal": {
-    "host": "packages-18-east.internal.npmjs.com",
-    "tmp": "tmp/yasgui-yasqe-2.11.12.tgz_1495121634600_0.3384001385420561"
-  },
-  "_npmUser": {
-    "name": "laurens.rietveld",
-    "email": "laurens.rietveld@gmail.com"
-  },
-  "_npmVersion": "4.2.0",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "yasgui-yasqe@2.11.12",
-    "scope": null,
-    "escapedName": "yasgui-yasqe",
+    "type": "version",
+    "registry": true,
+    "raw": "yasgui-yasqe@2.11.13",
     "name": "yasgui-yasqe",
-    "rawSpec": "2.11.12",
-    "spec": "2.11.12",
-    "type": "version"
+    "escapedName": "yasgui-yasqe",
+    "rawSpec": "2.11.13",
+    "saveSpec": null,
+    "fetchSpec": "2.11.13"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.12.tgz",
-  "_shasum": "a844f3c82611bcb509509c37209caa9bb5cef7b7",
-  "_shrinkwrap": null,
-  "_spec": "yasgui-yasqe@2.11.12",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.13.tgz",
+  "_shasum": "8c6529a9c4ad53d2103089f44292a6dcc43105e7",
+  "_spec": "yasgui-yasqe@2.11.13",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -96186,6 +96163,7 @@ module.exports={
   "bugs": {
     "url": "https://github.com/YASGUI/YASQE/issues/"
   },
+  "bundleDependencies": false,
   "dependencies": {
     "codemirror": "5.17.0",
     "jquery": "^2.2.4",
@@ -96195,8 +96173,9 @@ module.exports={
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "~1.1.0",
     "vinyl-transform": "1.0.0",
-    "yasgui-utils": "^1.6.6"
+    "yasgui-utils": "^1.6.7"
   },
+  "deprecated": false,
   "description": "Yet Another SPARQL Query Editor",
   "devDependencies": {
     "bootstrap-sass": "^3.3.7",
@@ -96231,12 +96210,6 @@ module.exports={
     "vinyl-transform": "1.0.0",
     "watchify": "^3.7.0"
   },
-  "directories": {},
-  "dist": {
-    "shasum": "a844f3c82611bcb509509c37209caa9bb5cef7b7",
-    "tarball": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.12.tgz"
-  },
-  "gitHead": "f997d59b51f1e05673586677d6f563f3c2e88ce7",
   "homepage": "http://yasqe.yasgui.org",
   "keywords": [
     "JavaScript",
@@ -96249,12 +96222,12 @@ module.exports={
   "main": "src/main.js",
   "maintainers": [
     {
-      "name": "laurens.rietveld",
-      "email": "laurens.rietveld@gmail.com"
+      "name": "Laurens Rietveld",
+      "email": "laurens.rietveld@gmail.com",
+      "url": "http://laurensrietveld.nl"
     }
   ],
   "name": "yasgui-yasqe",
-  "optionalDependencies": {},
   "optionalShim": {
     "codemirror": {
       "require": "codemirror",
@@ -96269,7 +96242,6 @@ module.exports={
       "global": "CodeMirror"
     }
   },
-  "readme": "ERROR: No README data found!",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/YASGUI/YASQE.git"
@@ -96281,7 +96253,7 @@ module.exports={
     "minor": "gulp minor",
     "patch": "gulp patch"
   },
-  "version": "2.11.12"
+  "version": "2.11.13"
 }
 
 },{}],70:[function(require,module,exports){
@@ -103237,52 +103209,29 @@ module.exports = toString;
 
 },{"./_baseToString":129}],212:[function(require,module,exports){
 module.exports={
-  "_args": [
-    [
-      {
-        "raw": "yasgui-yasr@2.11.3",
-        "scope": null,
-        "escapedName": "yasgui-yasr",
-        "name": "yasgui-yasr",
-        "rawSpec": "2.11.3",
-        "spec": "2.11.3",
-        "type": "version"
-      },
-      "/home/lrd900/yasgui/yasgui"
-    ]
-  ],
-  "_from": "yasgui-yasr@2.11.3",
-  "_id": "yasgui-yasr@2.11.3",
-  "_inCache": true,
+  "_from": "yasgui-yasr@2.11.5",
+  "_id": "yasgui-yasr@2.11.5",
+  "_inBundle": false,
+  "_integrity": "sha512-agJr+UdekqzdIV4dSZxKYVDnY0gmyKCt4ot4UdcYDfBU++AudFnAFvo2FVvHBp4UkMAztK97m7XNDE4ZH68lKw==",
   "_location": "/yasgui-yasr",
-  "_nodeVersion": "7.10.0",
-  "_npmOperationalInternal": {
-    "host": "packages-18-east.internal.npmjs.com",
-    "tmp": "tmp/yasgui-yasr-2.11.3.tgz_1495121813958_0.661182492505759"
-  },
-  "_npmUser": {
-    "name": "laurens.rietveld",
-    "email": "laurens.rietveld@gmail.com"
-  },
-  "_npmVersion": "4.2.0",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "yasgui-yasr@2.11.3",
-    "scope": null,
-    "escapedName": "yasgui-yasr",
+    "type": "version",
+    "registry": true,
+    "raw": "yasgui-yasr@2.11.5",
     "name": "yasgui-yasr",
-    "rawSpec": "2.11.3",
-    "spec": "2.11.3",
-    "type": "version"
+    "escapedName": "yasgui-yasr",
+    "rawSpec": "2.11.5",
+    "saveSpec": null,
+    "fetchSpec": "2.11.5"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.11.3.tgz",
-  "_shasum": "c8c65c30c2ed45f753e6ad80cb00b2b144605a97",
-  "_shrinkwrap": null,
-  "_spec": "yasgui-yasr@2.11.3",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.11.5.tgz",
+  "_shasum": "b88ac86123dabdc2b1cf1de05f00be0a824d1b20",
+  "_spec": "yasgui-yasr@2.11.5",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -103298,13 +103247,14 @@ module.exports={
   "bugs": {
     "url": "https://github.com/YASGUI/YASR/issues/"
   },
+  "bundleDependencies": false,
   "dependencies": {
     "browserify-shim": "^3.8.12",
     "codemirror": "^5.17.0",
     "color": "^1.0.3",
     "d3": "^4.1.1",
-    "datatables.net": "^1.10.12",
-    "datatables.net-dt": "^1.10.12",
+    "datatables.net": "^1.10.15",
+    "datatables.net-dt": "^1.10.15",
     "jquery": "^2.2.4",
     "jquery-ui": "1.10.5",
     "leaflet": "^1.0.1",
@@ -103313,8 +103263,9 @@ module.exports={
     "proj4": "^2.4.3",
     "proj4leaflet": "^1.0.1",
     "wicket": "git+https://github.com/arthur-e/Wicket.git",
-    "yasgui-utils": "^1.6.6"
+    "yasgui-utils": "^1.6.7"
   },
+  "deprecated": false,
   "description": "Yet Another SPARQL Resultset GUI",
   "devDependencies": {
     "bootstrap-sass": "^3.3.7",
@@ -103328,6 +103279,7 @@ module.exports={
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^4.2.0",
     "gulp-cssimport": "^3.1.0",
+    "gulp-delete-lines": "0.0.7",
     "gulp-embedlr": "^0.5.2",
     "gulp-filter": "^4.0.0",
     "gulp-git": "^1.10.0",
@@ -103351,12 +103303,6 @@ module.exports={
     "watchify": "^3.7.0",
     "yasgui-yasqe": "^2.10.1"
   },
-  "directories": {},
-  "dist": {
-    "shasum": "c8c65c30c2ed45f753e6ad80cb00b2b144605a97",
-    "tarball": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.11.3.tgz"
-  },
-  "gitHead": "e7a1258ae2cf7c801ba921845720850783324f97",
   "homepage": "http://yasr.yasgui.org",
   "keywords": [
     "JavaScript",
@@ -103369,12 +103315,12 @@ module.exports={
   "main": "src/main.js",
   "maintainers": [
     {
-      "name": "laurens.rietveld",
-      "email": "laurens.rietveld@gmail.com"
+      "name": "Laurens Rietveld",
+      "email": "laurens.rietveld@gmail.com",
+      "url": "http://laurensrietveld.nl"
     }
   ],
   "name": "yasgui-yasr",
-  "optionalDependencies": {},
   "optionalShim": {
     "codemirror": {
       "require": "codemirror",
@@ -103405,7 +103351,6 @@ module.exports={
       "global": "jQuery"
     }
   },
-  "readme": "ERROR: No README data found!",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/YASGUI/YASR.git"
@@ -103417,7 +103362,7 @@ module.exports={
     "minor": "gulp minor",
     "patch": "gulp patch"
   },
-  "version": "2.11.3"
+  "version": "2.11.5"
 }
 
 },{}],213:[function(require,module,exports){
@@ -106512,7 +106457,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.6.5",
+  "version": "2.6.6",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -106536,6 +106481,7 @@ module.exports={
     "gulp-clean-css": "^2.0.12",
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^4.2.0",
+    "gulp-delete-lines": "0.0.7",
     "gulp-embedlr": "^0.5.2",
     "gulp-filter": "^4.0.0",
     "gulp-git": "^1.10.0",
@@ -106591,8 +106537,8 @@ module.exports={
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
-    "yasgui-yasqe": "^2.11.12",
-    "yasgui-yasr": "^2.11.3"
+    "yasgui-yasqe": "^2.11.13",
+    "yasgui-yasr": "^2.11.5"
   },
   "browserify-shim": {
     "jQuery": "jquery"
