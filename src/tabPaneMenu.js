@@ -145,7 +145,7 @@ module.exports = function(yasgui, tab) {
       class: "col-md-4",
       role: "group"
     })
-      .append($("<label>").text("SELECT").append($acceptSelect))
+      .append($("<label>").text("Ask / Select").append($acceptSelect))
       .appendTo($acceptRow);
     $acceptSelect.selectize();
 
@@ -196,7 +196,7 @@ module.exports = function(yasgui, tab) {
       class: "col-md-4",
       role: "group"
     })
-      .append($("<label>").text("Graph").append($acceptGraph))
+      .append($("<label>").text("Construct / Describe").append($acceptGraph))
       .appendTo($acceptRow);
     $acceptGraph.selectize();
 
