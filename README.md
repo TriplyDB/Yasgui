@@ -44,7 +44,7 @@ publishers.  Here is a partial list:
     ([demo](http://demo.seco.tkk.fi/visu/))
   * [**Brwsr**](https://github.com/Data2Semantics/brwsr), Linked Data
     browser
-  * [**Trifid-LD**](https://github.com/zazukoians/trifid-ld)
+  * [**Trifid**](https://github.com/zazuko/trifid)
     light-weight Linked Data Server and Proxy
   
 ### Data Publishers
