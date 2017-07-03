@@ -5129,6 +5129,10 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     -ms-touch-action: pinch-zoom; }
   .yasgui .leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
     touch-action: none; }
+  .yasgui .leaflet-container {
+    -webkit-tap-highlight-color: transparent; }
+  .yasgui .leaflet-container a {
+    -webkit-tap-highlight-color: rgba(51, 181, 229, 0.4); }
   .yasgui .leaflet-tile {
     -webkit-filter: inherit;
             filter: inherit;
@@ -5299,16 +5303,18 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     width: 30px;
     height: 30px;
     line-height: 30px; }
+  .yasgui .leaflet-touch .leaflet-bar a:first-child {
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px; }
+  .yasgui .leaflet-touch .leaflet-bar a:last-child {
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px; }
   .yasgui .leaflet-control-zoom-in,
   .yasgui .leaflet-control-zoom-out {
     font: bold 18px 'Lucida Console', Monaco, monospace;
     text-indent: 1px; }
-  .yasgui .leaflet-control-zoom-out {
-    font-size: 20px; }
-  .yasgui .leaflet-touch .leaflet-control-zoom-in {
+  .yasgui .leaflet-touch .leaflet-control-zoom-in, .yasgui .leaflet-touch .leaflet-control-zoom-out {
     font-size: 22px; }
-  .yasgui .leaflet-touch .leaflet-control-zoom-out {
-    font-size: 24px; }
   .yasgui .leaflet-control-layers {
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
     background: #fff;
