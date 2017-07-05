@@ -106488,7 +106488,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.6.11",
+  "version": "2.6.12",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -106619,6 +106619,15 @@ module.exports = {
   onQuotaExceeded: function(e) {
     //fail silently
     console.warn("Could not store in localstorage. Skipping..", e);
+  },
+  //this endpoint is used when adding a new tab. If unset, we'll take the endpoint of the current tab
+  endpoint: null,
+  //An undocumented easter-egg ;). Just wanted this to be able to swap the endpoint input for another widget
+  endpointInput: function(yasgui, yasqeOpts, $, $controlBar, onChange) {
+    return $("<div>bla</div>").appendTo($controlBar).endpointCombi(yasgui, {
+      value: yasqeOpts.sparql.endpoint,
+      onChange: onChange
+    });
   },
   yasqe: $.extend(
     true,
@@ -107824,8 +107833,8 @@ var YASGUI = function(parent, options) {
     if (!name) name = getTabName();
 
     //Initialize new tab with endpoint from currently selected tab (if there is one)
-    var endpoint = null;
-    if (yasgui.current() && yasgui.current().getEndpoint()) {
+    var endpoint = yasgui.options.endpoint;
+    if (!endpoint && yasgui.current() && yasgui.current().getEndpoint()) {
       endpoint = yasgui.current().getEndpoint();
     }
 
@@ -108417,7 +108426,6 @@ var Tab = function(yasgui, options) {
     class: "controlbar"
   }).appendTo($paneContent);
   var $paneMenu = menu.initWrapper().appendTo($pane);
-  var $endpointInput;
   var addControlBar = function() {
     $("<button>", {
       type: "button",
@@ -108455,14 +108463,14 @@ var Tab = function(yasgui, options) {
       .appendTo($controlBar);
 
     //add endpoint text input
-    $endpointInput = $("<select>").appendTo($controlBar).endpointCombi(yasgui, {
-      value: persistentOptions.yasqe.sparql.endpoint,
-      onChange: function(val) {
+    if (yasgui.options.endpointInput && typeof yasgui.options.endpointInput === 'function') {
+      yasgui.options.endpointInput(yasgui, persistentOptions.yasqe,$, $controlBar, function(val) {
         persistentOptions.yasqe.sparql.endpoint = val;
         tab.refreshYasqe();
         yasgui.store();
-      }
-    });
+      });
+    }
+
   };
 
   var yasqeContainer = $("<div>", {
