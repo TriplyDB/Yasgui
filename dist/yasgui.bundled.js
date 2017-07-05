@@ -103204,28 +103204,29 @@ RegExp.escape= function(s) {
 
 },{"jquery":29}],211:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasr@^2.11.7",
-  "_id": "yasgui-yasr@2.11.7",
+  "_from": "yasgui-yasr@latest",
+  "_id": "yasgui-yasr@2.11.8",
   "_inBundle": false,
-  "_integrity": "sha512-XWEUUE6I+1P1K6M6bkTqGerujzScnONYvAZj5eNRBsHpcfD7y5WeGHUVxncjMqHO6HGAq4Uq1jeJfo0uKt2+Dw==",
+  "_integrity": "sha512-vx40XRhzfCswW2UgYzXyDREAJ7xVvvcc7DMs96uTWUhdexa+HG8EGLG1/2HklLOnHxhX8Tra1QRdmdBDGF80xw==",
   "_location": "/yasgui-yasr",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "tag",
     "registry": true,
-    "raw": "yasgui-yasr@^2.11.7",
+    "raw": "yasgui-yasr@latest",
     "name": "yasgui-yasr",
     "escapedName": "yasgui-yasr",
-    "rawSpec": "^2.11.7",
+    "rawSpec": "latest",
     "saveSpec": null,
-    "fetchSpec": "^2.11.7"
+    "fetchSpec": "latest"
   },
   "_requiredBy": [
+    "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.11.7.tgz",
-  "_shasum": "40d27b63bf6473d1d4e5bc3371a5be105371e948",
-  "_spec": "yasgui-yasr@^2.11.7",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.11.8.tgz",
+  "_shasum": "c0dd6b93fe36b077e903e8af05eebbc0608ea4e0",
+  "_spec": "yasgui-yasr@latest",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -103356,7 +103357,7 @@ module.exports={
     "minor": "gulp minor",
     "patch": "gulp patch"
   },
-  "version": "2.11.7"
+  "version": "2.11.8"
 }
 
 },{}],212:[function(require,module,exports){
@@ -104274,6 +104275,10 @@ var root = (module.exports = function(yasr) {
   var plugin = {};
   var options = $.extend(true, {}, root.defaults);
   var defaultColor = Color(options.defaultColor);
+  var defaultStyle = options.defaultStyle;
+
+  var cm = null;
+
   var getOption = function(key) {
     // if (!options[key]) return {};
     if (options[key]) {
@@ -104319,7 +104324,16 @@ var root = (module.exports = function(yasr) {
     var mapWrapper = $('<div class="leaflet"/>').appendTo(yasr.resultsContainer);
     var mapConstructor = options.map;
     if (!mapConstructor) mapConstructor = options.maps[options.defaultMap || "osm"];
-    var map = new _L.Map(mapWrapper.get()[0], mapConstructor(yasr, L));
+    if (!mapConstructor) {
+      console.error('Could not find leaflet configuration for map ' + options.defaultMap);
+      return;
+    }
+    var map = new L.Map(mapWrapper.get()[0], mapConstructor(yasr, L));
+
+    var mapLayers = options.defaultOverlay;
+    if(mapLayers) L.control.layers(null, mapLayers).addTo(map);
+
+
     var features = [];
     var bindings = yasr.results.getBindings();
     var hasLabel = false;
@@ -104328,17 +104342,19 @@ var root = (module.exports = function(yasr) {
 
       for (var i = 0; i < bindings.length; i++) {
         var binding = bindings[i];
-
         if (!binding[plotVariable].value) continue;
+
         var getColor = function() {
           var colorBinding = binding[plotVariable + "Color"];
           if (colorBinding) return Color(colorBinding.value);
           return defaultColor;
         };
+
         var colors = {
           fill: getColor()
         };
         colors.border = colors.fill.saturate(0.2);
+
         var wicket = new Wkt.Wkt();
         var mySVGIcon = _L.divIcon({
           iconSize: [25, 41],
@@ -104347,7 +104363,10 @@ var root = (module.exports = function(yasr) {
           popupAnchor: [0, -41],
           html: getSvgMarker(colors)
         });
-        var feature = wicket.read(binding[plotVariable].value).toObject({ icon: mySVGIcon, color: colors.fill });
+
+
+        var style = $.extend(true, defaultStyle, { icon: mySVGIcon, color: colors.fill})
+        var feature = wicket.read(binding[plotVariable].value).toObject(style);
 
         var popupContent = options.formatPopup && options.formatPopup(yasr, L, plotVariable, binding);
         if (popupContent) {
@@ -104488,6 +104507,19 @@ var maps = {
         })
       ]
     };
+  },
+  /* free only up to 25'000 megapixels/year see https://shop.swisstopo.admin.ch/en/products/geoservice/swisstopo_geoservices/WMTS_info for further informations */
+  chmaps: function(yasr, L) {
+    var url = 'https://wmts10.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg';
+    var stopoAttr = 'Map data &copy; <a href="https://www.swisstopo.admin.ch/">swisstopo</a> , ';
+    var tilelayer = new L.tileLayer(url,{id: 'stopo.light', attribution: stopoAttr, minZoom: 4, maxZoom: 19});
+
+    return {
+      layers: [tilelayer] ,
+      crs: L.CRS.EPSG3857,
+          continuousWorld: true,
+          worldCopyJump: false
+    };
   }
 };
 root.defaults = {
@@ -104509,6 +104541,8 @@ root.defaults = {
   },
   disabledTitle: "Query for geo variables in WKT format to plot them on a map",
   defaultColor: "#2e6c97",
+  defaultStyle: {},
+  defaultOverlay: null,
   defaultMap: "osm" //or nlmaps
 };
 
@@ -106454,7 +106488,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.6.10",
+  "version": "2.6.11",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -106535,7 +106569,7 @@ module.exports={
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
     "yasgui-yasqe": "^2.11.14",
-    "yasgui-yasr": "^2.11.7"
+    "yasgui-yasr": "^2.11.8"
   },
   "browserify-shim": {
     "jQuery": "jquery"
