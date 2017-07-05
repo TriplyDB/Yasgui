@@ -325,8 +325,8 @@ var YASGUI = function(parent, options) {
     if (!name) name = getTabName();
 
     //Initialize new tab with endpoint from currently selected tab (if there is one)
-    var endpoint = null;
-    if (yasgui.current() && yasgui.current().getEndpoint()) {
+    var endpoint = yasgui.options.endpoint;
+    if (!endpoint && yasgui.current() && yasgui.current().getEndpoint()) {
       endpoint = yasgui.current().getEndpoint();
     }
 

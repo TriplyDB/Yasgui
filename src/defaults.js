@@ -19,6 +19,8 @@ module.exports = {
     //fail silently
     console.warn("Could not store in localstorage. Skipping..", e);
   },
+  //this endpoint is used when adding a new tab. If unset, we'll take the endpoint of the current tab
+  endpoint: null,
   yasqe: $.extend(
     true,
     {},

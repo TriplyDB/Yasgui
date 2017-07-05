@@ -121,6 +121,10 @@
 				<p>Allow resizing of the YASQE editor</p>
 			</div>
       <div class="doc">
+				<code>endpoint: string (default: null)</code>
+				<p>If unset, a new tab will take the endpoint selected in the last tab. If set, a new tab will always use this specific endpoint</p>
+			</div>
+      <div class="doc">
         <code>catalogueEndpoints: array|function(instance:yasgui, callback)</code>
         <p>The endpoints used as suggestions in the endpoint autocompletion field. This value is either an array of
           objects (in the form <code>{endpoint: 'http://endpoint', title: 'some short title. optional.'}</code>), or a function that returns this array via a callback function.
