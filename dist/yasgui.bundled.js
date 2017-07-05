@@ -103204,29 +103204,29 @@ RegExp.escape= function(s) {
 
 },{"jquery":29}],211:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasr@latest",
-  "_id": "yasgui-yasr@2.11.8",
+  "_from": "yasgui-yasr@2.11.9",
+  "_id": "yasgui-yasr@2.11.9",
   "_inBundle": false,
-  "_integrity": "sha512-vx40XRhzfCswW2UgYzXyDREAJ7xVvvcc7DMs96uTWUhdexa+HG8EGLG1/2HklLOnHxhX8Tra1QRdmdBDGF80xw==",
+  "_integrity": "sha512-zYqkpZDyhMkc8QZavSt1Ji5D9tjFZ5Qk1gsXpk/1OHWl/exC69P5+dIXLrlgFPdpmpriDv1qww3JglXQ9P66Uw==",
   "_location": "/yasgui-yasr",
   "_phantomChildren": {},
   "_requested": {
-    "type": "tag",
+    "type": "version",
     "registry": true,
-    "raw": "yasgui-yasr@latest",
+    "raw": "yasgui-yasr@2.11.9",
     "name": "yasgui-yasr",
     "escapedName": "yasgui-yasr",
-    "rawSpec": "latest",
+    "rawSpec": "2.11.9",
     "saveSpec": null,
-    "fetchSpec": "latest"
+    "fetchSpec": "2.11.9"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.11.8.tgz",
-  "_shasum": "c0dd6b93fe36b077e903e8af05eebbc0608ea4e0",
-  "_spec": "yasgui-yasr@latest",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.11.9.tgz",
+  "_shasum": "fc0f41aa88c821ad9a2dd014e9001a5b1d166840",
+  "_spec": "yasgui-yasr@2.11.9",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -103357,7 +103357,7 @@ module.exports={
     "minor": "gulp minor",
     "patch": "gulp patch"
   },
-  "version": "2.11.8"
+  "version": "2.11.9"
 }
 
 },{}],212:[function(require,module,exports){
@@ -104328,10 +104328,10 @@ var root = (module.exports = function(yasr) {
       console.error('Could not find leaflet configuration for map ' + options.defaultMap);
       return;
     }
-    var map = new L.Map(mapWrapper.get()[0], mapConstructor(yasr, L));
+    var map = new _L.Map(mapWrapper.get()[0], mapConstructor(yasr, L));
 
     var mapLayers = options.defaultOverlay;
-    if(mapLayers) L.control.layers(null, mapLayers).addTo(map);
+    if(mapLayers) _L.control.layers(null, mapLayers).addTo(map);
 
 
     var features = [];
@@ -106488,7 +106488,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.6.12",
+  "version": "2.6.13",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -106569,7 +106569,7 @@ module.exports={
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
     "yasgui-yasqe": "^2.11.14",
-    "yasgui-yasr": "^2.11.8"
+    "yasgui-yasr": "^2.11.9"
   },
   "browserify-shim": {
     "jQuery": "jquery"
