@@ -106488,7 +106488,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.6.13",
+  "version": "2.6.14",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -106624,7 +106624,7 @@ module.exports = {
   endpoint: null,
   //An undocumented easter-egg ;). Just wanted this to be able to swap the endpoint input for another widget
   endpointInput: function(yasgui, yasqeOpts, $, $controlBar, onChange) {
-    return $("<div>bla</div>").appendTo($controlBar).endpointCombi(yasgui, {
+    return $("<select>").appendTo($controlBar).endpointCombi(yasgui, {
       value: yasqeOpts.sparql.endpoint,
       onChange: onChange
     });
