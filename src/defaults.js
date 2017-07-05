@@ -23,7 +23,7 @@ module.exports = {
   endpoint: null,
   //An undocumented easter-egg ;). Just wanted this to be able to swap the endpoint input for another widget
   endpointInput: function(yasgui, yasqeOpts, $, $controlBar, onChange) {
-    return $("<div>bla</div>").appendTo($controlBar).endpointCombi(yasgui, {
+    return $("<select>").appendTo($controlBar).endpointCombi(yasgui, {
       value: yasqeOpts.sparql.endpoint,
       onChange: onChange
     });
