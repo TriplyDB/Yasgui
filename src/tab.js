@@ -47,7 +47,6 @@ var Tab = function(yasgui, options) {
     class: "controlbar"
   }).appendTo($paneContent);
   var $paneMenu = menu.initWrapper().appendTo($pane);
-  var $endpointInput;
   var addControlBar = function() {
     $("<button>", {
       type: "button",
@@ -85,14 +84,14 @@ var Tab = function(yasgui, options) {
       .appendTo($controlBar);
 
     //add endpoint text input
-    $endpointInput = $("<select>").appendTo($controlBar).endpointCombi(yasgui, {
-      value: persistentOptions.yasqe.sparql.endpoint,
-      onChange: function(val) {
+    if (yasgui.options.endpointInput && typeof yasgui.options.endpointInput === 'function') {
+      yasgui.options.endpointInput(yasgui, persistentOptions.yasqe,$, $controlBar, function(val) {
         persistentOptions.yasqe.sparql.endpoint = val;
         tab.refreshYasqe();
         yasgui.store();
-      }
-    });
+      });
+    }
+
   };
 
   var yasqeContainer = $("<div>", {

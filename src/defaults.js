@@ -21,6 +21,13 @@ module.exports = {
   },
   //this endpoint is used when adding a new tab. If unset, we'll take the endpoint of the current tab
   endpoint: null,
+  //An undocumented easter-egg ;). Just wanted this to be able to swap the endpoint input for another widget
+  endpointInput: function(yasgui, yasqeOpts, $, $controlBar, onChange) {
+    return $("<div>bla</div>").appendTo($controlBar).endpointCombi(yasgui, {
+      value: yasqeOpts.sparql.endpoint,
+      onChange: onChange
+    });
+  },
   yasqe: $.extend(
     true,
     {},
