@@ -106488,7 +106488,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.6.14",
+  "version": "2.7.0",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -107624,14 +107624,19 @@ var YASGUI = function(parent, options) {
       storeRename(tabEl);
     });
   };
-  var storeRename = function($liEl) {
+  var storeRename = function($liEl, newTitle) {
     var tabId = $liEl.find('a[role="tab"]').attr("aria-controls");
-    var val = $liEl.find("input").val();
-    $liEl.find("span").text($liEl.find("input").val());
+    var val = newTitle || $liEl.find("input").val();
+    $liEl.find("span").text(val);
     persistentOptions.tabs[tabId].name = val;
     yasgui.store();
     $liEl.removeClass("rename");
   };
+
+  var renameTab = function(id, newTitle) {
+    storeRename($tabsParent.find('a[role="tab"][aria-controls=' + id + ']').parent(), newTitle)
+  }
+  yasgui.renameTab = renameTab;
   yasgui.init = function() {
     //tab panel contains tabs and panes
     $tabPanel = $("<div>", {
@@ -108559,6 +108564,12 @@ var Tab = function(yasgui, options) {
   tab.query = function(callbackOrConfig) {
     tab.yasqe.query(callbackOrConfig);
   };
+  tab.close = function() {
+    yasgui.closeTab(id)
+  }
+  tab.rename = function(newTitle) {
+    yasgui.renameTab(id, newTitle)
+  }
 
   var initYasqe = function() {
     if (!tab.yasqe) {
