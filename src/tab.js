@@ -180,6 +180,12 @@ var Tab = function(yasgui, options) {
   tab.query = function(callbackOrConfig) {
     tab.yasqe.query(callbackOrConfig);
   };
+  tab.close = function() {
+    yasgui.closeTab(id)
+  }
+  tab.rename = function(newTitle) {
+    yasgui.renameTab(id, newTitle)
+  }
 
   var initYasqe = function() {
     if (!tab.yasqe) {
