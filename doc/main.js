@@ -6,24 +6,25 @@ $(document).ready(function() {
   //get the latest hosted version
   if ($("#cdnDownload").length > 0) {
     var name = "yasgui";
+    var npmName = name;
     //only draw when we've got some place to print this info (might not be on all pages where we include this js file)
-    $.get("http://api.jsdelivr.com/v1/jsdelivr/libraries?name=" + name + "&fields=lastversion", function(data) {
-      if (data.length > 0) {
-        var version = data[0].lastversion;
+    $.get("https://data.jsdelivr.com/v1/package/npm/" + npmName, function(data) {
+      var version = data.tags.latest;
+      if (version) {
         $("#" + name + "Css").text(
-          "<link href='//cdn.jsdelivr.net/" +
-            name +
-            "/" +
+          "<link href='//cdn.jsdelivr.net/npm/" +
+            npmName +
+            "@" +
             version +
-            "/" +
+            "/dist/" +
             name +
             ".min.css' rel='stylesheet' type='text/css'/>"
         );
         $("#" + name + "JsBundled").text(
-          "<script src='//cdn.jsdelivr.net/" + name + "/" + version + "/" + name + ".bundled.min.js'></script" + ">"
+          "<script src='//cdn.jsdelivr.net/npm/" + npmName + "@" + version + "/dist/" + name + ".bundled.min.js'></script" + ">"
         );
         $("#" + name + "Js").text(
-          "<script src='//cdn.jsdelivr.net/" + name + "/" + version + "/" + name + ".min.js'></script" + ">"
+          "<script src='//cdn.jsdelivr.net/npm/" + npmName + "@" + version + "/dist/" + name + ".min.js'></script" + ">"
         );
       } else {
         console.log("failed accessing jsdelivr api");
