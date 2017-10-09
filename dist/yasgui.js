@@ -115653,7 +115653,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -117496,7 +117496,7 @@ module.exports = function(yasguiOptions) {
     );
   }
   function cleanConfig(config, originalUrl) {
-    if (config.yasqe.sparql && config.yasqe.sparql.endpoint && config.yasqe.sparql.endpoint.indexOf("http") !== 0) {
+    if (config && config.yasqe && config.yasqe.sparql && config.yasqe.sparql.endpoint && config.yasqe.sparql.endpoint.indexOf("http") !== 0) {
       //hmm, a relative path, do some magic to rewrite the endpoint
       var parsedOriginalUrl = urlParse(originalUrl);
       var parsedEndpointUrl = urlParse(config.yasqe.sparql.endpoint);
