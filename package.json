@@ -1,7 +1,7 @@
 {
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -12,7 +12,7 @@
     "patch": "gulp patch",
     "minor": "gulp minor",
     "major": "gulp major",
-    "update-interactive": "npm-check --skip-unused -u"
+    "upgrade-interactive": "npm-check --skip-unused -u"
   },
   "devDependencies": {
     "brfs": "^1.4.3",
@@ -83,8 +83,8 @@
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
-    "yasgui-yasqe": "^2.11.14",
-    "yasgui-yasr": "^2.11.9"
+    "yasgui-yasqe": "^2.11.15",
+    "yasgui-yasr": "^2.12.1"
   },
   "browserify-shim": {
     "jQuery": "jquery"
