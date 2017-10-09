@@ -11,7 +11,8 @@
     "build": "gulp",
     "patch": "gulp patch",
     "minor": "gulp minor",
-    "major": "gulp major"
+    "major": "gulp major",
+    "update-interactive": "npm-check --skip-unused -u"
   },
   "devDependencies": {
     "brfs": "^1.4.3",
@@ -75,6 +76,7 @@
     "jquery-ui": "1.10.5",
     "microplugin": "0.0.3",
     "minimist": "^1.2.0",
+    "npm-check": "^5.4.5",
     "promise-polyfill": "^6.0.2",
     "selectize": "^0.12.4",
     "store": "^2.0.4",
