@@ -147,7 +147,7 @@ module.exports = function(yasguiOptions) {
     );
   }
   function cleanConfig(config, originalUrl) {
-    if (config.yasqe.sparql && config.yasqe.sparql.endpoint && config.yasqe.sparql.endpoint.indexOf("http") !== 0) {
+    if (config && config.yasqe && config.yasqe.sparql && config.yasqe.sparql.endpoint && config.yasqe.sparql.endpoint.indexOf("http") !== 0) {
       //hmm, a relative path, do some magic to rewrite the endpoint
       var parsedOriginalUrl = urlParse(originalUrl);
       var parsedEndpointUrl = urlParse(config.yasqe.sparql.endpoint);
