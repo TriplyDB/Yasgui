@@ -112322,29 +112322,29 @@ RegExp.escape= function(s) {
 
 },{"jquery":72}],283:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasr@2.12.1",
-  "_id": "yasgui-yasr@2.12.1",
+  "_from": "yasgui-yasr@2.12.2",
+  "_id": "yasgui-yasr@2.12.2",
   "_inBundle": false,
-  "_integrity": "sha512-DrAywQKgWz+H4Kr/pfg3wKP8g6Xi4imh+EJ7maKtWVztqnzB4g7Ia5JmI75+CbFDVdkrl1B0Xw9ftrZx6EwKdA==",
+  "_integrity": "sha512-KnZ/dSySwXkOs9mZdhgWh97X0uhevxTlgzEfbUdO52u4kVMmgmWlmkUfokrhg69ja5HVGBFHKXiJBnk5cwPdwQ==",
   "_location": "/yasgui-yasr",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasr@2.12.1",
+    "raw": "yasgui-yasr@2.12.2",
     "name": "yasgui-yasr",
     "escapedName": "yasgui-yasr",
-    "rawSpec": "2.12.1",
+    "rawSpec": "2.12.2",
     "saveSpec": null,
-    "fetchSpec": "2.12.1"
+    "fetchSpec": "2.12.2"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.1.tgz",
-  "_shasum": "b748f470dacf7b7fae5732cbd04e279afd3d43e0",
-  "_spec": "yasgui-yasr@2.12.1",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.2.tgz",
+  "_shasum": "39652b927e4b15149bbd9ffa987b1a87a407ee7e",
+  "_spec": "yasgui-yasr@2.12.2",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -112373,6 +112373,7 @@ module.exports={
     "jquery-ui": "1.10.5",
     "leaflet": "1.0.3",
     "lodash": "^4.16.1",
+    "npm-check": "^5.4.5",
     "pivottable": "^2.1.0",
     "proj4": "^2.4.3",
     "proj4leaflet": "^1.0.1",
@@ -112474,9 +112475,10 @@ module.exports={
     "dev": "gulp serve",
     "major": "gulp major",
     "minor": "gulp minor",
-    "patch": "gulp patch"
+    "patch": "gulp patch",
+    "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.12.1"
+  "version": "2.12.2"
 }
 
 },{}],284:[function(require,module,exports){
@@ -113632,7 +113634,7 @@ var maps = {
     var protocol = window.location.protocol.indexOf("http") === 0 ? "//" : "http://";
     return {
       layers: [
-        new L.tileLayer(protocol + "{s}.tile.osm.org/{z}/{x}/{y}.png", {
+        new L.tileLayer(protocol + "tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         })
       ]
@@ -115653,7 +115655,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.2",
+  "version": "2.7.3",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -115736,7 +115738,7 @@ module.exports={
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
     "yasgui-yasqe": "^2.11.15",
-    "yasgui-yasr": "^2.12.1"
+    "yasgui-yasr": "^2.12.2"
   },
   "browserify-shim": {
     "jQuery": "jquery"
