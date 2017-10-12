@@ -186,7 +186,12 @@ var Tab = function(yasgui, options) {
   tab.rename = function(newTitle) {
     yasgui.renameTab(id, newTitle)
   }
+  tab.setQuery = function(newQuery) {
+    persistentOptions.yasqe.value = newQuery;
+    tab.yasqe.setValue(newQuery);
+    yasgui.store();
 
+  }
   var initYasqe = function() {
     if (!tab.yasqe) {
       addControlBar();
