@@ -108776,29 +108776,29 @@ Trie.prototype = {
 
 },{}],264:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasqe@2.11.15",
-  "_id": "yasgui-yasqe@2.11.15",
+  "_from": "yasgui-yasqe@2.11.16",
+  "_id": "yasgui-yasqe@2.11.16",
   "_inBundle": false,
-  "_integrity": "sha512-a0B7wUKodfK8u35bf7GgnM6Lh5qXJBBSvT3T5KmJoZN3QFi3mlDoqxHlb5zKKsik+2tBVYGt6Uo0WNJjC18HaQ==",
+  "_integrity": "sha512-9UX51ylFqDydEsn5nBZEaBruYkHv/ASqortVpqxqHAGYakPeU4FZEN0TNAkfibIZoKt5urv1tPHNfy58DlQIDA==",
   "_location": "/yasgui-yasqe",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasqe@2.11.15",
+    "raw": "yasgui-yasqe@2.11.16",
     "name": "yasgui-yasqe",
     "escapedName": "yasgui-yasqe",
-    "rawSpec": "2.11.15",
+    "rawSpec": "2.11.16",
     "saveSpec": null,
-    "fetchSpec": "2.11.15"
+    "fetchSpec": "2.11.16"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.15.tgz",
-  "_shasum": "9024befc34cd4d54d74de826603e9c2f7efc112d",
-  "_spec": "yasgui-yasqe@2.11.15",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.16.tgz",
+  "_shasum": "01891b77079a02b516136775306deb271b0fce8c",
+  "_spec": "yasgui-yasqe@2.11.16",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -108889,9 +108889,10 @@ module.exports={
     "dev": "gulp serve",
     "major": "gulp major",
     "minor": "gulp minor",
-    "patch": "gulp patch"
+    "patch": "gulp patch",
+    "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.11.15"
+  "version": "2.11.16"
 }
 
 },{}],265:[function(require,module,exports){
@@ -110606,7 +110607,7 @@ root.version = {
 var CodeMirror = require("codemirror"), tokenUtils = require("./tokenUtils.js");
 
 ("use strict");
-var lookFor = "PREFIX";
+var lookFor = "PREFIX ";
 module.exports = {
   findFirstPrefixLine: function(cm) {
     var lastLine = cm.lastLine();
@@ -115658,7 +115659,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.4",
+  "version": "2.7.5",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -115740,7 +115741,7 @@ module.exports={
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
-    "yasgui-yasqe": "^2.11.15",
+    "yasgui-yasqe": "^2.11.16",
     "yasgui-yasr": "^2.12.3"
   },
   "browserify-shim": {
@@ -117742,7 +117743,12 @@ var Tab = function(yasgui, options) {
   tab.rename = function(newTitle) {
     yasgui.renameTab(id, newTitle)
   }
+  tab.setQuery = function(newQuery) {
+    persistentOptions.yasqe.value = newQuery;
+    tab.yasqe.setValue(newQuery);
+    yasgui.store();
 
+  }
   var initYasqe = function() {
     if (!tab.yasqe) {
       addControlBar();
