@@ -112323,29 +112323,29 @@ RegExp.escape= function(s) {
 
 },{"jquery":72}],283:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasr@2.12.3",
-  "_id": "yasgui-yasr@2.12.3",
+  "_from": "yasgui-yasr@2.12.4",
+  "_id": "yasgui-yasr@2.12.4",
   "_inBundle": false,
-  "_integrity": "sha512-qgkPL6JFrjF8lsAF9lHdaTNKab/ir4bTUzBKIGEPVYkiIaKPfCmrl1QQiLLnnAqfWEzvYIOxzVJdVPX+jgqXcQ==",
+  "_integrity": "sha512-cGoI5eDUT5EOBJd01jJFotUqz5XpZ2OU+m1Z+NrweGiX+I/W6Q1DWxM4KZ2BoZzWGkJlRFxRjSDcnbmDD39wcw==",
   "_location": "/yasgui-yasr",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasr@2.12.3",
+    "raw": "yasgui-yasr@2.12.4",
     "name": "yasgui-yasr",
     "escapedName": "yasgui-yasr",
-    "rawSpec": "2.12.3",
+    "rawSpec": "2.12.4",
     "saveSpec": null,
-    "fetchSpec": "2.12.3"
+    "fetchSpec": "2.12.4"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.3.tgz",
-  "_shasum": "4518836d74aa6b7f14e98054028d2f04337bb8e5",
-  "_spec": "yasgui-yasr@2.12.3",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.4.tgz",
+  "_shasum": "f8b6ed1e8fa93b57c69419aee16724fccc5befd9",
+  "_spec": "yasgui-yasr@2.12.4",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -112479,7 +112479,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.12.3"
+  "version": "2.12.4"
 }
 
 },{}],284:[function(require,module,exports){
@@ -113482,13 +113482,10 @@ var root = (module.exports = function(yasr) {
             var scaleSettings = colorVal.split(',');
             if (scaleSettings.length === 2 && colorScales[scaleSettings[0]] && scaleSettings[1]) {
               var scaleType = scaleSettings[0];
-              console.log(scaleType)
               var scaleVal = +scaleSettings[1];
-              // console.log({scaleVal})
               if (scaleVal >= 0 && scaleVal <= 1) {
                 var scalesForType = colormap({colormap: scaleType});
                 var index = Math.max(Math.round(scaleVal * scalesForType.length) -1, 0);
-                // console.log(index)
                 return LibColor(scalesForType[index]);
               }
             }
@@ -115659,7 +115656,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.5",
+  "version": "2.7.6",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -115742,7 +115739,7 @@ module.exports={
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
     "yasgui-yasqe": "^2.11.16",
-    "yasgui-yasr": "^2.12.3"
+    "yasgui-yasr": "^2.12.4"
   },
   "browserify-shim": {
     "jQuery": "jquery"
