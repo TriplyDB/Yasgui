@@ -1,7 +1,7 @@
 {
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.5",
+  "version": "2.7.6",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -84,7 +84,7 @@
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
     "yasgui-yasqe": "^2.11.16",
-    "yasgui-yasr": "^2.12.3"
+    "yasgui-yasr": "^2.12.4"
   },
   "browserify-shim": {
     "jQuery": "jquery"
