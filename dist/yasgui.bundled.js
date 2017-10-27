@@ -112323,29 +112323,29 @@ RegExp.escape= function(s) {
 
 },{"jquery":72}],283:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasr@2.12.4",
-  "_id": "yasgui-yasr@2.12.4",
+  "_from": "yasgui-yasr@2.12.5",
+  "_id": "yasgui-yasr@2.12.5",
   "_inBundle": false,
-  "_integrity": "sha512-cGoI5eDUT5EOBJd01jJFotUqz5XpZ2OU+m1Z+NrweGiX+I/W6Q1DWxM4KZ2BoZzWGkJlRFxRjSDcnbmDD39wcw==",
+  "_integrity": "sha512-sKJK2KvLrGiLHwCuaRJ0fZF7G3K9BaUTw89OFeX5ItpiMgORnoBnD48W1Yb/V2ns9uamxonfVgvfiuhIMVnnAA==",
   "_location": "/yasgui-yasr",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasr@2.12.4",
+    "raw": "yasgui-yasr@2.12.5",
     "name": "yasgui-yasr",
     "escapedName": "yasgui-yasr",
-    "rawSpec": "2.12.4",
+    "rawSpec": "2.12.5",
     "saveSpec": null,
-    "fetchSpec": "2.12.4"
+    "fetchSpec": "2.12.5"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.4.tgz",
-  "_shasum": "f8b6ed1e8fa93b57c69419aee16724fccc5befd9",
-  "_spec": "yasgui-yasr@2.12.4",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.5.tgz",
+  "_shasum": "70d8aba129d715c0e5de4d2a621575aaa3437c80",
+  "_spec": "yasgui-yasr@2.12.5",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -112479,7 +112479,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.12.4"
+  "version": "2.12.5"
 }
 
 },{}],284:[function(require,module,exports){
@@ -113394,7 +113394,7 @@ var LibColor = require("color");
 var colormap = require('colormap');
 var colorScales = require('colormap/colorScale')
 function getWicket() {
-  if (!global.Wkt) global.Wkt = require("wicket/wicket");
+  global.Wkt = require("wicket/wicket");
   require("wicket/wicket-leaflet");
   return new Wkt.Wkt();
 }
@@ -113473,7 +113473,7 @@ var root = (module.exports = function(yasr) {
 
       for (var i = 0; i < bindings.length; i++) {
         var binding = bindings[i];
-        if (!binding[plotVariable].value) continue;
+        if (! binding[plotVariable] || !binding[plotVariable].value) continue;
 
         var getColor = function() {
           var colorBinding = binding[plotVariable + "Color"];
@@ -113685,7 +113685,7 @@ var maps = {
 };
 root.defaults = {
   maps: maps,
-  L: window.L || require('leaflet'),
+  L: require('leaflet'),
   formatPopup: function(yasr, L, forVariable, bindings) {
     var binding = bindings[forVariable+"Label"];
     if (binding && binding.value) {
@@ -115656,7 +115656,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.6",
+  "version": "2.7.7",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -115739,7 +115739,7 @@ module.exports={
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
     "yasgui-yasqe": "^2.11.16",
-    "yasgui-yasr": "^2.12.4"
+    "yasgui-yasr": "^2.12.5"
   },
   "browserify-shim": {
     "jQuery": "jquery"
