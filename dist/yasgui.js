@@ -115656,7 +115656,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.7",
+  "version": "2.7.8",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -117600,6 +117600,7 @@ var Tab = function(yasgui, options) {
   var $controlBar = $("<div>", {
     class: "controlbar"
   }).appendTo($paneContent);
+  var $endpointWrapper
   var $paneMenu = menu.initWrapper().appendTo($pane);
   var addControlBar = function() {
     $("<button>", {
@@ -117638,13 +117639,10 @@ var Tab = function(yasgui, options) {
       .appendTo($controlBar);
 
     //add endpoint text input
-    if (yasgui.options.endpointInput && typeof yasgui.options.endpointInput === 'function') {
-      yasgui.options.endpointInput(yasgui, persistentOptions.yasqe,$, $controlBar, function(val) {
-        persistentOptions.yasqe.sparql.endpoint = val;
-        tab.refreshYasqe();
-        yasgui.store();
-      });
-    }
+    $endpointWrapper = $("<div>", {
+      class: "endpointWrapper"
+    }).appendTo($controlBar);
+    tab.updateEndpointWidget()
 
   };
 
@@ -117745,6 +117743,21 @@ var Tab = function(yasgui, options) {
     tab.yasqe.setValue(newQuery);
     yasgui.store();
 
+  };
+  tab.updateEndpointWidget = function() {
+    if (yasgui.options.endpointInput && typeof yasgui.options.endpointInput === 'function') {
+      $endpointWrapper.empty();
+      yasgui.options.endpointInput(yasgui, persistentOptions.yasqe,$, $endpointWrapper, function(val) {
+        tab.setEndpoint(val, true)
+      });
+    }
+  }
+  tab.setEndpoint = function(newEndpoint, skipWidgetUpdate) {
+    persistentOptions.yasqe.sparql.endpoint = newEndpoint;
+    tab.refreshYasqe();
+    yasgui.store();
+
+    if (!skipWidgetUpdate) tab.updateEndpointWidget();
   }
   var initYasqe = function() {
     if (!tab.yasqe) {
