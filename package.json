@@ -84,7 +84,7 @@
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
     "yasgui-yasqe": "^2.11.16",
-    "yasgui-yasr": "^2.12.8"
+    "yasgui-yasr": "^2.12.9"
   },
   "browserify-shim": {
     "jQuery": "jquery"
