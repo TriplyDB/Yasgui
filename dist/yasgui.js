@@ -105365,10 +105365,10 @@ RegExp.escape= function(s) {
 
 },{"jquery":74}],282:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasr@2.12.9",
-  "_id": "yasgui-yasr@2.12.9",
+  "_from": "yasgui-yasr@2.12.10",
+  "_id": "yasgui-yasr@2.12.10",
   "_inBundle": false,
-  "_integrity": "sha512-ftavnb5yomVqK7wCk5SuHQSJpGJSYDfkOOAYa9AjdHrf41+BDTPd9eHeCZlZXereQV1KH1Y+GUxQJS+x4rJNjQ==",
+  "_integrity": "sha512-9Z/xqiB/lFN5WjiEGcisUa4MH6C9AdnFVV88rYrTRPKq4B1SZwjFjNCM0Kmhw3DVlLw4RxmctcaEX3oy0+pgjA==",
   "_location": "/yasgui-yasr",
   "_phantomChildren": {
     "ms": "2.0.0"
@@ -105376,20 +105376,20 @@ module.exports={
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasr@2.12.9",
+    "raw": "yasgui-yasr@2.12.10",
     "name": "yasgui-yasr",
     "escapedName": "yasgui-yasr",
-    "rawSpec": "2.12.9",
+    "rawSpec": "2.12.10",
     "saveSpec": null,
-    "fetchSpec": "2.12.9"
+    "fetchSpec": "2.12.10"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.9.tgz",
-  "_shasum": "81faf236781c5ce1b8b3976a2254c0d9e1d9e7d1",
-  "_spec": "yasgui-yasr@2.12.9",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.10.tgz",
+  "_shasum": "526f5a3062f12bcb6163756c7b579321a0964778",
+  "_spec": "yasgui-yasr@2.12.10",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -105523,7 +105523,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.12.9"
+  "version": "2.12.10"
 }
 
 },{}],283:[function(require,module,exports){
@@ -106576,7 +106576,13 @@ var root = (module.exports = function(yasr) {
           console.error('Failed to read WKT value: ' + binding[plotVariable].value)
           continue;
         }
-        var feature = _L.geoJson(wkt, {style:style});
+        var feature = _L.geoJson(wkt, {style:style,
+
+                pointToLayer: function(feature, latlng) {
+                  return _L.marker(latlng, { icon: mySVGIcon });
+                }
+
+        });
 
         var popupContent = options.formatPopup && options.formatPopup(yasr, L, plotVariable, binding);
         if (popupContent) {
@@ -108688,7 +108694,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.14",
+  "version": "2.7.16",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -108771,7 +108777,7 @@ module.exports={
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
     "yasgui-yasqe": "^2.11.16",
-    "yasgui-yasr": "^2.12.9"
+    "yasgui-yasr": "^2.12.10"
   },
   "browserify-shim": {
     "jQuery": "jquery"
