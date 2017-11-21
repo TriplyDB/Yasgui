@@ -26524,7 +26524,7 @@ exports.xml = xml;
 exports.csv = csv;
 exports.tsv = tsv;
 
-},{"d3-collection":35,"d3-dispatch":37,"d3-dsv":39,"xmlhttprequest":254}],52:[function(require,module,exports){
+},{"d3-collection":35,"d3-dispatch":37,"d3-dsv":39,"xmlhttprequest":253}],52:[function(require,module,exports){
 // https://d3js.org/d3-scale/ Version 1.0.6. Copyright 2017 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-interpolate'), require('d3-format'), require('d3-time'), require('d3-time-format'), require('d3-color')) :
@@ -89013,7 +89013,7 @@ http.METHODS = [
 ]
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./lib/request":233,"builtin-status-codes":7,"url":249,"xtend":255}],232:[function(require,module,exports){
+},{"./lib/request":233,"builtin-status-codes":7,"url":249,"xtend":254}],232:[function(require,module,exports){
 (function (global){
 exports.fetch = isFunction(global.fetch) && isFunction(global.ReadableStream)
 
@@ -94903,1312 +94903,278 @@ function config (name) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
 },{}],252:[function(require,module,exports){
-/** @license
+/*eslint-disable no-cond-assign */
+module.exports = parse;
+module.exports.parse = parse;
+module.exports.stringify = stringify;
+
+var numberRegexp = /[-+]?([0-9]*\.[0-9]+|[0-9]+)([eE][-+]?[0-9]+)?/;
+// Matches sequences like '100 100' or '100 100 100'.
+var tuples = new RegExp('^' + numberRegexp.source + '(\\s' + numberRegexp.source + '){1,}');
+
+/*
+ * Parse WKT and return GeoJSON.
  *
- *  Copyright (C) 2012 K. Arthur Endsley (kaendsle@mtu.edu)
- *  Michigan Tech Research Institute (MTRI)
- *  3600 Green Court, Suite 100, Ann Arbor, MI, 48105
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * @param {string} _ A WKT geometry
+ * @return {?Object} A GeoJSON geometry object
  */
+function parse (input) {
+  var parts = input.split(';');
+  var _ = parts.pop();
+  var srid = (parts.shift() || '').split('=').pop();
 
-/**
- * @augments Wkt.Wkt
- * A framework-dependent flag, set for each Wkt.Wkt() instance, that indicates
- * whether or not a closed polygon geometry should be interpreted as a rectangle.
- */
-Wkt.Wkt.prototype.isRectangle = false;
+  var i = 0;
 
-/**
- * @augments Wkt.Wkt
- * Truncates an Array of coordinates by the closing coordinate when it is
- * equal to the first coordinate given--this is only to be used for closed
- * geometries in order to provide merely an "implied" closure to Leaflet.
- * @param   coords  {Array}     An Array of x,y coordinates (objects)
- * @return          {Array}
- */
-Wkt.Wkt.prototype.trunc = function (coords) {
-    var i, verts = [];
+  function $ (re) {
+    var match = _.substring(i).match(re);
+    if (!match) return null;
+    else {
+      i += match[0].length;
+      return match[0];
+    }
+  }
 
-    for (i = 0; i < coords.length; i += 1) {
-        if (Wkt.isArray(coords[i])) {
-            verts.push(this.trunc(coords[i]));
-
-        } else {
-
-            // Add the first coord, but skip the last if it is identical
-            if (i === 0 || !this.sameCoords(coords[0], coords[i])) {
-                verts.push(coords[i]);
-            }
+  function crs (obj) {
+    if (obj && srid.match(/\d+/)) {
+      obj.crs = {
+        type: 'name',
+        properties: {
+          name: 'urn:ogc:def:crs:EPSG::' + srid
         }
+      };
     }
 
-    return verts;
-};
+    return obj;
+  }
 
-/**
- * @augments Wkt.Wkt
- * An object of framework-dependent construction methods used to generate
- * objects belonging to the various geometry classes of the framework.
- */
-Wkt.Wkt.prototype.construct = {
-    /**
-     * Creates the framework's equivalent point geometry object.
-     * @param   config      {Object}    An optional properties hash the object should use
-     * @param   component   {Object}    An optional component to build from
-     * @return              {L.marker}
-     */
-    point: function (config, component) {
-        var coord = component || this.components;
-        if (coord instanceof Array) {
-            coord = coord[0];
-        }
+  function white () { $(/^\s*/); }
 
-        return L.marker(this.coordsToLatLng(coord), config);
-    },
+  function multicoords () {
+    white();
+    var depth = 0;
+    var rings = [];
+    var stack = [rings];
+    var pointer = rings;
+    var elem;
 
-    /**
-     * Creates the framework's equivalent multipoint geometry object.
-     * @param   config  {Object}    An optional properties hash the object should use
-     * @return          {L.featureGroup}
-     */
-    multipoint: function (config) {
-        var i,
-            layers = [],
-            coords = this.components;
+    while (elem =
+           $(/^(\()/) ||
+             $(/^(\))/) ||
+               $(/^(,)/) ||
+                 $(tuples)) {
+      if (elem === '(') {
+        stack.push(pointer);
+        pointer = [];
+        stack[stack.length - 1].push(pointer);
+        depth++;
+      } else if (elem === ')') {
+        // For the case: Polygon(), ...
+        if (pointer.length === 0) return null;
 
-        for (i = 0; i < coords.length; i += 1) {
-            layers.push(this.construct.point.call(this, config, coords[i]));
-        }
-
-        return L.featureGroup(layers, config);
-    },
-
-    /**
-     * Creates the framework's equivalent linestring geometry object.
-     * @param   config      {Object}    An optional properties hash the object should use
-     * @param   component   {Object}    An optional component to build from
-     * @return              {L.polyline}
-     */
-    linestring: function (config, component) {
-        var coords = component || this.components,
-            latlngs = this.coordsToLatLngs(coords);
-
-        return L.polyline(latlngs, config);
-    },
-
-    /**
-     * Creates the framework's equivalent multilinestring geometry object.
-     * @param   config  {Object}    An optional properties hash the object should use
-     * @return          {L.multiPolyline}
-     */
-    multilinestring: function (config) {
-        var coords = this.components,
-            latlngs = this.coordsToLatLngs(coords, 1);
-
-        if (L.multiPolyline) {
-            return L.multiPolyline(latlngs, config);
-        }
-        else {
-            return L.polyline(latlngs, config);
-        }
-    },
-
-    /**
-     * Creates the framework's equivalent polygon geometry object.
-     * @param   config      {Object}    An optional properties hash the object should use
-     * @return              {L.multiPolygon}
-     */
-    polygon: function (config) {
-        // Truncate the coordinates to remove the closing coordinate
-        var coords = this.trunc(this.components),
-            latlngs = this.coordsToLatLngs(coords, 1);
-        return L.polygon(latlngs, config);
-    },
-
-    /**
-     * Creates the framework's equivalent multipolygon geometry object.
-     * @param   config  {Object}    An optional properties hash the object should use
-     * @return          {L.multiPolygon}
-     */
-    multipolygon: function (config) {
-        // Truncate the coordinates to remove the closing coordinate
-        var coords = this.trunc(this.components),
-            latlngs = this.coordsToLatLngs(coords, 2);
-
-        if (L.multiPolygon) {
-            return L.multiPolygon(latlngs, config);
-        }
-        else {
-            return L.polygon(latlngs, config);
-        }
-    },
-
-    /**
-     * Creates the framework's equivalent collection of geometry objects.
-     * @param   config  {Object}    An optional properties hash the object should use
-     * @return          {L.featureGroup}
-     */
-    geometrycollection: function (config) {
-        var comps, i, layers;
-
-        comps = this.trunc(this.components);
-        layers = [];
-        for (i = 0; i < this.components.length; i += 1) {
-            layers.push(this.construct[comps[i].type].call(this, comps[i]));
-        }
-
-        return L.featureGroup(layers, config);
-
+        pointer = stack.pop();
+        // the stack was empty, input was malformed
+        if (!pointer) return null;
+        depth--;
+        if (depth === 0) break;
+      } else if (elem === ',') {
+        pointer = [];
+        stack[stack.length - 1].push(pointer);
+      } else if (!elem.split(/\s/g).some(isNaN)) {
+        Array.prototype.push.apply(pointer, elem.split(/\s/g).map(parseFloat));
+      } else {
+        return null;
+      }
+      white();
     }
-};
 
-L.Util.extend(Wkt.Wkt.prototype, {
-    // TODO Why doesn't the coordsToLatLng function in L.GeoJSON already suffice?
-    coordsToLatLng: function (coords, reverse) {
-        var lat = reverse ? coords.x : coords.y,
-            lng = reverse ? coords.y : coords.x;
+    if (depth !== 0) return null;
 
-        return L.latLng(lat, lng, true);
-    },
-    coordsToLatLngs: function (coords, levelsDeep) {
-        return L.GeoJSON.coordsToLatLngs(coords, levelsDeep, this.coordsToLatLng)
+    return rings;
+  }
+
+  function coords () {
+    var list = [];
+    var item;
+    var pt;
+    while (pt =
+           $(tuples) ||
+             $(/^(,)/)) {
+      if (pt === ',') {
+        list.push(item);
+        item = [];
+      } else if (!pt.split(/\s/g).some(isNaN)) {
+        if (!item) item = [];
+        Array.prototype.push.apply(item, pt.split(/\s/g).map(parseFloat));
+      }
+      white();
     }
-});
 
+    if (item) list.push(item);
+    else return null;
 
-/**
- * @augments Wkt.Wkt
- * A framework-dependent deconstruction method used to generate internal
- * geometric representations from instances of framework geometry. This method
- * uses object detection to attempt to classify members of framework geometry
- * classes into the standard WKT types.
- * @param   obj {Object}    An instance of one of the framework's geometry classes
- * @return      {Object}    A hash of the 'type' and 'components' thus derived
- */
-Wkt.Wkt.prototype.deconstruct = function (obj) {
-    var attr, coordsFromLatLngs, features, i, verts, rings, tmp;
+    return list.length ? list : null;
+  }
 
-    /**
-     * Accepts an Array (arr) of LatLngs from which it extracts each one as a
-     *  vertex; calls itself recursively to deal with nested Arrays.
-     */
-    coordsFromLatLngs = function (arr) {
-        var i, coords;
-
-        coords = [];
-        for (i = 0; i < arr.length; i += 1) {
-            if (Wkt.isArray(arr[i])) {
-                coords.push(coordsFromLatLngs(arr[i]));
-
-            } else {
-                coords.push({
-                    x: arr[i].lng,
-                    y: arr[i].lat
-                });
-            }
-        }
-
-        return coords;
+  function point () {
+    if (!$(/^(point(\sz)?)/i)) return null;
+    white();
+    if (!$(/^(\()/)) return null;
+    var c = coords();
+    if (!c) return null;
+    white();
+    if (!$(/^(\))/)) return null;
+    return {
+      type: 'Point',
+      coordinates: c[0]
     };
+  }
 
-    // L.Marker ////////////////////////////////////////////////////////////////
-    if (obj.constructor === L.Marker || obj.constructor === L.marker) {
-        return {
-            type: 'point',
-            components: [{
-                x: obj.getLatLng().lng,
-                y: obj.getLatLng().lat
-            }]
-        };
+  function multipoint () {
+    if (!$(/^(multipoint)/i)) return null;
+    white();
+    var newCoordsFormat = _
+      .substring(_.indexOf('(') + 1, _.length - 1)
+      .replace(/\(/g, '')
+      .replace(/\)/g, '');
+    _ = 'MULTIPOINT (' + newCoordsFormat + ')';
+    var c = multicoords();
+    if (!c) return null;
+    white();
+    return {
+      type: 'MultiPoint',
+      coordinates: c
+    };
+  }
+
+  function multilinestring () {
+    if (!$(/^(multilinestring)/i)) return null;
+    white();
+    var c = multicoords();
+    if (!c) return null;
+    white();
+    return {
+      type: 'MultiLineString',
+      coordinates: c
+    };
+  }
+
+  function linestring () {
+    if (!$(/^(linestring(\sz)?)/i)) return null;
+    white();
+    if (!$(/^(\()/)) return null;
+    var c = coords();
+    if (!c) return null;
+    if (!$(/^(\))/)) return null;
+    return {
+      type: 'LineString',
+      coordinates: c
+    };
+  }
+
+  function polygon () {
+    if (!$(/^(polygon(\sz)?)/i)) return null;
+    white();
+    var c = multicoords();
+    if (!c) return null;
+    return {
+      type: 'Polygon',
+      coordinates: c
+    };
+  }
+
+  function multipolygon () {
+    if (!$(/^(multipolygon)/i)) return null;
+    white();
+    var c = multicoords();
+    if (!c) return null;
+    return {
+      type: 'MultiPolygon',
+      coordinates: c
+    };
+  }
+
+  function geometrycollection () {
+    var geometries = [];
+    var geometry;
+
+    if (!$(/^(geometrycollection)/i)) return null;
+    white();
+
+    if (!$(/^(\()/)) return null;
+    while (geometry = root()) {
+      geometries.push(geometry);
+      white();
+      $(/^(,)/);
+      white();
     }
+    if (!$(/^(\))/)) return null;
 
-    // L.Rectangle /////////////////////////////////////////////////////////////
-    if (obj.constructor === L.Rectangle || obj.constructor === L.rectangle) {
-        tmp = obj.getBounds(); // L.LatLngBounds instance
-        return {
-            type: 'polygon',
-            isRectangle: true,
-            components: [
-                [
-                    { // NW corner
-                        x: tmp.getSouthWest().lng,
-                        y: tmp.getNorthEast().lat
-                    },
-                    { // NE corner
-                        x: tmp.getNorthEast().lng,
-                        y: tmp.getNorthEast().lat
-                    },
-                    { // SE corner
-                        x: tmp.getNorthEast().lng,
-                        y: tmp.getSouthWest().lat
-                    },
-                    { // SW corner
-                        x: tmp.getSouthWest().lng,
-                        y: tmp.getSouthWest().lat
-                    },
-                    { // NW corner (again, for closure)
-                        x: tmp.getSouthWest().lng,
-                        y: tmp.getNorthEast().lat
-                    }
-                ]
-            ]
-        };
+    return {
+      type: 'GeometryCollection',
+      geometries: geometries
+    };
+  }
 
-    }
+  function root () {
+    return point() ||
+      linestring() ||
+      polygon() ||
+      multipoint() ||
+      multilinestring() ||
+      multipolygon() ||
+      geometrycollection();
+  }
 
-    // L.Polyline //////////////////////////////////////////////////////////////
-    if (obj.constructor === L.Polyline || obj.constructor === L.polyline) {
-        verts = [];
-        tmp = obj.getLatLngs();
+  return crs(root());
+}
 
-        if (!tmp[0].equals(tmp[tmp.length - 1])) {
+/**
+ * Stringifies a GeoJSON object into WKT
+ */
+function stringify (gj) {
+  if (gj.type === 'Feature') {
+    gj = gj.geometry;
+  }
 
-            for (i = 0; i < tmp.length; i += 1) {
-                verts.push({
-                    x: tmp[i].lng,
-                    y: tmp[i].lat
-                });
-            }
+  function pairWKT (c) {
+    return c.join(' ');
+  }
 
-            return {
-                type: 'linestring',
-                components: verts
-            };
+  function ringWKT (r) {
+    return r.map(pairWKT).join(', ');
+  }
 
-        }
-    }
+  function ringsWKT (r) {
+    return r.map(ringWKT).map(wrapParens).join(', ');
+  }
 
-    // L.Polygon ///////////////////////////////////////////////////////////////
+  function multiRingsWKT (r) {
+    return r.map(ringsWKT).map(wrapParens).join(', ');
+  }
 
-    if (obj.constructor === L.Polygon || obj.constructor === L.polygon) {
-        rings = [];
-        verts = [];
-        tmp = obj.getLatLngs();
+  function wrapParens (s) { return '(' + s + ')'; }
 
-        // First, we deal with the boundary points
-        for (i = 0; i < obj._latlngs.length; i += 1) {
-            verts.push({ // Add the first coordinate again for closure
-                x: tmp[i].lng,
-                y: tmp[i].lat
-            });
-        }
-
-        verts.push({ // Add the first coordinate again for closure
-            x: tmp[0].lng,
-            y: tmp[0].lat
-        });
-
-        rings.push(verts);
-
-        // Now, any holes
-        if (obj._holes && obj._holes.length > 0) {
-            // Reworked to support holes properly
-            verts = coordsFromLatLngs(obj._holes);
-            for (i=0; i < verts.length;i++) {
-                verts[i].push(verts[i][0]); // Copy the beginning coords again for closure
-                rings.push(verts[i]);
-            }
-        }
-
-        return {
-            type: 'polygon',
-            components: rings
-        };
-
-    }
-
-    // L.MultiPolyline /////////////////////////////////////////////////////////
-    // L.MultiPolygon //////////////////////////////////////////////////////////
-    // L.LayerGroup ////////////////////////////////////////////////////////////
-    // L.FeatureGroup //////////////////////////////////////////////////////////
-    if (obj.constructor === L.MultiPolyline || obj.constructor === L.MultiPolygon
-            || obj.constructor === L.LayerGroup || obj.constructor === L.FeatureGroup) {
-
-        features = [];
-        tmp = obj._layers;
-
-        for (attr in tmp) {
-            if (tmp.hasOwnProperty(attr)) {
-                if (tmp[attr].getLatLngs || tmp[attr].getLatLng) {
-                    // Recursively deconstruct each layer
-                    features.push(this.deconstruct(tmp[attr]));
-                }
-            }
-        }
-
-        return {
-
-            type: (function () {
-                switch (obj.constructor) {
-                case L.MultiPolyline:
-                    return 'multilinestring';
-                case L.MultiPolygon:
-                    return 'multipolygon';
-                case L.FeatureGroup:
-                    return (function () {
-                        var i, mpgon, mpline, mpoint;
-
-                        // Assume that all layers are of one type (any one type)
-                        mpgon = true;
-                        mpline = true;
-                        mpoint = true;
-
-                        for (i in obj._layers) {
-                            if (obj._layers.hasOwnProperty(i)) {
-                                if (obj._layers[i].constructor !== L.Marker) {
-                                    mpoint = false;
-                                }
-                                if (obj._layers[i].constructor !== L.Polyline) {
-                                    mpline = false;
-                                }
-                                if (obj._layers[i].constructor !== L.Polygon) {
-                                    mpgon = false;
-                                }
-                            }
-                        }
-
-                        if (mpoint) {
-                            return 'multipoint';
-                        }
-                        if (mpline) {
-                            return 'multilinestring';
-                        }
-                        if (mpgon) {
-                            return 'multipolygon';
-                        }
-                        return 'geometrycollection';
-
-                    }());
-                default:
-                    return 'geometrycollection';
-                }
-            }()),
-
-            components: (function () {
-                // Pluck the components from each Wkt
-                var i, comps;
-
-                comps = [];
-                for (i = 0; i < features.length; i += 1) {
-                    if (features[i].components) {
-                        comps.push(features[i].components);
-                    }
-                }
-
-                return comps;
-            }())
-
-        };
-
-    }
-
-    // L.Circle ////////////////////////////////////////////////////////////////
-    if (obj.constructor === L.Circle || obj.constructor === L.circle) {
-        console.log('Deconstruction of L.Circle objects is not yet supported');
-
-    } else {
-        console.log('The passed object does not have any recognizable properties.');
-    }
-
-};
+  switch (gj.type) {
+    case 'Point':
+      return 'POINT (' + pairWKT(gj.coordinates) + ')';
+    case 'LineString':
+      return 'LINESTRING (' + ringWKT(gj.coordinates) + ')';
+    case 'Polygon':
+      return 'POLYGON (' + ringsWKT(gj.coordinates) + ')';
+    case 'MultiPoint':
+      return 'MULTIPOINT (' + ringWKT(gj.coordinates) + ')';
+    case 'MultiPolygon':
+      return 'MULTIPOLYGON (' + multiRingsWKT(gj.coordinates) + ')';
+    case 'MultiLineString':
+      return 'MULTILINESTRING (' + ringsWKT(gj.coordinates) + ')';
+    case 'GeometryCollection':
+      return 'GEOMETRYCOLLECTION (' + gj.geometries.map(stringify).join(', ') + ')';
+    default:
+      throw new Error('stringify requires a valid GeoJSON Feature or geometry object as input');
+  }
+}
 
 },{}],253:[function(require,module,exports){
-/** @license
- *
- *  Copyright (C) 2012 K. Arthur Endsley (kaendsle@mtu.edu)
- *  Michigan Tech Research Institute (MTRI)
- *  3600 Green Court, Suite 100, Ann Arbor, MI, 48105
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
-(function (root, factory) {
-
-    if (typeof define === "function" && define.amd) {
-        // AMD (+ global for extensions)
-        define(function () {
-            return factory();
-        });
-    } else if (typeof module !== 'undefined' && typeof exports === "object") {
-        // CommonJS
-        module.exports = factory();
-    } else {
-        // Browser
-        root.Wkt = factory();
-    }
-}(this, function () {
-
-
-    var beginsWith, endsWith, root, Wkt;
-
-    // Establish the root object, window in the browser, or exports on the server
-    root = this;
-
-    /**
-     * @desc The Wkt namespace.
-     * @property    {String}    delimiter   - The default delimiter for separating components of atomic geometry (coordinates)
-     * @namespace
-     * @global
-     */
-    Wkt = function (obj) {
-        if (obj instanceof Wkt) return obj;
-        if (!(this instanceof Wkt)) return new Wkt(obj);
-        this._wrapped = obj;
-    };
-
-
-
-    /**
-     * Returns true if the substring is found at the beginning of the string.
-     * @param   str {String}    The String to search
-     * @param   sub {String}    The substring of interest
-     * @return      {Boolean}
-     * @private
-     */
-    beginsWith = function (str, sub) {
-        return str.substring(0, sub.length) === sub;
-    };
-
-    /**
-     * Returns true if the substring is found at the end of the string.
-     * @param   str {String}    The String to search
-     * @param   sub {String}    The substring of interest
-     * @return      {Boolean}
-     * @private
-     */
-    endsWith = function (str, sub) {
-        return str.substring(str.length - sub.length) === sub;
-    };
-
-    /**
-     * The default delimiter for separating components of atomic geometry (coordinates)
-     * @ignore
-     */
-    Wkt.delimiter = ' ';
-
-    /**
-     * Determines whether or not the passed Object is an Array.
-     * @param   obj {Object}    The Object in question
-     * @return      {Boolean}
-     * @member Wkt.isArray
-     * @method
-     */
-    Wkt.isArray = function (obj) {
-        return !!(obj && obj.constructor === Array);
-    };
-
-    /**
-     * Removes given character String(s) from a String.
-     * @param   str {String}    The String to search
-     * @param   sub {String}    The String character(s) to trim
-     * @return      {String}    The trimmed string
-     * @member Wkt.trim
-     * @method
-     */
-    Wkt.trim = function (str, sub) {
-        sub = sub || ' '; // Defaults to trimming spaces
-        // Trim beginning spaces
-        while (beginsWith(str, sub)) {
-            str = str.substring(1);
-        }
-        // Trim ending spaces
-        while (endsWith(str, sub)) {
-            str = str.substring(0, str.length - 1);
-        }
-        return str;
-    };
-
-    /**
-     * An object for reading WKT strings and writing geographic features
-     * @constructor this.Wkt.Wkt
-     * @param   initializer {String}    An optional WKT string for immediate read
-     * @property            {Array}     components      - Holder for atomic geometry objects (internal representation of geometric components)
-     * @property            {String}    delimiter       - The default delimiter for separating components of atomic geometry (coordinates)
-     * @property            {Object}    regExes         - Some regular expressions copied from OpenLayers.Format.WKT.js
-     * @property            {String}    type            - The Well-Known Text name (e.g. 'point') of the geometry
-     * @property            {Boolean}   wrapVerticies   - True to wrap vertices in MULTIPOINT geometries; If true: MULTIPOINT((30 10),(10 30),(40 40)); If false: MULTIPOINT(30 10,10 30,40 40)
-     * @return              {this.Wkt.Wkt}
-     * @memberof Wkt
-     */
-    Wkt.Wkt = function (initializer) {
-
-        /**
-         * The default delimiter between X and Y coordinates.
-         * @ignore
-         */
-        this.delimiter = Wkt.delimiter || ' ';
-
-        /**
-         * Configuration parameter for controlling how Wicket seralizes
-         * MULTIPOINT strings. Examples; both are valid WKT:
-         * If true: MULTIPOINT((30 10),(10 30),(40 40))
-         * If false: MULTIPOINT(30 10,10 30,40 40)
-         * @ignore
-         */
-        this.wrapVertices = true;
-
-        /**
-         * Some regular expressions copied from OpenLayers.Format.WKT.js
-         * @ignore
-         */
-        this.regExes = {
-            'typeStr': /^\s*(\w+)\s*\(\s*(.*)\s*\)\s*$/,
-            'spaces': /\s+|\+/, // Matches the '+' or the empty space
-            'numeric': /-*\d+(\.*\d+)?/,
-            'comma': /\s*,\s*/,
-            'parenComma': /\)\s*,\s*\(/,
-            'coord': /-*\d+\.*\d+ -*\d+\.*\d+/, // e.g. "24 -14"
-            'doubleParenComma': /\)\s*\)\s*,\s*\(\s*\(/,
-            'trimParens': /^\s*\(?(.*?)\)?\s*$/,
-            'ogcTypes': /^(multi)?(point|line|polygon|box)?(string)?$/i, // Captures e.g. "Multi","Line","String"
-            'crudeJson': /^{.*"(type|coordinates|geometries|features)":.*}$/ // Attempts to recognize JSON strings
-        };
-
-        /**
-         * The internal representation of geometry--the "components" of geometry.
-         * @ignore
-         */
-        this.components = undefined;
-
-        // An initial WKT string may be provided
-        if (initializer && typeof initializer === 'string') {
-            this.read(initializer);
-        } else if (initializer && typeof initializer !== undefined) {
-            this.fromObject(initializer);
-        }
-
-    };
-
-
-
-    /**
-     * Returns true if the internal geometry is a collection of geometries.
-     * @return  {Boolean}   Returns true when it is a collection
-     * @memberof this.Wkt.Wkt
-     * @method
-     */
-    Wkt.Wkt.prototype.isCollection = function () {
-        switch (this.type.slice(0, 5)) {
-            case 'multi':
-                // Trivial; any multi-geometry is a collection
-                return true;
-            case 'polyg':
-                // Polygons with holes are "collections" of rings
-                return true;
-            default:
-                // Any other geometry is not a collection
-                return false;
-        }
-    };
-
-    /**
-     * Compares two x,y coordinates for equality.
-     * @param   a   {Object}    An object with x and y properties
-     * @param   b   {Object}    An object with x and y properties
-     * @return      {Boolean}
-     * @memberof this.Wkt.Wkt
-     * @method
-     */
-    Wkt.Wkt.prototype.sameCoords = function (a, b) {
-        return (a.x === b.x && a.y === b.y);
-    };
-
-    /**
-     * Sets internal geometry (components) from framework geometry (e.g.
-     * Google Polygon objects or google.maps.Polygon).
-     * @param   obj {Object}    The framework-dependent geometry representation
-     * @return      {this.Wkt.Wkt}   The object itself
-     * @memberof this.Wkt.Wkt
-     * @method
-     */
-    Wkt.Wkt.prototype.fromObject = function (obj) {
-        var result;
-
-        if (obj.hasOwnProperty('type') && obj.hasOwnProperty('coordinates')) {
-            result = this.fromJson(obj);
-        } else {
-            result = this.deconstruct.call(this, obj);
-        }
-
-        this.components = result.components;
-        this.isRectangle = result.isRectangle || false;
-        this.type = result.type;
-        return this;
-    };
-
-    /**
-     * Creates external geometry objects based on a plug-in framework's
-     * construction methods and available geometry classes.
-     * @param   config  {Object}    An optional framework-dependent properties specification
-     * @return          {Object}    The framework-dependent geometry representation
-     * @memberof this.Wkt.Wkt
-     * @method
-     */
-    Wkt.Wkt.prototype.toObject = function (config) {
-        var obj = this.construct[this.type].call(this, config);
-        // Don't assign the "properties" property to an Array
-        if (typeof obj === 'object' && !Wkt.isArray(obj)) {
-            obj.properties = this.properties;
-        }
-        return obj;
-    };
-
-    /**
-     * Returns the WKT string representation; the same as the write() method.
-     * @memberof this.Wkt.Wkt
-     * @method
-     */
-    Wkt.Wkt.prototype.toString = function (config) {
-        return this.write();
-    };
-
-    /**
-     * Parses a JSON representation as an Object.
-     * @param	obj	{Object}	An Object with the GeoJSON schema
-     * @return	{this.Wkt.Wkt}	The object itself
-     * @memberof this.Wkt.Wkt
-     * @method
-     */
-    Wkt.Wkt.prototype.fromJson = function (obj) {
-        var i, j, k, coords, iring, oring;
-
-        this.type = obj.type.toLowerCase();
-        this.components = [];
-        if (obj.hasOwnProperty('geometry')) { //Feature
-            this.fromJson(obj.geometry);
-            this.properties = obj.properties;
-            return this;
-        }
-        coords = obj.coordinates;
-
-        if (!Wkt.isArray(coords[0])) { // Point
-            this.components.push({
-                x: coords[0],
-                y: coords[1]
-            });
-
-        } else {
-
-            for (i in coords) {
-                if (coords.hasOwnProperty(i)) {
-
-                    if (!Wkt.isArray(coords[i][0])) { // LineString
-
-                        if (this.type === 'multipoint') { // MultiPoint
-                            this.components.push([{
-                                x: coords[i][0],
-                                y: coords[i][1]
-                            }]);
-
-                        } else {
-                            this.components.push({
-                                x: coords[i][0],
-                                y: coords[i][1]
-                            });
-
-                        }
-
-                    } else {
-
-                        oring = [];
-                        for (j in coords[i]) {
-                            if (coords[i].hasOwnProperty(j)) {
-
-                                if (!Wkt.isArray(coords[i][j][0])) {
-                                    oring.push({
-                                        x: coords[i][j][0],
-                                        y: coords[i][j][1]
-                                    });
-
-                                } else {
-
-                                    iring = [];
-                                    for (k in coords[i][j]) {
-                                        if (coords[i][j].hasOwnProperty(k)) {
-
-                                            iring.push({
-                                                x: coords[i][j][k][0],
-                                                y: coords[i][j][k][1]
-                                            });
-
-                                        }
-                                    }
-
-                                    oring.push(iring);
-
-                                }
-
-                            }
-                        }
-
-                        this.components.push(oring);
-                    }
-                }
-            }
-
-        }
-
-        return this;
-    };
-
-    /**
-     * Creates a JSON representation, with the GeoJSON schema, of the geometry.
-     * @return    {Object}    The corresponding GeoJSON representation
-     * @memberof this.Wkt.Wkt
-     * @method
-     */
-    Wkt.Wkt.prototype.toJson = function () {
-        var cs, json, i, j, k, ring, rings;
-
-        cs = this.components;
-        json = {
-            coordinates: [],
-            type: (function () {
-                var i, type, s;
-
-                type = this.regExes.ogcTypes.exec(this.type).slice(1);
-                s = [];
-
-                for (i in type) {
-                    if (type.hasOwnProperty(i)) {
-                        if (type[i] !== undefined) {
-                            s.push(type[i].toLowerCase().slice(0, 1).toUpperCase() + type[i].toLowerCase().slice(1));
-                        }
-                    }
-                }
-
-                return s;
-            }.call(this)).join('')
-        }
-
-        // Wkt BOX type gets a special bbox property in GeoJSON
-        if (this.type.toLowerCase() === 'box') {
-            json.type = 'Polygon';
-            json.bbox = [];
-
-            for (i in cs) {
-                if (cs.hasOwnProperty(i)) {
-                    json.bbox = json.bbox.concat([cs[i].x, cs[i].y]);
-                }
-            }
-
-            json.coordinates = [
-                [
-                    [cs[0].x, cs[0].y],
-                    [cs[0].x, cs[1].y],
-                    [cs[1].x, cs[1].y],
-                    [cs[1].x, cs[0].y],
-                    [cs[0].x, cs[0].y]
-                ]
-            ];
-
-            return json;
-        }
-
-        // For the coordinates of most simple features
-        for (i in cs) {
-            if (cs.hasOwnProperty(i)) {
-
-                // For those nested structures
-                if (Wkt.isArray(cs[i])) {
-                    rings = [];
-
-                    for (j in cs[i]) {
-                        if (cs[i].hasOwnProperty(j)) {
-
-                            if (Wkt.isArray(cs[i][j])) { // MULTIPOLYGONS
-                                ring = [];
-
-                                for (k in cs[i][j]) {
-                                    if (cs[i][j].hasOwnProperty(k)) {
-                                        ring.push([cs[i][j][k].x, cs[i][j][k].y]);
-                                    }
-                                }
-
-                                rings.push(ring);
-
-                            } else { // POLYGONS and MULTILINESTRINGS
-
-                                if (cs[i].length > 1) {
-                                    rings.push([cs[i][j].x, cs[i][j].y]);
-
-                                } else { // MULTIPOINTS
-                                    rings = rings.concat([cs[i][j].x, cs[i][j].y]);
-                                }
-                            }
-                        }
-                    }
-
-                    json.coordinates.push(rings);
-
-                } else {
-                    if (cs.length > 1) { // For LINESTRING type
-                        json.coordinates.push([cs[i].x, cs[i].y]);
-
-                    } else { // For POINT type
-                        json.coordinates = json.coordinates.concat([cs[i].x, cs[i].y]);
-                    }
-                }
-
-            }
-        }
-
-        return json;
-    };
-
-    /**
-     * Absorbs the geometry of another this.Wkt.Wkt instance, merging it with its own,
-     * creating a collection (MULTI-geometry) based on their types, which must agree.
-     * For example, creates a MULTIPOLYGON from a POLYGON type merged with another
-     * POLYGON type, or adds a POLYGON instance to a MULTIPOLYGON instance.
-     * @param   wkt {String}    A Wkt.Wkt object
-     * @return	{this.Wkt.Wkt}	The object itself
-     * @memberof this.Wkt.Wkt
-     * @method
-     */
-    Wkt.Wkt.prototype.merge = function (wkt) {
-        var prefix = this.type.slice(0, 5);
-
-        if (this.type !== wkt.type) {
-            if (this.type.slice(5, this.type.length) !== wkt.type) {
-                throw TypeError('The input geometry types must agree or the calling this.Wkt.Wkt instance must be a multigeometry of the other');
-            }
-        }
-
-        switch (prefix) {
-
-            case 'point':
-                this.components = [this.components.concat(wkt.components)];
-                break;
-
-            case 'multi':
-                this.components = this.components.concat((wkt.type.slice(0, 5) === 'multi') ? wkt.components : [wkt.components]);
-                break;
-
-            default:
-                this.components = [
-                    this.components,
-                    wkt.components
-                ];
-                break;
-
-        }
-
-        if (prefix !== 'multi') {
-            this.type = 'multi' + this.type;
-        }
-        return this;
-    };
-
-    /**
-     * Reads a WKT string, validating and incorporating it.
-     * @param   str {String}    A WKT or GeoJSON string
-     * @return	{this.Wkt.Wkt}	The object itself
-     * @memberof this.Wkt.Wkt
-     * @method
-     */
-    Wkt.Wkt.prototype.read = function (str) {
-        var matches;
-        matches = this.regExes.typeStr.exec(str);
-        if (matches) {
-            this.type = matches[1].toLowerCase();
-            this.base = matches[2];
-            if (this.ingest[this.type]) {
-                this.components = this.ingest[this.type].apply(this, [this.base]);
-            }
-
-        } else {
-            if (this.regExes.crudeJson.test(str)) {
-                if (typeof JSON === 'object' && typeof JSON.parse === 'function') {
-                    this.fromJson(JSON.parse(str));
-
-                } else {
-                    console.log('JSON.parse() is not available; cannot parse GeoJSON strings');
-                    throw {
-                        name: 'JSONError',
-                        message: 'JSON.parse() is not available; cannot parse GeoJSON strings'
-                    };
-                }
-
-            } else {
-                console.log('Invalid WKT string provided to read()');
-                throw {
-                    name: 'WKTError',
-                    message: 'Invalid WKT string provided to read()'
-                };
-            }
-        }
-
-        return this;
-    }; // eo readWkt
-
-    /**
-     * Writes a WKT string.
-     * @param   components  {Array}     An Array of internal geometry objects
-     * @return              {String}    The corresponding WKT representation
-     * @memberof this.Wkt.Wkt
-     * @method
-     */
-    Wkt.Wkt.prototype.write = function (components) {
-        var i, pieces, data;
-
-        components = components || this.components;
-
-        pieces = [];
-
-        pieces.push(this.type.toUpperCase() + '(');
-
-        for (i = 0; i < components.length; i += 1) {
-            if (this.isCollection() && i > 0) {
-                pieces.push(',');
-            }
-
-            // There should be an extract function for the named type
-            if (!this.extract[this.type]) {
-                return null;
-            }
-
-            data = this.extract[this.type].apply(this, [components[i]]);
-            if (this.isCollection() && this.type !== 'multipoint') {
-                pieces.push('(' + data + ')');
-
-            } else {
-                pieces.push(data);
-
-                // If not at the end of the components, add a comma
-                if (i !== (components.length - 1) && this.type !== 'multipoint') {
-                    pieces.push(',');
-                }
-
-            }
-        }
-
-        pieces.push(')');
-
-        return pieces.join('');
-    };
-
-    /**
-     * This object contains functions as property names that extract WKT
-     * strings from the internal representation.
-     * @memberof this.Wkt.Wkt
-     * @namespace this.Wkt.Wkt.extract
-     * @instance
-     */
-    Wkt.Wkt.prototype.extract = {
-        /**
-         * Return a WKT string representing atomic (point) geometry
-         * @param   point   {Object}    An object with x and y properties
-         * @return          {String}    The WKT representation
-         * @memberof this.Wkt.Wkt.extract
-         * @instance
-         */
-        point: function (point) {
-            return String(point.x) + this.delimiter + String(point.y);
-        },
-
-        /**
-         * Return a WKT string representing multiple atoms (points)
-         * @param   multipoint  {Array}     Multiple x-and-y objects
-         * @return              {String}    The WKT representation
-         * @memberof this.Wkt.Wkt.extract
-         * @instance
-         */
-        multipoint: function (multipoint) {
-            var i, parts = [],
-                s;
-
-            for (i = 0; i < multipoint.length; i += 1) {
-                s = this.extract.point.apply(this, [multipoint[i]]);
-
-                if (this.wrapVertices) {
-                    s = '(' + s + ')';
-                }
-
-                parts.push(s);
-            }
-
-            return parts.join(',');
-        },
-
-        /**
-         * Return a WKT string representing a chain (linestring) of atoms
-         * @param   linestring  {Array}     Multiple x-and-y objects
-         * @return              {String}    The WKT representation
-         * @memberof this.Wkt.Wkt.extract
-         * @instance
-         */
-        linestring: function (linestring) {
-            // Extraction of linestrings is the same as for points
-            return this.extract.point.apply(this, [linestring]);
-        },
-
-        /**
-         * Return a WKT string representing multiple chains (multilinestring) of atoms
-         * @param   multilinestring {Array}     Multiple of multiple x-and-y objects
-         * @return                  {String}    The WKT representation
-         * @memberof this.Wkt.Wkt.extract
-         * @instance
-         */
-        multilinestring: function (multilinestring) {
-            var i, parts = [];
-
-            if (multilinestring.length) {
-                for (i = 0; i < multilinestring.length; i += 1) {
-                    parts.push(this.extract.linestring.apply(this, [multilinestring[i]]));
-                }
-            } else {
-                parts.push(this.extract.point.apply(this, [multilinestring]));
-            }
-
-            return parts.join(',');
-        },
-
-        /**
-         * Return a WKT string representing multiple atoms in closed series (polygon)
-         * @param   polygon {Array}     Collection of ordered x-and-y objects
-         * @return          {String}    The WKT representation
-         * @memberof this.Wkt.Wkt.extract
-         * @instance
-         */
-        polygon: function (polygon) {
-            // Extraction of polygons is the same as for multilinestrings
-            return this.extract.multilinestring.apply(this, [polygon]);
-        },
-
-        /**
-         * Return a WKT string representing multiple closed series (multipolygons) of multiple atoms
-         * @param   multipolygon    {Array}     Collection of ordered x-and-y objects
-         * @return                  {String}    The WKT representation
-         * @memberof this.Wkt.Wkt.extract
-         * @instance
-         */
-        multipolygon: function (multipolygon) {
-            var i, parts = [];
-            for (i = 0; i < multipolygon.length; i += 1) {
-                parts.push('(' + this.extract.polygon.apply(this, [multipolygon[i]]) + ')');
-            }
-            return parts.join(',');
-        },
-
-        /**
-         * Return a WKT string representing a 2DBox
-         * @param   multipolygon    {Array}     Collection of ordered x-and-y objects
-         * @return                  {String}    The WKT representation
-         * @memberof this.Wkt.Wkt.extract
-         * @instance
-         */
-        box: function (box) {
-            return this.extract.linestring.apply(this, [box]);
-        },
-
-        geometrycollection: function (str) {
-            console.log('The geometrycollection WKT type is not yet supported.');
-        }
-    };
-
-    /**
-     * This object contains functions as property names that ingest WKT
-     * strings into the internal representation.
-     * @memberof this.Wkt.Wkt
-     * @namespace this.Wkt.Wkt.ingest
-     * @instance
-     */
-    Wkt.Wkt.prototype.ingest = {
-
-        /**
-         * Return point feature given a point WKT fragment.
-         * @param   str {String}    A WKT fragment representing the point
-         * @memberof this.Wkt.Wkt.ingest
-         * @instance
-         */
-        point: function (str) {
-            var coords = Wkt.trim(str).split(this.regExes.spaces);
-            // In case a parenthetical group of coordinates is passed...
-            return [{ // ...Search for numeric substrings
-                x: parseFloat(this.regExes.numeric.exec(coords[0])[0]),
-                y: parseFloat(this.regExes.numeric.exec(coords[1])[0])
-            }];
-        },
-
-        /**
-         * Return a multipoint feature given a multipoint WKT fragment.
-         * @param   str {String}    A WKT fragment representing the multipoint
-         * @memberof this.Wkt.Wkt.ingest
-         * @instance
-         */
-        multipoint: function (str) {
-            var i, components, points;
-            components = [];
-            points = Wkt.trim(str).split(this.regExes.comma);
-            for (i = 0; i < points.length; i += 1) {
-                components.push(this.ingest.point.apply(this, [points[i]]));
-            }
-            return components;
-        },
-
-        /**
-         * Return a linestring feature given a linestring WKT fragment.
-         * @param   str {String}    A WKT fragment representing the linestring
-         * @memberof this.Wkt.Wkt.ingest
-         * @instance
-         */
-        linestring: function (str) {
-            var i, multipoints, components;
-
-            // In our x-and-y representation of components, parsing
-            //  multipoints is the same as parsing linestrings
-            multipoints = this.ingest.multipoint.apply(this, [str]);
-
-            // However, the points need to be joined
-            components = [];
-            for (i = 0; i < multipoints.length; i += 1) {
-                components = components.concat(multipoints[i]);
-            }
-            return components;
-        },
-
-        /**
-         * Return a multilinestring feature given a multilinestring WKT fragment.
-         * @param   str {String}    A WKT fragment representing the multilinestring
-         * @memberof this.Wkt.Wkt.ingest
-         * @instance
-         */
-        multilinestring: function (str) {
-            var i, components, line, lines;
-            components = [];
-
-            lines = Wkt.trim(str).split(this.regExes.doubleParenComma);
-            if (lines.length === 1) { // If that didn't work...
-                lines = Wkt.trim(str).split(this.regExes.parenComma);
-            }
-
-            for (i = 0; i < lines.length; i += 1) {
-                line = lines[i].replace(this.regExes.trimParens, '$1');
-                components.push(this.ingest.linestring.apply(this, [line]));
-            }
-
-            return components;
-        },
-
-        /**
-         * Return a polygon feature given a polygon WKT fragment.
-         * @param   str {String}    A WKT fragment representing the polygon
-         * @memberof this.Wkt.Wkt.ingest
-         * @instance
-         */
-        polygon: function (str) {
-            var i, j, components, subcomponents, ring, rings;
-            rings = Wkt.trim(str).split(this.regExes.parenComma);
-            components = []; // Holds one or more rings
-            for (i = 0; i < rings.length; i += 1) {
-                ring = rings[i].replace(this.regExes.trimParens, '$1').split(this.regExes.comma);
-                subcomponents = []; // Holds the outer ring and any inner rings (holes)
-                for (j = 0; j < ring.length; j += 1) {
-                    // Split on the empty space or '+' character (between coordinates)
-                    var split = ring[j].split(this.regExes.spaces);
-                    if (split.length > 2) {
-                        //remove the elements which are blanks
-                        split = split.filter(function (n) {
-                            return n != ""
-                        });
-                    }
-                    if (split.length === 2) {
-                        var x_cord = split[0];
-                        var y_cord = split[1];
-
-                        //now push
-                        subcomponents.push({
-                            x: parseFloat(x_cord),
-                            y: parseFloat(y_cord)
-                        });
-                    }
-                }
-                components.push(subcomponents);
-            }
-            return components;
-        },
-
-        /**
-         * Return box vertices (which would become the Rectangle bounds) given a Box WKT fragment.
-         * @param   str {String}    A WKT fragment representing the box
-         * @memberof this.Wkt.Wkt.ingest
-         * @instance
-         */
-        box: function (str) {
-            var i, multipoints, components;
-
-            // In our x-and-y representation of components, parsing
-            //  multipoints is the same as parsing linestrings
-            multipoints = this.ingest.multipoint.apply(this, [str]);
-
-            // However, the points need to be joined
-            components = [];
-            for (i = 0; i < multipoints.length; i += 1) {
-                components = components.concat(multipoints[i]);
-            }
-
-            return components;
-        },
-
-        /**
-         * Return a multipolygon feature given a multipolygon WKT fragment.
-         * @param   str {String}    A WKT fragment representing the multipolygon
-         * @memberof this.Wkt.Wkt.ingest
-         * @instance
-         */
-        multipolygon: function (str) {
-            var i, components, polygon, polygons;
-            components = [];
-            polygons = Wkt.trim(str).split(this.regExes.doubleParenComma);
-            for (i = 0; i < polygons.length; i += 1) {
-                polygon = polygons[i].replace(this.regExes.trimParens, '$1');
-                components.push(this.ingest.polygon.apply(this, [polygon]));
-            }
-            return components;
-        },
-
-        /**
-         * Return an array of features given a geometrycollection WKT fragment.
-         * @param   str {String}    A WKT fragment representing the geometry collection
-         * @memberof this.Wkt.Wkt.ingest
-         * @instance
-         */
-        geometrycollection: function (str) {
-            console.log('The geometrycollection WKT type is not yet supported.');
-        }
-
-    }; // eo ingest
-
-    return Wkt;
-}));
-
-},{}],254:[function(require,module,exports){
 (function (process,Buffer){
 /**
  * Wrapper for built-in http.js to emulate the browser XMLHttpRequest object.
@@ -96833,7 +95799,7 @@ exports.XMLHttpRequest = function() {
 
 }).call(this,require('_process'),require("buffer").Buffer)
 
-},{"_process":206,"buffer":5,"child_process":4,"fs":4,"http":231,"https":64,"url":249}],255:[function(require,module,exports){
+},{"_process":206,"buffer":5,"child_process":4,"fs":4,"http":231,"https":64,"url":249}],254:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -96854,7 +95820,7 @@ function extend() {
     return target
 }
 
-},{}],256:[function(require,module,exports){
+},{}],255:[function(require,module,exports){
 module.exports={
   "_from": "yasgui-utils@^1.6.7",
   "_id": "yasgui-utils@1.6.7",
@@ -96916,7 +95882,7 @@ module.exports={
   "version": "1.6.7"
 }
 
-},{}],257:[function(require,module,exports){
+},{}],256:[function(require,module,exports){
 window.console = window.console || {"log":function(){}};//make sure any console statements don't break IE
 module.exports = {
 	storage: require("./storage.js"),
@@ -96937,7 +95903,7 @@ module.exports = {
 	}
 };
 
-},{"../package.json":256,"./storage.js":258,"./svg.js":259}],258:[function(require,module,exports){
+},{"../package.json":255,"./storage.js":257,"./svg.js":258}],257:[function(require,module,exports){
 var store = require("store");
 var times = {
   day: function() {
@@ -97028,7 +95994,7 @@ var root = (module.exports = {
   }
 });
 
-},{"store":219}],259:[function(require,module,exports){
+},{"store":219}],258:[function(require,module,exports){
 module.exports = {
 	draw: function(parent, svgString) {
 		if (!parent) return;
@@ -97057,7 +96023,7 @@ module.exports = {
 		return false;
 	}
 };
-},{}],260:[function(require,module,exports){
+},{}],259:[function(require,module,exports){
 "use strict";
 /*
   jQuery deparam is an extraction of the deparam method from Ben Alman's jQuery BBQ
@@ -97149,7 +96115,7 @@ $.deparam = function(params, coerce) {
   return obj;
 };
 
-},{"jquery":74}],261:[function(require,module,exports){
+},{"jquery":74}],260:[function(require,module,exports){
 module.exports = {
   table: {
     "*[&&,valueLogical]": {
@@ -101921,7 +100887,7 @@ module.exports = {
   acceptEmpty: true
 };
 
-},{}],262:[function(require,module,exports){
+},{}],261:[function(require,module,exports){
 "use strict";
 var CodeMirror = require("codemirror");
 CodeMirror.defineMode("sparql11", function(config, parserConfig) {
@@ -102584,7 +101550,7 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
 });
 CodeMirror.defineMIME("application/x-sparql-query", "sparql11");
 
-},{"./_tokenizer-table.js":261,"codemirror":17}],263:[function(require,module,exports){
+},{"./_tokenizer-table.js":260,"codemirror":17}],262:[function(require,module,exports){
 /*
 * TRIE implementation in Javascript
 * Copyright (c) 2010 Saurabh Odhyan | http://odhyan.com
@@ -102850,7 +101816,7 @@ Trie.prototype = {
   }
 };
 
-},{}],264:[function(require,module,exports){
+},{}],263:[function(require,module,exports){
 module.exports={
   "_from": "yasgui-yasqe@2.11.16",
   "_id": "yasgui-yasqe@2.11.16",
@@ -102971,7 +101937,7 @@ module.exports={
   "version": "2.11.16"
 }
 
-},{}],265:[function(require,module,exports){
+},{}],264:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"),
   utils = require("../utils.js"),
@@ -103243,7 +102209,7 @@ var selectHint = function(yasqe, data, completion) {
 //	loadBulkCompletions: loadBulkCompletions,
 //};
 
-},{"../../lib/trie.js":263,"../main.js":274,"../utils.js":280,"jquery":74,"yasgui-utils":257}],266:[function(require,module,exports){
+},{"../../lib/trie.js":262,"../main.js":273,"../utils.js":279,"jquery":74,"yasgui-utils":256}],265:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 module.exports = function(yasqe, name) {
@@ -103289,7 +102255,7 @@ module.exports.postProcessToken = function(yasqe, token, suggestedString) {
   return require("./utils.js").postprocessResourceTokenForCompletion(yasqe, token, suggestedString);
 };
 
-},{"./utils":269,"./utils.js":269,"jquery":74}],267:[function(require,module,exports){
+},{"./utils":268,"./utils.js":268,"jquery":74}],266:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 //this is a mapping from the class names (generic ones, for compatability with codemirror themes), to what they -actually- represent
@@ -103417,7 +102383,7 @@ module.exports.appendPrefixIfNeeded = function(yasqe, completerName) {
 module.exports.fetchFrom = (window.location.protocol.indexOf("http") === 0 ? "//" : "http://") +
   "prefix.cc/popular/all.file.json";
 
-},{"jquery":74}],268:[function(require,module,exports){
+},{"jquery":74}],267:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 module.exports = function(yasqe, name) {
@@ -103468,7 +102434,7 @@ module.exports.postProcessToken = function(yasqe, token, suggestedString) {
   return require("./utils.js").postprocessResourceTokenForCompletion(yasqe, token, suggestedString);
 };
 
-},{"./utils":269,"./utils.js":269,"jquery":74}],269:[function(require,module,exports){
+},{"./utils":268,"./utils.js":268,"jquery":74}],268:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), utils = require("./utils.js"), yutils = require("yasgui-utils");
 /**
@@ -103588,7 +102554,7 @@ module.exports = {
   postprocessResourceTokenForCompletion: postprocessResourceTokenForCompletion
 };
 
-},{"../imgs.js":273,"./utils.js":269,"jquery":74,"yasgui-utils":257}],270:[function(require,module,exports){
+},{"../imgs.js":272,"./utils.js":268,"jquery":74,"yasgui-utils":256}],269:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 module.exports = function(yasqe) {
@@ -103643,7 +102609,7 @@ module.exports = function(yasqe) {
   };
 };
 
-},{"jquery":74}],271:[function(require,module,exports){
+},{"jquery":74}],270:[function(require,module,exports){
 var sparql = require("./sparql.js"), $ = require("jquery");
 var quote = function(string) {
   return "'" + string + "'";
@@ -103675,7 +102641,7 @@ module.exports = {
   }
 };
 
-},{"./sparql.js":277,"jquery":74}],272:[function(require,module,exports){
+},{"./sparql.js":276,"jquery":74}],271:[function(require,module,exports){
 /**
  * The default options of YASQE (check the CodeMirror documentation for even
  * more options, such as disabling line numbers, or changing keyboard shortcut
@@ -103849,7 +102815,7 @@ YASQE.defaults = $.extend(true, {}, YASQE.defaults, {
   }
 });
 
-},{"./main.js":274,"jquery":74}],273:[function(require,module,exports){
+},{"./main.js":273,"jquery":74}],272:[function(require,module,exports){
 "use strict";
 module.exports = {
   query: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><path d="M64.622 2.41H14.995c-6.627 0-12 5.374-12 12V64.31c0 6.627 5.373 12 12 12h49.627c6.627 0 12-5.373 12-12V14.41c0-6.627-5.373-12-12-12zM24.125 63.907V15.093L61 39.168 24.125 63.906z"/></svg>',
@@ -103861,7 +102827,7 @@ module.exports = {
   smallscreen: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="5 -10 100 100"><path d="M43.89 28.89V-10L27.22 6.667 10.555-10 5-4.445l16.667 16.667L5 28.89h38.89zM66.11 28.89V-10L82.78 6.667 99.444-10 105-4.445 88.334 12.222 105 28.89H66.11zM43.89 51.11V90L27.22 73.334 10.555 90 5 84.444l16.667-16.666L5 51.11h38.89zM66.11 51.11V90L82.78 73.334 99.444 90 105 84.444 88.334 67.778 105 51.11H66.11z" fill="#010101"/></svg>'
 };
 
-},{}],274:[function(require,module,exports){
+},{}],273:[function(require,module,exports){
 "use strict";
 //make sure any console statements
 window.console = window.console || {
@@ -104679,7 +103645,7 @@ root.version = {
   "yasgui-utils": yutils.version
 };
 
-},{"../lib/deparam.js":260,"../lib/grammar/tokenizer.js":262,"../package.json":264,"./autocompleters/autocompleterBase.js":265,"./autocompleters/classes.js":266,"./autocompleters/prefixes.js":267,"./autocompleters/properties.js":268,"./autocompleters/variables.js":270,"./curl.js":271,"./defaults.js":272,"./imgs.js":273,"./prefixFold.js":275,"./prefixUtils.js":276,"./sparql.js":277,"./tokenUtils.js":278,"./tooltip":279,"./utils.js":280,"codemirror":17,"codemirror/addon/display/fullscreen.js":8,"codemirror/addon/edit/matchbrackets.js":9,"codemirror/addon/fold/brace-fold.js":10,"codemirror/addon/fold/foldcode.js":11,"codemirror/addon/fold/foldgutter.js":12,"codemirror/addon/fold/xml-fold.js":13,"codemirror/addon/hint/show-hint.js":14,"codemirror/addon/runmode/runmode.js":15,"codemirror/addon/search/searchcursor.js":16,"jquery":74,"yasgui-utils":257}],275:[function(require,module,exports){
+},{"../lib/deparam.js":259,"../lib/grammar/tokenizer.js":261,"../package.json":263,"./autocompleters/autocompleterBase.js":264,"./autocompleters/classes.js":265,"./autocompleters/prefixes.js":266,"./autocompleters/properties.js":267,"./autocompleters/variables.js":269,"./curl.js":270,"./defaults.js":271,"./imgs.js":272,"./prefixFold.js":274,"./prefixUtils.js":275,"./sparql.js":276,"./tokenUtils.js":277,"./tooltip":278,"./utils.js":279,"codemirror":17,"codemirror/addon/display/fullscreen.js":8,"codemirror/addon/edit/matchbrackets.js":9,"codemirror/addon/fold/brace-fold.js":10,"codemirror/addon/fold/foldcode.js":11,"codemirror/addon/fold/foldgutter.js":12,"codemirror/addon/fold/xml-fold.js":13,"codemirror/addon/hint/show-hint.js":14,"codemirror/addon/runmode/runmode.js":15,"codemirror/addon/search/searchcursor.js":16,"jquery":74,"yasgui-utils":256}],274:[function(require,module,exports){
 var CodeMirror = require("codemirror"), tokenUtils = require("./tokenUtils.js");
 
 ("use strict");
@@ -104797,7 +103763,7 @@ CodeMirror.registerHelper("fold", "prefix", function(cm, start) {
   };
 });
 
-},{"./tokenUtils.js":278,"codemirror":17}],276:[function(require,module,exports){
+},{"./tokenUtils.js":277,"codemirror":17}],275:[function(require,module,exports){
 "use strict";
 /**
  * Append prefix declaration to list of prefixes in query window.
@@ -104898,7 +103864,7 @@ module.exports = {
   removePrefixes: removePrefixes
 };
 
-},{}],277:[function(require,module,exports){
+},{}],276:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"),
   utils = require("./utils.js"),
@@ -105062,7 +104028,7 @@ module.exports = {
   getAjaxConfig: YASQE.getAjaxConfig
 };
 
-},{"./main.js":274,"./utils.js":280,"jquery":74}],278:[function(require,module,exports){
+},{"./main.js":273,"./utils.js":279,"jquery":74}],277:[function(require,module,exports){
 "use strict";
 /**
  * When typing a query, this query is sometimes syntactically invalid, causing
@@ -105135,7 +104101,7 @@ module.exports = {
   getNextNonWsToken: getNextNonWsToken
 };
 
-},{}],279:[function(require,module,exports){
+},{}],278:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), utils = require("./utils.js");
 
@@ -105171,7 +104137,7 @@ module.exports = function(yasqe, parent, html) {
   };
 };
 
-},{"./utils.js":280,"jquery":74}],280:[function(require,module,exports){
+},{"./utils.js":279,"jquery":74}],279:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
@@ -105232,7 +104198,7 @@ module.exports = {
   getString: getString
 };
 
-},{"jquery":74}],281:[function(require,module,exports){
+},{"jquery":74}],280:[function(require,module,exports){
 /**
                _ _____           _          _     _      
               | |  __ \         (_)        | |   | |     
@@ -105547,7 +104513,7 @@ var $ = require('jquery');
     });
 
 
-},{"jquery":74}],282:[function(require,module,exports){
+},{"jquery":74}],281:[function(require,module,exports){
 /**
  * jQuery-csv (jQuery Plugin)
  * version: 0.71 (2012-11-19)
@@ -106397,20 +105363,12 @@ RegExp.escape= function(s) {
 
 
 
-},{"jquery":74}],283:[function(require,module,exports){
-arguments[4][68][0].apply(exports,arguments)
-},{"dup":68,"jquery":74}],284:[function(require,module,exports){
-arguments[4][69][0].apply(exports,arguments)
-},{"./widget":286,"dup":69,"jquery":74}],285:[function(require,module,exports){
-arguments[4][72][0].apply(exports,arguments)
-},{"./core":283,"./mouse":284,"./widget":286,"dup":72,"jquery":74}],286:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73,"jquery":74}],287:[function(require,module,exports){
+},{"jquery":74}],282:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasr@2.12.8",
-  "_id": "yasgui-yasr@2.12.8",
+  "_from": "yasgui-yasr@2.12.9",
+  "_id": "yasgui-yasr@2.12.9",
   "_inBundle": false,
-  "_integrity": "sha512-PkESYzkYLAnNkAYCAVsnqYmsFmbOG+rU3IXsHevTgCRG0kn2RXfTCWscWI9A2Y/J3gVyhkvOAVbipDchnaklpQ==",
+  "_integrity": "sha512-ftavnb5yomVqK7wCk5SuHQSJpGJSYDfkOOAYa9AjdHrf41+BDTPd9eHeCZlZXereQV1KH1Y+GUxQJS+x4rJNjQ==",
   "_location": "/yasgui-yasr",
   "_phantomChildren": {
     "ms": "2.0.0"
@@ -106418,20 +105376,20 @@ module.exports={
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasr@2.12.8",
+    "raw": "yasgui-yasr@2.12.9",
     "name": "yasgui-yasr",
     "escapedName": "yasgui-yasr",
-    "rawSpec": "2.12.8",
+    "rawSpec": "2.12.9",
     "saveSpec": null,
-    "fetchSpec": "2.12.8"
+    "fetchSpec": "2.12.9"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.8.tgz",
-  "_shasum": "ded38a50f5332bb33a9412e1b86c588e6ce5bd59",
-  "_spec": "yasgui-yasr@2.12.8",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.9.tgz",
+  "_shasum": "81faf236781c5ce1b8b3976a2254c0d9e1d9e7d1",
+  "_spec": "yasgui-yasr@2.12.9",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -106464,7 +105422,7 @@ module.exports={
     "lodash": "^4.16.1",
     "npm-check": "^5.4.5",
     "pivottable": "^2.1.0",
-    "wicket": "git+https://github.com/arthur-e/Wicket.git#4c85030c80a2b7737b0a21758bbcf41dd976facc",
+    "wellknown": "^0.5.0",
     "yasgui-utils": "^1.6.7"
   },
   "deprecated": false,
@@ -106565,10 +105523,10 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.12.8"
+  "version": "2.12.9"
 }
 
-},{}],288:[function(require,module,exports){
+},{}],283:[function(require,module,exports){
 "use strict";
 module.exports = function(result) {
   var quote = '"';
@@ -106631,7 +105589,7 @@ module.exports = function(result) {
   return csvString;
 };
 
-},{}],289:[function(require,module,exports){
+},{}],284:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
@@ -106688,7 +105646,7 @@ root.version = {
   jquery: $.fn.jquery
 };
 
-},{"../package.json":287,"./imgs.js":295,"jquery":74,"yasgui-utils":257}],290:[function(require,module,exports){
+},{"../package.json":282,"./imgs.js":290,"jquery":74,"yasgui-utils":256}],285:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 module.exports = {
@@ -106791,7 +105749,7 @@ module.exports = {
   }
 };
 
-},{"jquery":74}],291:[function(require,module,exports){
+},{"jquery":74}],286:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
@@ -106891,7 +105849,7 @@ root.defaults = {
   tryQueryLink: null
 };
 
-},{"jquery":74}],292:[function(require,module,exports){
+},{"jquery":74}],287:[function(require,module,exports){
 module.exports = {
   GoogleTypeException: function(foundTypes, varName) {
     this.foundTypes = foundTypes;
@@ -106916,7 +105874,7 @@ module.exports = {
   }
 };
 
-},{}],293:[function(require,module,exports){
+},{}],288:[function(require,module,exports){
 (function (global){
 var EventEmitter = require("events").EventEmitter, $ = require("jquery");
 //cannot package google loader via browserify....
@@ -107028,7 +105986,7 @@ module.exports = new loader();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"events":63,"jquery":74}],294:[function(require,module,exports){
+},{"events":63,"jquery":74}],289:[function(require,module,exports){
 (function (global){
 "use strict";
 /**
@@ -107363,7 +106321,7 @@ function deepEq$(x, y, type) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./exceptions.js":292,"./gChartLoader.js":293,"./utils.js":310,"jquery":74,"yasgui-utils":257}],295:[function(require,module,exports){
+},{"./exceptions.js":287,"./gChartLoader.js":288,"./utils.js":305,"jquery":74,"yasgui-utils":256}],290:[function(require,module,exports){
 "use strict";
 module.exports = {
   cross: '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><g>	<path d="M83.288,88.13c-2.114,2.112-5.575,2.112-7.689,0L53.659,66.188c-2.114-2.112-5.573-2.112-7.687,0L24.251,87.907   c-2.113,2.114-5.571,2.114-7.686,0l-4.693-4.691c-2.114-2.114-2.114-5.573,0-7.688l21.719-21.721c2.113-2.114,2.113-5.573,0-7.686   L11.872,24.4c-2.114-2.113-2.114-5.571,0-7.686l4.842-4.842c2.113-2.114,5.571-2.114,7.686,0L46.12,33.591   c2.114,2.114,5.572,2.114,7.688,0l21.721-21.719c2.114-2.114,5.573-2.114,7.687,0l4.695,4.695c2.111,2.113,2.111,5.571-0.003,7.686   L66.188,45.973c-2.112,2.114-2.112,5.573,0,7.686L88.13,75.602c2.112,2.111,2.112,5.572,0,7.687L83.288,88.13z"/></g></svg>',
@@ -107377,10 +106335,10 @@ module.exports = {
   smallscreen: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   version="1.1"      x="0px"   y="0px"   width="100%"   height="100%"   viewBox="5 -10 74.074074 100"   enable-background="new 0 0 100 100"   xml:space="preserve"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_2186_cc.svg"><metadata     ><rdf:RDF><cc:Work         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs      /><sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"          showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="44.101509"     inkscape:cy="31.481481"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="Layer_1" /><path     d="m 30.926037,28.889 0,-38.889 -16.667,16.667 -16.667,-16.667 -5.555,5.555 16.667,16.667 -16.667,16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,28.889 0,-38.889 16.667,16.667 16.666,-16.667 5.556,5.555 -16.666,16.667 16.666,16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 30.926037,51.111 0,38.889 -16.667,-16.666 -16.667,16.666 -5.555,-5.556 16.667,-16.666 -16.667,-16.667 38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /><path     d="m 53.148037,51.111 0,38.889 16.667,-16.666 16.666,16.666 5.556,-5.556 -16.666,-16.666 16.666,-16.667 -38.889,0 z"          inkscape:connector-curvature="0"     style="fill:#010101" /></svg>'
 };
 
-},{}],296:[function(require,module,exports){
+},{}],291:[function(require,module,exports){
 require("./tableToCsv.js");
 
-},{"./tableToCsv.js":297}],297:[function(require,module,exports){
+},{"./tableToCsv.js":292}],292:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
@@ -107470,13 +106428,12 @@ $.fn.tableToCsv = function(config) {
   return csvString;
 };
 
-},{"jquery":74}],298:[function(require,module,exports){
-(function (global){
+},{"jquery":74}],293:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
 var LibColor = require("color");
-
+var wellknown = require('wellknown')
 var colormap = require('colormap');
 var _colorbrewer = require('colorbrewer')
 var colorbrewer = {};
@@ -107491,11 +106448,6 @@ for (var color in _colorbrewer) {
 }
 
 var colorScales = require('colormap/colorScale');
-function getWicket() {
-  global.Wkt = require("wicket/wicket");
-  require("wicket/wicket-leaflet");
-  return new Wkt.Wkt();
-}
 function getHexFromScale(scaleType, scaleVal) {
   if (scaleVal > 1 || scaleVal < 0) return;
   if (!scaleType.length) return
@@ -107609,7 +106561,6 @@ var root = (module.exports = function(yasr) {
           fill: getColor()
         };
         Colors.border = Colors.fill.saturate(0.2);
-        var wicket = getWicket();
         var mySVGIcon = _L.divIcon({
           iconSize: [25, 41],
           // shadowSize: [25, 45],
@@ -107620,13 +106571,12 @@ var root = (module.exports = function(yasr) {
 
 
         var style = $.extend({}, defaultStyle, { icon: mySVGIcon, color: Colors.fill.toString()})
-        var feature;
-        try {
-          feature = wicket.read(binding[plotVariable].value).toObject(style);
-        } catch(e) {
+        var wkt = wellknown(binding[plotVariable].value);
+        if (!wkt) {
           console.error('Failed to read WKT value: ' + binding[plotVariable].value)
           continue;
         }
+        var feature = _L.geoJson(wkt, {style:style});
 
         var popupContent = options.formatPopup && options.formatPopup(yasr, L, plotVariable, binding);
         if (popupContent) {
@@ -107688,9 +106638,7 @@ var root = (module.exports = function(yasr) {
     val = val.trim().toUpperCase();
     for (var i = 0; i < geoKeywords.length; i++) {
       if (val.indexOf(geoKeywords[i]) === 0) {
-        try {
-          getWicket().read(val)
-        } catch(e) {
+        if (!wellknown(val)) {
           console.error('Failed to parse WKT value ' + val)
           continue;
         }
@@ -107804,9 +106752,7 @@ root.version = {
   leaflet: root.defaults.L.version
 };
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-
-},{"color":25,"colorbrewer":27,"colormap":29,"colormap/colorScale":28,"jquery":74,"leaflet":75,"wicket/wicket":253,"wicket/wicket-leaflet":252}],299:[function(require,module,exports){
+},{"color":25,"colorbrewer":27,"colormap":29,"colormap/colorScale":28,"jquery":74,"leaflet":75,"wellknown":252}],294:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), EventEmitter = require("events").EventEmitter, utils = require("yasgui-utils");
 console = console || {
@@ -108306,14 +107252,14 @@ try {
   console.warn(e);
 }
 
-},{"../package.json":287,"./boolean.js":289,"./defaults.js":290,"./error.js":291,"./gChartLoader.js":293,"./gchart.js":294,"./imgs.js":295,"./jquery/extendJquery.js":296,"./leaflet.js":298,"./parsers/wrapper.js":305,"./pivot.js":307,"./rawResponse.js":308,"./table.js":309,"./utils.js":310,"events":63,"jquery":74,"yasgui-utils":257}],300:[function(require,module,exports){
+},{"../package.json":282,"./boolean.js":284,"./defaults.js":285,"./error.js":286,"./gChartLoader.js":288,"./gchart.js":289,"./imgs.js":290,"./jquery/extendJquery.js":291,"./leaflet.js":293,"./parsers/wrapper.js":300,"./pivot.js":302,"./rawResponse.js":303,"./table.js":304,"./utils.js":305,"events":63,"jquery":74,"yasgui-utils":256}],295:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
   return require("./dlv.js")(queryResponse, ",");
 };
 
-},{"./dlv.js":301,"jquery":74}],301:[function(require,module,exports){
+},{"./dlv.js":296,"jquery":74}],296:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 require("../../lib/jquery.csv-0.71.js");
@@ -108393,7 +107339,7 @@ var root = (module.exports = function(queryResponse, separator, opts) {
   return json;
 });
 
-},{"../../lib/jquery.csv-0.71.js":282,"jquery":74}],302:[function(require,module,exports){
+},{"../../lib/jquery.csv-0.71.js":281,"jquery":74}],297:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 var map = require("lodash/map");
@@ -108478,7 +107424,7 @@ var root = module.exports = function(responseJson) {
   return false;
 };
 
-},{"jquery":74,"lodash/map":194,"lodash/reduce":197}],303:[function(require,module,exports){
+},{"jquery":74,"lodash/map":194,"lodash/reduce":197}],298:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 var root = module.exports = function(queryResponse) {
@@ -108495,7 +107441,7 @@ var root = module.exports = function(queryResponse) {
   return false;
 };
 
-},{"jquery":74}],304:[function(require,module,exports){
+},{"jquery":74}],299:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 var root = (module.exports = function(queryResponse) {
@@ -108511,7 +107457,7 @@ var root = (module.exports = function(queryResponse) {
   });
 });
 
-},{"./dlv.js":301,"jquery":74}],305:[function(require,module,exports){
+},{"./dlv.js":296,"jquery":74}],300:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
@@ -108745,7 +107691,7 @@ var root = (module.exports = function(dataOrJqXhr, textStatus, jqXhrOrErrorStrin
   };
 });
 
-},{"./csv.js":300,"./graphJson.js":302,"./json.js":303,"./tsv.js":304,"./xml.js":306,"jquery":74}],306:[function(require,module,exports){
+},{"./csv.js":295,"./graphJson.js":297,"./json.js":298,"./tsv.js":299,"./xml.js":301,"jquery":74}],301:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 var root = module.exports = function(xml) {
@@ -108826,7 +107772,7 @@ var root = module.exports = function(xml) {
   return json;
 };
 
-},{"jquery":74}],307:[function(require,module,exports){
+},{"jquery":74}],302:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), utils = require("./utils.js"), yUtils = require("yasgui-utils"), imgs = require("./imgs.js");
 require("jquery-ui/sortable");
@@ -109112,7 +108058,7 @@ root.version = {
   jquery: $.fn.jquery
 };
 
-},{"../package.json":287,"./gChartLoader.js":293,"./imgs.js":295,"./utils.js":310,"d3":61,"jquery":74,"jquery-ui/sortable":285,"pivottable":204,"pivottable/dist/d3_renderers.js":202,"pivottable/dist/gchart_renderers.js":203,"yasgui-utils":257}],308:[function(require,module,exports){
+},{"../package.json":282,"./gChartLoader.js":288,"./imgs.js":290,"./utils.js":305,"d3":61,"jquery":74,"jquery-ui/sortable":72,"pivottable":204,"pivottable/dist/d3_renderers.js":202,"pivottable/dist/gchart_renderers.js":203,"yasgui-utils":256}],303:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), CodeMirror = require("codemirror");
 
@@ -109202,7 +108148,7 @@ root.version = {
   CodeMirror: CodeMirror.version
 };
 
-},{"../package.json":287,"codemirror":17,"codemirror/addon/edit/matchbrackets.js":9,"codemirror/addon/fold/brace-fold.js":10,"codemirror/addon/fold/foldcode.js":11,"codemirror/addon/fold/foldgutter.js":12,"codemirror/addon/fold/xml-fold.js":13,"codemirror/mode/javascript/javascript.js":18,"codemirror/mode/xml/xml.js":19,"jquery":74}],309:[function(require,module,exports){
+},{"../package.json":282,"codemirror":17,"codemirror/addon/edit/matchbrackets.js":9,"codemirror/addon/fold/brace-fold.js":10,"codemirror/addon/fold/foldcode.js":11,"codemirror/addon/fold/foldgutter.js":12,"codemirror/addon/fold/xml-fold.js":13,"codemirror/mode/javascript/javascript.js":18,"codemirror/mode/xml/xml.js":19,"jquery":74}],304:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), yutils = require("yasgui-utils"), utils = require("./utils.js"), imgs = require("./imgs.js");
 require("datatables.net")();
@@ -109593,7 +108539,7 @@ root.version = {
   "jquery-datatables": $.fn.DataTable.version
 };
 
-},{"../lib/colResizable-1.4.js":281,"../package.json":287,"./bindingsToCsv.js":288,"./imgs.js":295,"./utils.js":310,"datatables.net":62,"jquery":74,"yasgui-utils":257}],310:[function(require,module,exports){
+},{"../lib/colResizable-1.4.js":280,"../package.json":282,"./bindingsToCsv.js":283,"./imgs.js":290,"./utils.js":305,"datatables.net":62,"jquery":74,"yasgui-utils":256}],305:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), GoogleTypeException = require("./exceptions.js").GoogleTypeException;
 
@@ -109738,11 +108684,11 @@ var parseXmlSchemaDate = function(dateString) {
   return date;
 };
 
-},{"./exceptions.js":292,"jquery":74}],311:[function(require,module,exports){
+},{"./exceptions.js":287,"jquery":74}],306:[function(require,module,exports){
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.13",
+  "version": "2.7.14",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -109825,7 +108771,7 @@ module.exports={
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
     "yasgui-yasqe": "^2.11.16",
-    "yasgui-yasr": "^2.12.8"
+    "yasgui-yasr": "^2.12.9"
   },
   "browserify-shim": {
     "jQuery": "jquery"
@@ -109854,7 +108800,7 @@ module.exports={
   }
 }
 
-},{}],312:[function(require,module,exports){
+},{}],307:[function(require,module,exports){
 "use strict";
 
 var $ = require("jquery");
@@ -110331,13 +109277,13 @@ module.exports = {
   ]
 };
 
-},{"./main.js":319,"jquery":74}],313:[function(require,module,exports){
+},{"./main.js":314,"jquery":74}],308:[function(require,module,exports){
 //this is the entry-point for browserify.
 //the current browserify version does not support require-ing js files which are used as entry-point
 //this way, we can still require our main.js file
 module.exports = require("./main.js");
 
-},{"./main.js":319}],314:[function(require,module,exports){
+},{"./main.js":314}],309:[function(require,module,exports){
 "use strict";
 module.exports = {
   yasgui: '<svg   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="0 0 603.99 522.51"   width="100%"   height="100%"      version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="test.svg">  <defs     >    <linearGradient              osb:paint="solid">      <stop         style="stop-color:#3b3b3b;stop-opacity:1;"         offset="0"          />    </linearGradient>    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />    <inkscape:path-effect       effect="skeletal"              is_visible="true"       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 z"       copytype="single_stretched"       prop_scale="1"       scale_y_rel="false"       spacing="0"       normal_offset="0"       tang_offset="0"       prop_units="false"       vertical_pattern="false"       fuse_tolerance="0" />    <inkscape:path-effect       effect="spiro"              is_visible="true" />  </defs>  <sodipodi:namedview          pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1.0"     inkscape:pageopacity="0.0"     inkscape:pageshadow="2"     inkscape:zoom="0.35"     inkscape:cx="-469.55507"     inkscape:cy="840.5292"     inkscape:document-units="px"     inkscape:current-layer="layer1"     showgrid="false"     inkscape:window-width="1855"     inkscape:window-height="1056"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0" />  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />        <dc:title />      </cc:Work>    </rdf:RDF>  </metadata>  <g     inkscape:label="Layer 1"     inkscape:groupmode="layer"          transform="translate(-50.966817,-280.33262)">    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="478.57324"       x="-374.48849"       y="103.99496"       transform="matrix(-2.679181e-4,-0.99999996,0.99999993,-3.6684387e-4,0,0)" />    <rect       style="fill:#3b3b3b;fill-opacity:1;stroke:none"              width="40.000004"       height="560"       x="651.37634"       y="-132.06581"       transform="matrix(0.74639582,0.66550228,-0.66550228,0.74639582,0,0)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,92.132758,620.67568)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,457.84706,214.96137)" />    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.28877887,0,0,0.25811209,-30.152972,219.81853)" />    <g       transform="matrix(0.68747304,-0.7262099,0.7262099,0.68747304,0,0)"       inkscape:transform-center-x="239.86342"       inkscape:transform-center-y="-26.958107"       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#3b3b3b;fill-opacity:1;stroke:none;font-family:Sans"       >      <path         d="m -320.16655,490.61871 33.2,0 -32.4,75.4 0,64.6 -32.2,0 0,-64.6 -32.4,-75.4 33.2,0 15.2,43 15.4,-43 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -177.4603,630.61871 -32.2,0 -21.6,-80.4 -21.6,80.4 -32.2,0 37.4,-140 0.4,0 32,0 0.4,0 37.4,140 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />      <path         d="m -84.835303,544.41871 c 5.999926,9e-5 11.59992,1.13342 16.8,3.4 5.19991,2.26675 9.733238,5.40008 13.6,9.4 3.866564,3.86674 6.933228,8.40007 9.2,13.6 2.266556,5.20006 3.399889,10.80005 3.4,16.8 -1.11e-4,6.00004 -1.133444,11.60003 -3.4,16.8 -2.266772,5.20002 -5.333436,9.73335 -9.2,13.6 -3.866762,3.86668 -8.40009,6.93334 -13.6,9.2 -5.20008,2.26667 -10.800074,3.4 -16.8,3.4 l -64.599997,0 0,-32.2 64.599997,0 c 3.066595,-0.1333 5.599926,-1.19996 7.6,-3.2 2.133255,-2.13329 3.199921,-4.66662 3.2,-7.6 -7.9e-5,-3.06662 -1.066745,-5.59995 -3.2,-7.6 -2.000074,-2.13328 -4.533405,-3.19994 -7.6,-3.2 l -21.599997,0 c -6.00004,6e-5 -11.60004,-1.13328 -16.8,-3.4 -5.20003,-2.2666 -9.73336,-5.33327 -13.6,-9.2 -3.86668,-3.99993 -6.93335,-8.59992 -9.2,-13.8 -2.26667,-5.19991 -3.40001,-10.79991 -3.4,-16.8 -10e-6,-5.99989 1.13333,-11.59989 3.4,-16.8 2.26665,-5.19988 5.33332,-9.73321 9.2,-13.6 3.86664,-3.86653 8.39997,-6.9332 13.6,-9.2 5.19996,-2.26652 10.79996,-3.39986 16.8,-3.4 l 42.999997,0 0,32.4 -42.999997,0 c -3.06671,1.1e-4 -5.66671,1.06678 -7.8,3.2 -2.00004,2.00011 -3.00004,4.46677 -3,7.4 -4e-5,3.06676 0.99996,5.66676 3,7.8 2.13329,2.00009 4.73329,3.00009 7.8,3 l 21.599997,0 0,0"         style="font-size:200px;font-variant:normal;font-stretch:normal;letter-spacing:20px;fill:#3b3b3b;font-family:RR Beaver;-inkscape-font-specification:RR Beaver"          />    </g>    <g       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Theorem NBP;-inkscape-font-specification:Theorem NBP"       >      <path         d="m 422.17683,677.02126 36.55,0 -5.44,27.54 -1.87,9.18 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 9.18,-45.9 c 1.01998,-5.09991 2.94664,-9.85991 5.78,-14.28 2.8333,-4.4199 6.17663,-8.27323 10.03,-11.56 3.96662,-3.28656 8.32995,-5.89322 13.09,-7.82 4.87328,-1.92655 9.85994,-2.88988 14.96,-2.89 l 18.36,0 c 5.09991,1.2e-4 9.63324,0.96345 13.6,2.89 4.0799,1.92678 7.42323,4.53344 10.03,7.82 2.71989,3.28677 4.58989,7.1401 5.61,11.56 1.01988,4.42009 1.01988,9.18009 0,14.28 l -27.37,0 c 0.45325,-2.49325 -9e-5,-4.58991 -1.36,-6.29 -1.36009,-1.81324 -3.34342,-2.71991 -5.95,-2.72 l -18.36,0 c -2.60673,9e-5 -4.98672,0.90676 -7.14,2.72 -2.15339,1.70009 -3.45672,3.79675 -3.91,6.29 l -9.18,45.9 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 1.87,-9.18 -9.18,0 5.44,-27.54"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 569.69808,713.74126 c -1.0201,5.10003 -2.94677,9.86003 -5.78,14.28 -2.83343,4.42002 -6.23343,8.27335 -10.2,11.56 -3.85342,3.28667 -8.21675,5.89334 -13.09,7.82 -4.76007,1.92667 -9.69007,2.89 -14.79,2.89 l -18.36,0 c -5.10004,0 -9.69003,-0.96333 -13.77,-2.89 -3.96669,-1.92666 -7.31002,-4.53333 -10.03,-7.82 -2.60668,-3.28665 -4.42002,-7.13998 -5.44,-11.56 -1.02001,-4.41997 -1.02001,-9.17997 0,-14.28 l 16.49,-82.45 27.37,0 -16.49,82.45 c -0.45337,2.49337 -4e-5,4.6467 1.36,6.46 1.35996,1.81336 3.34329,2.72003 5.95,2.72 l 18.36,0 c 2.6066,3e-5 4.98659,-0.90664 7.14,-2.72 2.15326,-1.8133 3.45659,-3.96663 3.91,-6.46 l 16.49,-82.45 27.37,0 -16.49,82.45"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />      <path         d="m 613.00933,631.29126 27.37,0 -23.8,119 -27.37,0 23.8,-119 0,0"         style="font-size:170px;font-style:italic;font-weight:bold;letter-spacing:20px;fill:#c80000;font-family:RR Beaver;-inkscape-font-specification:RR Beaver Bold Italic"          />    </g>    <path       sodipodi:type="arc"       style="fill:#ffffff;fill-opacity:1;stroke:#3b3b3b;stroke-width:61.04665375;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"              sodipodi:cx="455.71429"       sodipodi:cy="513.79077"       sodipodi:rx="144.28572"       sodipodi:ry="161.42857"       d="m 600.00002,513.79077 c 0,89.15454 -64.59892,161.42858 -144.28573,161.42858 -79.6868,0 -144.28572,-72.27404 -144.28572,-161.42858 0,-89.15454 64.59892,-161.42857 144.28572,-161.42857 79.68681,0 144.28573,72.27403 144.28573,161.42857 z"       transform="matrix(0.4331683,0,0,0.38716814,381.83246,155.72497)" />  </g></svg>', //svg with letters as paths (solves font issues)
@@ -110348,7 +109294,7 @@ module.exports = {
   checkCrossMark: '<svg   xmlns:dc="http://purl.org/dc/elements/1.1/"   xmlns:cc="http://creativecommons.org/ns#"   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"   xmlns:svg="http://www.w3.org/2000/svg"   xmlns="http://www.w3.org/2000/svg"   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"   viewBox="3.75 -7.5 49.752653 49.990111"   version="1.1"   inkscape:version="0.48.4 r9939"   sodipodi:docname="noun_96848_cc.svg">  <metadata     >    <rdf:RDF>      <cc:Work         rdf:about="">        <dc:format>image/svg+xml</dc:format>        <dc:type           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />      </cc:Work>    </rdf:RDF>  </metadata>  <defs      />  <sodipodi:namedview     pagecolor="#ffffff"     bordercolor="#666666"     borderopacity="1"     objecttolerance="10"     gridtolerance="10"     guidetolerance="10"     inkscape:pageopacity="0"     inkscape:pageshadow="2"     inkscape:window-width="1855"     inkscape:window-height="1056"     showgrid="false"     fit-margin-top="0"     fit-margin-left="0"     fit-margin-right="0"     fit-margin-bottom="0"     inkscape:zoom="2.36"     inkscape:cx="41.024355"     inkscape:cy="53.698163"     inkscape:window-x="65"     inkscape:window-y="24"     inkscape:window-maximized="1"     inkscape:current-layer="svg2"      />  <g     transform="matrix(0.59034297,0,0,0.59034297,12.298561,2.5312719)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 27.160156,67.6875 4.632812,45.976562 l 8.675782,-9 11.503906,11.089844 c 7.25,-10.328125 22.84375,-29.992187 40.570312,-36.6875 l 4.414063,11.695313 C 49.894531,30.59375 31.398438,60.710938 31.214844,61.015625 z m 0,0"       inkscape:connector-curvature="0"        />  </g>  <g     transform="matrix(0.46036177,0,0,0.46036177,-0.49935505,-12.592753)"     >    <path       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"       d="M 67.335938,21.40625 60.320312,11.0625 C 50.757812,17.542969 43.875,22.636719 38.28125,27.542969 32.691406,22.636719 25.808594,17.546875 16.242188,11.0625 L 9.230469,21.40625 C 18.03125,27.375 24.3125,31.953125 29.398438,36.351562 23.574219,42.90625 18.523438,50.332031 11.339844,61.183594 l 10.421875,6.902344 C 28.515625,57.886719 33.144531,51.046875 38.28125,45.160156 c 5.140625,5.886719 9.765625,12.726563 16.523438,22.925782 L 65.226562,61.183594 C 58.039062,50.335938 52.988281,42.90625 47.167969,36.351562 52.25,31.953125 58.53125,27.375 67.335938,21.40625 z m 0,0"       inkscape:connector-curvature="0"        />  </g></svg>'
 };
 
-},{}],315:[function(require,module,exports){
+},{}],310:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"), selectize = require("selectize"), utils = require("yasgui-utils");
 
@@ -110586,7 +109532,7 @@ $.fn.endpointCombi = function(yasgui, options) {
   return this;
 };
 
-},{"jquery":74,"selectize":215,"yasgui-utils":257}],316:[function(require,module,exports){
+},{"jquery":74,"selectize":215,"yasgui-utils":256}],311:[function(require,module,exports){
 //extend jquery
 require("jquery-ui/resizable.js");
 require("./outsideclick.js");
@@ -110595,7 +109541,7 @@ require("./endpointCombi.js");
 require("jquery-ui/position");
 require("jquery-ui/sortable");
 
-},{"./endpointCombi.js":315,"./outsideclick.js":317,"./tab.js":318,"jquery-ui/position":70,"jquery-ui/resizable.js":71,"jquery-ui/sortable":72}],317:[function(require,module,exports){
+},{"./endpointCombi.js":310,"./outsideclick.js":312,"./tab.js":313,"jquery-ui/position":70,"jquery-ui/resizable.js":71,"jquery-ui/sortable":72}],312:[function(require,module,exports){
 "use strict";
 var $ = require("jquery");
 
@@ -110629,7 +109575,7 @@ $.fn.onOutsideClick = function(onOutsideClick, config) {
   return this;
 };
 
-},{"jquery":74}],318:[function(require,module,exports){
+},{"jquery":74}],313:[function(require,module,exports){
 //Based on Bootstrap: tab.js v3.3.1
 var $ = require("jquery");
 ("use strict");
@@ -110761,7 +109707,7 @@ $(document)
   .on("click.bs.tab.data-api", '[data-toggle="tab"]', clickHandler)
   .on("click.bs.tab.data-api", '[data-toggle="pill"]', clickHandler);
 
-},{"jquery":74}],319:[function(require,module,exports){
+},{"jquery":74}],314:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"),
   EventEmitter = require("events").EventEmitter,
@@ -111228,7 +110174,7 @@ module.exports.version = {
 module.exports.$ = $;
 module.exports.defaults = require("./defaults.js");
 
-},{"../package.json":311,"./defaults.js":312,"./imgs.js":314,"./jquery/extendJquery.js":316,"./shareLink.js":320,"./stories.js":321,"./tab.js":322,"./tracker.js":324,"./yasqe.js":326,"./yasr.js":327,"blueimp-md5":2,"events":63,"jquery":74,"yasgui-utils":257}],320:[function(require,module,exports){
+},{"../package.json":306,"./defaults.js":307,"./imgs.js":309,"./jquery/extendJquery.js":311,"./shareLink.js":315,"./stories.js":316,"./tab.js":317,"./tracker.js":319,"./yasqe.js":321,"./yasr.js":322,"blueimp-md5":2,"events":63,"jquery":74,"yasgui-utils":256}],315:[function(require,module,exports){
 var $ = require("jquery");
 var urlParse = require('url-parse')
 var deparam = function(queryString) {
@@ -111435,7 +110381,7 @@ module.exports = {
   }
 };
 
-},{"jquery":74,"url-parse":248}],321:[function(require,module,exports){
+},{"jquery":74,"url-parse":248}],316:[function(require,module,exports){
 var ATTRS = {
   URL_LINK: "data-query",
   SPARQL_REF: "data-query-sparql",
@@ -111637,7 +110583,7 @@ module.exports = function(yasguiOptions) {
   }
 };
 
-},{"./shareLink":320,"jquery":74,"promise-polyfill":207,"url-parse":248}],322:[function(require,module,exports){
+},{"./shareLink":315,"jquery":74,"promise-polyfill":207,"url-parse":248}],317:[function(require,module,exports){
 "use strict";
 
 //		mod.emit('initError')
@@ -111978,7 +110924,7 @@ var Tab = function(yasgui, options) {
 
 Tab.prototype = new EventEmitter();
 
-},{"./main.js":319,"./shareLink":320,"./tabPaneMenu.js":323,"./utils.js":325,"events":63,"jquery":74,"underscore":247,"yasgui-utils":257}],323:[function(require,module,exports){
+},{"./main.js":314,"./shareLink":315,"./tabPaneMenu.js":318,"./utils.js":320,"events":63,"jquery":74,"underscore":247,"yasgui-utils":256}],318:[function(require,module,exports){
 "use strict";
 var $ = require("jquery"),
   imgs = require("./imgs.js"),
@@ -112510,7 +111456,7 @@ module.exports = function(yasgui, tab) {
   };
 };
 
-},{"./imgs.js":314,"jquery":74,"selectize":215,"yasgui-utils":257}],324:[function(require,module,exports){
+},{"./imgs.js":309,"jquery":74,"selectize":215,"yasgui-utils":256}],319:[function(require,module,exports){
 var yUtils = require("yasgui-utils"), imgs = require("./imgs.js"), $ = require("jquery");
 module.exports = function(yasgui) {
   var enabled = !!yasgui.options.tracker.googleAnalyticsId;
@@ -112656,7 +111602,7 @@ module.exports = function(yasgui) {
   };
 };
 
-},{"./imgs.js":314,"jquery":74,"yasgui-utils":257}],325:[function(require,module,exports){
+},{"./imgs.js":309,"jquery":74,"yasgui-utils":256}],320:[function(require,module,exports){
 var $ = require("jquery");
 module.exports = {
   escapeHtmlEntities: function(unescapedString) {
@@ -112674,7 +111620,7 @@ module.exports = {
   }
 };
 
-},{"jquery":74}],326:[function(require,module,exports){
+},{"jquery":74}],321:[function(require,module,exports){
 var $ = require("jquery");
 var root = module.exports = require("yasgui-yasqe");
 
@@ -112689,10 +111635,10 @@ root.defaults = $.extend(true, root.defaults, {
   }
 });
 
-},{"jquery":74,"yasgui-yasqe":274}],327:[function(require,module,exports){
+},{"jquery":74,"yasgui-yasqe":273}],322:[function(require,module,exports){
 var $ = require("jquery"), YASGUI = require("./main.js");
 var root = module.exports = require("yasgui-yasr");
 
-},{"./main.js":319,"jquery":74,"yasgui-yasr":299}]},{},[313])(313)
+},{"./main.js":314,"jquery":74,"yasgui-yasr":294}]},{},[308])(308)
 });
 //# sourceMappingURL=yasgui.js.map
