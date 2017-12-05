@@ -61,6 +61,12 @@ module.exports = function(yasguiOptions) {
     var optionsFromUrl = Promise.resolve({});
     if (url) {
       optionsFromUrl = getFullUrl(url).then(linkUtils.getOptionsFromUrl).then(function(options) {
+        //have to map the `outputPlugins` key to the actual plugin config. This is normally done on regular yasgui initialization when
+        //options are read from the actual page url, but that doesnt fire in this case obviously
+        if (options.yasr.outputSettings && options.yasr.output) {
+          if (!options.yasr.pluginSettings) options.yasr.pluginSettings = {}
+          options.yasr.pluginSettings[options.yasr.output] = options.yasr.outputSettings;
+        }
         return cleanConfig(options, url);
       });
     }
