@@ -4491,7 +4491,12 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     background: #EEE;
     padding: 5px;
     min-width: 20px;
-    min-height: 20px; }
+    min-height: 20px;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -ms-user-select: none; }
   .yasgui .pvtAxisContainer li {
     padding: 8px 6px;
     list-style-type: none;
@@ -5511,6 +5516,8 @@ Use by SPARQL stories
   .stories.hideTabs .yasgui .mainTabs {
     display: none; }
   .stories.hideYasqe .yasgui .controlbar, .stories.hideYasqe .yasgui .yasqe {
+    display: none; }
+  .stories .geoHint {
     display: none; }
 
 .CodeMirror-hints {
