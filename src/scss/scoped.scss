@@ -42,4 +42,9 @@ Use by SPARQL stories
 		}
 	}
 	margin: 15px 0;
+	.geoHint {
+		//hint displayed in yasr about using <geo>Label
+		//not needed in a story
+		display:none;
+	}
 }

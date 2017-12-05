@@ -110,7 +110,7 @@ module.exports = function(yasguiOptions) {
                 );
               },
               onQuotaExceeded: function() {
-                console.log("On quota exceede!");
+                console.log("On quota exceeded!");
                 //want to avoid a loop, so first check whether we're not already resetting the localstorage
                 if (!YASGUI.shouldResetStorage()) {
                   var searchString = window.location.search;
