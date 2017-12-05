@@ -108849,7 +108849,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.18",
+  "version": "2.7.19",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
