@@ -3192,6 +3192,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
     display: none; }
   .yasgui .yasqe .svgImg {
     display: inline-block; }
+  .yasgui .yasqe .CodeMirror-fullscreen {
+    z-index: 1100; }
   .yasgui .yasqe span.shortlinkErr {
     font-size: small;
     color: red;

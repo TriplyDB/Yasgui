@@ -101959,29 +101959,29 @@ Trie.prototype = {
 
 },{}],262:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasqe@2.11.16",
-  "_id": "yasgui-yasqe@2.11.16",
+  "_from": "yasgui-yasqe@2.11.17",
+  "_id": "yasgui-yasqe@2.11.17",
   "_inBundle": false,
-  "_integrity": "sha512-9UX51ylFqDydEsn5nBZEaBruYkHv/ASqortVpqxqHAGYakPeU4FZEN0TNAkfibIZoKt5urv1tPHNfy58DlQIDA==",
+  "_integrity": "sha512-EmcHSLHXyxPt9LS1jCmhhax2FLq6vb0VbjbVuHBp0rhoy/rL2Qfd+WZBBGHci/Hw3z66X/SQS4REc9P7YY8Sqw==",
   "_location": "/yasgui-yasqe",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasqe@2.11.16",
+    "raw": "yasgui-yasqe@2.11.17",
     "name": "yasgui-yasqe",
     "escapedName": "yasgui-yasqe",
-    "rawSpec": "2.11.16",
+    "rawSpec": "2.11.17",
     "saveSpec": null,
-    "fetchSpec": "2.11.16"
+    "fetchSpec": "2.11.17"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.16.tgz",
-  "_shasum": "01891b77079a02b516136775306deb271b0fce8c",
-  "_spec": "yasgui-yasqe@2.11.16",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.17.tgz",
+  "_shasum": "71ee8129abe6169dd934b98983c63c9e0da201b6",
+  "_spec": "yasgui-yasqe@2.11.17",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -102075,7 +102075,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.11.16"
+  "version": "2.11.17"
 }
 
 },{}],263:[function(require,module,exports){
@@ -105506,31 +105506,31 @@ RegExp.escape= function(s) {
 
 },{"jquery":73}],281:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasr@latest",
-  "_id": "yasgui-yasr@2.12.11",
+  "_from": "yasgui-yasr@2.12.12",
+  "_id": "yasgui-yasr@2.12.12",
   "_inBundle": false,
-  "_integrity": "sha512-JpLFUqgMtqfwu2TiEDw7/HHljgbtnlA15jDrOYZyPWyftICITuVyMMSX4H4xT8q/py76VhDdIFl50inowt6tGg==",
+  "_integrity": "sha512-WdUHFU2Wrx2JuRsp44Rv2Q1pLpShlF1bt6N0NUSyNKJ+tEWc1UgX7xiH+AvzbgHWi4VY/K5hsag0TPl7iiQzRg==",
   "_location": "/yasgui-yasr",
   "_phantomChildren": {
     "ms": "2.0.0"
   },
   "_requested": {
-    "type": "tag",
+    "type": "version",
     "registry": true,
-    "raw": "yasgui-yasr@latest",
+    "raw": "yasgui-yasr@2.12.12",
     "name": "yasgui-yasr",
     "escapedName": "yasgui-yasr",
-    "rawSpec": "latest",
+    "rawSpec": "2.12.12",
     "saveSpec": null,
-    "fetchSpec": "latest"
+    "fetchSpec": "2.12.12"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.11.tgz",
-  "_shasum": "ad53733f3cae2637e977aebfac3781029cc35549",
-  "_spec": "yasgui-yasr@latest",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.12.tgz",
+  "_shasum": "29d04959d16808377aac71f4e34fc7e3cf5981b2",
+  "_spec": "yasgui-yasr@2.12.12",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -105664,7 +105664,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.12.11"
+  "version": "2.12.12"
 }
 
 },{}],282:[function(require,module,exports){
@@ -106141,7 +106141,7 @@ module.exports = new loader();
 "use strict";
 /**
  * todo: chart height as option
- * 
+ *
  */
 var $ = require("jquery"), utils = require("./utils.js"), yUtils = require("yasgui-utils");
 
@@ -106299,7 +106299,6 @@ var root = module.exports = function(yasr) {
           });
           dataTable.addRow(row);
         });
-        console.log(customOpts)
         if (customOpts.chartConfig && customOpts.chartConfig.chartType) {
           customOpts.chartConfig.containerId = wrapperId;
           chartWrapper = new google.visualization.ChartWrapper(customOpts.chartConfig);
@@ -107206,6 +107205,8 @@ var YASR = function(parent, options, queryResults) {
         .append(require("yasgui-utils").svg.getElement(require("./imgs.js").fullscreen))
         .click(function() {
           yasr.container.addClass("yasr_fullscreen");
+          //draw, as yasr dimensions have changed (needed for e.g. leaflet)
+          yasr.draw();
         });
       yasr.header.append(button);
     };
@@ -107214,6 +107215,8 @@ var YASR = function(parent, options, queryResults) {
         .append(require("yasgui-utils").svg.getElement(require("./imgs.js").smallscreen))
         .click(function() {
           yasr.container.removeClass("yasr_fullscreen");
+          //draw, as yasr dimensions have changed (needed for e.g. leaflet)
+          yasr.draw();
         });
       yasr.header.append(button);
     };
@@ -108846,7 +108849,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.17",
+  "version": "2.7.18",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -108928,8 +108931,8 @@ module.exports={
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
-    "yasgui-yasqe": "^2.11.16",
-    "yasgui-yasr": "^2.12.11"
+    "yasgui-yasqe": "^2.11.17",
+    "yasgui-yasr": "^2.12.12"
   },
   "browserify-shim": {
     "jQuery": "jquery"
