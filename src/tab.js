@@ -173,6 +173,12 @@ var Tab = function(yasgui, options) {
           }
         }
       });
+      tab.yasr.on("fullscreen-enter", function(yasr) {
+        yasgui.wrapperElement.addClass('hasFullScreen')
+      });
+      tab.yasr.on("fullscreen-leave", function(yasr) {
+        yasgui.wrapperElement.removeClass('hasFullScreen')
+      });
     }
   };
   tab.query = function(callbackOrConfig) {
@@ -242,6 +248,12 @@ var Tab = function(yasgui, options) {
         tab.yasr.setResponse.apply(this, arguments);
         storeInHist();
       };
+      tab.yasqe.on("fullscreen-enter", function(yasr) {
+        yasgui.wrapperElement.addClass('hasFullScreen')
+      });
+      tab.yasqe.on("fullscreen-leave", function(yasr) {
+        yasgui.wrapperElement.removeClass('hasFullScreen')
+      });
 
       tab.yasqe.query = function() {
         var options = {};
