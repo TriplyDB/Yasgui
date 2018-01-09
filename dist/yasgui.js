@@ -105567,10 +105567,10 @@ RegExp.escape= function(s) {
 
 },{"jquery":73}],281:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasr@2.12.14",
-  "_id": "yasgui-yasr@2.12.14",
+  "_from": "yasgui-yasr@2.12.16",
+  "_id": "yasgui-yasr@2.12.16",
   "_inBundle": false,
-  "_integrity": "sha512-vV7wQqRO9feIWGp3UtT9x7z2RUjCfRz9q6sgADfFcWJRqb1Wkk5KyS1vsm50091GYdvvFw7qhdaMlk6Hp3if8w==",
+  "_integrity": "sha512-giSaTAqF/EOP607MXKyUKevWbk3N15ePcIZ0sYzs3+Sl1l09sX3ktzozSKgqsBZzfSEdlcOCbTPxvtYs6D6WVQ==",
   "_location": "/yasgui-yasr",
   "_phantomChildren": {
     "ms": "2.0.0"
@@ -105578,20 +105578,20 @@ module.exports={
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasr@2.12.14",
+    "raw": "yasgui-yasr@2.12.16",
     "name": "yasgui-yasr",
     "escapedName": "yasgui-yasr",
-    "rawSpec": "2.12.14",
+    "rawSpec": "2.12.16",
     "saveSpec": null,
-    "fetchSpec": "2.12.14"
+    "fetchSpec": "2.12.16"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.14.tgz",
-  "_shasum": "8c08ba57c3c4f31fe0d70f4adf813446817854c6",
-  "_spec": "yasgui-yasr@2.12.14",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.16.tgz",
+  "_shasum": "8aeabd27bb773f321eacaed2deb4e0e4276cace4",
+  "_spec": "yasgui-yasr@2.12.16",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -105725,7 +105725,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.12.14"
+  "version": "2.12.16"
 }
 
 },{}],282:[function(require,module,exports){
@@ -106815,7 +106815,6 @@ var root = (module.exports = function(yasr) {
             markerPos = feature.getLatLng();
           }
           if (markerPos) {
-            var shouldDrawSeparateMarker = !!feature.getBounds; //a lat/lng is already a marker
             if (wkt.type === 'Point') {
               addPopupAndEventsToMarker(feature);
             } else {
@@ -108915,7 +108914,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.20",
+  "version": "2.7.21",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -108998,7 +108997,7 @@ module.exports={
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
     "yasgui-yasqe": "^2.11.18",
-    "yasgui-yasr": "^2.12.14"
+    "yasgui-yasr": "^2.12.16"
   },
   "browserify-shim": {
     "jQuery": "jquery"
