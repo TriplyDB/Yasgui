@@ -20474,7 +20474,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 })));
 
 },{}],42:[function(require,module,exports){
-// https://d3js.org/d3-geo/ Version 1.9.0. Copyright 2017 Mike Bostock.
+// https://d3js.org/d3-geo/ Version 1.9.1. Copyright 2017 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array')) :
 	typeof define === 'function' && define.amd ? define(['exports', 'd3-array'], factory) :
@@ -23071,8 +23071,7 @@ var albersUsa = function() {
 
   function albersUsa(coordinates) {
     var x = coordinates[0], y = coordinates[1];
-    return point = null,
-        (lower48Point.point(x, y), point)
+    return point = null, (lower48Point.point(x, y), point)
         || (alaskaPoint.point(x, y), point)
         || (hawaiiPoint.point(x, y), point);
   }
@@ -23236,7 +23235,7 @@ function mercatorProjection(project) {
   };
 
   m.clipExtent = function(_) {
-    return arguments.length ? ((_ == null ? x0 = y0 = x1 = y1 = null : (x0 = +_[0][0], y0 = +_[0][1], x1 = +_[1][0], y1 = +_[1][1])), reclip()) : x0 == null ? null : [[x0, y0], [x1, y1]];
+    return arguments.length ? (_ == null ? x0 = y0 = x1 = y1 = null : (x0 = +_[0][0], y0 = +_[0][1], x1 = +_[1][0], y1 = +_[1][1]), reclip()) : x0 == null ? null : [[x0, y0], [x1, y1]];
   };
 
   function reclip() {
@@ -33960,7 +33959,7 @@ var d3Transition = require('d3-transition');
 var d3Voronoi = require('d3-voronoi');
 var d3Zoom = require('d3-zoom');
 
-var version = "4.12.0";
+var version = "4.12.2";
 
 exports.version = version;
 Object.keys(d3Array).forEach(function (key) { exports[key] = d3Array[key]; });
@@ -101511,7 +101510,7 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
       // Incremental LL1 parse
       while (state.stack.length > 0 && token && state.OK && !finished) {
         topSymbol = state.stack.pop();
-
+        if (topSymbol === 'var' && tokenOb.text) state.variables[tokenOb.text] = tokenOb.text;
         if (!ll1_table[topSymbol]) {
           // Top symbol is a terminal
           if (topSymbol == token) {
@@ -101682,7 +101681,8 @@ CodeMirror.defineMode("sparql11", function(config, parserConfig) {
         inLiteral: false,
         stack: [grammar.startSymbol],
         lastPredicateOffset: config.indentUnit,
-        prefixes: {}
+        prefixes: {},
+        variables: {}
       };
     },
     indent: indent,
@@ -101959,29 +101959,29 @@ Trie.prototype = {
 
 },{}],262:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasqe@2.11.17",
-  "_id": "yasgui-yasqe@2.11.17",
+  "_from": "yasgui-yasqe@2.11.18",
+  "_id": "yasgui-yasqe@2.11.18",
   "_inBundle": false,
-  "_integrity": "sha512-EmcHSLHXyxPt9LS1jCmhhax2FLq6vb0VbjbVuHBp0rhoy/rL2Qfd+WZBBGHci/Hw3z66X/SQS4REc9P7YY8Sqw==",
+  "_integrity": "sha512-pfcO4PELbPlQZkVjp1gRqDcpF7FB2/dZRLaa9Bo9wCuqv4WueaMDAbt0bZlmXnPz72JKDKlj8b6ai+mzhyHqUQ==",
   "_location": "/yasgui-yasqe",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasqe@2.11.17",
+    "raw": "yasgui-yasqe@2.11.18",
     "name": "yasgui-yasqe",
     "escapedName": "yasgui-yasqe",
-    "rawSpec": "2.11.17",
+    "rawSpec": "2.11.18",
     "saveSpec": null,
-    "fetchSpec": "2.11.17"
+    "fetchSpec": "2.11.18"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.17.tgz",
-  "_shasum": "71ee8129abe6169dd934b98983c63c9e0da201b6",
-  "_spec": "yasgui-yasqe@2.11.17",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.18.tgz",
+  "_shasum": "ed609ac8b945bf5f140c8da0e6ef1b177e1857e4",
+  "_spec": "yasgui-yasqe@2.11.18",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -102075,7 +102075,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.11.17"
+  "version": "2.11.18"
 }
 
 },{}],263:[function(require,module,exports){
@@ -102704,7 +102704,7 @@ module.exports = function(yasqe) {
       var token = yasqe.getTokenAt(yasqe.getCursor());
       if (token.type != "ws") {
         token = yasqe.getCompleteToken(token);
-        if (token && token.string.indexOf("?") == 0) {
+        if (token && (token.string[0] === '?' || token.string[0] === '$')) {
           return true;
         }
       }
@@ -102714,9 +102714,10 @@ module.exports = function(yasqe) {
       if (token.trim().length == 0) return []; //nothing to autocomplete
       var distinctVars = {};
       //do this outside of codemirror. I expect jquery to be faster here (just finding dom elements with classnames)
+      //and: this'll still work when the query is incorrect (i.e., when simply typing '?')
       $(yasqe.getWrapperElement()).find(".cm-atom").each(function() {
         var variable = this.innerHTML;
-        if (variable.indexOf("?") == 0) {
+        if (variable[0] === '?' || variable[0] === '$') {
           //ok, lets check if the next element in the div is an atom as well. In that case, they belong together (may happen sometimes when query is not syntactically valid)
           var nextEl = $(this).next();
           var nextElClass = nextEl.attr("class");
@@ -103048,6 +103049,9 @@ var extendCmInstance = function(yasqe) {
       if (root.Autocompleters[name]) yasqe.autocompleters.init(name, root.Autocompleters[name]);
     });
   }
+  yasqe.emit = function(event, data) {
+    root.signal(yasqe, event, data)
+  }
   yasqe.lastQueryDuration = null;
   yasqe.getCompleteToken = function(token, cur) {
     return require("./tokenUtils.js").getCompleteToken(yasqe, token, cur);
@@ -103127,6 +103131,61 @@ var extendCmInstance = function(yasqe) {
   yasqe.removePrefixes = function(prefixes) {
     return require("./prefixUtils.js").removePrefixes(yasqe, prefixes);
   };
+  yasqe.getVariablesFromQuery = function() {
+    //Use precise here. We want to be sure we use the most up to date state. If we're
+    //not, we might get outdated info from the current query (creating loops such
+    //as https://github.com/OpenTriply/YASGUI/issues/84)
+    //on caveat: this function won't work when query is invalid (i.e. when typing)
+    return $.map(yasqe.getTokenAt({ line: yasqe.lastLine(), ch: yasqe.getLine(yasqe.lastLine()).length }, true).state.variables, function(val,key) {return key});
+  }
+  //values in the form of {?var: 'value'}, or [{?var: 'value'}]
+  yasqe.getQueryWithValues = function(values) {
+    if (!values) return yasqe.getValue();
+    var injectString;
+    if (typeof values === 'string') {
+      injectString = values;
+    } else {
+      //start building inject string
+      if (!Array.isArray(values)) values = [values];
+      var variables = values.reduce(function(vars, valueObj) {
+        for (var v in valueObj) {
+          vars[v] = v;
+        }
+        return vars;
+      }, {})
+      var varArray = [];
+      for (var v in variables) {
+        varArray.push(v);
+      }
+
+      if (!varArray.length) return yasqe.getValue() ;
+      //ok, we've got enough info to start building the string now
+      injectString = "VALUES (" + varArray.join(' ') + ") {\n";
+      values.forEach(function(valueObj) {
+        injectString += "( ";
+        varArray.forEach(function(variable) {
+          injectString += valueObj[variable] || "UNDEF"
+        })
+        injectString += " )\n"
+      })
+      injectString += "}\n"
+    }
+    if (!injectString) return yasqe.getValue();
+
+    var newQuery = ""
+    var injected = false;
+    var gotSelect = false;
+    root.runMode(yasqe.getValue(), "sparql11", function(stringVal, className, row, col, state) {
+      if (className === "keyword" && stringVal.toLowerCase() === 'select') gotSelect = true;
+      newQuery += stringVal;
+      if (gotSelect && !injected && className === "punc" && stringVal === "{") {
+        injected = true;
+        //start injecting
+        newQuery += "\n" + injectString;
+      }
+    });
+    return newQuery
+  }
 
   yasqe.getValueWithoutComments = function() {
     var cleanedQuery = "";
@@ -103523,6 +103582,7 @@ root.drawButtons = function(yasqe) {
         .attr("title", "Set editor full screen")
         .click(function() {
           yasqe.setOption("fullScreen", true);
+          yasqe.emit('fullscreen-enter')
         })
     )
     .append(
@@ -103531,6 +103591,7 @@ root.drawButtons = function(yasqe) {
         .attr("title", "Set editor to normal size")
         .click(function() {
           yasqe.setOption("fullScreen", false);
+          yasqe.emit('fullscreen-leave')
         })
     );
   yasqe.buttons.append(toggleFullscreen);
@@ -105506,10 +105567,10 @@ RegExp.escape= function(s) {
 
 },{"jquery":73}],281:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasr@2.12.12",
-  "_id": "yasgui-yasr@2.12.12",
+  "_from": "yasgui-yasr@2.12.14",
+  "_id": "yasgui-yasr@2.12.14",
   "_inBundle": false,
-  "_integrity": "sha512-WdUHFU2Wrx2JuRsp44Rv2Q1pLpShlF1bt6N0NUSyNKJ+tEWc1UgX7xiH+AvzbgHWi4VY/K5hsag0TPl7iiQzRg==",
+  "_integrity": "sha512-vV7wQqRO9feIWGp3UtT9x7z2RUjCfRz9q6sgADfFcWJRqb1Wkk5KyS1vsm50091GYdvvFw7qhdaMlk6Hp3if8w==",
   "_location": "/yasgui-yasr",
   "_phantomChildren": {
     "ms": "2.0.0"
@@ -105517,20 +105578,20 @@ module.exports={
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasr@2.12.12",
+    "raw": "yasgui-yasr@2.12.14",
     "name": "yasgui-yasr",
     "escapedName": "yasgui-yasr",
-    "rawSpec": "2.12.12",
+    "rawSpec": "2.12.14",
     "saveSpec": null,
-    "fetchSpec": "2.12.12"
+    "fetchSpec": "2.12.14"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.12.tgz",
-  "_shasum": "29d04959d16808377aac71f4e34fc7e3cf5981b2",
-  "_spec": "yasgui-yasr@2.12.12",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.14.tgz",
+  "_shasum": "8c08ba57c3c4f31fe0d70f4adf813446817854c6",
+  "_spec": "yasgui-yasr@2.12.14",
   "_where": "/home/lrd900/yasgui/yasgui",
   "author": {
     "name": "Laurens Rietveld"
@@ -105664,7 +105725,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.12.12"
+  "version": "2.12.14"
 }
 
 },{}],282:[function(require,module,exports){
@@ -106755,10 +106816,10 @@ var root = (module.exports = function(yasr) {
           }
           if (markerPos) {
             var shouldDrawSeparateMarker = !!feature.getBounds; //a lat/lng is already a marker
-            if (shouldDrawSeparateMarker) {
-              addPopupAndEventsToMarker(_L.marker(markerPos, { icon: mySVGIcon }).addTo(map));
-            } else {
+            if (wkt.type === 'Point') {
               addPopupAndEventsToMarker(feature);
+            } else {
+              addPopupAndEventsToMarker(_L.marker(markerPos, { icon: mySVGIcon }).addTo(map));
             }
           }
         }
@@ -107207,6 +107268,10 @@ var YASR = function(parent, options, queryResults) {
           yasr.container.addClass("yasr_fullscreen");
           //draw, as yasr dimensions have changed (needed for e.g. leaflet)
           yasr.draw();
+          //useful to emit this, as then we can e.g. update the yasgui style when this happens
+          //needed this to fix z-index issues with leaflet, as the yasgui el has a relative pos
+          yasr.emit('fullscreen-enter', yasr);
+
         });
       yasr.header.append(button);
     };
@@ -107217,6 +107282,7 @@ var YASR = function(parent, options, queryResults) {
           yasr.container.removeClass("yasr_fullscreen");
           //draw, as yasr dimensions have changed (needed for e.g. leaflet)
           yasr.draw();
+          yasr.emit('fullscreen-leave', yasr);
         });
       yasr.header.append(button);
     };
@@ -108849,7 +108915,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.19",
+  "version": "2.7.20",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -108931,8 +108997,8 @@ module.exports={
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
-    "yasgui-yasqe": "^2.11.17",
-    "yasgui-yasr": "^2.12.12"
+    "yasgui-yasqe": "^2.11.18",
+    "yasgui-yasr": "^2.12.14"
   },
   "browserify-shim": {
     "jQuery": "jquery"
@@ -110926,6 +110992,12 @@ var Tab = function(yasgui, options) {
           }
         }
       });
+      tab.yasr.on("fullscreen-enter", function(yasr) {
+        yasgui.wrapperElement.addClass('hasFullScreen')
+      });
+      tab.yasr.on("fullscreen-leave", function(yasr) {
+        yasgui.wrapperElement.removeClass('hasFullScreen')
+      });
     }
   };
   tab.query = function(callbackOrConfig) {
@@ -110995,6 +111067,12 @@ var Tab = function(yasgui, options) {
         tab.yasr.setResponse.apply(this, arguments);
         storeInHist();
       };
+      tab.yasqe.on("fullscreen-enter", function(yasr) {
+        yasgui.wrapperElement.addClass('hasFullScreen')
+      });
+      tab.yasqe.on("fullscreen-leave", function(yasr) {
+        yasgui.wrapperElement.removeClass('hasFullScreen')
+      });
 
       tab.yasqe.query = function() {
         var options = {};
