@@ -4,14 +4,13 @@
 # YASGUI
 
 *YASGUI* (Yet Another SPARQL GUI) is part of the the YASGUI suite of
-SPARQL tools.  It includes th Query
-Editor [*YASQE*](https://github.com/OpenTriply/YASGUI.YASQE) and the
-Result Set
-Visualizer [*YASR*](https://github.com/OpenTriply/YASGUI.YASQE).  For
-more information about *YASGUI*, its features, and how to include it
-in your own web site, visit http://doc.yasgui.org.
+SPARQL tools.  It includes th Query Editor
+[*YASQE*](https://github.com/OpenTriply/YASGUI.YASQE) and the Result
+Set Visualizer [*YASR*](https://github.com/OpenTriply/YASGUI.YASQE).
+For more information about *YASGUI*, its features, and how to include
+it in your own web site, visit https://doc.yasgui.org.
 
-To give *YASGUI* a try, visit http://yasgui.org
+To give *YASGUI* a try, visit https://yasgui.org
 
 ## Developing YASGUI
 
@@ -49,13 +48,17 @@ publishers.  Here is a partial list:
   
 ### Data Publishers
 
-  * [**HealthData.gov**](http://www.healthdata.gov/sparql/)
-  * [**Smithsonian American Art Museum**](http://americanart.si.edu/collections/search/lod/about/sparql.cfm)
+  * [**Belgium government**](http://data.vlaanderen.be/sparql)
+  * [**CEDAR project**](http://lod.cedar-project.nl/cedar/data.html)
+  * [**Dutch Cadastre**](https://data.pdok.nl/yasgui)
   * [**German National Library of Economics (ZWB)**](http://zbw.eu/labs/en/blog/publishing-sparql-queries-live)
+  * [**HealthData.gov**](http://www.healthdata.gov/sparql/)
+  * [**IOS Press**](http://ld.iospress.nl/query-interface)
   * [**Linked Open Vocabularies**](http://lov.okfn.org/dataset/lov/sparql)
   * [**LOD Laundromat**](http://lodlaundromat.org/sparql)
   * [**MetaLex**](http://doc.metalex.eu/query)
-  * [**CEDAR project**](http://lod.cedar-project.nl/cedar/data.html)
+  * [**Smithsonian American Art Museum**](http://americanart.si.edu/collections/search/lod/about/sparql.cfm)
+  * [**Swiss Federal Geoportal**](https://ld.geo.admin.ch/sparql/)
 
   [1]: http://doc.yasgui.org
   [2]: http://yasgui.org
