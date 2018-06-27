@@ -83,8 +83,8 @@
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
-    "yasgui-yasqe": "^2.11.18",
-    "yasgui-yasr": "^2.12.16"
+    "yasgui-yasqe": "^2.11.19",
+    "yasgui-yasr": "^2.12.19"
   },
   "browserify-shim": {
     "jQuery": "jquery"
