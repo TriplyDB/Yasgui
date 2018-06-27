@@ -20141,7 +20141,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 })));
 
 },{"d3-collection":34,"d3-dispatch":36,"d3-quadtree":47,"d3-timer":56}],41:[function(require,module,exports){
-// https://d3js.org/d3-format/ Version 1.2.1. Copyright 2017 Mike Bostock.
+// https://d3js.org/d3-format/ Version 1.2.2. Copyright 2018 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -20371,7 +20371,7 @@ var formatLocale = function(locale) {
 
         // Compute the prefix and suffix.
         valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-        valueSuffix = valueSuffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + (valueNegative && sign === "(" ? ")" : "");
+        valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
         // Break the formatted value into the integer “value” part that can be
         // grouped, and fractional or exponential “suffix” part that is not.
@@ -27486,7 +27486,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 })));
 
 },{"d3-array":30,"d3-collection":34,"d3-color":35,"d3-format":41,"d3-interpolate":44,"d3-time":55,"d3-time-format":54}],52:[function(require,module,exports){
-// https://d3js.org/d3-selection/ Version 1.2.0. Copyright 2017 Mike Bostock.
+// https://d3js.org/d3-selection/ Version 1.3.0. Copyright 2018 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -27503,11 +27503,11 @@ var namespaces = {
   xmlns: "http://www.w3.org/2000/xmlns/"
 };
 
-var namespace = function(name) {
+function namespace(name) {
   var prefix = name += "", i = prefix.indexOf(":");
   if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
   return namespaces.hasOwnProperty(prefix) ? {space: namespaces[prefix], local: name} : name;
-};
+}
 
 function creatorInherit(name) {
   return function() {
@@ -27525,40 +27525,60 @@ function creatorFixed(fullname) {
   };
 }
 
-var creator = function(name) {
+function creator(name) {
   var fullname = namespace(name);
   return (fullname.local
       ? creatorFixed
       : creatorInherit)(fullname);
-};
-
-var nextId = 0;
-
-function local() {
-  return new Local;
 }
 
-function Local() {
-  this._ = "@" + (++nextId).toString(36);
+function none() {}
+
+function selector(selector) {
+  return selector == null ? none : function() {
+    return this.querySelector(selector);
+  };
 }
 
-Local.prototype = local.prototype = {
-  constructor: Local,
-  get: function(node) {
-    var id = this._;
-    while (!(id in node)) if (!(node = node.parentNode)) return;
-    return node[id];
-  },
-  set: function(node, value) {
-    return node[this._] = value;
-  },
-  remove: function(node) {
-    return this._ in node && delete node[this._];
-  },
-  toString: function() {
-    return this._;
+function selection_select(select) {
+  if (typeof select !== "function") select = selector(select);
+
+  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
+    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
+      if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
+        if ("__data__" in node) subnode.__data__ = node.__data__;
+        subgroup[i] = subnode;
+      }
+    }
   }
-};
+
+  return new Selection(subgroups, this._parents);
+}
+
+function empty() {
+  return [];
+}
+
+function selectorAll(selector) {
+  return selector == null ? empty : function() {
+    return this.querySelectorAll(selector);
+  };
+}
+
+function selection_selectAll(select) {
+  if (typeof select !== "function") select = selectorAll(select);
+
+  for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
+    for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
+      if (node = group[i]) {
+        subgroups.push(select.call(node, node.__data__, i, group));
+        parents.push(node);
+      }
+    }
+  }
+
+  return new Selection(subgroups, parents);
+}
 
 var matcher = function(selector) {
   return function() {
@@ -27582,6 +27602,584 @@ if (typeof document !== "undefined") {
 }
 
 var matcher$1 = matcher;
+
+function selection_filter(match) {
+  if (typeof match !== "function") match = matcher$1(match);
+
+  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
+    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
+      if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
+        subgroup.push(node);
+      }
+    }
+  }
+
+  return new Selection(subgroups, this._parents);
+}
+
+function sparse(update) {
+  return new Array(update.length);
+}
+
+function selection_enter() {
+  return new Selection(this._enter || this._groups.map(sparse), this._parents);
+}
+
+function EnterNode(parent, datum) {
+  this.ownerDocument = parent.ownerDocument;
+  this.namespaceURI = parent.namespaceURI;
+  this._next = null;
+  this._parent = parent;
+  this.__data__ = datum;
+}
+
+EnterNode.prototype = {
+  constructor: EnterNode,
+  appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
+  insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
+  querySelector: function(selector) { return this._parent.querySelector(selector); },
+  querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
+};
+
+function constant(x) {
+  return function() {
+    return x;
+  };
+}
+
+var keyPrefix = "$"; // Protect against keys like “__proto__”.
+
+function bindIndex(parent, group, enter, update, exit, data) {
+  var i = 0,
+      node,
+      groupLength = group.length,
+      dataLength = data.length;
+
+  // Put any non-null nodes that fit into update.
+  // Put any null nodes into enter.
+  // Put any remaining data into enter.
+  for (; i < dataLength; ++i) {
+    if (node = group[i]) {
+      node.__data__ = data[i];
+      update[i] = node;
+    } else {
+      enter[i] = new EnterNode(parent, data[i]);
+    }
+  }
+
+  // Put any non-null nodes that don’t fit into exit.
+  for (; i < groupLength; ++i) {
+    if (node = group[i]) {
+      exit[i] = node;
+    }
+  }
+}
+
+function bindKey(parent, group, enter, update, exit, data, key) {
+  var i,
+      node,
+      nodeByKeyValue = {},
+      groupLength = group.length,
+      dataLength = data.length,
+      keyValues = new Array(groupLength),
+      keyValue;
+
+  // Compute the key for each node.
+  // If multiple nodes have the same key, the duplicates are added to exit.
+  for (i = 0; i < groupLength; ++i) {
+    if (node = group[i]) {
+      keyValues[i] = keyValue = keyPrefix + key.call(node, node.__data__, i, group);
+      if (keyValue in nodeByKeyValue) {
+        exit[i] = node;
+      } else {
+        nodeByKeyValue[keyValue] = node;
+      }
+    }
+  }
+
+  // Compute the key for each datum.
+  // If there a node associated with this key, join and add it to update.
+  // If there is not (or the key is a duplicate), add it to enter.
+  for (i = 0; i < dataLength; ++i) {
+    keyValue = keyPrefix + key.call(parent, data[i], i, data);
+    if (node = nodeByKeyValue[keyValue]) {
+      update[i] = node;
+      node.__data__ = data[i];
+      nodeByKeyValue[keyValue] = null;
+    } else {
+      enter[i] = new EnterNode(parent, data[i]);
+    }
+  }
+
+  // Add any remaining nodes that were not bound to data to exit.
+  for (i = 0; i < groupLength; ++i) {
+    if ((node = group[i]) && (nodeByKeyValue[keyValues[i]] === node)) {
+      exit[i] = node;
+    }
+  }
+}
+
+function selection_data(value, key) {
+  if (!value) {
+    data = new Array(this.size()), j = -1;
+    this.each(function(d) { data[++j] = d; });
+    return data;
+  }
+
+  var bind = key ? bindKey : bindIndex,
+      parents = this._parents,
+      groups = this._groups;
+
+  if (typeof value !== "function") value = constant(value);
+
+  for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
+    var parent = parents[j],
+        group = groups[j],
+        groupLength = group.length,
+        data = value.call(parent, parent && parent.__data__, j, parents),
+        dataLength = data.length,
+        enterGroup = enter[j] = new Array(dataLength),
+        updateGroup = update[j] = new Array(dataLength),
+        exitGroup = exit[j] = new Array(groupLength);
+
+    bind(parent, group, enterGroup, updateGroup, exitGroup, data, key);
+
+    // Now connect the enter nodes to their following update node, such that
+    // appendChild can insert the materialized enter node before this node,
+    // rather than at the end of the parent node.
+    for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
+      if (previous = enterGroup[i0]) {
+        if (i0 >= i1) i1 = i0 + 1;
+        while (!(next = updateGroup[i1]) && ++i1 < dataLength);
+        previous._next = next || null;
+      }
+    }
+  }
+
+  update = new Selection(update, parents);
+  update._enter = enter;
+  update._exit = exit;
+  return update;
+}
+
+function selection_exit() {
+  return new Selection(this._exit || this._groups.map(sparse), this._parents);
+}
+
+function selection_merge(selection$$1) {
+
+  for (var groups0 = this._groups, groups1 = selection$$1._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
+    for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
+      if (node = group0[i] || group1[i]) {
+        merge[i] = node;
+      }
+    }
+  }
+
+  for (; j < m0; ++j) {
+    merges[j] = groups0[j];
+  }
+
+  return new Selection(merges, this._parents);
+}
+
+function selection_order() {
+
+  for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
+    for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
+      if (node = group[i]) {
+        if (next && next !== node.nextSibling) next.parentNode.insertBefore(node, next);
+        next = node;
+      }
+    }
+  }
+
+  return this;
+}
+
+function selection_sort(compare) {
+  if (!compare) compare = ascending;
+
+  function compareNode(a, b) {
+    return a && b ? compare(a.__data__, b.__data__) : !a - !b;
+  }
+
+  for (var groups = this._groups, m = groups.length, sortgroups = new Array(m), j = 0; j < m; ++j) {
+    for (var group = groups[j], n = group.length, sortgroup = sortgroups[j] = new Array(n), node, i = 0; i < n; ++i) {
+      if (node = group[i]) {
+        sortgroup[i] = node;
+      }
+    }
+    sortgroup.sort(compareNode);
+  }
+
+  return new Selection(sortgroups, this._parents).order();
+}
+
+function ascending(a, b) {
+  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+}
+
+function selection_call() {
+  var callback = arguments[0];
+  arguments[0] = this;
+  callback.apply(null, arguments);
+  return this;
+}
+
+function selection_nodes() {
+  var nodes = new Array(this.size()), i = -1;
+  this.each(function() { nodes[++i] = this; });
+  return nodes;
+}
+
+function selection_node() {
+
+  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
+    for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
+      var node = group[i];
+      if (node) return node;
+    }
+  }
+
+  return null;
+}
+
+function selection_size() {
+  var size = 0;
+  this.each(function() { ++size; });
+  return size;
+}
+
+function selection_empty() {
+  return !this.node();
+}
+
+function selection_each(callback) {
+
+  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
+    for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
+      if (node = group[i]) callback.call(node, node.__data__, i, group);
+    }
+  }
+
+  return this;
+}
+
+function attrRemove(name) {
+  return function() {
+    this.removeAttribute(name);
+  };
+}
+
+function attrRemoveNS(fullname) {
+  return function() {
+    this.removeAttributeNS(fullname.space, fullname.local);
+  };
+}
+
+function attrConstant(name, value) {
+  return function() {
+    this.setAttribute(name, value);
+  };
+}
+
+function attrConstantNS(fullname, value) {
+  return function() {
+    this.setAttributeNS(fullname.space, fullname.local, value);
+  };
+}
+
+function attrFunction(name, value) {
+  return function() {
+    var v = value.apply(this, arguments);
+    if (v == null) this.removeAttribute(name);
+    else this.setAttribute(name, v);
+  };
+}
+
+function attrFunctionNS(fullname, value) {
+  return function() {
+    var v = value.apply(this, arguments);
+    if (v == null) this.removeAttributeNS(fullname.space, fullname.local);
+    else this.setAttributeNS(fullname.space, fullname.local, v);
+  };
+}
+
+function selection_attr(name, value) {
+  var fullname = namespace(name);
+
+  if (arguments.length < 2) {
+    var node = this.node();
+    return fullname.local
+        ? node.getAttributeNS(fullname.space, fullname.local)
+        : node.getAttribute(fullname);
+  }
+
+  return this.each((value == null
+      ? (fullname.local ? attrRemoveNS : attrRemove) : (typeof value === "function"
+      ? (fullname.local ? attrFunctionNS : attrFunction)
+      : (fullname.local ? attrConstantNS : attrConstant)))(fullname, value));
+}
+
+function defaultView(node) {
+  return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
+      || (node.document && node) // node is a Window
+      || node.defaultView; // node is a Document
+}
+
+function styleRemove(name) {
+  return function() {
+    this.style.removeProperty(name);
+  };
+}
+
+function styleConstant(name, value, priority) {
+  return function() {
+    this.style.setProperty(name, value, priority);
+  };
+}
+
+function styleFunction(name, value, priority) {
+  return function() {
+    var v = value.apply(this, arguments);
+    if (v == null) this.style.removeProperty(name);
+    else this.style.setProperty(name, v, priority);
+  };
+}
+
+function selection_style(name, value, priority) {
+  return arguments.length > 1
+      ? this.each((value == null
+            ? styleRemove : typeof value === "function"
+            ? styleFunction
+            : styleConstant)(name, value, priority == null ? "" : priority))
+      : styleValue(this.node(), name);
+}
+
+function styleValue(node, name) {
+  return node.style.getPropertyValue(name)
+      || defaultView(node).getComputedStyle(node, null).getPropertyValue(name);
+}
+
+function propertyRemove(name) {
+  return function() {
+    delete this[name];
+  };
+}
+
+function propertyConstant(name, value) {
+  return function() {
+    this[name] = value;
+  };
+}
+
+function propertyFunction(name, value) {
+  return function() {
+    var v = value.apply(this, arguments);
+    if (v == null) delete this[name];
+    else this[name] = v;
+  };
+}
+
+function selection_property(name, value) {
+  return arguments.length > 1
+      ? this.each((value == null
+          ? propertyRemove : typeof value === "function"
+          ? propertyFunction
+          : propertyConstant)(name, value))
+      : this.node()[name];
+}
+
+function classArray(string) {
+  return string.trim().split(/^|\s+/);
+}
+
+function classList(node) {
+  return node.classList || new ClassList(node);
+}
+
+function ClassList(node) {
+  this._node = node;
+  this._names = classArray(node.getAttribute("class") || "");
+}
+
+ClassList.prototype = {
+  add: function(name) {
+    var i = this._names.indexOf(name);
+    if (i < 0) {
+      this._names.push(name);
+      this._node.setAttribute("class", this._names.join(" "));
+    }
+  },
+  remove: function(name) {
+    var i = this._names.indexOf(name);
+    if (i >= 0) {
+      this._names.splice(i, 1);
+      this._node.setAttribute("class", this._names.join(" "));
+    }
+  },
+  contains: function(name) {
+    return this._names.indexOf(name) >= 0;
+  }
+};
+
+function classedAdd(node, names) {
+  var list = classList(node), i = -1, n = names.length;
+  while (++i < n) list.add(names[i]);
+}
+
+function classedRemove(node, names) {
+  var list = classList(node), i = -1, n = names.length;
+  while (++i < n) list.remove(names[i]);
+}
+
+function classedTrue(names) {
+  return function() {
+    classedAdd(this, names);
+  };
+}
+
+function classedFalse(names) {
+  return function() {
+    classedRemove(this, names);
+  };
+}
+
+function classedFunction(names, value) {
+  return function() {
+    (value.apply(this, arguments) ? classedAdd : classedRemove)(this, names);
+  };
+}
+
+function selection_classed(name, value) {
+  var names = classArray(name + "");
+
+  if (arguments.length < 2) {
+    var list = classList(this.node()), i = -1, n = names.length;
+    while (++i < n) if (!list.contains(names[i])) return false;
+    return true;
+  }
+
+  return this.each((typeof value === "function"
+      ? classedFunction : value
+      ? classedTrue
+      : classedFalse)(names, value));
+}
+
+function textRemove() {
+  this.textContent = "";
+}
+
+function textConstant(value) {
+  return function() {
+    this.textContent = value;
+  };
+}
+
+function textFunction(value) {
+  return function() {
+    var v = value.apply(this, arguments);
+    this.textContent = v == null ? "" : v;
+  };
+}
+
+function selection_text(value) {
+  return arguments.length
+      ? this.each(value == null
+          ? textRemove : (typeof value === "function"
+          ? textFunction
+          : textConstant)(value))
+      : this.node().textContent;
+}
+
+function htmlRemove() {
+  this.innerHTML = "";
+}
+
+function htmlConstant(value) {
+  return function() {
+    this.innerHTML = value;
+  };
+}
+
+function htmlFunction(value) {
+  return function() {
+    var v = value.apply(this, arguments);
+    this.innerHTML = v == null ? "" : v;
+  };
+}
+
+function selection_html(value) {
+  return arguments.length
+      ? this.each(value == null
+          ? htmlRemove : (typeof value === "function"
+          ? htmlFunction
+          : htmlConstant)(value))
+      : this.node().innerHTML;
+}
+
+function raise() {
+  if (this.nextSibling) this.parentNode.appendChild(this);
+}
+
+function selection_raise() {
+  return this.each(raise);
+}
+
+function lower() {
+  if (this.previousSibling) this.parentNode.insertBefore(this, this.parentNode.firstChild);
+}
+
+function selection_lower() {
+  return this.each(lower);
+}
+
+function selection_append(name) {
+  var create = typeof name === "function" ? name : creator(name);
+  return this.select(function() {
+    return this.appendChild(create.apply(this, arguments));
+  });
+}
+
+function constantNull() {
+  return null;
+}
+
+function selection_insert(name, before) {
+  var create = typeof name === "function" ? name : creator(name),
+      select = before == null ? constantNull : typeof before === "function" ? before : selector(before);
+  return this.select(function() {
+    return this.insertBefore(create.apply(this, arguments), select.apply(this, arguments) || null);
+  });
+}
+
+function remove() {
+  var parent = this.parentNode;
+  if (parent) parent.removeChild(this);
+}
+
+function selection_remove() {
+  return this.each(remove);
+}
+
+function selection_cloneShallow() {
+  return this.parentNode.insertBefore(this.cloneNode(false), this.nextSibling);
+}
+
+function selection_cloneDeep() {
+  return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
+}
+
+function selection_clone(deep) {
+  return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
+}
+
+function selection_datum(value) {
+  return arguments.length
+      ? this.property("__data__", value)
+      : this.node().__data__;
+}
 
 var filterEvents = {};
 
@@ -27659,7 +28257,7 @@ function onAdd(typename, value, capture) {
   };
 }
 
-var selection_on = function(typename, value, capture) {
+function selection_on(typename, value, capture) {
   var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
 
   if (arguments.length < 2) {
@@ -27678,7 +28276,7 @@ var selection_on = function(typename, value, capture) {
   if (capture == null) capture = false;
   for (i = 0; i < n; ++i) this.each(on(typenames[i], value, capture));
   return this;
-};
+}
 
 function customEvent(event1, listener, that, args) {
   var event0 = exports.event;
@@ -27690,646 +28288,6 @@ function customEvent(event1, listener, that, args) {
     exports.event = event0;
   }
 }
-
-var sourceEvent = function() {
-  var current = exports.event, source;
-  while (source = current.sourceEvent) current = source;
-  return current;
-};
-
-var point = function(node, event) {
-  var svg = node.ownerSVGElement || node;
-
-  if (svg.createSVGPoint) {
-    var point = svg.createSVGPoint();
-    point.x = event.clientX, point.y = event.clientY;
-    point = point.matrixTransform(node.getScreenCTM().inverse());
-    return [point.x, point.y];
-  }
-
-  var rect = node.getBoundingClientRect();
-  return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
-};
-
-var mouse = function(node) {
-  var event = sourceEvent();
-  if (event.changedTouches) event = event.changedTouches[0];
-  return point(node, event);
-};
-
-function none() {}
-
-var selector = function(selector) {
-  return selector == null ? none : function() {
-    return this.querySelector(selector);
-  };
-};
-
-var selection_select = function(select) {
-  if (typeof select !== "function") select = selector(select);
-
-  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
-      if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
-        if ("__data__" in node) subnode.__data__ = node.__data__;
-        subgroup[i] = subnode;
-      }
-    }
-  }
-
-  return new Selection(subgroups, this._parents);
-};
-
-function empty() {
-  return [];
-}
-
-var selectorAll = function(selector) {
-  return selector == null ? empty : function() {
-    return this.querySelectorAll(selector);
-  };
-};
-
-var selection_selectAll = function(select) {
-  if (typeof select !== "function") select = selectorAll(select);
-
-  for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
-      if (node = group[i]) {
-        subgroups.push(select.call(node, node.__data__, i, group));
-        parents.push(node);
-      }
-    }
-  }
-
-  return new Selection(subgroups, parents);
-};
-
-var selection_filter = function(match) {
-  if (typeof match !== "function") match = matcher$1(match);
-
-  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
-      if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
-        subgroup.push(node);
-      }
-    }
-  }
-
-  return new Selection(subgroups, this._parents);
-};
-
-var sparse = function(update) {
-  return new Array(update.length);
-};
-
-var selection_enter = function() {
-  return new Selection(this._enter || this._groups.map(sparse), this._parents);
-};
-
-function EnterNode(parent, datum) {
-  this.ownerDocument = parent.ownerDocument;
-  this.namespaceURI = parent.namespaceURI;
-  this._next = null;
-  this._parent = parent;
-  this.__data__ = datum;
-}
-
-EnterNode.prototype = {
-  constructor: EnterNode,
-  appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
-  insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
-  querySelector: function(selector) { return this._parent.querySelector(selector); },
-  querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
-};
-
-var constant = function(x) {
-  return function() {
-    return x;
-  };
-};
-
-var keyPrefix = "$"; // Protect against keys like “__proto__”.
-
-function bindIndex(parent, group, enter, update, exit, data) {
-  var i = 0,
-      node,
-      groupLength = group.length,
-      dataLength = data.length;
-
-  // Put any non-null nodes that fit into update.
-  // Put any null nodes into enter.
-  // Put any remaining data into enter.
-  for (; i < dataLength; ++i) {
-    if (node = group[i]) {
-      node.__data__ = data[i];
-      update[i] = node;
-    } else {
-      enter[i] = new EnterNode(parent, data[i]);
-    }
-  }
-
-  // Put any non-null nodes that don’t fit into exit.
-  for (; i < groupLength; ++i) {
-    if (node = group[i]) {
-      exit[i] = node;
-    }
-  }
-}
-
-function bindKey(parent, group, enter, update, exit, data, key) {
-  var i,
-      node,
-      nodeByKeyValue = {},
-      groupLength = group.length,
-      dataLength = data.length,
-      keyValues = new Array(groupLength),
-      keyValue;
-
-  // Compute the key for each node.
-  // If multiple nodes have the same key, the duplicates are added to exit.
-  for (i = 0; i < groupLength; ++i) {
-    if (node = group[i]) {
-      keyValues[i] = keyValue = keyPrefix + key.call(node, node.__data__, i, group);
-      if (keyValue in nodeByKeyValue) {
-        exit[i] = node;
-      } else {
-        nodeByKeyValue[keyValue] = node;
-      }
-    }
-  }
-
-  // Compute the key for each datum.
-  // If there a node associated with this key, join and add it to update.
-  // If there is not (or the key is a duplicate), add it to enter.
-  for (i = 0; i < dataLength; ++i) {
-    keyValue = keyPrefix + key.call(parent, data[i], i, data);
-    if (node = nodeByKeyValue[keyValue]) {
-      update[i] = node;
-      node.__data__ = data[i];
-      nodeByKeyValue[keyValue] = null;
-    } else {
-      enter[i] = new EnterNode(parent, data[i]);
-    }
-  }
-
-  // Add any remaining nodes that were not bound to data to exit.
-  for (i = 0; i < groupLength; ++i) {
-    if ((node = group[i]) && (nodeByKeyValue[keyValues[i]] === node)) {
-      exit[i] = node;
-    }
-  }
-}
-
-var selection_data = function(value, key) {
-  if (!value) {
-    data = new Array(this.size()), j = -1;
-    this.each(function(d) { data[++j] = d; });
-    return data;
-  }
-
-  var bind = key ? bindKey : bindIndex,
-      parents = this._parents,
-      groups = this._groups;
-
-  if (typeof value !== "function") value = constant(value);
-
-  for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
-    var parent = parents[j],
-        group = groups[j],
-        groupLength = group.length,
-        data = value.call(parent, parent && parent.__data__, j, parents),
-        dataLength = data.length,
-        enterGroup = enter[j] = new Array(dataLength),
-        updateGroup = update[j] = new Array(dataLength),
-        exitGroup = exit[j] = new Array(groupLength);
-
-    bind(parent, group, enterGroup, updateGroup, exitGroup, data, key);
-
-    // Now connect the enter nodes to their following update node, such that
-    // appendChild can insert the materialized enter node before this node,
-    // rather than at the end of the parent node.
-    for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
-      if (previous = enterGroup[i0]) {
-        if (i0 >= i1) i1 = i0 + 1;
-        while (!(next = updateGroup[i1]) && ++i1 < dataLength);
-        previous._next = next || null;
-      }
-    }
-  }
-
-  update = new Selection(update, parents);
-  update._enter = enter;
-  update._exit = exit;
-  return update;
-};
-
-var selection_exit = function() {
-  return new Selection(this._exit || this._groups.map(sparse), this._parents);
-};
-
-var selection_merge = function(selection) {
-
-  for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
-    for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
-      if (node = group0[i] || group1[i]) {
-        merge[i] = node;
-      }
-    }
-  }
-
-  for (; j < m0; ++j) {
-    merges[j] = groups0[j];
-  }
-
-  return new Selection(merges, this._parents);
-};
-
-var selection_order = function() {
-
-  for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
-    for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
-      if (node = group[i]) {
-        if (next && next !== node.nextSibling) next.parentNode.insertBefore(node, next);
-        next = node;
-      }
-    }
-  }
-
-  return this;
-};
-
-var selection_sort = function(compare) {
-  if (!compare) compare = ascending;
-
-  function compareNode(a, b) {
-    return a && b ? compare(a.__data__, b.__data__) : !a - !b;
-  }
-
-  for (var groups = this._groups, m = groups.length, sortgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, sortgroup = sortgroups[j] = new Array(n), node, i = 0; i < n; ++i) {
-      if (node = group[i]) {
-        sortgroup[i] = node;
-      }
-    }
-    sortgroup.sort(compareNode);
-  }
-
-  return new Selection(sortgroups, this._parents).order();
-};
-
-function ascending(a, b) {
-  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-}
-
-var selection_call = function() {
-  var callback = arguments[0];
-  arguments[0] = this;
-  callback.apply(null, arguments);
-  return this;
-};
-
-var selection_nodes = function() {
-  var nodes = new Array(this.size()), i = -1;
-  this.each(function() { nodes[++i] = this; });
-  return nodes;
-};
-
-var selection_node = function() {
-
-  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
-    for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
-      var node = group[i];
-      if (node) return node;
-    }
-  }
-
-  return null;
-};
-
-var selection_size = function() {
-  var size = 0;
-  this.each(function() { ++size; });
-  return size;
-};
-
-var selection_empty = function() {
-  return !this.node();
-};
-
-var selection_each = function(callback) {
-
-  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
-    for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
-      if (node = group[i]) callback.call(node, node.__data__, i, group);
-    }
-  }
-
-  return this;
-};
-
-function attrRemove(name) {
-  return function() {
-    this.removeAttribute(name);
-  };
-}
-
-function attrRemoveNS(fullname) {
-  return function() {
-    this.removeAttributeNS(fullname.space, fullname.local);
-  };
-}
-
-function attrConstant(name, value) {
-  return function() {
-    this.setAttribute(name, value);
-  };
-}
-
-function attrConstantNS(fullname, value) {
-  return function() {
-    this.setAttributeNS(fullname.space, fullname.local, value);
-  };
-}
-
-function attrFunction(name, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) this.removeAttribute(name);
-    else this.setAttribute(name, v);
-  };
-}
-
-function attrFunctionNS(fullname, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) this.removeAttributeNS(fullname.space, fullname.local);
-    else this.setAttributeNS(fullname.space, fullname.local, v);
-  };
-}
-
-var selection_attr = function(name, value) {
-  var fullname = namespace(name);
-
-  if (arguments.length < 2) {
-    var node = this.node();
-    return fullname.local
-        ? node.getAttributeNS(fullname.space, fullname.local)
-        : node.getAttribute(fullname);
-  }
-
-  return this.each((value == null
-      ? (fullname.local ? attrRemoveNS : attrRemove) : (typeof value === "function"
-      ? (fullname.local ? attrFunctionNS : attrFunction)
-      : (fullname.local ? attrConstantNS : attrConstant)))(fullname, value));
-};
-
-var defaultView = function(node) {
-  return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
-      || (node.document && node) // node is a Window
-      || node.defaultView; // node is a Document
-};
-
-function styleRemove(name) {
-  return function() {
-    this.style.removeProperty(name);
-  };
-}
-
-function styleConstant(name, value, priority) {
-  return function() {
-    this.style.setProperty(name, value, priority);
-  };
-}
-
-function styleFunction(name, value, priority) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) this.style.removeProperty(name);
-    else this.style.setProperty(name, v, priority);
-  };
-}
-
-var selection_style = function(name, value, priority) {
-  return arguments.length > 1
-      ? this.each((value == null
-            ? styleRemove : typeof value === "function"
-            ? styleFunction
-            : styleConstant)(name, value, priority == null ? "" : priority))
-      : styleValue(this.node(), name);
-};
-
-function styleValue(node, name) {
-  return node.style.getPropertyValue(name)
-      || defaultView(node).getComputedStyle(node, null).getPropertyValue(name);
-}
-
-function propertyRemove(name) {
-  return function() {
-    delete this[name];
-  };
-}
-
-function propertyConstant(name, value) {
-  return function() {
-    this[name] = value;
-  };
-}
-
-function propertyFunction(name, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) delete this[name];
-    else this[name] = v;
-  };
-}
-
-var selection_property = function(name, value) {
-  return arguments.length > 1
-      ? this.each((value == null
-          ? propertyRemove : typeof value === "function"
-          ? propertyFunction
-          : propertyConstant)(name, value))
-      : this.node()[name];
-};
-
-function classArray(string) {
-  return string.trim().split(/^|\s+/);
-}
-
-function classList(node) {
-  return node.classList || new ClassList(node);
-}
-
-function ClassList(node) {
-  this._node = node;
-  this._names = classArray(node.getAttribute("class") || "");
-}
-
-ClassList.prototype = {
-  add: function(name) {
-    var i = this._names.indexOf(name);
-    if (i < 0) {
-      this._names.push(name);
-      this._node.setAttribute("class", this._names.join(" "));
-    }
-  },
-  remove: function(name) {
-    var i = this._names.indexOf(name);
-    if (i >= 0) {
-      this._names.splice(i, 1);
-      this._node.setAttribute("class", this._names.join(" "));
-    }
-  },
-  contains: function(name) {
-    return this._names.indexOf(name) >= 0;
-  }
-};
-
-function classedAdd(node, names) {
-  var list = classList(node), i = -1, n = names.length;
-  while (++i < n) list.add(names[i]);
-}
-
-function classedRemove(node, names) {
-  var list = classList(node), i = -1, n = names.length;
-  while (++i < n) list.remove(names[i]);
-}
-
-function classedTrue(names) {
-  return function() {
-    classedAdd(this, names);
-  };
-}
-
-function classedFalse(names) {
-  return function() {
-    classedRemove(this, names);
-  };
-}
-
-function classedFunction(names, value) {
-  return function() {
-    (value.apply(this, arguments) ? classedAdd : classedRemove)(this, names);
-  };
-}
-
-var selection_classed = function(name, value) {
-  var names = classArray(name + "");
-
-  if (arguments.length < 2) {
-    var list = classList(this.node()), i = -1, n = names.length;
-    while (++i < n) if (!list.contains(names[i])) return false;
-    return true;
-  }
-
-  return this.each((typeof value === "function"
-      ? classedFunction : value
-      ? classedTrue
-      : classedFalse)(names, value));
-};
-
-function textRemove() {
-  this.textContent = "";
-}
-
-function textConstant(value) {
-  return function() {
-    this.textContent = value;
-  };
-}
-
-function textFunction(value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    this.textContent = v == null ? "" : v;
-  };
-}
-
-var selection_text = function(value) {
-  return arguments.length
-      ? this.each(value == null
-          ? textRemove : (typeof value === "function"
-          ? textFunction
-          : textConstant)(value))
-      : this.node().textContent;
-};
-
-function htmlRemove() {
-  this.innerHTML = "";
-}
-
-function htmlConstant(value) {
-  return function() {
-    this.innerHTML = value;
-  };
-}
-
-function htmlFunction(value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    this.innerHTML = v == null ? "" : v;
-  };
-}
-
-var selection_html = function(value) {
-  return arguments.length
-      ? this.each(value == null
-          ? htmlRemove : (typeof value === "function"
-          ? htmlFunction
-          : htmlConstant)(value))
-      : this.node().innerHTML;
-};
-
-function raise() {
-  if (this.nextSibling) this.parentNode.appendChild(this);
-}
-
-var selection_raise = function() {
-  return this.each(raise);
-};
-
-function lower() {
-  if (this.previousSibling) this.parentNode.insertBefore(this, this.parentNode.firstChild);
-}
-
-var selection_lower = function() {
-  return this.each(lower);
-};
-
-var selection_append = function(name) {
-  var create = typeof name === "function" ? name : creator(name);
-  return this.select(function() {
-    return this.appendChild(create.apply(this, arguments));
-  });
-};
-
-function constantNull() {
-  return null;
-}
-
-var selection_insert = function(name, before) {
-  var create = typeof name === "function" ? name : creator(name),
-      select = before == null ? constantNull : typeof before === "function" ? before : selector(before);
-  return this.select(function() {
-    return this.insertBefore(create.apply(this, arguments), select.apply(this, arguments) || null);
-  });
-};
-
-function remove() {
-  var parent = this.parentNode;
-  if (parent) parent.removeChild(this);
-}
-
-var selection_remove = function() {
-  return this.each(remove);
-};
-
-var selection_datum = function(value) {
-  return arguments.length
-      ? this.property("__data__", value)
-      : this.node().__data__;
-};
 
 function dispatchEvent(node, type, params) {
   var window = defaultView(node),
@@ -28358,11 +28316,11 @@ function dispatchFunction(type, params) {
   };
 }
 
-var selection_dispatch = function(type, params) {
+function selection_dispatch(type, params) {
   return this.each((typeof params === "function"
       ? dispatchFunction
       : dispatchConstant)(type, params));
-};
+}
 
 var root = [null];
 
@@ -28403,24 +28361,83 @@ Selection.prototype = selection.prototype = {
   append: selection_append,
   insert: selection_insert,
   remove: selection_remove,
+  clone: selection_clone,
   datum: selection_datum,
   on: selection_on,
   dispatch: selection_dispatch
 };
 
-var select = function(selector) {
+function select(selector) {
   return typeof selector === "string"
       ? new Selection([[document.querySelector(selector)]], [document.documentElement])
       : new Selection([[selector]], root);
+}
+
+function create(name) {
+  return select(creator(name).call(document.documentElement));
+}
+
+var nextId = 0;
+
+function local() {
+  return new Local;
+}
+
+function Local() {
+  this._ = "@" + (++nextId).toString(36);
+}
+
+Local.prototype = local.prototype = {
+  constructor: Local,
+  get: function(node) {
+    var id = this._;
+    while (!(id in node)) if (!(node = node.parentNode)) return;
+    return node[id];
+  },
+  set: function(node, value) {
+    return node[this._] = value;
+  },
+  remove: function(node) {
+    return this._ in node && delete node[this._];
+  },
+  toString: function() {
+    return this._;
+  }
 };
 
-var selectAll = function(selector) {
+function sourceEvent() {
+  var current = exports.event, source;
+  while (source = current.sourceEvent) current = source;
+  return current;
+}
+
+function point(node, event) {
+  var svg = node.ownerSVGElement || node;
+
+  if (svg.createSVGPoint) {
+    var point = svg.createSVGPoint();
+    point.x = event.clientX, point.y = event.clientY;
+    point = point.matrixTransform(node.getScreenCTM().inverse());
+    return [point.x, point.y];
+  }
+
+  var rect = node.getBoundingClientRect();
+  return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
+}
+
+function mouse(node) {
+  var event = sourceEvent();
+  if (event.changedTouches) event = event.changedTouches[0];
+  return point(node, event);
+}
+
+function selectAll(selector) {
   return typeof selector === "string"
       ? new Selection([document.querySelectorAll(selector)], [document.documentElement])
       : new Selection([selector == null ? [] : selector], root);
-};
+}
 
-var touch = function(node, touches, identifier) {
+function touch(node, touches, identifier) {
   if (arguments.length < 3) identifier = touches, touches = sourceEvent().changedTouches;
 
   for (var i = 0, n = touches ? touches.length : 0, touch; i < n; ++i) {
@@ -28430,9 +28447,9 @@ var touch = function(node, touches, identifier) {
   }
 
   return null;
-};
+}
 
-var touches = function(node, touches) {
+function touches(node, touches) {
   if (touches == null) touches = sourceEvent().touches;
 
   for (var i = 0, n = touches ? touches.length : 0, points = new Array(n); i < n; ++i) {
@@ -28440,8 +28457,9 @@ var touches = function(node, touches) {
   }
 
   return points;
-};
+}
 
+exports.create = create;
 exports.creator = creator;
 exports.local = local;
 exports.matcher = matcher$1;
@@ -33959,7 +33977,7 @@ var d3Transition = require('d3-transition');
 var d3Voronoi = require('d3-voronoi');
 var d3Zoom = require('d3-zoom');
 
-var version = "4.12.2";
+var version = "4.13.0";
 
 exports.version = version;
 Object.keys(d3Array).forEach(function (key) { exports[key] = d3Array[key]; });
@@ -33995,18 +34013,18 @@ Object.keys(d3Zoom).forEach(function (key) { exports[key] = d3Zoom[key]; });
 Object.defineProperty(exports, "event", {get: function() { return d3Selection.event; }});
 
 },{"d3-array":30,"d3-axis":31,"d3-brush":32,"d3-chord":33,"d3-collection":34,"d3-color":35,"d3-dispatch":36,"d3-drag":37,"d3-dsv":38,"d3-ease":39,"d3-force":40,"d3-format":41,"d3-geo":42,"d3-hierarchy":43,"d3-interpolate":44,"d3-path":45,"d3-polygon":46,"d3-quadtree":47,"d3-queue":48,"d3-random":49,"d3-request":50,"d3-scale":51,"d3-selection":52,"d3-shape":53,"d3-time":55,"d3-time-format":54,"d3-timer":56,"d3-transition":57,"d3-voronoi":58,"d3-zoom":59}],61:[function(require,module,exports){
-/*! DataTables 1.10.16
- * ©2008-2017 SpryMedia Ltd - datatables.net/license
+/*! DataTables 1.10.19
+ * ©2008-2018 SpryMedia Ltd - datatables.net/license
  */
 
 /**
  * @summary     DataTables
  * @description Paginate, search and order HTML tables
- * @version     1.10.16
+ * @version     1.10.19
  * @file        jquery.dataTables.js
  * @author      SpryMedia Ltd
  * @contact     www.datatables.net
- * @copyright   Copyright 2008-2017 SpryMedia Ltd.
+ * @copyright   Copyright 2008-2018 SpryMedia Ltd.
  *
  * This source file is free software, available under the following license:
  *   MIT license - http://datatables.net/license
@@ -34906,8 +34924,11 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 				var s = allSettings[i];
 			
 				/* Base check on table node */
-				if ( s.nTable == this || s.nTHead.parentNode == this || (s.nTFoot && s.nTFoot.parentNode == this) )
-				{
+				if (
+					s.nTable == this ||
+					(s.nTHead && s.nTHead.parentNode == this) ||
+					(s.nTFoot && s.nTFoot.parentNode == this)
+				) {
 					var bRetrieve = oInit.bRetrieve !== undefined ? oInit.bRetrieve : defaults.bRetrieve;
 					var bDestroy = oInit.bDestroy !== undefined ? oInit.bDestroy : defaults.bDestroy;
 			
@@ -34964,11 +34985,7 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 			
 			// Backwards compatibility, before we apply all the defaults
 			_fnCompatOpts( oInit );
-			
-			if ( oInit.oLanguage )
-			{
-				_fnLanguageCompat( oInit.oLanguage );
-			}
+			_fnLanguageCompat( oInit.oLanguage );
 			
 			// If the length menu is given, but the init display length is not, use the length menu
 			if ( oInit.aLengthMenu && ! oInit.iDisplayLength )
@@ -35351,8 +35368,10 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 	// - fr - Swiss Franc
 	// - kr - Swedish krona, Norwegian krone and Danish krone
 	// - \u2009 is thin space and \u202F is narrow no-break space, both used in many
+	// - Ƀ - Bitcoin
+	// - Ξ - Ethereum
 	//   standards as thousands separators.
-	var _re_formatted_numeric = /[',$£€¥%\u2009\u202F\u20BD\u20a9\u20BArfk]/gi;
+	var _re_formatted_numeric = /[',$£€¥%\u2009\u202F\u20BD\u20a9\u20BArfkɃΞ]/gi;
 	
 	
 	var _empty = function ( d ) {
@@ -35727,33 +35746,43 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 	 */
 	function _fnLanguageCompat( lang )
 	{
+		// Note the use of the Hungarian notation for the parameters in this method as
+		// this is called after the mapping of camelCase to Hungarian
 		var defaults = DataTable.defaults.oLanguage;
-		var zeroRecords = lang.sZeroRecords;
 	
-		/* Backwards compatibility - if there is no sEmptyTable given, then use the same as
-		 * sZeroRecords - assuming that is given.
-		 */
-		if ( ! lang.sEmptyTable && zeroRecords &&
-			defaults.sEmptyTable === "No data available in table" )
-		{
-			_fnMap( lang, lang, 'sZeroRecords', 'sEmptyTable' );
+		// Default mapping
+		var defaultDecimal = defaults.sDecimal;
+		if ( defaultDecimal ) {
+			_addNumericSort( defaultDecimal );
 		}
 	
-		/* Likewise with loading records */
-		if ( ! lang.sLoadingRecords && zeroRecords &&
-			defaults.sLoadingRecords === "Loading..." )
-		{
-			_fnMap( lang, lang, 'sZeroRecords', 'sLoadingRecords' );
-		}
+		if ( lang ) {
+			var zeroRecords = lang.sZeroRecords;
 	
-		// Old parameter name of the thousands separator mapped onto the new
-		if ( lang.sInfoThousands ) {
-			lang.sThousands = lang.sInfoThousands;
-		}
+			// Backwards compatibility - if there is no sEmptyTable given, then use the same as
+			// sZeroRecords - assuming that is given.
+			if ( ! lang.sEmptyTable && zeroRecords &&
+				defaults.sEmptyTable === "No data available in table" )
+			{
+				_fnMap( lang, lang, 'sZeroRecords', 'sEmptyTable' );
+			}
 	
-		var decimal = lang.sDecimal;
-		if ( decimal ) {
-			_addNumericSort( decimal );
+			// Likewise with loading records
+			if ( ! lang.sLoadingRecords && zeroRecords &&
+				defaults.sLoadingRecords === "Loading..." )
+			{
+				_fnMap( lang, lang, 'sZeroRecords', 'sLoadingRecords' );
+			}
+	
+			// Old parameter name of the thousands separator mapped onto the new
+			if ( lang.sInfoThousands ) {
+				lang.sThousands = lang.sInfoThousands;
+			}
+	
+			var decimal = lang.sDecimal;
+			if ( decimal && defaultDecimal !== decimal ) {
+				_addNumericSort( decimal );
+			}
 		}
 	}
 	
@@ -37125,7 +37154,7 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 				}
 			}
 	
-			_fnCallbackFire( oSettings, 'aoRowCreatedCallback', null, [nTr, rowData, iRow] );
+			_fnCallbackFire( oSettings, 'aoRowCreatedCallback', null, [nTr, rowData, iRow, cells] );
 		}
 	
 		// Remove once webkit bug 131819 and Chromium bug 365619 have been resolved
@@ -37450,7 +37479,7 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 				// iRowCount and j are not currently documented. Are they at all
 				// useful?
 				_fnCallbackFire( oSettings, 'aoRowCallback', null,
-					[nRow, aoData._aData, iRowCount, j] );
+					[nRow, aoData._aData, iRowCount, j, iDataIndex] );
 	
 				anRows.push( nRow );
 				iRowCount++;
@@ -37854,12 +37883,12 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 		{
 			ajaxData = ajax.data;
 	
-			var newData = $.isFunction( ajaxData ) ?
+			var newData = typeof ajaxData === 'function' ?
 				ajaxData( data, oSettings ) :  // fn can manipulate data or return
 				ajaxData;                      // an object object or array to merge
 	
 			// If the function returned something, use that alone
-			data = $.isFunction( ajaxData ) && newData ?
+			data = typeof ajaxData === 'function' && newData ?
 				newData :
 				$.extend( true, data, newData );
 	
@@ -37923,7 +37952,7 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 				url: ajax || oSettings.sAjaxSource
 			} ) );
 		}
-		else if ( $.isFunction( ajax ) )
+		else if ( typeof ajax === 'function' )
 		{
 			// Is a function - let the caller define what needs to be done
 			oSettings.jqXHR = ajax.call( instance, data, callback, oSettings );
@@ -39357,14 +39386,18 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 		// both match, but we want to hide it completely. We want to also fix their
 		// width to what they currently are
 		_fnApplyToChildren( function(nSizer, i) {
-			nSizer.innerHTML = '<div class="dataTables_sizing" style="height:0;overflow:hidden;">'+headerContent[i]+'</div>';
+			nSizer.innerHTML = '<div class="dataTables_sizing">'+headerContent[i]+'</div>';
+			nSizer.childNodes[0].style.height = "0";
+			nSizer.childNodes[0].style.overflow = "hidden";
 			nSizer.style.width = headerWidths[i];
 		}, headerSrcEls );
 	
 		if ( footer )
 		{
 			_fnApplyToChildren( function(nSizer, i) {
-				nSizer.innerHTML = '<div class="dataTables_sizing" style="height:0;overflow:hidden;">'+footerContent[i]+'</div>';
+				nSizer.innerHTML = '<div class="dataTables_sizing">'+footerContent[i]+'</div>';
+				nSizer.childNodes[0].style.height = "0";
+				nSizer.childNodes[0].style.overflow = "hidden";
 				nSizer.style.width = footerWidths[i];
 			}, footerSrcEls );
 		}
@@ -40558,7 +40591,7 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 	{
 		$(n)
 			.on( 'click.DT', oData, function (e) {
-					n.blur(); // Remove focus outline for mouse users
+					$(n).blur(); // Remove focus outline for mouse users
 					fn(e);
 				} )
 			.on( 'keypress.DT', oData, function (e){
@@ -41798,13 +41831,26 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 			}
 		}
 		else if ( order == 'current' || order == 'applied' ) {
-			a = search == 'none' ?
-				displayMaster.slice() :                      // no search
-				search == 'applied' ?
-					displayFiltered.slice() :                // applied search
-					$.map( displayMaster, function (el, i) { // removed search
-						return $.inArray( el, displayFiltered ) === -1 ? el : null;
-					} );
+			if ( search == 'none') {
+				a = displayMaster.slice();
+			}
+			else if ( search == 'applied' ) {
+				a = displayFiltered.slice();
+			}
+			else if ( search == 'removed' ) {
+				// O(n+m) solution by creating a hash map
+				var displayFilteredMap = {};
+	
+				for ( var i=0, ien=displayFiltered.length ; i<ien ; i++ ) {
+					displayFilteredMap[displayFiltered[i]] = null;
+				}
+	
+				a = $.map( displayMaster, function (el) {
+					return ! displayFilteredMap.hasOwnProperty(el) ?
+						el :
+						null;
+				} );
+			}
 		}
 		else if ( order == 'index' || order == 'original' ) {
 			for ( i=0, ien=settings.aoData.length ; i<ien ; i++ ) {
@@ -41837,14 +41883,13 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 	 * {array}     - jQuery array of nodes, or simply an array of TR nodes
 	 *
 	 */
-	
-	
 	var __row_selector = function ( settings, selector, opts )
 	{
 		var rows;
 		var run = function ( sel ) {
 			var selInt = _intVal( sel );
 			var i, ien;
+			var aoData = settings.aoData;
 	
 			// Short cut - selector is a number and no options provided (default is
 			// all records, so no need to check if the index is in there, since it
@@ -41869,23 +41914,26 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 			// Selector - function
 			if ( typeof sel === 'function' ) {
 				return $.map( rows, function (idx) {
-					var row = settings.aoData[ idx ];
+					var row = aoData[ idx ];
 					return sel( idx, row._aData, row.nTr ) ? idx : null;
 				} );
 			}
 	
-			// Get nodes in the order from the `rows` array with null values removed
-			var nodes = _removeEmpty(
-				_pluck_order( settings.aoData, rows, 'nTr' )
-			);
-	
 			// Selector - node
 			if ( sel.nodeName ) {
-				if ( sel._DT_RowIndex !== undefined ) {
-					return [ sel._DT_RowIndex ]; // Property added by DT for fast lookup
+				var rowIdx = sel._DT_RowIndex;  // Property added by DT for fast lookup
+				var cellIdx = sel._DT_CellIndex;
+	
+				if ( rowIdx !== undefined ) {
+					// Make sure that the row is actually still present in the table
+					return aoData[ rowIdx ] && aoData[ rowIdx ].nTr === sel ?
+						[ rowIdx ] :
+						[];
 				}
-				else if ( sel._DT_CellIndex ) {
-					return [ sel._DT_CellIndex.row ];
+				else if ( cellIdx ) {
+					return aoData[ cellIdx.row ] && aoData[ cellIdx.row ].nTr === sel ?
+						[ cellIdx.row ] :
+						[];
 				}
 				else {
 					var host = $(sel).closest('*[data-dt-row]');
@@ -41914,6 +41962,11 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 				// need to fall through to jQuery in case there is DOM id that
 				// matches
 			}
+			
+			// Get nodes in the order from the `rows` array with null values removed
+			var nodes = _removeEmpty(
+				_pluck_order( settings.aoData, rows, 'nTr' )
+			);
 	
 			// Selector - jQuery selector string, array of nodes or jQuery object/
 			// As jQuery's .filter() allows jQuery objects to be passed in filter,
@@ -42108,7 +42161,13 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 		}
 	
 		// Set
-		ctx[0].aoData[ this[0] ]._aData = data;
+		var row = ctx[0].aoData[ this[0] ];
+		row._aData = data;
+	
+		// If the DOM has an id, and the data source is an array
+		if ( $.isArray( data ) && row.nTr.id ) {
+			_fnSetObjectDataFn( ctx[0].rowId )( data, row.nTr.id );
+		}
 	
 		// Automatically invalidate
 		_fnInvalidate( ctx[0], this[0], 'data' );
@@ -42534,6 +42593,12 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 		_fnDrawHead( settings, settings.aoHeader );
 		_fnDrawHead( settings, settings.aoFooter );
 	
+		// Update colspan for no records display. Child rows and extensions will use their own
+		// listeners to do this - only need to update the empty table item here
+		if ( ! settings.aiDisplay.length ) {
+			$(settings.nTBody).find('td[colspan]').attr('colspan', _fnVisbleColumns(settings));
+		}
+	
 		_fnSaveState( settings );
 	};
 	
@@ -42699,7 +42764,10 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 			
 			// Selector - index
 			if ( $.isPlainObject( s ) ) {
-				return [s];
+				// Valid cell index and its in the array of selectable rows
+				return s.column !== undefined && s.row !== undefined && $.inArray( s.row, rows ) !== -1 ?
+					[s] :
+					[];
 			}
 	
 			// Selector - jQuery filtered cells
@@ -42763,11 +42831,11 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 		}
 	
 		// Row + column selector
-		var columns = this.columns( columnSelector, opts );
-		var rows = this.rows( rowSelector, opts );
+		var columns = this.columns( columnSelector );
+		var rows = this.rows( rowSelector );
 		var a, i, ien, j, jen;
 	
-		var cells = this.iterator( 'table', function ( settings, idx ) {
+		this.iterator( 'table', function ( settings, idx ) {
 			a = [];
 	
 			for ( i=0, ien=rows[idx].length ; i<ien ; i++ ) {
@@ -42778,9 +42846,10 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 					} );
 				}
 			}
-	
-			return a;
 		}, 1 );
+	
+	    // Now pass through the cell selector for options
+	    var cells = this.cells( a, opts );
 	
 		$.extend( cells.selector, {
 			cols: columnSelector,
@@ -43409,7 +43478,7 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 	 *  @type string
 	 *  @default Version number
 	 */
-	DataTable.version = "1.10.16";
+	DataTable.version = "1.10.19";
 
 	/**
 	 * Private data store, containing all of the settings objects that are
@@ -46347,8 +46416,8 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 		 *          { "data": "engine" },
 		 *          { "data": "browser" },
 		 *          { "data": "platform.inner" },
-		 *          { "data": "platform.details.0" },
-		 *          { "data": "platform.details.1" }
+		 *          { "data": "details.0" },
+		 *          { "data": "details.1" }
 		 *        ]
 		 *      } );
 		 *    } );
@@ -48145,7 +48214,7 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 			 *    $.fn.dataTable.ext.type.detect.push(
 			 *      function ( data, settings ) {
 			 *        // Check the numeric part
-			 *        if ( ! $.isNumeric( data.substring(1) ) ) {
+			 *        if ( ! data.substring(1).match(/[0-9]/) ) {
 			 *          return null;
 			 *        }
 			 *
@@ -48728,7 +48797,8 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 	$.extend( _ext.type.order, {
 		// Dates
 		"date-pre": function ( d ) {
-			return Date.parse( d ) || -Infinity;
+			var ts = Date.parse( d );
+			return isNaN(ts) ? -Infinity : ts;
 		},
 	
 		// html
@@ -48919,7 +48989,8 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 	
 		text: function () {
 			return {
-				display: __htmlEscapeEntities
+				display: __htmlEscapeEntities,
+				filter: __htmlEscapeEntities
 			};
 		}
 	};
@@ -49044,6 +49115,7 @@ Object.defineProperty(exports, "event", {get: function() { return d3Selection.ev
 		_fnRenderer: _fnRenderer,
 		_fnDataSource: _fnDataSource,
 		_fnRowAttributes: _fnRowAttributes,
+		_fnExtend: _fnExtend,
 		_fnCalculateEnd: function () {} // Used by a lot of plug-ins, but redundant
 		                                // in 1.10, so this dead-end function is
 		                                // added to prevent errors
@@ -63319,16 +63391,17 @@ return jQuery;
 
 },{}],74:[function(require,module,exports){
 /* @preserve
- * Leaflet 1.2.0, a JS library for interactive maps. http://leafletjs.com
+ * Leaflet 1.3.1, a JS library for interactive maps. http://leafletjs.com
  * (c) 2010-2017 Vladimir Agafonkin, (c) 2010-2011 CloudMade
  */
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
 	(factory((global.L = {})));
 }(this, (function (exports) { 'use strict';
 
-var version = "1.2.0";
+var version = "1.3.1";
 
 /*
  * @namespace Util
@@ -63385,12 +63458,12 @@ function bind(fn, obj) {
 var lastId = 0;
 
 // @function stamp(obj: Object): Number
-// Returns the unique ID of an object, assiging it one if it doesn't have it.
+// Returns the unique ID of an object, assigning it one if it doesn't have it.
 function stamp(obj) {
 	/*eslint-disable */
 	obj._leaflet_id = obj._leaflet_id || ++lastId;
 	return obj._leaflet_id;
-	/*eslint-enable */
+	/* eslint-enable */
 }
 
 // @function throttle(fn: Function, time: Number, context: Object): Function
@@ -63444,9 +63517,9 @@ function wrapNum(x, range, includeMax) {
 function falseFn() { return false; }
 
 // @function formatNum(num: Number, digits?: Number): Number
-// Returns the number `num` rounded to `digits` decimals, or to 5 decimals by default.
+// Returns the number `num` rounded to `digits` decimals, or to 6 decimals by default.
 function formatNum(num, digits) {
-	var pow = Math.pow(10, digits || 5);
+	var pow = Math.pow(10, (digits === undefined ? 6 : digits));
 	return Math.round(num * pow) / pow;
 }
 
@@ -63487,7 +63560,7 @@ function getParamString(obj, existingUrl, uppercase) {
 	return ((!existingUrl || existingUrl.indexOf('?') === -1) ? '?' : '&') + params.join('&');
 }
 
-var templateRe = /\{ *([\w_\-]+) *\}/g;
+var templateRe = /\{ *([\w_-]+) *\}/g;
 
 // @function template(str: String, data: Object): String
 // Simple templating facility, accepts a template string of the form `'Hello {a}, {b}'`
@@ -63710,7 +63783,7 @@ Class.addInitHook = function (fn) { // (Function) || (String, args...)
 };
 
 function checkDeprecatedMixinEvents(includes) {
-	if (!L || !L.Mixin) { return; }
+	if (typeof L === 'undefined' || !L || !L.Mixin) { return; }
 
 	includes = isArray(includes) ? includes : [includes];
 
@@ -63896,7 +63969,11 @@ var Events = {
 	fire: function (type, data, propagate) {
 		if (!this.listens(type, propagate)) { return this; }
 
-		var event = extend({}, data, {type: type, target: this});
+		var event = extend({}, data, {
+			type: type,
+			target: this,
+			sourceTarget: data && data.sourceTarget || this
+		});
 
 		if (this._events) {
 			var listeners = this._events[type];
@@ -63977,7 +64054,10 @@ var Events = {
 
 	_propagateEvent: function (e) {
 		for (var id in this._eventParents) {
-			this._eventParents[id].fire(e.type, extend({layer: e.target}, e), true);
+			this._eventParents[id].fire(e.type, extend({
+				layer: e.target,
+				propagatedFrom: e.target
+			}, e), true);
 		}
 	}
 };
@@ -64027,6 +64107,10 @@ var Evented = Class.extend(Events);
  * map.panBy([200, 300]);
  * map.panBy(L.point(200, 300));
  * ```
+ *
+ * Note that `Point` does not inherit from Leafet's `Class` object,
+ * which means new classes can't inherit from it, and new methods
+ * can't be added to it with the `include` function.
  */
 
 function Point(x, y, round) {
@@ -64035,6 +64119,10 @@ function Point(x, y, round) {
 	// @property y: Number; The `y` coordinate of the point
 	this.y = (round ? Math.round(y) : y);
 }
+
+var trunc = Math.trunc || function (v) {
+	return v > 0 ? Math.floor(v) : Math.ceil(v);
+};
 
 Point.prototype = {
 
@@ -64146,6 +64234,18 @@ Point.prototype = {
 		return this;
 	},
 
+	// @method trunc(): Point
+	// Returns a copy of the current point with truncated coordinates (rounded towards zero).
+	trunc: function () {
+		return this.clone()._trunc();
+	},
+
+	_trunc: function () {
+		this.x = trunc(this.x);
+		this.y = trunc(this.y);
+		return this;
+	},
+
 	// @method distanceTo(otherPoint: Point): Number
 	// Returns the cartesian distance between the current and the given points.
 	distanceTo: function (point) {
@@ -64229,6 +64329,10 @@ function toPoint(x, y, round) {
  * ```js
  * otherBounds.intersects([[10, 10], [40, 60]]);
  * ```
+ *
+ * Note that `Bounds` does not inherit from Leafet's `Class` object,
+ * which means new classes can't inherit from it, and new methods
+ * can't be added to it with the `include` function.
  */
 
 function Bounds(a, b) {
@@ -64402,6 +64506,10 @@ function toBounds(a, b) {
  * ```
  *
  * Caution: if the area crosses the antimeridian (often confused with the International Date Line), you must specify corners _outside_ the [-180, 180] degrees longitude range.
+ *
+ * Note that `LatLngBounds` does not inherit from Leafet's `Class` object,
+ * which means new classes can't inherit from it, and new methods
+ * can't be added to it with the `include` function.
  */
 
 function LatLngBounds(corner1, corner2) { // (LatLng, LatLng) or (LatLng[])
@@ -64455,7 +64563,9 @@ LatLngBounds.prototype = {
 	},
 
 	// @method pad(bufferRatio: Number): LatLngBounds
-	// Returns bigger bounds created by extending the current bounds by a given percentage in each direction.
+	// Returns bounds created by extending or retracting the current bounds by a given ratio in each direction.
+	// For example, a ratio of 0.5 extends the bounds by 50% in each direction.
+	// Negative values will retract the bounds.
 	pad: function (bufferRatio) {
 		var sw = this._southWest,
 		    ne = this._northEast,
@@ -64590,7 +64700,7 @@ LatLngBounds.prototype = {
 	},
 
 	// @method equals(otherBounds: LatLngBounds, maxMargin?: Number): Boolean
-	// Returns `true` if the rectangle is equivalent (within a small margin of error) to the given bounds. The margin of error can be overriden by setting `maxMargin` to a small number.
+	// Returns `true` if the rectangle is equivalent (within a small margin of error) to the given bounds. The margin of error can be overridden by setting `maxMargin` to a small number.
 	equals: function (bounds, maxMargin) {
 		if (!bounds) { return false; }
 
@@ -64641,6 +64751,10 @@ function toLatLngBounds(a, b) {
  * map.panTo({lat: 50, lng: 30});
  * map.panTo(L.latLng(50, 30));
  * ```
+ *
+ * Note that `LatLng` does not inherit from Leafet's `Class` object,
+ * which means new classes can't inherit from it, and new methods
+ * can't be added to it with the `include` function.
  */
 
 function LatLng(lat, lng, alt) {
@@ -64665,7 +64779,7 @@ function LatLng(lat, lng, alt) {
 
 LatLng.prototype = {
 	// @method equals(otherLatLng: LatLng, maxMargin?: Number): Boolean
-	// Returns `true` if the given `LatLng` point is at the same position (within a small margin of error). The margin of error can be overriden by setting `maxMargin` to a small number.
+	// Returns `true` if the given `LatLng` point is at the same position (within a small margin of error). The margin of error can be overridden by setting `maxMargin` to a small number.
 	equals: function (obj, maxMargin) {
 		if (!obj) { return false; }
 
@@ -64687,7 +64801,7 @@ LatLng.prototype = {
 	},
 
 	// @method distanceTo(otherLatLng: LatLng): Number
-	// Returns the distance (in meters) to the given `LatLng` calculated using the [Haversine formula](http://en.wikipedia.org/wiki/Haversine_formula).
+	// Returns the distance (in meters) to the given `LatLng` calculated using the [Spherical Law of Cosines](https://en.wikipedia.org/wiki/Spherical_law_of_cosines).
 	distanceTo: function (other) {
 		return Earth.distance(this, toLatLng(other));
 	},
@@ -64763,6 +64877,10 @@ function toLatLng(a, b, c) {
  * Leaflet defines the most usual CRSs by default. If you want to use a
  * CRS not defined by default, take a look at the
  * [Proj4Leaflet](https://github.com/kartena/Proj4Leaflet) plugin.
+ *
+ * Note that the CRS instances do not inherit from Leafet's `Class` object,
+ * and can't be instantiated. Also, new classes can't inherit from them,
+ * and methods can't be added to them with the `include` function.
  */
 
 var CRS = {
@@ -64905,10 +65023,11 @@ var Earth = extend({}, CRS, {
 		var rad = Math.PI / 180,
 		    lat1 = latlng1.lat * rad,
 		    lat2 = latlng2.lat * rad,
-		    a = Math.sin(lat1) * Math.sin(lat2) +
-		        Math.cos(lat1) * Math.cos(lat2) * Math.cos((latlng2.lng - latlng1.lng) * rad);
-
-		return this.R * Math.acos(Math.min(a, 1));
+		    sinDLat = Math.sin((latlng2.lat - latlng1.lat) * rad / 2),
+		    sinDLon = Math.sin((latlng2.lng - latlng1.lng) * rad / 2),
+		    a = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLon * sinDLon,
+		    c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		return this.R * c;
 	}
 });
 
@@ -64933,8 +65052,8 @@ var SphericalMercator = {
 		    sin = Math.sin(lat * d);
 
 		return new Point(
-				this.R * latlng.lng * d,
-				this.R * Math.log((1 + sin) / (1 - sin)) / 2);
+			this.R * latlng.lng * d,
+			this.R * Math.log((1 + sin) / (1 - sin)) / 2);
 	},
 
 	unproject: function (point) {
@@ -65021,7 +65140,7 @@ Transformation.prototype = {
 
 // @alternative
 // @factory L.transformation(coefficients: Array): Transformation
-// Expects an coeficients array of the form
+// Expects an coefficients array of the form
 // `[a: Number, b: Number, c: Number, d: Number]`.
 
 function toTransformation(a, b, c, d) {
@@ -65121,6 +65240,11 @@ var android = userAgentContains('android');
 
 // @property android23: Boolean; `true` for browsers running on Android 2 or Android 3.
 var android23 = userAgentContains('android 2') || userAgentContains('android 3');
+
+/* See https://stackoverflow.com/a/17961266 for details on detecting stock Android */
+var webkitVer = parseInt(/WebKit\/([0-9]+)|$/.exec(navigator.userAgent)[1], 10); // also matches AppleWebKit
+// @property androidStock: Boolean; `true` for the Android stock browser (i.e. not Chrome)
+var androidStock = android && userAgentContains('Google') && webkitVer < 537 && !('AudioNode' in window);
 
 // @property opera: Boolean; `true` for the Opera browser
 var opera = !!window.opera;
@@ -65234,6 +65358,7 @@ var Browser = (Object.freeze || Object)({
 	webkit: webkit,
 	android: android,
 	android23: android23,
+	androidStock: androidStock,
 	opera: opera,
 	chrome: chrome,
 	gecko: gecko,
@@ -65269,6 +65394,7 @@ var POINTER_MOVE =   msPointer ? 'MSPointerMove'   : 'pointermove';
 var POINTER_UP =     msPointer ? 'MSPointerUp'     : 'pointerup';
 var POINTER_CANCEL = msPointer ? 'MSPointerCancel' : 'pointercancel';
 var TAG_WHITE_LIST = ['INPUT', 'SELECT', 'OPTION'];
+
 var _pointers = {};
 var _pointerDocListener = false;
 
@@ -65311,7 +65437,7 @@ function removePointerListener(obj, type, id) {
 
 function _addPointerStart(obj, handler, id) {
 	var onDown = bind(function (e) {
-		if (e.pointerType !== 'mouse' && e.pointerType !== e.MSPOINTER_TYPE_MOUSE && e.pointerType !== e.MSPOINTER_TYPE_MOUSE) {
+		if (e.pointerType !== 'mouse' && e.MSPOINTER_TYPE_MOUSE && e.pointerType !== e.MSPOINTER_TYPE_MOUSE) {
 			// In IE11, some touch events needs to fire for form controls, or
 			// the controls will stop working. We keep a whitelist of tag names that
 			// need these events. For other target tags, we prevent default on the event.
@@ -65508,18 +65634,13 @@ function on(obj, types, fn, context) {
 var eventsKey = '_leaflet_events';
 
 // @function off(el: HTMLElement, types: String, fn: Function, context?: Object): this
-// Removes a previously added listener function. If no function is specified,
-// it will remove all the listeners of that particular DOM event from the element.
+// Removes a previously added listener function.
 // Note that if you passed a custom context to on, you must pass the same
 // context to `off` in order to remove the listener.
 
 // @alternative
 // @function off(el: HTMLElement, eventMap: Object, context?: Object): this
 // Removes a set of type/listener pairs, e.g. `{click: onClick, mousemove: onMouseMove}`
-
-// @alternative
-// @function off(el: HTMLElement): this
-// Removes all known event listeners
 function off(obj, types, fn, context) {
 
 	if (typeof types === 'object') {
@@ -65604,7 +65725,8 @@ function removeOne(obj, type, fn, context) {
 	if (pointer && type.indexOf('touch') === 0) {
 		removePointerListener(obj, type, id);
 
-	} else if (touch && (type === 'dblclick') && removeDoubleTapListener) {
+	} else if (touch && (type === 'dblclick') && removeDoubleTapListener &&
+	           !(pointer && chrome)) {
 		removeDoubleTapListener(obj, id);
 
 	} else if ('removeEventListener' in obj) {
@@ -65676,7 +65798,7 @@ function preventDefault(e) {
 	return this;
 }
 
-// @function stop(ev): this
+// @function stop(ev: DOMEvent): this
 // Does `stopPropagation` and `preventDefault` at the same time.
 function stop(e) {
 	preventDefault(e);
@@ -65694,9 +65816,11 @@ function getMousePosition(e, container) {
 
 	var rect = container.getBoundingClientRect();
 
+	var scaleX = rect.width / container.offsetWidth || 1;
+	var scaleY = rect.height / container.offsetHeight || 1;
 	return new Point(
-		e.clientX - rect.left - container.clientLeft,
-		e.clientY - rect.top - container.clientTop);
+		e.clientX / scaleX - rect.left - container.clientLeft,
+		e.clientY / scaleY - rect.top - container.clientTop);
 }
 
 // Chrome on Win scrolls double the pixels as in other platforms (see #4538),
@@ -66014,7 +66138,7 @@ function setPosition(el, point) {
 
 	/*eslint-disable */
 	el._leaflet_pos = point;
-	/*eslint-enable */
+	/* eslint-enable */
 
 	if (any3d) {
 		setTransform(el, point);
@@ -66653,7 +66777,7 @@ var Map = Evented.extend({
 			}
 		}
 
-		this._moveStart(true);
+		this._moveStart(true, options.noMoveStart);
 
 		frame.call(this);
 		return this;
@@ -66691,10 +66815,15 @@ var Map = Evented.extend({
 	// @method setMinZoom(zoom: Number): this
 	// Sets the lower limit for the available zoom levels (see the [minZoom](#map-minzoom) option).
 	setMinZoom: function (zoom) {
+		var oldZoom = this.options.minZoom;
 		this.options.minZoom = zoom;
 
-		if (this._loaded && this.getZoom() < this.options.minZoom) {
-			return this.setZoom(zoom);
+		if (this._loaded && oldZoom !== zoom) {
+			this.fire('zoomlevelschange');
+
+			if (this.getZoom() < this.options.minZoom) {
+				return this.setZoom(zoom);
+			}
 		}
 
 		return this;
@@ -66703,10 +66832,15 @@ var Map = Evented.extend({
 	// @method setMaxZoom(zoom: Number): this
 	// Sets the upper limit for the available zoom levels (see the [maxZoom](#map-maxzoom) option).
 	setMaxZoom: function (zoom) {
+		var oldZoom = this.options.maxZoom;
 		this.options.maxZoom = zoom;
 
-		if (this._loaded && (this.getZoom() > this.options.maxZoom)) {
-			return this.setZoom(zoom);
+		if (this._loaded && oldZoom !== zoom) {
+			this.fire('zoomlevelschange');
+
+			if (this.getZoom() > this.options.maxZoom) {
+				return this.setZoom(zoom);
+			}
 		}
 
 		return this;
@@ -66727,7 +66861,7 @@ var Map = Evented.extend({
 		return this;
 	},
 
-	// @method invalidateSize(options: Zoom/Pan options): this
+	// @method invalidateSize(options: Zoom/pan options): this
 	// Checks if the map container size changed and updates the map if so —
 	// call it after you've changed the map size dynamically, also animating
 	// pan by default. If `options.pan` is `false`, panning will not occur.
@@ -66900,8 +67034,7 @@ var Map = Evented.extend({
 		this.fire('locationfound', data);
 	},
 
-	// TODO handler.addTo
-	// TODO Appropiate docs section?
+	// TODO Appropriate docs section?
 	// @section Other Methods
 	// @method addHandler(name: String, HandlerClass: Function): this
 	// Adds a new `Handler` to the map, given its name and constructor function.
@@ -66936,9 +67069,15 @@ var Map = Evented.extend({
 		} catch (e) {
 			/*eslint-disable */
 			this._container._leaflet_id = undefined;
-			/*eslint-enable */
+			/* eslint-enable */
 			this._containerId = undefined;
 		}
+
+		if (this._locationWatchId !== undefined) {
+			this.stopLocate();
+		}
+
+		this._stop();
 
 		remove(this._mapPane);
 
@@ -67318,7 +67457,7 @@ var Map = Evented.extend({
 		// Pane for `GridLayer`s and `TileLayer`s
 		this.createPane('tilePane');
 		// @pane overlayPane: HTMLElement = 400
-		// Pane for vector overlays (`Path`s), like `Polyline`s and `Polygon`s
+		// Pane for vectors (`Path`s, like `Polyline`s and `Polygon`s), `ImageOverlay`s and `VideoOverlay`s
 		this.createPane('shadowPane');
 		// @pane shadowPane: HTMLElement = 500
 		// Pane for overlay shadows (e.g. `Marker` shadows)
@@ -67327,7 +67466,7 @@ var Map = Evented.extend({
 		// Pane for `Icon`s of `Marker`s
 		this.createPane('markerPane');
 		// @pane tooltipPane: HTMLElement = 650
-		// Pane for tooltip.
+		// Pane for `Tooltip`s.
 		this.createPane('tooltipPane');
 		// @pane popupPane: HTMLElement = 700
 		// Pane for `Popup`s.
@@ -67354,7 +67493,7 @@ var Map = Evented.extend({
 
 		var zoomChanged = this._zoom !== zoom;
 		this
-			._moveStart(zoomChanged)
+			._moveStart(zoomChanged, false)
 			._move(center, zoom)
 			._moveEnd(zoomChanged);
 
@@ -67371,7 +67510,7 @@ var Map = Evented.extend({
 		}
 	},
 
-	_moveStart: function (zoomChanged) {
+	_moveStart: function (zoomChanged, noMoveStart) {
 		// @event zoomstart: Event
 		// Fired when the map zoom is about to change (e.g. before zoom animation).
 		// @event movestart: Event
@@ -67379,7 +67518,10 @@ var Map = Evented.extend({
 		if (zoomChanged) {
 			this.fire('zoomstart');
 		}
-		return this.fire('movestart');
+		if (!noMoveStart) {
+			this.fire('movestart');
+		}
+		return this;
 	},
 
 	_move: function (center, zoom, data) {
@@ -67581,9 +67723,9 @@ var Map = Evented.extend({
 		};
 
 		if (e.type !== 'keypress') {
-			var isMarker = (target.options && 'icon' in target.options);
+			var isMarker = target.getLatLng && (!target._radius || target._radius <= 10);
 			data.containerPoint = isMarker ?
-					this.latLngToContainerPoint(target.getLatLng()) : this.mouseEventToContainerPoint(e);
+				this.latLngToContainerPoint(target.getLatLng()) : this.mouseEventToContainerPoint(e);
 			data.layerPoint = this.containerPointToLayerPoint(data.containerPoint);
 			data.latlng = isMarker ? target.getLatLng() : this.layerPointToLatLng(data.layerPoint);
 		}
@@ -67742,7 +67884,7 @@ var Map = Evented.extend({
 
 	_tryAnimatedPan: function (center, options) {
 		// difference between the new and current centers in pixels
-		var offset = this._getCenterOffset(center)._floor();
+		var offset = this._getCenterOffset(center)._trunc();
 
 		// don't animate too far unless animate: true specified in options
 		if ((options && options.animate) !== true && !this.getSize().contains(offset)) { return false; }
@@ -67812,7 +67954,7 @@ var Map = Evented.extend({
 
 		requestAnimFrame(function () {
 			this
-			    ._moveStart(true)
+			    ._moveStart(true, false)
 			    ._animateZoom(center, zoom, true);
 		}, this);
 
@@ -67820,6 +67962,8 @@ var Map = Evented.extend({
 	},
 
 	_animateZoom: function (center, zoom, startAnim, noUpdate) {
+		if (!this._mapPane) { return; }
+
 		if (startAnim) {
 			this._animatingZoom = true;
 
@@ -67845,7 +67989,9 @@ var Map = Evented.extend({
 	_onZoomTransitionEnd: function () {
 		if (!this._animatingZoom) { return; }
 
-		removeClass(this._mapPane, 'leaflet-zoom-anim');
+		if (this._mapPane) {
+			removeClass(this._mapPane, 'leaflet-zoom-anim');
+		}
 
 		this._animatingZoom = false;
 
@@ -68663,8 +68809,8 @@ var Scale = Control.extend({
 		    y = map.getSize().y / 2;
 
 		var maxMeters = map.distance(
-				map.containerPointToLatLng([0, y]),
-				map.containerPointToLatLng([this.options.maxWidth, y]));
+			map.containerPointToLatLng([0, y]),
+			map.containerPointToLatLng([this.options.maxWidth, y]));
 
 		this._updateScales(maxMeters);
 	},
@@ -68906,6 +69052,14 @@ var Handler = Class.extend({
 	// Called when the handler is disabled, should remove the event hooks added previously.
 });
 
+// @section There is static function which can be called without instantiating L.Handler:
+// @function addTo(map: Map, name: String): this
+// Adds a new Handler to the given map with the given name.
+Handler.addTo = function (map, name) {
+	map.addHandler(name, this);
+	return this;
+};
+
 var Mixin = {Events: Events};
 
 /*
@@ -69132,7 +69286,7 @@ var Draggable = Evented.extend({
 /*
  * @namespace LineUtil
  *
- * Various utility functions for polyine points processing, used by Leaflet internally to make polylines lightning-fast.
+ * Various utility functions for polyline points processing, used by Leaflet internally to make polylines lightning-fast.
  */
 
 // Simplify polyline with vertex reduction and Douglas-Peucker simplification.
@@ -69387,10 +69541,10 @@ var LineUtil = (Object.freeze || Object)({
  */
 
 /* @function clipPolygon(points: Point[], bounds: Bounds, round?: Boolean): Point[]
- * Clips the polygon geometry defined by the given `points` by the given bounds (using the [Sutherland-Hodgeman algorithm](https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm)).
+ * Clips the polygon geometry defined by the given `points` by the given bounds (using the [Sutherland-Hodgman algorithm](https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm)).
  * Used by Leaflet to only show polygon points that are on the screen or near, increasing
  * performance. Note that polygon points needs different algorithm for clipping
- * than polyline, so there's a seperate method for it.
+ * than polyline, so there's a separate method for it.
  */
 function clipPolygon(points, bounds, round) {
 	var clippedPoints,
@@ -69527,6 +69681,10 @@ var Mercator = {
  * @method unproject(point: Point): LatLng
  * The inverse of `project`. Projects a 2D point into a geographical location.
  * Only accepts actual `L.Point` instances, not arrays.
+
+ * Note that the projection instances do not inherit from Leafet's `Class` object,
+ * and can't be instantiated. Also, new classes can't inherit from them,
+ * and methods can't be added to them with the `include` function.
 
  */
 
@@ -69909,7 +70067,9 @@ Map.include({
 
 var LayerGroup = Layer.extend({
 
-	initialize: function (layers) {
+	initialize: function (layers, options) {
+		setOptions(this, options);
+
 		this._layers = {};
 
 		var i, len;
@@ -69964,10 +70124,7 @@ var LayerGroup = Layer.extend({
 	// @method clearLayers(): this
 	// Removes all the layers from the group.
 	clearLayers: function () {
-		for (var i in this._layers) {
-			this.removeLayer(this._layers[i]);
-		}
-		return this;
+		return this.eachLayer(this.removeLayer, this);
 	},
 
 	// @method invoke(methodName: String, …): this
@@ -69990,15 +70147,11 @@ var LayerGroup = Layer.extend({
 	},
 
 	onAdd: function (map) {
-		for (var i in this._layers) {
-			map.addLayer(this._layers[i]);
-		}
+		this.eachLayer(map.addLayer, map);
 	},
 
 	onRemove: function (map) {
-		for (var i in this._layers) {
-			map.removeLayer(this._layers[i]);
-		}
+		this.eachLayer(map.removeLayer, map);
 	},
 
 	// @method eachLayer(fn: Function, context?: Object): this
@@ -70025,10 +70178,7 @@ var LayerGroup = Layer.extend({
 	// Returns an array of all the layers added to the group.
 	getLayers: function () {
 		var layers = [];
-
-		for (var i in this._layers) {
-			layers.push(this._layers[i]);
-		}
+		this.eachLayer(layers.push, layers);
 		return layers;
 	},
 
@@ -70046,10 +70196,10 @@ var LayerGroup = Layer.extend({
 });
 
 
-// @factory L.layerGroup(layers?: Layer[])
-// Create a layer group, optionally given an initial set of layers.
-var layerGroup = function (layers) {
-	return new LayerGroup(layers);
+// @factory L.layerGroup(layers?: Layer[], options?: Object)
+// Create a layer group, optionally given an initial set of layers and an `options` object.
+var layerGroup = function (layers, options) {
+	return new LayerGroup(layers, options);
 };
 
 /*
@@ -70120,7 +70270,7 @@ var FeatureGroup = LayerGroup.extend({
 	},
 
 	// @method bringToBack(): this
-	// Brings the layer group to the top of all other layers
+	// Brings the layer group to the back of all other layers
 	bringToBack: function () {
 		return this.invoke('bringToBack');
 	},
@@ -70192,8 +70342,11 @@ var Icon = Class.extend({
 	 * will be aligned so that this point is at the marker's geographical location. Centered
 	 * by default if size is specified, also can be set in CSS with negative margins.
 	 *
-	 * @option popupAnchor: Point = null
+	 * @option popupAnchor: Point = [0, 0]
 	 * The coordinates of the point from which popups will "open", relative to the icon anchor.
+	 *
+	 * @option tooltipAnchor: Point = [0, 0]
+	 * The coordinates of the point from which tooltips will "open", relative to the icon anchor.
 	 *
 	 * @option shadowUrl: String = null
 	 * The URL to the icon shadow image. If not specified, no shadow image will be created.
@@ -70210,6 +70363,11 @@ var Icon = Class.extend({
 	 * @option className: String = ''
 	 * A custom class name to assign to both icon and shadow images. Empty by default.
 	 */
+
+	options: {
+		popupAnchor: [0, 0],
+		tooltipAnchor: [0, 0],
+	},
 
 	initialize: function (options) {
 		setOptions(this, options);
@@ -70322,9 +70480,9 @@ var IconDefault = Icon.extend({
 		}
 
 		// @option imagePath: String
-		// `Icon.Default` will try to auto-detect the absolute location of the
+		// `Icon.Default` will try to auto-detect the location of the
 		// blue icon images. If you are placing these images in a non-standard
-		// way, set this option to point to the right absolute path.
+		// way, set this option to point to the right path.
 		return (this.options.imagePath || IconDefault.imagePath) + Icon.prototype._getIconUrl.call(this, name);
 	},
 
@@ -70338,7 +70496,7 @@ var IconDefault = Icon.extend({
 		if (path === null || path.indexOf('url') !== 0) {
 			path = '';
 		} else {
-			path = path.replace(/^url\([\"\']?/, '').replace(/marker-icon\.png[\"\']?\)$/, '');
+			path = path.replace(/^url\(["']?/, '').replace(/marker-icon\.png["']?\)$/, '');
 		}
 
 		return path;
@@ -70377,6 +70535,7 @@ var MarkerDrag = Handler.extend({
 
 		this._draggable.on({
 			dragstart: this._onDragStart,
+			predrag: this._onPreDrag,
 			drag: this._onDrag,
 			dragend: this._onDragEnd
 		}, this).enable();
@@ -70387,6 +70546,7 @@ var MarkerDrag = Handler.extend({
 	removeHooks: function () {
 		this._draggable.off({
 			dragstart: this._onDragStart,
+			predrag: this._onPreDrag,
 			drag: this._onDrag,
 			dragend: this._onDragEnd
 		}, this).disable();
@@ -70398,6 +70558,42 @@ var MarkerDrag = Handler.extend({
 
 	moved: function () {
 		return this._draggable && this._draggable._moved;
+	},
+
+	_adjustPan: function (e) {
+		var marker = this._marker,
+		    map = marker._map,
+		    speed = this._marker.options.autoPanSpeed,
+		    padding = this._marker.options.autoPanPadding,
+		    iconPos = L.DomUtil.getPosition(marker._icon),
+		    bounds = map.getPixelBounds(),
+		    origin = map.getPixelOrigin();
+
+		var panBounds = toBounds(
+			bounds.min._subtract(origin).add(padding),
+			bounds.max._subtract(origin).subtract(padding)
+		);
+
+		if (!panBounds.contains(iconPos)) {
+			// Compute incremental movement
+			var movement = toPoint(
+				(Math.max(panBounds.max.x, iconPos.x) - panBounds.max.x) / (bounds.max.x - panBounds.max.x) -
+				(Math.min(panBounds.min.x, iconPos.x) - panBounds.min.x) / (bounds.min.x - panBounds.min.x),
+
+				(Math.max(panBounds.max.y, iconPos.y) - panBounds.max.y) / (bounds.max.y - panBounds.max.y) -
+				(Math.min(panBounds.min.y, iconPos.y) - panBounds.min.y) / (bounds.min.y - panBounds.min.y)
+			).multiplyBy(speed);
+
+			map.panBy(movement, {animate: false});
+
+			this._draggable._newPos._add(movement);
+			this._draggable._startPos._add(movement);
+
+			L.DomUtil.setPosition(marker._icon, this._draggable._newPos);
+			this._onDrag(e);
+
+			this._panRequest = requestAnimFrame(this._adjustPan.bind(this, e));
+		}
 	},
 
 	_onDragStart: function () {
@@ -70413,6 +70609,13 @@ var MarkerDrag = Handler.extend({
 		    .closePopup()
 		    .fire('movestart')
 		    .fire('dragstart');
+	},
+
+	_onPreDrag: function (e) {
+		if (this._marker.options.autoPan) {
+			cancelAnimFrame(this._panRequest);
+			this._panRequest = requestAnimFrame(this._adjustPan.bind(this, e));
+		}
 	},
 
 	_onDrag: function (e) {
@@ -70440,6 +70643,8 @@ var MarkerDrag = Handler.extend({
 	_onDragEnd: function (e) {
 		// @event dragend: DragEndEvent
 		// Fired when the user stops dragging the marker.
+
+		 cancelAnimFrame(this._panRequest);
 
 		// @event moveend: Event
 		// Fired when the marker stops moving (because of dragging).
@@ -70480,6 +70685,18 @@ var Marker = Layer.extend({
 		// @option draggable: Boolean = false
 		// Whether the marker is draggable with mouse/touch or not.
 		draggable: false,
+
+		// @option autoPan: Boolean = false
+		// Set it to `true` if you want the map to do panning animation when marker hits the edges.
+		autoPan: false,
+
+		// @option autoPanPadding: Point = Point(50, 50)
+		// Equivalent of setting both top left and bottom right autopan padding to the same value.
+		autoPanPadding: [50, 50],
+
+		// @option autoPanSpeed: Number = 10
+		// Number of pixels the map should move by.
+		autoPanSpeed: 10,
 
 		// @option keyboard: Boolean = true
 		// Whether the marker can be tabbed to with a keyboard and clicked by pressing enter.
@@ -70611,7 +70828,7 @@ var Marker = Layer.extend({
 
 	update: function () {
 
-		if (this._icon) {
+		if (this._icon && this._map) {
 			var pos = this._map.latLngToLayerPoint(this._latlng).round();
 			this._setPos(pos);
 		}
@@ -70636,8 +70853,9 @@ var Marker = Layer.extend({
 			if (options.title) {
 				icon.title = options.title;
 			}
-			if (options.alt) {
-				icon.alt = options.alt;
+
+			if (icon.tagName === 'IMG') {
+				icon.alt = options.alt || '';
 			}
 		}
 
@@ -70781,11 +70999,11 @@ var Marker = Layer.extend({
 	},
 
 	_getPopupAnchor: function () {
-		return this.options.icon.options.popupAnchor || [0, 0];
+		return this.options.icon.options.popupAnchor;
 	},
 
 	_getTooltipAnchor: function () {
-		return this.options.icon.options.tooltipAnchor || [0, 0];
+		return this.options.icon.options.tooltipAnchor;
 	}
 });
 
@@ -70936,7 +71154,7 @@ var Path = Layer.extend({
 
 	_clickTolerance: function () {
 		// used when doing hit detection for Canvas layers
-		return (this.options.stroke ? this.options.weight / 2 : 0) + (touch ? 10 : 0);
+		return (this.options.stroke ? this.options.weight / 2 : 0) + this._renderer.options.tolerance;
 	}
 });
 
@@ -71121,8 +71339,8 @@ var Circle = CircleMarker.extend({
 			}
 
 			this._point = p.subtract(map.getPixelOrigin());
-			this._radius = isNaN(lngR) ? 0 : Math.max(Math.round(p.x - map.project([lat2, lng - lngR]).x), 1);
-			this._radiusY = Math.max(Math.round(p.y - top.y), 1);
+			this._radius = isNaN(lngR) ? 0 : p.x - map.project([lat2, lng - lngR]).x;
+			this._radiusY = p.y - top.y;
 
 		} else {
 			var latlng2 = crs.unproject(crs.project(this._latlng).subtract([this._mRadius, 0]));
@@ -71224,6 +71442,8 @@ var Polyline = Path.extend({
 		return !this._latlngs.length;
 	},
 
+	// @method closestLayerPoint: Point
+	// Returns the point closest to `p` on the Polyline.
 	closestLayerPoint: function (p) {
 		var minDistance = Infinity,
 		    minPoint = null,
@@ -71864,8 +72084,8 @@ function coordsToLatLngs(coords, levelsDeep, _coordsToLatLng) {
 
 	for (var i = 0, len = coords.length, latlng; i < len; i++) {
 		latlng = levelsDeep ?
-				coordsToLatLngs(coords[i], levelsDeep - 1, _coordsToLatLng) :
-				(_coordsToLatLng || coordsToLatLng)(coords[i]);
+			coordsToLatLngs(coords[i], levelsDeep - 1, _coordsToLatLng) :
+			(_coordsToLatLng || coordsToLatLng)(coords[i]);
 
 		latlngs.push(latlng);
 	}
@@ -71878,8 +72098,8 @@ function coordsToLatLngs(coords, levelsDeep, _coordsToLatLng) {
 function latLngToCoords(latlng, precision) {
 	precision = typeof precision === 'number' ? precision : 6;
 	return latlng.alt !== undefined ?
-			[formatNum(latlng.lng, precision), formatNum(latlng.lat, precision), formatNum(latlng.alt, precision)] :
-			[formatNum(latlng.lng, precision), formatNum(latlng.lat, precision)];
+		[formatNum(latlng.lng, precision), formatNum(latlng.lat, precision), formatNum(latlng.alt, precision)] :
+		[formatNum(latlng.lng, precision), formatNum(latlng.lat, precision)];
 }
 
 // @function latLngsToCoords(latlngs: Array, levelsDeep?: Number, closed?: Boolean): Array
@@ -71903,8 +72123,8 @@ function latLngsToCoords(latlngs, levelsDeep, closed, precision) {
 
 function getFeature(layer, newGeometry) {
 	return layer.feature ?
-			extend({}, layer.feature, {geometry: newGeometry}) :
-			asFeature(newGeometry);
+		extend({}, layer.feature, {geometry: newGeometry}) :
+		asFeature(newGeometry);
 }
 
 // @function asFeature(geojson: Object): Object
@@ -72226,9 +72446,12 @@ var ImageOverlay = Layer.extend({
 	},
 
 	_initImage: function () {
-		var img = this._image = create$1('img',
-				'leaflet-image-layer ' + (this._zoomAnimated ? 'leaflet-zoom-animated' : '') +
-				 (this.options.className || ''));
+		var wasElementSupplied = this._url.tagName === 'IMG';
+		var img = this._image = wasElementSupplied ? this._url : create$1('img');
+
+		addClass(img, 'leaflet-image-layer');
+		if (this._zoomAnimated) { addClass(img, 'leaflet-zoom-animated'); }
+		if (this.options.className) { addClass(img, this.options.className); }
 
 		img.onselectstart = falseFn;
 		img.onmousemove = falseFn;
@@ -72244,6 +72467,11 @@ var ImageOverlay = Layer.extend({
 
 		if (this.options.zIndex) {
 			this._updateZIndex();
+		}
+
+		if (wasElementSupplied) {
+			this._url = img.src;
+			return;
 		}
 
 		img.src = this._url;
@@ -72337,8 +72565,8 @@ var VideoOverlay = ImageOverlay.extend({
 		var wasElementSupplied = this._url.tagName === 'VIDEO';
 		var vid = this._image = wasElementSupplied ? this._url : create$1('video');
 
-		vid.class = vid.class || '';
-		vid.class += 'leaflet-image-layer ' + (this._zoomAnimated ? 'leaflet-zoom-animated' : '');
+		addClass(vid, 'leaflet-image-layer');
+		if (this._zoomAnimated) { addClass(vid, 'leaflet-zoom-animated'); }
 
 		vid.onselectstart = falseFn;
 		vid.onmousemove = falseFn;
@@ -72347,7 +72575,16 @@ var VideoOverlay = ImageOverlay.extend({
 		// Fired when the video has finished loading the first frame
 		vid.onloadeddata = bind(this.fire, this, 'load');
 
-		if (wasElementSupplied) { return; }
+		if (wasElementSupplied) {
+			var sourceElements = vid.getElementsByTagName('source');
+			var sources = [];
+			for (var j = 0; j < sourceElements.length; j++) {
+				sources.push(sourceElements[j].src);
+			}
+
+			this._url = (sourceElements.length > 0) ? sources : [vid.src];
+			return;
+		}
 
 		if (!isArray(this._url)) { this._url = [this._url]; }
 
@@ -72650,6 +72887,11 @@ var Popup = DivOverlay.extend({
 		// Set it to `false` if you want to override the default behavior of
 		// the popup closing when another popup is opened.
 		autoClose: true,
+
+		// @option closeOnEscapeKey: Boolean = true
+		// Set it to `false` if you want to override the default behavior of
+		// the ESC key for closing of the popup.
+		closeOnEscapeKey: true,
 
 		// @option closeOnClick: Boolean = *
 		// Set it if you want to override the default behavior of the popup closing when user clicks
@@ -72974,7 +73216,7 @@ Layer.include({
 	},
 
 	// @method openPopup(latlng?: LatLng): this
-	// Opens the bound popup at the specificed `latlng` or at the default popup anchor if no `latlng` is passed.
+	// Opens the bound popup at the specified `latlng` or at the default popup anchor if no `latlng` is passed.
 	openPopup: function (layer, latlng) {
 		if (!(layer instanceof Layer)) {
 			latlng = layer;
@@ -73102,7 +73344,7 @@ Layer.include({
  * marker.bindTooltip("my tooltip text").openTooltip();
  * ```
  * Note about tooltip offset. Leaflet takes two options in consideration
- * for computing tooltip offseting:
+ * for computing tooltip offsetting:
  * - the `offset` Tooltip option: it defaults to [0, 0], and it's specific to one tooltip.
  *   Add a positive x offset to move the tooltip to the right, and a positive y offset to
  *   move it to the bottom. Negatives will move to the left and top.
@@ -73128,7 +73370,7 @@ var Tooltip = DivOverlay.extend({
 		// @option direction: String = 'auto'
 		// Direction where to open the tooltip. Possible values are: `right`, `left`,
 		// `top`, `bottom`, `center`, `auto`.
-		// `auto` will dynamicaly switch between `right` and `left` according to the tooltip
+		// `auto` will dynamically switch between `right` and `left` according to the tooltip
 		// position on the map.
 		direction: 'auto',
 
@@ -73392,7 +73634,7 @@ Layer.include({
 	},
 
 	// @method openTooltip(latlng?: LatLng): this
-	// Opens the bound tooltip at the specificed `latlng` or at the default tooltip anchor if no `latlng` is passed.
+	// Opens the bound tooltip at the specified `latlng` or at the default tooltip anchor if no `latlng` is passed.
 	openTooltip: function (layer, latlng) {
 		if (!(layer instanceof Layer)) {
 			latlng = layer;
@@ -73732,7 +73974,7 @@ var GridLayer = Layer.extend({
 		remove(this._container);
 		map._removeZoomLimit(this);
 		this._container = null;
-		this._tileZoom = null;
+		this._tileZoom = undefined;
 	},
 
 	// @method bringToFront: this
@@ -73821,7 +74063,7 @@ var GridLayer = Layer.extend({
 	// @section Extension methods
 	// Layers extending `GridLayer` shall reimplement the following method.
 	// @method createTile(coords: Object, done?: Function): HTMLElement
-	// Called only internally, must be overriden by classes extending `GridLayer`.
+	// Called only internally, must be overridden by classes extending `GridLayer`.
 	// Returns the `HTMLElement` corresponding to the given `coords`. If the `done` callback
 	// is specified, it must be called when the tile has finished loading and drawing.
 	createTile: function () {
@@ -74026,7 +74268,7 @@ var GridLayer = Layer.extend({
 		}
 		this._removeAllTiles();
 
-		this._tileZoom = null;
+		this._tileZoom = undefined;
 	},
 
 	_retainParent: function (x, y, z, minZoom) {
@@ -74236,7 +74478,10 @@ var GridLayer = Layer.extend({
 
 				if (!this._isValidTile(coords)) { continue; }
 
-				if (!this._tiles[this._tileCoordsToKey(coords)]) {
+				var tile = this._tiles[this._tileCoordsToKey(coords)];
+				if (tile) {
+					tile.current = true;
+				} else {
 					queue.push(coords);
 				}
 			}
@@ -74288,26 +74533,26 @@ var GridLayer = Layer.extend({
 		return this._tileCoordsToBounds(this._keyToTileCoords(key));
 	},
 
-	// converts tile coordinates to its geographical bounds
-	_tileCoordsToBounds: function (coords) {
-
+	_tileCoordsToNwSe: function (coords) {
 		var map = this._map,
 		    tileSize = this.getTileSize(),
-
 		    nwPoint = coords.scaleBy(tileSize),
 		    sePoint = nwPoint.add(tileSize),
-
 		    nw = map.unproject(nwPoint, coords.z),
-		    se = map.unproject(sePoint, coords.z),
-		    bounds = new LatLngBounds(nw, se);
-
-		if (!this.options.noWrap) {
-			map.wrapLatLngBounds(bounds);
-		}
-
-		return bounds;
+		    se = map.unproject(sePoint, coords.z);
+		return [nw, se];
 	},
 
+	// converts tile coordinates to its geographical bounds
+	_tileCoordsToBounds: function (coords) {
+		var bp = this._tileCoordsToNwSe(coords),
+		    bounds = new LatLngBounds(bp[0], bp[1]);
+
+		if (!this.options.noWrap) {
+			bounds = this._map.wrapLatLngBounds(bounds);
+		}
+		return bounds;
+	},
 	// converts tile coordinates to key for the tile cache
 	_tileCoordsToKey: function (coords) {
 		return coords.x + ':' + coords.y + ':' + coords.z;
@@ -74325,6 +74570,12 @@ var GridLayer = Layer.extend({
 		var tile = this._tiles[key];
 		if (!tile) { return; }
 
+		// Cancels any pending http requests associated with the tile
+		// unless we're on Android's stock browser,
+		// see https://github.com/Leaflet/Leaflet/issues/137
+		if (!androidStock) {
+			tile.el.setAttribute('src', emptyImageUrl);
+		}
 		remove(tile.el);
 
 		delete this._tiles[key];
@@ -74598,7 +74849,7 @@ var TileLayer = GridLayer.extend({
 
 	// @method createTile(coords: Object, done?: Function): HTMLElement
 	// Called only internally, overrides GridLayer's [`createTile()`](#gridlayer-createtile)
-	// to return an `<img>` HTML element with the appropiate image URL given `coords`. The `done`
+	// to return an `<img>` HTML element with the appropriate image URL given `coords`. The `done`
 	// callback is called when the tile has been loaded.
 	createTile: function (coords, done) {
 		var tile = document.createElement('img');
@@ -74663,7 +74914,7 @@ var TileLayer = GridLayer.extend({
 
 	_tileOnError: function (done, tile, e) {
 		var errorUrl = this.options.errorTileUrl;
-		if (errorUrl && tile.src !== errorUrl) {
+		if (errorUrl && tile.getAttribute('src') !== errorUrl) {
 			tile.src = errorUrl;
 		}
 		done(e, tile);
@@ -74704,6 +74955,7 @@ var TileLayer = GridLayer.extend({
 				if (!tile.complete) {
 					tile.src = emptyImageUrl;
 					remove(tile);
+					delete this._tiles[i];
 				}
 			}
 		}
@@ -74794,7 +75046,10 @@ var TileLayerWMS = TileLayer.extend({
 
 		options = setOptions(this, options);
 
-		wmsParams.width = wmsParams.height = options.tileSize * (options.detectRetina && retina ? 2 : 1);
+		var realRetina = options.detectRetina && retina ? 2 : 1;
+		var tileSize = this.getTileSize();
+		wmsParams.width = tileSize.x * realRetina;
+		wmsParams.height = tileSize.y * realRetina;
 
 		this.wmsParams = wmsParams;
 	},
@@ -74812,16 +75067,15 @@ var TileLayerWMS = TileLayer.extend({
 
 	getTileUrl: function (coords) {
 
-		var tileBounds = this._tileCoordsToBounds(coords),
-		    nw = this._crs.project(tileBounds.getNorthWest()),
-		    se = this._crs.project(tileBounds.getSouthEast()),
-
+		var tileBounds = this._tileCoordsToNwSe(coords),
+		    crs = this._crs,
+		    bounds = toBounds(crs.project(tileBounds[0]), crs.project(tileBounds[1])),
+		    min = bounds.min,
+		    max = bounds.max,
 		    bbox = (this._wmsVersion >= 1.3 && this._crs === EPSG4326 ?
-			    [se.y, nw.x, nw.y, se.x] :
-			    [nw.x, se.y, se.x, nw.y]).join(','),
-
-		    url = TileLayer.prototype.getTileUrl.call(this, coords);
-
+		    [min.y, min.x, max.y, max.x] :
+		    [min.x, min.y, max.x, max.y]).join(','),
+		url = L.TileLayer.prototype.getTileUrl.call(this, coords);
 		return url +
 			getParamString(this.wmsParams, url, this.options.uppercase) +
 			(this.options.uppercase ? '&BBOX=' : '&bbox=') + bbox;
@@ -74879,7 +75133,11 @@ var Renderer = Layer.extend({
 		// @option padding: Number = 0.1
 		// How much to extend the clip area around the map view (relative to its size)
 		// e.g. 0.1 would be 10% of map view in each direction
-		padding: 0.1
+		padding: 0.1,
+
+		// @option tolerance: Number = 0
+		// How much to extend click tolerance round a path/object on the map
+		tolerance : 0
 	},
 
 	initialize: function (options) {
@@ -75269,8 +75527,8 @@ var Canvas = Renderer.extend({
 
 		var p = layer._point,
 		    ctx = this._ctx,
-		    r = layer._radius,
-		    s = (layer._radiusY || r) / r;
+		    r = Math.max(Math.round(layer._radius), 1),
+		    s = (Math.max(Math.round(layer._radiusY), 1) || r) / r;
 
 		this._drawnLayers[layer._leaflet_id] = layer;
 
@@ -75391,7 +75649,7 @@ var Canvas = Renderer.extend({
 			prev.next = next;
 		} else if (next) {
 			// Update first entry unless this is the
-			// signle entry
+			// single entry
 			this._drawFirst = next;
 		}
 
@@ -75419,7 +75677,7 @@ var Canvas = Renderer.extend({
 			next.prev = prev;
 		} else if (prev) {
 			// Update last entry unless this is the
-			// signle entry
+			// single entry
 			this._drawLast = prev;
 		}
 
@@ -75563,7 +75821,7 @@ var vmlMixin = {
 		    r2 = Math.round(layer._radiusY || r);
 
 		this._setPath(layer, layer._empty() ? 'M0 0' :
-				'AL ' + p.x + ',' + p.y + ' ' + r + ',' + r2 + ' 0,' + (65535 * 360));
+			'AL ' + p.x + ',' + p.y + ' ' + r + ',' + r2 + ' 0,' + (65535 * 360));
 	},
 
 	_setPath: function (layer, path) {
@@ -75640,6 +75898,7 @@ var SVG = Renderer.extend({
 		off(this._container);
 		delete this._container;
 		delete this._rootGroup;
+		delete this._svgSize;
 	},
 
 	_onZoomStart: function () {
@@ -75752,15 +76011,15 @@ var SVG = Renderer.extend({
 
 	_updateCircle: function (layer) {
 		var p = layer._point,
-		    r = layer._radius,
-		    r2 = layer._radiusY || r,
+		    r = Math.max(Math.round(layer._radius), 1),
+		    r2 = Math.max(Math.round(layer._radiusY), 1) || r,
 		    arc = 'a' + r + ',' + r2 + ' 0 1,0 ';
 
 		// drawing a circle with two half-arcs
 		var d = layer._empty() ? 'M0 0' :
-				'M' + (p.x - r) + ',' + p.y +
-				arc + (r * 2) + ',0 ' +
-				arc + (-r * 2) + ',0 ';
+			'M' + (p.x - r) + ',' + p.y +
+			arc + (r * 2) + ',0 ' +
+			arc + (-r * 2) + ',0 ';
 
 		this._setPath(layer, d);
 	},
@@ -75783,6 +76042,7 @@ if (vml) {
 	SVG.include(vmlMixin);
 }
 
+// @namespace SVG
 // @factory L.svg(options?: Renderer options)
 // Creates a SVG renderer with the given options.
 function svg$1(options) {
@@ -75833,7 +76093,7 @@ Map.include({
 
 /*
  * @class Rectangle
- * @aka L.Retangle
+ * @aka L.Rectangle
  * @inherits Polygon
  *
  * A class for drawing rectangle overlays on a map. Extends `Polygon`.
@@ -76211,15 +76471,19 @@ var Drag = Handler.extend({
 			this._positions.push(pos);
 			this._times.push(time);
 
-			if (time - this._times[0] > 50) {
-				this._positions.shift();
-				this._times.shift();
-			}
+			this._prunePositions(time);
 		}
 
 		this._map
 		    .fire('move', e)
 		    .fire('drag', e);
+	},
+
+	_prunePositions: function (time) {
+		while (this._positions.length > 1 && time - this._times[0] > 50) {
+			this._positions.shift();
+			this._times.shift();
+		}
 	},
 
 	_onZoomEnd: function () {
@@ -76274,6 +76538,7 @@ var Drag = Handler.extend({
 			map.fire('moveend');
 
 		} else {
+			this._prunePositions(+new Date());
 
 			var direction = this._lastPos.subtract(this._positions[0]),
 			    duration = (this._lastTime - this._times[0]) / 1000,
@@ -76470,7 +76735,7 @@ var Keyboard = Handler.extend({
 		} else if (key in this._zoomKeys) {
 			map.setZoom(map.getZoom() + (e.shiftKey ? 3 : 1) * this._zoomKeys[key]);
 
-		} else if (key === 27 && map._popup) {
+		} else if (key === 27 && map._popup && map._popup.options.closeOnEscapeKey) {
 			map.closePopup();
 
 		} else {
@@ -76788,7 +77053,7 @@ var TouchZoom = Handler.extend({
 		}
 
 		if (!this._moved) {
-			map._moveStart(true);
+			map._moveStart(true, false);
 			this._moved = true;
 		}
 
@@ -81256,7 +81521,7 @@ module.exports = toString;
     };
     aggregatorTemplates.listUnique = function(s) {
       return aggregatorTemplates.uniques((function(x) {
-        return x.join(s);
+        return x.sort(naturalSort).join(s);
       }), (function(x) {
         return x;
       }));
@@ -81802,7 +82067,9 @@ module.exports = toString;
       var aggregator, c, colAttrs, colKey, colKeys, defaults, getClickHandler, i, j, r, result, rowAttrs, rowKey, rowKeys, spanSize, tbody, td, th, thead, totalAggregator, tr, txt, val, x;
       defaults = {
         table: {
-          clickCallback: null
+          clickCallback: null,
+          rowTotals: true,
+          colTotals: true
         },
         localeStrings: {
           totals: "Totals"
@@ -81896,7 +82163,7 @@ module.exports = toString;
             tr.appendChild(th);
           }
         }
-        if (parseInt(j) === 0) {
+        if (parseInt(j) === 0 && opts.table.rowTotals) {
           th = document.createElement("th");
           th.className = "pvtTotalLabel pvtRowTotalLabel";
           th.innerHTML = opts.localeStrings.totals;
@@ -81958,51 +82225,59 @@ module.exports = toString;
           }
           tr.appendChild(td);
         }
-        totalAggregator = pivotData.getAggregator(rowKey, []);
-        val = totalAggregator.value();
-        td = document.createElement("td");
-        td.className = "pvtTotal rowTotal";
-        td.textContent = totalAggregator.format(val);
-        td.setAttribute("data-value", val);
-        if (getClickHandler != null) {
-          td.onclick = getClickHandler(val, rowKey, []);
+        if (opts.table.rowTotals || colAttrs.length === 0) {
+          totalAggregator = pivotData.getAggregator(rowKey, []);
+          val = totalAggregator.value();
+          td = document.createElement("td");
+          td.className = "pvtTotal rowTotal";
+          td.textContent = totalAggregator.format(val);
+          td.setAttribute("data-value", val);
+          if (getClickHandler != null) {
+            td.onclick = getClickHandler(val, rowKey, []);
+          }
+          td.setAttribute("data-for", "row" + i);
+          tr.appendChild(td);
         }
-        td.setAttribute("data-for", "row" + i);
-        tr.appendChild(td);
         tbody.appendChild(tr);
       }
-      tr = document.createElement("tr");
-      th = document.createElement("th");
-      th.className = "pvtTotalLabel pvtColTotalLabel";
-      th.innerHTML = opts.localeStrings.totals;
-      th.setAttribute("colspan", rowAttrs.length + (colAttrs.length === 0 ? 0 : 1));
-      tr.appendChild(th);
-      for (j in colKeys) {
-        if (!hasProp.call(colKeys, j)) continue;
-        colKey = colKeys[j];
-        totalAggregator = pivotData.getAggregator([], colKey);
-        val = totalAggregator.value();
-        td = document.createElement("td");
-        td.className = "pvtTotal colTotal";
-        td.textContent = totalAggregator.format(val);
-        td.setAttribute("data-value", val);
-        if (getClickHandler != null) {
-          td.onclick = getClickHandler(val, [], colKey);
+      if (opts.table.colTotals || rowAttrs.length === 0) {
+        tr = document.createElement("tr");
+        if (opts.table.colTotals || rowAttrs.length === 0) {
+          th = document.createElement("th");
+          th.className = "pvtTotalLabel pvtColTotalLabel";
+          th.innerHTML = opts.localeStrings.totals;
+          th.setAttribute("colspan", rowAttrs.length + (colAttrs.length === 0 ? 0 : 1));
+          tr.appendChild(th);
         }
-        td.setAttribute("data-for", "col" + j);
-        tr.appendChild(td);
+        for (j in colKeys) {
+          if (!hasProp.call(colKeys, j)) continue;
+          colKey = colKeys[j];
+          totalAggregator = pivotData.getAggregator([], colKey);
+          val = totalAggregator.value();
+          td = document.createElement("td");
+          td.className = "pvtTotal colTotal";
+          td.textContent = totalAggregator.format(val);
+          td.setAttribute("data-value", val);
+          if (getClickHandler != null) {
+            td.onclick = getClickHandler(val, [], colKey);
+          }
+          td.setAttribute("data-for", "col" + j);
+          tr.appendChild(td);
+        }
+        if (opts.table.rowTotals || colAttrs.length === 0) {
+          totalAggregator = pivotData.getAggregator([], []);
+          val = totalAggregator.value();
+          td = document.createElement("td");
+          td.className = "pvtGrandTotal";
+          td.textContent = totalAggregator.format(val);
+          td.setAttribute("data-value", val);
+          if (getClickHandler != null) {
+            td.onclick = getClickHandler(val, [], []);
+          }
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
       }
-      totalAggregator = pivotData.getAggregator([], []);
-      val = totalAggregator.value();
-      td = document.createElement("td");
-      td.className = "pvtGrandTotal";
-      td.textContent = totalAggregator.format(val);
-      td.setAttribute("data-value", val);
-      if (getClickHandler != null) {
-        td.onclick = getClickHandler(val, [], []);
-      }
-      tr.appendChild(td);
-      tbody.appendChild(tr);
       result.appendChild(tbody);
       result.setAttribute("data-numrows", rowKeys.length);
       result.setAttribute("data-numcols", colKeys.length);
@@ -82103,6 +82378,7 @@ module.exports = toString;
         unusedAttrsVertical: 85,
         autoSortUnusedAttrs: false,
         onRefresh: null,
+        showUI: true,
         filter: function() {
           return true;
         },
@@ -82152,7 +82428,7 @@ module.exports = toString;
         uiTable = $("<table>", {
           "class": "pvtUi"
         }).attr("cellpadding", 5);
-        rendererControl = $("<td>");
+        rendererControl = $("<td>").addClass("pvtUiCell");
         renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControl).bind("change", function() {
           return refresh();
         });
@@ -82161,7 +82437,7 @@ module.exports = toString;
           if (!hasProp.call(ref, x)) continue;
           $("<option>").val(x).html(x).appendTo(renderer);
         }
-        unused = $("<td>").addClass('pvtAxisContainer pvtUnused');
+        unused = $("<td>").addClass('pvtAxisContainer pvtUnused pvtUiCell');
         shownAttributes = (function() {
           var results;
           results = [];
@@ -82251,7 +82527,7 @@ module.exports = toString;
                     return ref1 = Math.sign(sorter(v.toLowerCase(), real_filter)), indexOf.call(accepted, ref1) >= 0;
                   };
                 };
-                accept = filter.startsWith(">=") ? accept_gen(">=", [1, 0]) : filter.startsWith("<=") ? accept_gen("<=", [-1, 0]) : filter.startsWith(">") ? accept_gen(">", [1]) : filter.startsWith("<") ? accept_gen("<", [-1]) : filter.startsWith("~") ? function(v) {
+                accept = filter.indexOf(">=") === 0 ? accept_gen(">=", [1, 0]) : filter.indexOf("<=") === 0 ? accept_gen("<=", [-1, 0]) : filter.indexOf(">") === 0 ? accept_gen(">", [1]) : filter.indexOf("<") === 0 ? accept_gen("<", [-1]) : filter.indexOf("~") === 0 ? function(v) {
                   if (filter.substring(1).trim().length === 0) {
                     return true;
                   }
@@ -82389,10 +82665,10 @@ module.exports = toString;
           $(this).html(ordering[$(this).data("order")].colSymbol);
           return refresh();
         });
-        $("<td>").addClass('pvtVals').appendTo(tr1).append(aggregator).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
-        $("<td>").addClass('pvtAxisContainer pvtHorizList pvtCols').appendTo(tr1);
+        $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1).append(aggregator).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
+        $("<td>").addClass('pvtAxisContainer pvtHorizList pvtCols pvtUiCell').appendTo(tr1);
         tr2 = $("<tr>").appendTo(uiTable);
-        tr2.append($("<td>").addClass('pvtAxisContainer pvtRows').attr("valign", "top"));
+        tr2.append($("<td>").addClass('pvtAxisContainer pvtRows pvtUiCell').attr("valign", "top"));
         pivotTable = $("<td>").attr("valign", "top").addClass('pvtRendererArea').appendTo(tr2);
         if (opts.unusedAttrsVertical === true || unusedAttrsVerticalAutoOverride) {
           uiTable.find('tr:nth-child(1)').prepend(rendererControl);
@@ -82416,6 +82692,9 @@ module.exports = toString;
         }
         if (opts.rendererName != null) {
           this.find(".pvtRenderer").val(opts.rendererName);
+        }
+        if (!opts.showUI) {
+          this.find(".pvtUiCell").hide();
         }
         initialRender = true;
         refreshDelayed = (function(_this) {
@@ -87803,8 +88082,6 @@ swizzle.wrap = function (fn) {
 };
 
 },{"is-arrayish":217}],217:[function(require,module,exports){
-'use strict';
-
 module.exports = function isArrayish(obj) {
 	if (!obj || typeof obj === 'string') {
 		return false;
@@ -96331,7 +96608,10 @@ module.exports = {
       DOUBLE_NEGATIVE: []
     },
     "*[;,?[or([verbPath,verbSimple]),objectList]]": {
-      ";": ["[;,?[or([verbPath,verbSimple]),objectList]]", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
+      ";": [
+        "[;,?[or([verbPath,verbSimple]),objectList]]",
+        "*[;,?[or([verbPath,verbSimple]),objectList]]"
+      ],
       ".": [],
       "]": [],
       "{": [],
@@ -96397,18 +96677,45 @@ module.exports = {
       "}": []
     },
     "*[graphPatternNotTriples,?.,?triplesBlock]": {
-      "{": ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      OPTIONAL: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      MINUS: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      GRAPH: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      SERVICE: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      FILTER: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      BIND: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      VALUES: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      "{": [
+        "[graphPatternNotTriples,?.,?triplesBlock]",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      OPTIONAL: [
+        "[graphPatternNotTriples,?.,?triplesBlock]",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      MINUS: [
+        "[graphPatternNotTriples,?.,?triplesBlock]",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      GRAPH: [
+        "[graphPatternNotTriples,?.,?triplesBlock]",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      SERVICE: [
+        "[graphPatternNotTriples,?.,?triplesBlock]",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      FILTER: [
+        "[graphPatternNotTriples,?.,?triplesBlock]",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      BIND: [
+        "[graphPatternNotTriples,?.,?triplesBlock]",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      VALUES: [
+        "[graphPatternNotTriples,?.,?triplesBlock]",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
       "}": []
     },
     "*[quadsNotTriples,?.,?triplesTemplate]": {
-      GRAPH: ["[quadsNotTriples,?.,?triplesTemplate]", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      GRAPH: [
+        "[quadsNotTriples,?.,?triplesTemplate]",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
       "}": []
     },
     "*[|,pathOneInPropertySet]": {
@@ -96682,14 +96989,26 @@ module.exports = {
       $: [],
       "}": []
     },
-    "*or([[ (,*dataBlockValue,)],NIL])": {
-      "(": ["or([[ (,*dataBlockValue,)],NIL])", "*or([[ (,*dataBlockValue,)],NIL])"],
-      NIL: ["or([[ (,*dataBlockValue,)],NIL])", "*or([[ (,*dataBlockValue,)],NIL])"],
+    "*or([[(,*dataBlockValue,)],NIL])": {
+      "(": [
+        "or([[(,*dataBlockValue,)],NIL])",
+        "*or([[(,*dataBlockValue,)],NIL])"
+      ],
+      NIL: [
+        "or([[(,*dataBlockValue,)],NIL])",
+        "*or([[(,*dataBlockValue,)],NIL])"
+      ],
       "}": []
     },
     "*or([[*,unaryExpression],[/,unaryExpression]])": {
-      "*": ["or([[*,unaryExpression],[/,unaryExpression]])", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      "/": ["or([[*,unaryExpression],[/,unaryExpression]])", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      "*": [
+        "or([[*,unaryExpression],[/,unaryExpression]])",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      "/": [
+        "or([[*,unaryExpression],[/,unaryExpression]])",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
       AS: [],
       ")": [],
       ",": [],
@@ -96780,10 +97099,19 @@ module.exports = {
       CREATE: [],
       WITH: []
     },
-    "*or([var,[ (,expression,AS,var,)]])": {
-      "(": ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"],
-      VAR1: ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"],
-      VAR2: ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"],
+    "*or([var,[(,expression,AS,var,)]])": {
+      "(": [
+        "or([var,[(,expression,AS,var,)]])",
+        "*or([var,[(,expression,AS,var,)]])"
+      ],
+      VAR1: [
+        "or([var,[(,expression,AS,var,)]])",
+        "*or([var,[(,expression,AS,var,)]])"
+      ],
+      VAR2: [
+        "or([var,[(,expression,AS,var,)]])",
+        "*or([var,[(,expression,AS,var,)]])"
+      ],
       WHERE: [],
       "{": [],
       FROM: []
@@ -97059,10 +97387,19 @@ module.exports = {
       PNAME_LN: ["havingCondition", "*havingCondition"],
       PNAME_NS: ["havingCondition", "*havingCondition"]
     },
-    "+or([var,[ (,expression,AS,var,)]])": {
-      "(": ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"],
-      VAR1: ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"],
-      VAR2: ["or([var,[ (,expression,AS,var,)]])", "*or([var,[ (,expression,AS,var,)]])"]
+    "+or([var,[(,expression,AS,var,)]])": {
+      "(": [
+        "or([var,[(,expression,AS,var,)]])",
+        "*or([var,[(,expression,AS,var,)]])"
+      ],
+      VAR1: [
+        "or([var,[(,expression,AS,var,)]])",
+        "*or([var,[(,expression,AS,var,)]])"
+      ],
+      VAR2: [
+        "or([var,[(,expression,AS,var,)]])",
+        "*or([var,[(,expression,AS,var,)]])"
+      ]
     },
     "+orderCondition": {
       ASC: ["orderCondition", "*orderCondition"],
@@ -97755,30 +98092,44 @@ module.exports = {
       VALUES: [],
       $: []
     },
-    "[ (,*dataBlockValue,)]": {
-      "(": ["(", "*dataBlockValue", ")"]
-    },
-    "[ (,*var,)]": {
-      "(": ["(", "*var", ")"]
-    },
-    "[ (,expression,)]": {
-      "(": ["(", "expression", ")"]
-    },
-    "[ (,expression,AS,var,)]": {
-      "(": ["(", "expression", "AS", "var", ")"]
-    },
     "[!=,numericExpression]": {
       "!=": ["!=", "numericExpression"]
     },
     "[&&,valueLogical]": {
       "&&": ["&&", "valueLogical"]
     },
+    "[(,*dataBlockValue,)]": {
+      "(": ["(", "*dataBlockValue", ")"]
+    },
+    "[(,*var,)]": {
+      "(": ["(", "*var", ")"]
+    },
+    "[(,expression,)]": {
+      "(": ["(", "expression", ")"]
+    },
+    "[(,expression,AS,var,)]": {
+      "(": ["(", "expression", "AS", "var", ")"]
+    },
     "[*,unaryExpression]": {
       "*": ["*", "unaryExpression"]
     },
     "[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]": {
-      WHERE: ["*datasetClause", "WHERE", "{", "?triplesTemplate", "}", "solutionModifier"],
-      FROM: ["*datasetClause", "WHERE", "{", "?triplesTemplate", "}", "solutionModifier"]
+      WHERE: [
+        "*datasetClause",
+        "WHERE",
+        "{",
+        "?triplesTemplate",
+        "}",
+        "solutionModifier"
+      ],
+      FROM: [
+        "*datasetClause",
+        "WHERE",
+        "{",
+        "?triplesTemplate",
+        "}",
+        "solutionModifier"
+      ]
     },
     "[+,multiplicativeExpression]": {
       "+": ["+", "multiplicativeExpression"]
@@ -97865,7 +98216,12 @@ module.exports = {
       "^^": ["^^", "iriRef"]
     },
     "[constructTemplate,*datasetClause,whereClause,solutionModifier]": {
-      "{": ["constructTemplate", "*datasetClause", "whereClause", "solutionModifier"]
+      "{": [
+        "constructTemplate",
+        "*datasetClause",
+        "whereClause",
+        "solutionModifier"
+      ]
     },
     "[deleteClause,?insertClause]": {
       DELETE: ["deleteClause", "?insertClause"]
@@ -98314,7 +98670,14 @@ module.exports = {
       MAX: ["MAX", "(", "?DISTINCT", "expression", ")"],
       AVG: ["AVG", "(", "?DISTINCT", "expression", ")"],
       SAMPLE: ["SAMPLE", "(", "?DISTINCT", "expression", ")"],
-      GROUP_CONCAT: ["GROUP_CONCAT", "(", "?DISTINCT", "expression", "?[;,SEPARATOR,=,string]", ")"]
+      GROUP_CONCAT: [
+        "GROUP_CONCAT",
+        "(",
+        "?DISTINCT",
+        "expression",
+        "?[;,SEPARATOR,=,string]",
+        ")"
+      ]
     },
     allowBnodes: {
       "}": []
@@ -98360,7 +98723,7 @@ module.exports = {
       BOUND: ["BOUND", "(", "var", ")"],
       IRI: ["IRI", "(", "expression", ")"],
       URI: ["URI", "(", "expression", ")"],
-      BNODE: ["BNODE", "or([[ (,expression,)],NIL])"],
+      BNODE: ["BNODE", "or([[(,expression,)],NIL])"],
       RAND: ["RAND", "NIL"],
       ABS: ["ABS", "(", "expression", ")"],
       CEIL: ["CEIL", "(", "expression", ")"],
@@ -98513,7 +98876,10 @@ module.exports = {
       "(": ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       STR: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       LANG: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      LANGMATCHES: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      LANGMATCHES: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
       DATATYPE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       BOUND: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       IRI: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
@@ -98528,7 +98894,10 @@ module.exports = {
       STRLEN: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       UCASE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       LCASE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      ENCODE_FOR_URI: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      ENCODE_FOR_URI: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
       CONTAINS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       STRSTARTS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       STRENDS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
@@ -98568,26 +98937,59 @@ module.exports = {
       MAX: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       AVG: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       SAMPLE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      GROUP_CONCAT: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      GROUP_CONCAT: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
       SUBSTR: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       REPLACE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       REGEX: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       EXISTS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       NOT: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       IRI_REF: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      STRING_LITERAL1: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      STRING_LITERAL2: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      STRING_LITERAL_LONG1: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      STRING_LITERAL_LONG2: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      STRING_LITERAL1: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
+      STRING_LITERAL2: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
+      STRING_LITERAL_LONG1: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
+      STRING_LITERAL_LONG2: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
       INTEGER: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       DECIMAL: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       DOUBLE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      INTEGER_POSITIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      DECIMAL_POSITIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      DOUBLE_POSITIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      INTEGER_NEGATIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      DECIMAL_NEGATIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      DOUBLE_NEGATIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
+      INTEGER_POSITIVE: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
+      DECIMAL_POSITIVE: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
+      DOUBLE_POSITIVE: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
+      INTEGER_NEGATIVE: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
+      DECIMAL_NEGATIVE: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
+      DOUBLE_NEGATIVE: [
+        "conditionalAndExpression",
+        "*[||,conditionalAndExpression]"
+      ],
       PNAME_LN: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       PNAME_NS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"]
     },
@@ -98731,7 +99133,13 @@ module.exports = {
     delete1: {
       DATA: ["DATA", "quadDataNoBnodes"],
       WHERE: ["WHERE", "quadPatternNoBnodes"],
-      "{": ["quadPatternNoBnodes", "?insertClause", "*usingClause", "WHERE", "groupGraphPattern"]
+      "{": [
+        "quadPatternNoBnodes",
+        "?insertClause",
+        "*usingClause",
+        "WHERE",
+        "groupGraphPattern"
+      ]
     },
     deleteClause: {
       DELETE: ["DELETE", "quadPattern"]
@@ -98740,7 +99148,13 @@ module.exports = {
       FROM: ["FROM", "or([defaultGraphClause,namedGraphClause])"]
     },
     describeQuery: {
-      DESCRIBE: ["DESCRIBE", "or([+varOrIRIref,*])", "*describeDatasetClause", "?whereClause", "solutionModifier"]
+      DESCRIBE: [
+        "DESCRIBE",
+        "or([+varOrIRIref,*])",
+        "*describeDatasetClause",
+        "?whereClause",
+        "solutionModifier"
+      ]
     },
     disallowBnodes: {
       "}": [],
@@ -99096,23 +99510,56 @@ module.exports = {
       IRI_REF: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       TRUE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       FALSE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      BLANK_NODE_LABEL: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      BLANK_NODE_LABEL: [
+        "?triplesBlock",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
       ANON: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       PNAME_LN: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       PNAME_NS: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      STRING_LITERAL1: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      STRING_LITERAL2: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      STRING_LITERAL_LONG1: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      STRING_LITERAL_LONG2: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      STRING_LITERAL1: [
+        "?triplesBlock",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      STRING_LITERAL2: [
+        "?triplesBlock",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      STRING_LITERAL_LONG1: [
+        "?triplesBlock",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      STRING_LITERAL_LONG2: [
+        "?triplesBlock",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
       INTEGER: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       DECIMAL: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       DOUBLE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      INTEGER_POSITIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      DECIMAL_POSITIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      DOUBLE_POSITIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      INTEGER_NEGATIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      DECIMAL_NEGATIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      DOUBLE_NEGATIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      INTEGER_POSITIVE: [
+        "?triplesBlock",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      DECIMAL_POSITIVE: [
+        "?triplesBlock",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      DOUBLE_POSITIVE: [
+        "?triplesBlock",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      INTEGER_NEGATIVE: [
+        "?triplesBlock",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      DECIMAL_NEGATIVE: [
+        "?triplesBlock",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
+      DOUBLE_NEGATIVE: [
+        "?triplesBlock",
+        "*[graphPatternNotTriples,?.,?triplesBlock]"
+      ],
       "}": ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"]
     },
     groupOrUnionGraphPattern: {
@@ -99185,8 +99632,18 @@ module.exports = {
       VALUES: ["VALUES", "dataBlock"]
     },
     inlineDataFull: {
-      NIL: ["or([NIL,[ (,*var,)]])", "{", "*or([[ (,*dataBlockValue,)],NIL])", "}"],
-      "(": ["or([NIL,[ (,*var,)]])", "{", "*or([[ (,*dataBlockValue,)],NIL])", "}"]
+      NIL: [
+        "or([NIL,[(,*var,)]])",
+        "{",
+        "*or([[(,*dataBlockValue,)],NIL])",
+        "}"
+      ],
+      "(": [
+        "or([NIL,[(,*var,)]])",
+        "{",
+        "*or([[(,*dataBlockValue,)],NIL])",
+        "}"
+      ]
     },
     inlineDataOneVar: {
       VAR1: ["var", "{", "*dataBlockValue", "}"],
@@ -99239,91 +99696,340 @@ module.exports = {
       MOVE: ["MOVE", "?SILENT_4", "graphOrDefault", "TO", "graphOrDefault"]
     },
     multiplicativeExpression: {
-      "!": ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      "+": ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      "-": ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      VAR1: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      VAR2: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      "(": ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STR: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      LANG: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      LANGMATCHES: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      DATATYPE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      BOUND: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      IRI: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      URI: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      BNODE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      RAND: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      ABS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      CEIL: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      FLOOR: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      ROUND: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      CONCAT: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRLEN: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      UCASE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      LCASE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      ENCODE_FOR_URI: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      CONTAINS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRSTARTS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRENDS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRBEFORE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRAFTER: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      YEAR: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      MONTH: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      DAY: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      HOURS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      MINUTES: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      SECONDS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      TIMEZONE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      "!": [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      "+": [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      "-": [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      VAR1: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      VAR2: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      "(": [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STR: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      LANG: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      LANGMATCHES: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DATATYPE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      BOUND: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      IRI: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      URI: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      BNODE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      RAND: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      ABS: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      CEIL: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      FLOOR: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      ROUND: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      CONCAT: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STRLEN: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      UCASE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      LCASE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      ENCODE_FOR_URI: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      CONTAINS: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STRSTARTS: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STRENDS: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STRBEFORE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STRAFTER: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      YEAR: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      MONTH: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DAY: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      HOURS: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      MINUTES: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      SECONDS: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      TIMEZONE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
       TZ: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      NOW: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      UUID: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRUUID: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      MD5: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      SHA1: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      SHA256: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      SHA384: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      SHA512: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      COALESCE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
+      NOW: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      UUID: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STRUUID: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      MD5: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      SHA1: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      SHA256: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      SHA384: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      SHA512: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      COALESCE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
       IF: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRLANG: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRDT: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      SAMETERM: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      ISIRI: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      ISURI: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      ISBLANK: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      ISLITERAL: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      ISNUMERIC: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      TRUE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      FALSE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      COUNT: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      SUM: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      MIN: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      MAX: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      AVG: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      SAMPLE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      GROUP_CONCAT: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      SUBSTR: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      REPLACE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      REGEX: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      EXISTS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      NOT: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      IRI_REF: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRING_LITERAL1: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRING_LITERAL2: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRING_LITERAL_LONG1: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      STRING_LITERAL_LONG2: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      INTEGER: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      DECIMAL: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      DOUBLE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      INTEGER_POSITIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      DECIMAL_POSITIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      DOUBLE_POSITIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      INTEGER_NEGATIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      DECIMAL_NEGATIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      DOUBLE_NEGATIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      PNAME_LN: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      PNAME_NS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"]
+      STRLANG: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STRDT: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      SAMETERM: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      ISIRI: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      ISURI: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      ISBLANK: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      ISLITERAL: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      ISNUMERIC: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      TRUE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      FALSE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      COUNT: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      SUM: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      MIN: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      MAX: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      AVG: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      SAMPLE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      GROUP_CONCAT: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      SUBSTR: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      REPLACE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      REGEX: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      EXISTS: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      NOT: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      IRI_REF: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STRING_LITERAL1: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STRING_LITERAL2: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STRING_LITERAL_LONG1: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      STRING_LITERAL_LONG2: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      INTEGER: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DECIMAL: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DOUBLE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      INTEGER_POSITIVE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DECIMAL_POSITIVE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DOUBLE_POSITIVE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      INTEGER_NEGATIVE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DECIMAL_NEGATIVE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      DOUBLE_NEGATIVE: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      PNAME_LN: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ],
+      PNAME_NS: [
+        "unaryExpression",
+        "*or([[*,unaryExpression],[/,unaryExpression]])"
+      ]
     },
     namedGraphClause: {
       NAMED: ["NAMED", "sourceSelector"]
@@ -99646,10 +100352,10 @@ module.exports = {
       PNAME_LN: ["expression"],
       PNAME_NS: ["expression"]
     },
-    "or([+or([var,[ (,expression,AS,var,)]]),*])": {
-      "(": ["+or([var,[ (,expression,AS,var,)]])"],
-      VAR1: ["+or([var,[ (,expression,AS,var,)]])"],
-      VAR2: ["+or([var,[ (,expression,AS,var,)]])"],
+    "or([+or([var,[(,expression,AS,var,)]]),*])": {
+      "(": ["+or([var,[(,expression,AS,var,)]])"],
+      VAR1: ["+or([var,[(,expression,AS,var,)]])"],
+      VAR2: ["+or([var,[(,expression,AS,var,)]])"],
       "*": ["*"]
     },
     "or([+varOrIRIref,*])": {
@@ -99672,16 +100378,16 @@ module.exports = {
       LANGTAG: ["LANGTAG"],
       "^^": ["[^^,iriRef]"]
     },
-    "or([NIL,[ (,*var,)]])": {
+    "or([NIL,[(,*var,)]])": {
       NIL: ["NIL"],
-      "(": ["[ (,*var,)]"]
+      "(": ["[(,*var,)]"]
     },
-    "or([[ (,*dataBlockValue,)],NIL])": {
-      "(": ["[ (,*dataBlockValue,)]"],
+    "or([[(,*dataBlockValue,)],NIL])": {
+      "(": ["[(,*dataBlockValue,)]"],
       NIL: ["NIL"]
     },
-    "or([[ (,expression,)],NIL])": {
-      "(": ["[ (,expression,)]"],
+    "or([[(,expression,)],NIL])": {
+      "(": ["[(,expression,)]"],
       NIL: ["NIL"]
     },
     "or([[*,unaryExpression],[/,unaryExpression]])": {
@@ -99833,10 +100539,10 @@ module.exports = {
       DOUBLE_NEGATIVE: ["groupGraphPatternSub"],
       "}": ["groupGraphPatternSub"]
     },
-    "or([var,[ (,expression,AS,var,)]])": {
+    "or([var,[(,expression,AS,var,)]])": {
       VAR1: ["var"],
       VAR2: ["var"],
-      "(": ["[ (,expression,AS,var,)]"]
+      "(": ["[(,expression,AS,var,)]"]
     },
     "or([verbPath,verbSimple])": {
       "^": ["verbPath"],
@@ -99959,7 +100665,10 @@ module.exports = {
       "*": ["*"],
       "?": ["?"],
       "+": ["+"],
-      "{": ["{", "or([[integer,or([[,,or([},[integer,}]])],}])],[,,integer,}]])"]
+      "{": [
+        "{",
+        "or([[integer,or([[,,or([},[integer,}]])],}])],[,,integer,}]])"
+      ]
     },
     pathNegatedPropertySet: {
       a: ["pathOneInPropertySet"],
@@ -100141,21 +100850,65 @@ module.exports = {
       "}": []
     },
     propertyListPathNotEmpty: {
-      VAR1: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
-      VAR2: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
-      "^": ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
-      a: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
-      "!": ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
-      "(": ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
-      IRI_REF: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
-      PNAME_LN: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"],
-      PNAME_NS: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectList]]"]
+      VAR1: [
+        "or([verbPath,verbSimple])",
+        "objectListPath",
+        "*[;,?[or([verbPath,verbSimple]),objectList]]"
+      ],
+      VAR2: [
+        "or([verbPath,verbSimple])",
+        "objectListPath",
+        "*[;,?[or([verbPath,verbSimple]),objectList]]"
+      ],
+      "^": [
+        "or([verbPath,verbSimple])",
+        "objectListPath",
+        "*[;,?[or([verbPath,verbSimple]),objectList]]"
+      ],
+      a: [
+        "or([verbPath,verbSimple])",
+        "objectListPath",
+        "*[;,?[or([verbPath,verbSimple]),objectList]]"
+      ],
+      "!": [
+        "or([verbPath,verbSimple])",
+        "objectListPath",
+        "*[;,?[or([verbPath,verbSimple]),objectList]]"
+      ],
+      "(": [
+        "or([verbPath,verbSimple])",
+        "objectListPath",
+        "*[;,?[or([verbPath,verbSimple]),objectList]]"
+      ],
+      IRI_REF: [
+        "or([verbPath,verbSimple])",
+        "objectListPath",
+        "*[;,?[or([verbPath,verbSimple]),objectList]]"
+      ],
+      PNAME_LN: [
+        "or([verbPath,verbSimple])",
+        "objectListPath",
+        "*[;,?[or([verbPath,verbSimple]),objectList]]"
+      ],
+      PNAME_NS: [
+        "or([verbPath,verbSimple])",
+        "objectListPath",
+        "*[;,?[or([verbPath,verbSimple]),objectList]]"
+      ]
     },
     quadData: {
       "{": ["{", "disallowVars", "quads", "allowVars", "}"]
     },
     quadDataNoBnodes: {
-      "{": ["{", "disallowBnodes", "disallowVars", "quads", "allowVars", "allowBnodes", "}"]
+      "{": [
+        "{",
+        "disallowBnodes",
+        "disallowVars",
+        "quads",
+        "allowVars",
+        "allowBnodes",
+        "}"
+      ]
     },
     quadPattern: {
       "{": ["{", "quads", "}"]
@@ -100173,33 +100926,78 @@ module.exports = {
       IRI_REF: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
       TRUE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
       FALSE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      BLANK_NODE_LABEL: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      BLANK_NODE_LABEL: [
+        "?triplesTemplate",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
       ANON: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
       PNAME_LN: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
       PNAME_NS: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      STRING_LITERAL1: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      STRING_LITERAL2: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      STRING_LITERAL_LONG1: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      STRING_LITERAL_LONG2: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      STRING_LITERAL1: [
+        "?triplesTemplate",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
+      STRING_LITERAL2: [
+        "?triplesTemplate",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
+      STRING_LITERAL_LONG1: [
+        "?triplesTemplate",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
+      STRING_LITERAL_LONG2: [
+        "?triplesTemplate",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
       INTEGER: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
       DECIMAL: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
       DOUBLE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      INTEGER_POSITIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      DECIMAL_POSITIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      DOUBLE_POSITIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      INTEGER_NEGATIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      DECIMAL_NEGATIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      DOUBLE_NEGATIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
+      INTEGER_POSITIVE: [
+        "?triplesTemplate",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
+      DECIMAL_POSITIVE: [
+        "?triplesTemplate",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
+      DOUBLE_POSITIVE: [
+        "?triplesTemplate",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
+      INTEGER_NEGATIVE: [
+        "?triplesTemplate",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
+      DECIMAL_NEGATIVE: [
+        "?triplesTemplate",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
+      DOUBLE_NEGATIVE: [
+        "?triplesTemplate",
+        "*[quadsNotTriples,?.,?triplesTemplate]"
+      ],
       "}": ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"]
     },
     quadsNotTriples: {
       GRAPH: ["GRAPH", "varOrIRIref", "{", "?triplesTemplate", "}"]
     },
     queryAll: {
-      CONSTRUCT: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"],
-      DESCRIBE: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"],
-      ASK: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"],
-      SELECT: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"]
+      CONSTRUCT: [
+        "or([selectQuery,constructQuery,describeQuery,askQuery])",
+        "valuesClause"
+      ],
+      DESCRIBE: [
+        "or([selectQuery,constructQuery,describeQuery,askQuery])",
+        "valuesClause"
+      ],
+      ASK: [
+        "or([selectQuery,constructQuery,describeQuery,askQuery])",
+        "valuesClause"
+      ],
+      SELECT: [
+        "or([selectQuery,constructQuery,describeQuery,askQuery])",
+        "valuesClause"
+      ]
     },
     rdfLiteral: {
       STRING_LITERAL1: ["string", "?or([LANGTAG,[^^,iriRef]])"],
@@ -100208,7 +101006,15 @@ module.exports = {
       STRING_LITERAL_LONG2: ["string", "?or([LANGTAG,[^^,iriRef]])"]
     },
     regexExpression: {
-      REGEX: ["REGEX", "(", "expression", ",", "expression", "?[,,expression]", ")"]
+      REGEX: [
+        "REGEX",
+        "(",
+        "expression",
+        ",",
+        "expression",
+        "?[,,expression]",
+        ")"
+      ]
     },
     relationalExpression: {
       "!": [
@@ -100553,23 +101359,72 @@ module.exports = {
       ]
     },
     selectClause: {
-      SELECT: ["SELECT", "?or([DISTINCT,REDUCED])", "or([+or([var,[ (,expression,AS,var,)]]),*])"]
+      SELECT: [
+        "SELECT",
+        "?or([DISTINCT,REDUCED])",
+        "or([+or([var,[(,expression,AS,var,)]]),*])"
+      ]
     },
     selectQuery: {
-      SELECT: ["selectClause", "*datasetClause", "whereClause", "solutionModifier"]
+      SELECT: [
+        "selectClause",
+        "*datasetClause",
+        "whereClause",
+        "solutionModifier"
+      ]
     },
     serviceGraphPattern: {
       SERVICE: ["SERVICE", "?SILENT", "varOrIRIref", "groupGraphPattern"]
     },
     solutionModifier: {
-      LIMIT: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
-      OFFSET: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
-      ORDER: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
-      HAVING: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
-      GROUP: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
-      VALUES: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
-      $: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
-      "}": ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"]
+      LIMIT: [
+        "?groupClause",
+        "?havingClause",
+        "?orderClause",
+        "?limitOffsetClauses"
+      ],
+      OFFSET: [
+        "?groupClause",
+        "?havingClause",
+        "?orderClause",
+        "?limitOffsetClauses"
+      ],
+      ORDER: [
+        "?groupClause",
+        "?havingClause",
+        "?orderClause",
+        "?limitOffsetClauses"
+      ],
+      HAVING: [
+        "?groupClause",
+        "?havingClause",
+        "?orderClause",
+        "?limitOffsetClauses"
+      ],
+      GROUP: [
+        "?groupClause",
+        "?havingClause",
+        "?orderClause",
+        "?limitOffsetClauses"
+      ],
+      VALUES: [
+        "?groupClause",
+        "?havingClause",
+        "?orderClause",
+        "?limitOffsetClauses"
+      ],
+      $: [
+        "?groupClause",
+        "?havingClause",
+        "?orderClause",
+        "?limitOffsetClauses"
+      ],
+      "}": [
+        "?groupClause",
+        "?havingClause",
+        "?orderClause",
+        "?limitOffsetClauses"
+      ]
     },
     sourceSelector: {
       IRI_REF: ["iriRef"],
@@ -100604,7 +101459,17 @@ module.exports = {
       a: []
     },
     strReplaceExpression: {
-      REPLACE: ["REPLACE", "(", "expression", ",", "expression", ",", "expression", "?[,,expression]", ")"]
+      REPLACE: [
+        "REPLACE",
+        "(",
+        "expression",
+        ",",
+        "expression",
+        ",",
+        "expression",
+        "?[,,expression]",
+        ")"
+      ]
     },
     string: {
       STRING_LITERAL1: ["STRING_LITERAL1"],
@@ -100613,10 +101478,23 @@ module.exports = {
       STRING_LITERAL_LONG2: ["STRING_LITERAL_LONG2"]
     },
     subSelect: {
-      SELECT: ["selectClause", "whereClause", "solutionModifier", "valuesClause"]
+      SELECT: [
+        "selectClause",
+        "whereClause",
+        "solutionModifier",
+        "valuesClause"
+      ]
     },
     substringExpression: {
-      SUBSTR: ["SUBSTR", "(", "expression", ",", "expression", "?[,,expression]", ")"]
+      SUBSTR: [
+        "SUBSTR",
+        "(",
+        "expression",
+        ",",
+        "expression",
+        "?[,,expression]",
+        ")"
+      ]
     },
     triplesBlock: {
       VAR1: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
@@ -101959,30 +102837,30 @@ Trie.prototype = {
 
 },{}],262:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasqe@2.11.18",
-  "_id": "yasgui-yasqe@2.11.18",
+  "_from": "yasgui-yasqe@2.11.19",
+  "_id": "yasgui-yasqe@2.11.19",
   "_inBundle": false,
-  "_integrity": "sha512-pfcO4PELbPlQZkVjp1gRqDcpF7FB2/dZRLaa9Bo9wCuqv4WueaMDAbt0bZlmXnPz72JKDKlj8b6ai+mzhyHqUQ==",
+  "_integrity": "sha512-vz2VXoCZdtQghR2K2/vKeJXv2aXRoCGDWOtqQOxeKj53wT0NJuNrBJED9WcPO4R3GwQhDX8v+HcZ2F/AQS9mNw==",
   "_location": "/yasgui-yasqe",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasqe@2.11.18",
+    "raw": "yasgui-yasqe@2.11.19",
     "name": "yasgui-yasqe",
     "escapedName": "yasgui-yasqe",
-    "rawSpec": "2.11.18",
+    "rawSpec": "2.11.19",
     "saveSpec": null,
-    "fetchSpec": "2.11.18"
+    "fetchSpec": "2.11.19"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.18.tgz",
-  "_shasum": "ed609ac8b945bf5f140c8da0e6ef1b177e1857e4",
-  "_spec": "yasgui-yasqe@2.11.18",
-  "_where": "/home/lrd900/yasgui/yasgui",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.19.tgz",
+  "_shasum": "e0c75408ed03f02d83f61ac5160b0c5c8acc24ff",
+  "_spec": "yasgui-yasqe@2.11.19",
+  "_where": "/home/lrd900/yasgui/yasgui.opentriply",
   "author": {
     "name": "Laurens Rietveld"
   },
@@ -102075,7 +102953,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.11.18"
+  "version": "2.11.19"
 }
 
 },{}],263:[function(require,module,exports){
@@ -103980,35 +104858,19 @@ var addPrefixes = function(yasqe, prefixes) {
     addPrefixAsString(yasqe, prefixes);
   } else {
     for (var pref in prefixes) {
-      if (!(pref in existingPrefixes)) addPrefixAsString(yasqe, pref + ": <" + prefixes[pref] + ">");
+      if (!(pref in existingPrefixes))
+        addPrefixAsString(yasqe, pref + ": <" + prefixes[pref] + ">");
     }
   }
   yasqe.collapsePrefixes(false);
 };
 
 var addPrefixAsString = function(yasqe, prefixString) {
-  var lastPrefix = null;
-  var lastPrefixLine = 0;
-  var numLines = yasqe.lineCount();
-  for (var i = 0; i < numLines; i++) {
-    var firstToken = yasqe.getNextNonWsToken(i);
-    if (firstToken != null && (firstToken.string == "PREFIX" || firstToken.string == "BASE")) {
-      lastPrefix = firstToken;
-      lastPrefixLine = i;
-    }
-  }
+  yasqe.replaceRange("PREFIX " + prefixString + "\n", {
+    line: 0,
+    ch: 0
+  });
 
-  if (lastPrefix == null) {
-    yasqe.replaceRange("PREFIX " + prefixString + "\n", {
-      line: 0,
-      ch: 0
-    });
-  } else {
-    var previousIndent = getIndentFromLine(yasqe, lastPrefixLine);
-    yasqe.replaceRange("\n" + previousIndent + "PREFIX " + prefixString, {
-      line: lastPrefixLine
-    });
-  }
   yasqe.collapsePrefixes(false);
 };
 var removePrefixes = function(yasqe, prefixes) {
@@ -104020,7 +104882,17 @@ var removePrefixes = function(yasqe, prefixes) {
     yasqe.setValue(
       yasqe
         .getValue()
-        .replace(new RegExp("PREFIX\\s*" + pref + ":\\s*" + escapeRegex("<" + prefixes[pref] + ">") + "\\s*", "ig"), "")
+        .replace(
+          new RegExp(
+            "PREFIX\\s*" +
+              pref +
+              ":\\s*" +
+              escapeRegex("<" + prefixes[pref] + ">") +
+              "\\s*",
+            "ig"
+          ),
+          ""
+        )
     );
   }
   yasqe.collapsePrefixes(false);
@@ -104036,7 +104908,10 @@ var getPrefixesFromQuery = function(yasqe) {
   //Use precise here. We want to be sure we use the most up to date state. If we're
   //not, we might get outdated prefixes from the current query (creating loops such
   //as https://github.com/OpenTriply/YASGUI/issues/84)
-  return yasqe.getTokenAt({ line: yasqe.lastLine(), ch: yasqe.getLine(yasqe.lastLine()).length }, true).state.prefixes;
+  return yasqe.getTokenAt(
+    { line: yasqe.lastLine(), ch: yasqe.getLine(yasqe.lastLine()).length },
+    true
+  ).state.prefixes;
 };
 
 /**
@@ -105567,10 +106442,10 @@ RegExp.escape= function(s) {
 
 },{"jquery":73}],281:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasr@2.12.16",
-  "_id": "yasgui-yasr@2.12.16",
+  "_from": "yasgui-yasr@2.12.19",
+  "_id": "yasgui-yasr@2.12.19",
   "_inBundle": false,
-  "_integrity": "sha512-giSaTAqF/EOP607MXKyUKevWbk3N15ePcIZ0sYzs3+Sl1l09sX3ktzozSKgqsBZzfSEdlcOCbTPxvtYs6D6WVQ==",
+  "_integrity": "sha512-s6JNyrGKesvdwzt/evDxL8q22e9hC6AIwQZLsEJfH/rhISlIFNa92Ih2xNFiJQfinT7WbbcK8APj0pcQ4wg2Pg==",
   "_location": "/yasgui-yasr",
   "_phantomChildren": {
     "ms": "2.0.0"
@@ -105578,21 +106453,21 @@ module.exports={
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasr@2.12.16",
+    "raw": "yasgui-yasr@2.12.19",
     "name": "yasgui-yasr",
     "escapedName": "yasgui-yasr",
-    "rawSpec": "2.12.16",
+    "rawSpec": "2.12.19",
     "saveSpec": null,
-    "fetchSpec": "2.12.16"
+    "fetchSpec": "2.12.19"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.16.tgz",
-  "_shasum": "8aeabd27bb773f321eacaed2deb4e0e4276cace4",
-  "_spec": "yasgui-yasr@2.12.16",
-  "_where": "/home/lrd900/yasgui/yasgui",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasr/-/yasgui-yasr-2.12.19.tgz",
+  "_shasum": "852e1b847865d0da5ece2488c9ae019e77c7be4b",
+  "_spec": "yasgui-yasr@2.12.19",
+  "_where": "/home/lrd900/yasgui/yasgui.opentriply",
   "author": {
     "name": "Laurens Rietveld"
   },
@@ -105725,7 +106600,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.12.16"
+  "version": "2.12.19"
 }
 
 },{}],282:[function(require,module,exports){
@@ -105982,7 +106857,7 @@ var root = module.exports = function(yasr) {
     var $tryBtn = null;
     if (options.tryQueryLink) {
       var link = options.tryQueryLink();
-      $tryBtn = $("<button>", {
+      $tryBtn = $("<button type='button'>", {
         class: "yasr_btn yasr_tryQuery"
       })
         .text("Try query in new browser window")
@@ -106317,8 +107192,8 @@ var root = module.exports = function(yasr) {
 
         yasr.resultsContainer
           .append(
-            $("<button>", {
-              class: "openGchartBtn yasr_btn"
+        	$("<button>", {
+                 class: "openGchartBtn yasr_btn",type: "button"
             })
               .text("Chart Config")
               .click(function() {
@@ -106386,6 +107261,10 @@ var root = module.exports = function(yasr) {
         chartWrapper.setOption("width", $wrapper.width());
         chartWrapper.setOption("height", $wrapper.height());
         chartWrapper.draw();
+        // introduce handler
+        if ( customOpts.selectHandler && typeof(customOpts.selectHandler) == 'function') 
+				   google.visualization.events.addListener(chartWrapper, "select", function() { customOpts.selectHandler(chartWrapper,jsonResults); });
+        
         google.visualization.events.addListener(chartWrapper, "ready", yasr.updateHeader);
       };
 
@@ -107097,6 +107976,11 @@ var YASR = function(parent, options, queryResults) {
     }
 
     if (outputToDraw) {
+      if (yasr.options.output !== outputToDraw) {
+        yasr.options.output = outputToDraw;
+        updateOutputSelectorButtons();
+      }
+
       $(yasr.resultsContainer).empty();
       yasr.emit("draw", yasr, yasr.plugins[outputToDraw]);
       yasr.plugins[outputToDraw].draw(yasr.options.pluginSettings[outputToDraw] || {});
@@ -107109,9 +107993,14 @@ var YASR = function(parent, options, queryResults) {
     }
   };
 
+  var updateOutputSelectorButtons = function() {
+      var buttons = yasr.header.find(".yasr_btnGroup .yasr_btn").removeClass("selected");
+      buttons.filter(".select_" + yasr.options.output).addClass("selected");
+  };
+
   var disableOutputs = function(outputs) {
     //first enable everything.
-    yasr.header.find(".yasr_btnGroup .yasr_btn").removeClass("disabled");
+    yasr.header.find(".yasr_btnGroup .yasr_btn").removeClass("disabled").removeAttr("disabled");
 
     //now disable the outputs passed as param
     outputs.forEach(function(outputName) {
@@ -107119,7 +108008,8 @@ var YASR = function(parent, options, queryResults) {
       if (module.exports.plugins[outputName] && module.exports.plugins[outputName].defaults) {
         disabledTitle = module.exports.plugins[outputName].defaults.disabledTitle;
       }
-      yasr.header.find(".yasr_btnGroup .select_" + outputName).addClass("disabled").attr("title", disabledTitle || "");
+      yasr.header.find(".yasr_btnGroup .select_" + outputName).addClass("disabled").attr("title", disabledTitle || "")
+        .attr("disabled", true);
     });
   };
   yasr.somethingDrawn = function() {
@@ -107204,7 +108094,7 @@ var YASR = function(parent, options, queryResults) {
 
         if (plugin.hideFromSelection) return;
         var name = plugin.name || pluginName;
-        var button = $("<button class='yasr_btn'></button>")
+        var button = $("<button type='button' class='yasr_btn'></button>")
           .text(name)
           .addClass("select_" + pluginName)
           .click(function() {
@@ -107240,7 +108130,7 @@ var YASR = function(parent, options, queryResults) {
         }
         return url;
       };
-      var button = $("<button class='yasr_btn yasr_downloadIcon btn_icon'></button>")
+      var button = $("<button type='button' class='yasr_btn yasr_downloadIcon btn_icon'></button>")
         .append(require("yasgui-utils").svg.getElement(require("./imgs.js").download))
         .click(function() {
           var currentPlugin = yasr.plugins[yasr.options.output];
@@ -107261,7 +108151,7 @@ var YASR = function(parent, options, queryResults) {
       yasr.header.append(button);
     };
     var drawFullscreenButton = function() {
-      var button = $("<button class='yasr_btn btn_fullscreen btn_icon'></button>")
+      var button = $("<button type='button' class='yasr_btn btn_fullscreen btn_icon'></button>")
         .append(require("yasgui-utils").svg.getElement(require("./imgs.js").fullscreen))
         .click(function() {
           yasr.container.addClass("yasr_fullscreen");
@@ -107275,7 +108165,7 @@ var YASR = function(parent, options, queryResults) {
       yasr.header.append(button);
     };
     var drawSmallscreenButton = function() {
-      var button = $("<button class='yasr_btn btn_smallscreen btn_icon'></button>")
+      var button = $("<button type='button' class='yasr_btn btn_smallscreen btn_icon'></button>")
         .append(require("yasgui-utils").svg.getElement(require("./imgs.js").smallscreen))
         .click(function() {
           yasr.container.removeClass("yasr_fullscreen");
@@ -107286,7 +108176,7 @@ var YASR = function(parent, options, queryResults) {
       yasr.header.append(button);
     };
     var drawEmbedButton = function() {
-      embedBtn = $("<button>", {
+      embedBtn = $("<button type='button'>", {
         class: "yasr_btn yasr_embedBtn",
         title: "Get HTML snippet to embed results on a web page"
       })
@@ -108110,7 +109000,7 @@ var root = module.exports = function(yasr) {
         yasr.updateHeader();
       };
 
-      var openGchartBtn = $("<button>", {
+      var openGchartBtn = $("<button type='button'>", {
         class: "openPivotGchart yasr_btn"
       })
         .text("Chart Config")
@@ -108914,7 +109804,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.21",
+  "version": "2.7.28",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -108982,7 +109872,7 @@ module.exports={
   },
   "dependencies": {
     "blueimp-md5": "^2.7.0",
-    "bootstrap-contextmenu": "git://github.com/sydcanem/bootstrap-contextmenu",
+    "bootstrap-contextmenu": "^1.0.0",
     "bootstrap-sass": "^3.3.7",
     "browserify-shim": "^3.8.12",
     "jquery": "^2.2.4",
@@ -108996,8 +109886,8 @@ module.exports={
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
-    "yasgui-yasqe": "^2.11.18",
-    "yasgui-yasr": "^2.12.16"
+    "yasgui-yasqe": "^2.11.19",
+    "yasgui-yasr": "^2.12.19"
   },
   "browserify-shim": {
     "jQuery": "jquery"

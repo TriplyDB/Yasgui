@@ -3140,7 +3140,8 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
       .yasgui .yasqe .yasqe_buttons .yasqe_queryButton div {
         margin-left: 0px; }
       .yasgui .yasqe .yasqe_buttons .yasqe_queryButton .svgImg {
-        display: block; }
+        display: block;
+        height: inherit; }
       .yasgui .yasqe .yasqe_buttons .yasqe_queryButton .loader {
         width: 36px;
         height: 36px;
@@ -5111,11 +5112,14 @@ This perspective messes up the full screen capabilities of YASR/YASQE, and posit
   .yasgui .leaflet-container .leaflet-shadow-pane img,
   .yasgui .leaflet-container .leaflet-tile-pane img,
   .yasgui .leaflet-container img.leaflet-image-layer {
-    max-width: none !important; }
+    max-width: none !important;
+    max-height: none !important; }
   .yasgui .leaflet-container.leaflet-touch-zoom {
     touch-action: pan-x pan-y; }
   .yasgui .leaflet-container.leaflet-touch-drag {
-    -ms-touch-action: pinch-zoom; }
+    /* Fallback for FF which doesn't support pinch-zoom */
+    touch-action: none;
+    touch-action: pinch-zoom; }
   .yasgui .leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
     touch-action: none; }
   .yasgui .leaflet-container {
