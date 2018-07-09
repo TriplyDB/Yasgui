@@ -7,7 +7,7 @@
 SPARQL tools.  It includes th Query
 Editor [*YASQE*](https://github.com/OpenTriply/YASGUI.YASQE) and the
 Result Set
-Visualizer [*YASR*](https://github.com/OpenTriply/YASGUI.YASQE).  For
+Visualizer [*YASR*](https://github.com/OpenTriply/YASGUI.YASR).  For
 more information about *YASGUI*, its features, and how to include it
 in your own web site, visit http://doc.yasgui.org.
 
