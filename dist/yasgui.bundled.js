@@ -102837,29 +102837,29 @@ Trie.prototype = {
 
 },{}],262:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasqe@2.11.19",
-  "_id": "yasgui-yasqe@2.11.19",
+  "_from": "yasgui-yasqe@2.11.21",
+  "_id": "yasgui-yasqe@2.11.21",
   "_inBundle": false,
-  "_integrity": "sha512-vz2VXoCZdtQghR2K2/vKeJXv2aXRoCGDWOtqQOxeKj53wT0NJuNrBJED9WcPO4R3GwQhDX8v+HcZ2F/AQS9mNw==",
+  "_integrity": "sha512-Rj0Shqcj3F1U9Vis3V0Q7d9XKZH8xx64/+Ut1I2QDDOtNL2qdmvr2JR01DeTjwf8HVVfE2zTqjDqWnNoelxwqw==",
   "_location": "/yasgui-yasqe",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasqe@2.11.19",
+    "raw": "yasgui-yasqe@2.11.21",
     "name": "yasgui-yasqe",
     "escapedName": "yasgui-yasqe",
-    "rawSpec": "2.11.19",
+    "rawSpec": "2.11.21",
     "saveSpec": null,
-    "fetchSpec": "2.11.19"
+    "fetchSpec": "2.11.21"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.19.tgz",
-  "_shasum": "e0c75408ed03f02d83f61ac5160b0c5c8acc24ff",
-  "_spec": "yasgui-yasqe@2.11.19",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.21.tgz",
+  "_shasum": "0394f040494ea8de89020a312d82bd7d7a4698c0",
+  "_spec": "yasgui-yasqe@2.11.21",
   "_where": "/home/lrd900/yasgui/yasgui.opentriply",
   "author": {
     "name": "Laurens Rietveld"
@@ -102953,7 +102953,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.11.19"
+  "version": "2.11.21"
 }
 
 },{}],263:[function(require,module,exports){
@@ -103525,7 +103525,7 @@ var fetchFromLov = function(yasqe, completer, token, callback) {
   var results = [];
   var url = "";
   var updateUrl = function() {
-    url = reqProtocol + "lov.okfn.org/dataset/lov/api/v2/autocomplete/terms?" + $.param(args);
+    url = reqProtocol + "lov.linkeddata.es/dataset/lov/api/v2/autocomplete/terms?" + $.param(args);
   };
   updateUrl();
   var increasePage = function() {
@@ -109804,7 +109804,7 @@ var parseXmlSchemaDate = function(dateString) {
 module.exports={
   "name": "yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "2.7.28",
+  "version": "2.7.29",
   "main": "src/main.js",
   "license": "MIT",
   "author": "Laurens Rietveld",
@@ -109886,7 +109886,7 @@ module.exports={
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
-    "yasgui-yasqe": "^2.11.19",
+    "yasgui-yasqe": "^2.11.21",
     "yasgui-yasr": "^2.12.19"
   },
   "browserify-shim": {
