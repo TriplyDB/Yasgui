@@ -102837,29 +102837,29 @@ Trie.prototype = {
 
 },{}],262:[function(require,module,exports){
 module.exports={
-  "_from": "yasgui-yasqe@2.11.21",
-  "_id": "yasgui-yasqe@2.11.21",
+  "_from": "yasgui-yasqe@2.11.22",
+  "_id": "yasgui-yasqe@2.11.22",
   "_inBundle": false,
-  "_integrity": "sha512-Rj0Shqcj3F1U9Vis3V0Q7d9XKZH8xx64/+Ut1I2QDDOtNL2qdmvr2JR01DeTjwf8HVVfE2zTqjDqWnNoelxwqw==",
+  "_integrity": "sha512-8yNcjune6ONTJXJ2s6bZhRXBxyvuNErXjNAIQCbVyQbnG1feZBTR1SPjTKxkFWaCB/f0f19hmJPtcOkLOcOjUw==",
   "_location": "/yasgui-yasqe",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "yasgui-yasqe@2.11.21",
+    "raw": "yasgui-yasqe@2.11.22",
     "name": "yasgui-yasqe",
     "escapedName": "yasgui-yasqe",
-    "rawSpec": "2.11.21",
+    "rawSpec": "2.11.22",
     "saveSpec": null,
-    "fetchSpec": "2.11.21"
+    "fetchSpec": "2.11.22"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.21.tgz",
-  "_shasum": "0394f040494ea8de89020a312d82bd7d7a4698c0",
-  "_spec": "yasgui-yasqe@2.11.21",
+  "_resolved": "https://registry.npmjs.org/yasgui-yasqe/-/yasgui-yasqe-2.11.22.tgz",
+  "_shasum": "6da6cc234157924e986cc566f319b09519edd5f3",
+  "_spec": "yasgui-yasqe@2.11.22",
   "_where": "/home/lrd900/yasgui/yasgui.opentriply",
   "author": {
     "name": "Laurens Rietveld"
@@ -102953,7 +102953,7 @@ module.exports={
     "patch": "gulp patch",
     "update-interactive": "npm-check --skip-unused -u"
   },
-  "version": "2.11.21"
+  "version": "2.11.22"
 }
 
 },{}],263:[function(require,module,exports){
@@ -103505,7 +103505,7 @@ var postprocessResourceTokenForCompletion = function(yasqe, token, suggestedStri
 };
 
 //Use protocol relative request when served via http[s]*. Otherwise (e.g. file://, fetch via http)
-var reqProtocol = window.location.protocol.indexOf("http") === 0 ? "//" : "http://";
+var reqProtocol = window.location.protocol.indexOf("http") === 0 ? "https://" : "http://";
 var fetchFromLov = function(yasqe, completer, token, callback) {
   if (!token || !token.string || token.string.trim().length == 0) {
     yasqe.autocompleters.notifications.getEl(completer).empty().append("Nothing to autocomplete yet!");
@@ -109886,7 +109886,7 @@ module.exports={
     "underscore": "^1.8.3",
     "url-parse": "^1.1.8",
     "yasgui-utils": "^1.6.7",
-    "yasgui-yasqe": "^2.11.21",
+    "yasgui-yasqe": "^2.11.22",
     "yasgui-yasr": "^2.12.19"
   },
   "browserify-shim": {
