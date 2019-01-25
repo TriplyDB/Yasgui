@@ -6,7 +6,7 @@
 *YASGUI* (Yet Another SPARQL GUI) is part of the the YASGUI suite of
 SPARQL tools.  It includes th Query Editor
 [*YASQE*](https://github.com/OpenTriply/YASGUI.YASQE) and the Result
-Set Visualizer [*YASR*](https://github.com/OpenTriply/YASGUI.YASQE).
+Set Visualizer [*YASR*](https://github.com/OpenTriply/YASGUI.YASR).
 For more information about *YASGUI*, its features, and how to include
 it in your own web site, visit https://doc.yasgui.org.
 
