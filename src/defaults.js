@@ -257,7 +257,7 @@ module.exports = {
     { endpoint: "http://helheim.deusto.es/hedatuz/sparql", title: "Hedatuz" },
     { endpoint: "http://greek-lod.auth.gr/fire-brigade/sparql", title: "Hellenic Fire Brigade" },
     { endpoint: "http://greek-lod.auth.gr/police/sparql", title: "Hellenic Police" },
-    { endpoint: "http://beta.sparql.uniprot.org" },
+    { endpoint: "https://sparql.uniprot.org", title: "The Universal Protein Resource " },
     { endpoint: "http://bnb.data.bl.uk/sparql" },
     { endpoint: "http://cr.eionet.europa.eu/sparql" },
     { endpoint: "http://data.oceandrilling.org/sparql" },
