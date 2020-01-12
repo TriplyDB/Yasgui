@@ -1,0 +1,26 @@
+{
+  "name": "@triply/yasgui-utils",
+  "version": "4.0.91",
+  "description": "Utils for YASGUI libs",
+  "main": "build/index.min.js",
+  "types": "build/ts/src/index.d.ts",
+  "license": "MIT",
+  "author": "Laurens Rietveld",
+  "homepage": "https://github.com/TriplyDB/yasgui",
+  "maintainers": [
+    {
+      "name": "Laurens Rietveld",
+      "email": "laurens.rietveld@triply.cc",
+      "web": "https://triply.cc"
+    }
+  ],
+  "bugs": "https://github.com/TriplyDB/yasgui/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TriplyDB/yasgui.git"
+  },
+  "dependencies": {
+    "@types/node": "12",
+    "store": "^2.0.12"
+  }
+}

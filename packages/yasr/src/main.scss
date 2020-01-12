@@ -1,0 +1,153 @@
+@import "./scss/variables.scss";
+.yasr {
+  .svgImg {
+    display: flex;
+    flex-direction: row;
+    svg {
+      max-width: 100%;
+      max-height: 100%;
+      width: 15px;
+      height: 15px;
+      align-self: center;
+    }
+  }
+  .yasr_btn.yasr_downloadIcon div {
+    width: 15px;
+    height: 15px;
+  }
+  .btn_help {
+    font-weight: 600;
+    user-select: none;
+    &:active {
+      color: #428bca;
+      text-decoration-color: #428bca;
+    }
+    &.hidden {
+      display: none;
+    }
+  }
+  a {
+    color: #428bca;
+    text-decoration: none;
+    &:hover,
+    &:active {
+      outline: 0;
+      color: #2a6496;
+      text-decoration: underline;
+    }
+  }
+  .yasr_btnGroup {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden; // We shouldn't wrap, and therefore never draw a vertical scrollBar
+    .plugin_icon {
+      height: 15px;
+      width: 15px;
+      margin-right: 5px;
+      text-align: center;
+    }
+    .yasr_btn {
+      border-bottom: 2px solid transparent;
+      &.selected {
+        border-bottom: 2px solid #337ab7;
+      }
+      padding-left: 6px;
+      padding-right: 6px;
+      margin-left: 6px;
+      margin-right: 6px;
+    }
+  }
+  // Default med screen +
+  @media (max-width: 768px) {
+    .yasr_btn {
+      span {
+        display: none;
+      }
+
+      .plugin_icon {
+        margin-right: 0px;
+      }
+    }
+  }
+
+  .yasr_header {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .yasr_help {
+    margin-top: 5px;
+    border: 1px solid #d1d1d1;
+    padding: 5px;
+    background: #f7f7f7;
+    display: none;
+    &.active {
+      display: block;
+    }
+  }
+  .yasr_help_variable {
+    background: #dff0ff;
+    color: #428bca;
+  }
+  .yasr_response_chip {
+    color: #505050;
+    background: #f5f5f5;
+    border-radius: 6px;
+    display: flex;
+    font-size: 11pt;
+    max-height: 16pt;
+    align-self: center;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    padding: 6px 6px;
+    margin-left: 5px;
+    overflow: visible;
+    box-sizing: border-box;
+    &.empty {
+      display: none;
+    }
+  }
+  .yasr_plugin_control {
+    display: flex;
+    align-items: center;
+  }
+  .yasr_btn {
+    color: #505050;
+    fill: #505050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    white-space: nowrap;
+    padding: 6px 12px;
+    // border-radius: 4px;
+    overflow: visible;
+    box-sizing: border-box;
+    &.btn_icon {
+      padding: 4px 8px;
+    }
+    &[disabled],
+    &.disabled {
+      cursor: default;
+      opacity: 0.5;
+      box-shadow: none;
+    }
+    &:not(.disabled):hover {
+      fill: black;
+      color: black;
+    }
+    &:focus,
+    &.selected {
+      color: #337ab7;
+      fill: #337ab7;
+    }
+  }
+  .space_element {
+    flex-grow: 1;
+    min-width: 10px;
+  }
+}

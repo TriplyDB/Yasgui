@@ -1,0 +1,36 @@
+div.modal-dialog.google-visualization-charteditor-dialog {
+  height: unset;
+  width: unset;
+  display: inline-table;
+  z-index: 1031; /* One above header */
+}
+
+div.modal-dialog.google-visualization-charteditor-dialog
+  #google-visualization-charteditor-options-panel
+  .google-visualization-charteditor-section {
+  width: unset;
+}
+
+div.modal-dialog.google-visualization-charteditor-dialog .goog-inline-block.goog-flat-menu-button {
+  height: unset;
+}
+
+div.modal-dialog.google-visualization-charteditor-dialog div.google-visualization-charteditor-multi-section-title {
+  width: 100%;
+  border-collapse: separate;
+}
+
+div.modal-dialog.google-visualization-charteditor-dialog
+  div.jfk-radiobutton.google-visualization-charteditor-thumbnail.goog-control {
+  width: 120px;
+  height: 80px;
+}
+.yasgui .copy_btn {
+  box-sizing: unset;
+}
+.yasgui .tabContextButton {
+  box-sizing: content-box;
+}
+.yasgui .autocomplete {
+  line-height: normal;
+}

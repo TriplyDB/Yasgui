@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig-build.json",
+  "compilerOptions": {
+    "outDir": "./webpack",
+    "module": "commonjs",
+    "rootDir": "./webpack",
+    "incremental": true,
+    "composite": true
+  },
+  "files": [
+    "./webpack/config.ts"
+  ],
+  "include": []
+}

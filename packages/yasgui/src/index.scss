@@ -1,0 +1,73 @@
+.yasgui {
+  a {
+    color: #337ab7;
+    text-decoration: none;
+  }
+
+  //css taken from https://www.muicss.com/docs/v1/css-js/forms
+  $focusColor: #337ab7;
+  $font-size: 15px;
+  $font-color: rgba(0, 0, 0, 0.87);
+  $border-color: rgba(0, 0, 0, 0.26);
+  $label-font-size: 12px;
+  $label-font-color: rgba(0, 0, 0, 0.54);
+  $label-line-height: 15px;
+  .yasgui_textfield {
+    display: block;
+    padding-top: $font-size * 1.25;
+    // margin-bottom: $mui-form-group-margin-bottom;
+    position: relative;
+
+    > label {
+      // Positioning
+      position: absolute;
+      top: 0;
+
+      // Display
+      display: block;
+      width: 100%;
+
+      // Other
+      color: $label-font-color;
+      font-size: $label-font-size;
+      font-weight: 400;
+      line-height: $label-line-height;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    & > input,
+    & > textarea {
+      box-sizing: border-box;
+      display: block;
+      color: $font-color;
+      border: none;
+      border-bottom: 1px solid $border-color;
+      outline: none;
+      width: 100%;
+      padding: 0;
+      box-shadow: none;
+      border-radius: 0px;
+
+      // Typography
+      font-size: $font-size;
+      font-family: inherit;
+      line-height: inherit;
+
+      // Bugfix for firefox-android
+      background-image: none;
+
+      &:focus {
+        border-color: $focusColor;
+        border-width: 2px;
+      }
+    }
+    > input,
+    > textarea {
+      &:focus ~ label {
+        color: $focusColor;
+      }
+    }
+  }
+}

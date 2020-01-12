@@ -1,0 +1,127 @@
+/** 
+Delimiters
+Delimiters used by us
+- CamelCase
+Delimiters used by datatables
+- dashes
+- underscores
+*/
+
+.yasr {
+  .tableControls {
+    display: flex;
+    align-items: center;
+    padding: 0px;
+    padding-right: 5px;
+    flex-wrap: wrap;
+
+    .tableFilter {
+      margin-right: 10px;
+      height: 100%;
+    }
+
+    .tableSizer {
+      height: 100%;
+    }
+  }
+
+  .dataTables_wrapper {
+    .dataTable {
+      min-width: 100%;
+      border: 1px solid #d9d9d9;
+
+      // Override border-bottom datatables styling
+      &.no-footer {
+        border-bottom: 1px solid #d9d9d9;
+      }
+
+      thead {
+        .sorting {
+          background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAQAAADYWf5HAAAAkElEQVQoz7XQMQ5AQBCF4dWQSJxC5wwax1Cq1e7BAdxD5SL+Tq/QCM1oNiJidwox0355mXnG/DrEtIQ6azioNZQxI0ykPhTQIwhCR+BmBYtlK7kLJYwWCcJA9M4qdrZrd8pPjZWPtOqdRQy320YSV17OatFC4euts6z39GYMKRPCTKY9UnPQ6P+GtMRfGtPnBCiqhAeJPmkqAAAAAElFTkSuQmCC");
+        }
+
+        .sorting_asc {
+          background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAYAAAByUDbMAAAAZ0lEQVQ4y2NgGLKgquEuFxBPAGI2ahhWCsS/gDibUoO0gPgxEP8H4ttArEyuQYxAPBdqEAxPBImTY5gjEL9DM+wTENuQahAvEO9DMwiGdwAxOymGJQLxTyD+jgWDxCMZRsEoGAVoAADeemwtPcZI2wAAAABJRU5ErkJggg==");
+        }
+
+        .sorting_desc {
+          background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAYAAAByUDbMAAAAZUlEQVQ4y2NgGAWjYBSggaqGu5FA/BOIv2PBIPFEUgxjB+IdQPwfC94HxLykus4GiD+hGfQOiB3J8SojEE9EM2wuSJzcsFMG4ttQgx4DsRalkZENxL+AuJQaMcsGxBOAmGvopk8AVz1sLZgg0bsAAAAASUVORK5CYII=");
+        }
+
+        .sorting_asc_disabled {
+          background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAQAAADYWf5HAAAAW0lEQVQoz2NgoCm4w3Vnwh02wspK7/y6k01Ikdadx3f+37l9RxmfIsY7c4GKQHDiHUbcyhzvvIMq+3THBpci3jv7oIpAcMcdduzKEu/8vPMdDn/eiWQYBYMKAAC3ykIEuYQJUgAAAABJRU5ErkJggg==");
+        }
+
+        .sorting_desc_disabled {
+          background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAQAAADYWf5HAAAAWUlEQVQoz2NgGAWDCtyJvPPzznc4/HknEbsy9js77vyHw313eHGZZ3PnE1TRuzuOuK1lvDMRqmzuHUZ87lO+cxuo6PEdLUIeyb7z604pYf+y3Zlwh4u2YQoAc7ZCBHH4jigAAAAASUVORK5CYII=");
+        }
+      }
+
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      thead tr th {
+        //cannot select text anyway (as headers are buttons as well)
+        //By setting it to none explicitly, we won't have issues when resizing columns _and_ selecting text at the meantime
+        user-select: none;
+        border-right: 1px dotted gray;
+        font-weight: normal;
+        overflow: hidden;
+        border-bottom: none;
+        padding: 8px 10px;
+        padding-right: 16px;
+
+        &:last-child {
+          border-right: none;
+        }
+      }
+
+      td {
+        border-top: 1px solid #ddd;
+
+        & > div {
+          padding: 5px;
+          padding-left: 7px;
+          word-break: break-all;
+          hyphens: auto;
+        }
+      }
+    }
+
+    /**
+      Selector for pagination element
+    */
+    div.dataTables_paginate.paging_simple_numbers {
+      a.paginate_button {
+        border: none;
+        background: transparent;
+
+        // When the buttons are disabled show the default YASR disabled color
+        .disabled {
+          color: #505050;
+        }
+
+        &.current {
+          border: none;
+          background: transparent;
+          text-decoration: underline !important; // dataTables made the text-decoration important
+        }
+
+        &:hover {
+          border: none;
+          background: transparent;
+
+          // Don't override the disabled grayed out style
+          &:not(.disabled) {
+            color: black !important; // dataTables made the color important
+          }
+        }
+
+        &:active {
+          box-shadow: none;
+        }
+      }
+    }
+  }
+}

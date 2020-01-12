@@ -1,1 +1,4 @@
+tsconfig-webpack.tsbuildinfo
 node_modules
+build
+lerna-debug.log

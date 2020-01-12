@@ -1,114 +1,141 @@
 {
   "name": "yasgui",
-  "description": "Yet Another SPARQL GUI",
-  "version": "2.7.29",
-  "main": "src/main.js",
-  "license": "MIT",
-  "author": "Laurens Rietveld",
-  "homepage": "http://yasgui.org",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "gulp serve",
-    "build": "gulp",
-    "patch": "gulp patch",
-    "minor": "gulp minor",
-    "major": "gulp major",
-    "upgrade-interactive": "npm-check --skip-unused -u"
+    "build": "better-npm-run build",
+    "dev": "better-npm-run dev",
+    "link": "lerna link",
+    "postinstall": "yarn run link",
+    "util:lint": "ESLINT_STRICT=true eslint --ext .tsx --ext .ts $(ls -d ./packages/*/* | grep -E '(src|test|grammar)$')",
+    "util:buildWebpackConfig": "tsc -p tsconfig-webpack.json",
+    "util:validateTs": "tsc -p ./tsconfig-validate.json --noEmit",
+    "util:prettify": "prettier --parser typescript --write $(find ./packages/*/src -regex '.*\\.tsx?$') && prettier --parser css --write $(find ./packages/*/src -regex '.*\\.?scss$')",
+    "util:analyzeBundle": "ANALYZE_BUNDLE=true yarn run build",
+    "util:bundlesize": "bundlesize",
+    "pretest": "[ -z \"$(ls -A ./build 2> /dev/null)\" ] && echo Run \\\"yarn build\\\" before running a test && exit 1 || true",
+    "test": "yarn run puppeteer-test && yarn run unit-test",
+    "unit-test": "tsc -p ./tsconfig-test.json && mocha $(find ./build/test -name '*-test.js') --require source-map-support/register || true",
+    "puppeteer-test": "tsc -p ./tsconfig-test.json && mocha --timeout 30000 ./build/test/test/run.js --require source-map-support/register",
+    "version": "lerna version"
   },
-  "devDependencies": {
-    "brfs": "^1.4.3",
-    "browserify": "^13.1.0",
-    "browserify-transform-tools": "^1.6.0",
-    "connect": "^3.4.1",
-    "exorcist": "^0.4.0",
-    "gulp": "~3.9.1",
-    "gulp-autoprefixer": "^3.1.0",
-    "gulp-bump": "^2.2.0",
-    "gulp-clean-css": "^2.0.12",
-    "gulp-concat": "^2.6.0",
-    "gulp-connect": "^4.2.0",
-    "gulp-delete-lines": "0.0.7",
-    "gulp-embedlr": "^0.5.2",
-    "gulp-filter": "^4.0.0",
-    "gulp-git": "^2.4.1",
-    "gulp-jsvalidate": "^2.1.0",
-    "gulp-livereload": "^3.8.1",
-    "gulp-notify": "^2.2.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-sass": "^2.3.2",
-    "gulp-sourcemaps": "^1.6.0",
-    "gulp-streamify": "1.0.2",
-    "gulp-tag-version": "^1.3.0",
-    "gulp-uglify": "^1.5.4",
-    "node-sass": "^3.8.0",
-    "require-dir": "^0.3.2",
-    "run-sequence": "^1.2.2",
-    "stream-browserify": "^2.0.1",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "~1.1.0",
-    "vinyl-transform": "1.0.0",
-    "watchify": "^3.7.0"
-  },
-  "bugs": "https://github.com/YASGUI/YASGUI/issues/",
-  "keywords": [
-    "JavaScript",
-    "SPARQL",
-    "Editor",
-    "Semantic Web",
-    "Linked Data"
-  ],
-  "maintainers": [
-    {
-      "name": "Laurens Rietveld",
-      "email": "laurens.rietveld@gmail.com",
-      "web": "http://laurensrietveld.nl"
+  "betterScripts": {
+    "dev": {
+      "command": "yarn run util:buildWebpackConfig && webpack-dev-server --public 0.0.0.0 --host 0.0.0.0 --port 4000 --config  ./webpack/config.js --disable-host-check",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "build": {
+      "command": "rm -rf ./build && yarn run util:buildWebpackConfig && webpack --colors --display-error-details --config ./webpack/config.js && ./webpack/distributeBuildFiles.sh",
+      "env": {
+        "NODE_ENV": "production"
+      }
     }
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/YASGUI/YASGUI.git"
+  },
+  "resolutions": {
+    "@types/jquery": "3.3.31"
+  },
+  "devDependencies": {},
+  "lint-staged": {
+    "*.ts?(x)": [
+      "prettier --parser typescript --write",
+      "eslint",
+      "git add"
+    ],
+    "*.js": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.css": [
+      "prettier --parser postcss --write",
+      "git add"
+    ],
+    "*.scss": [
+      "prettier --parser postcss --write",
+      "git add"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "./bin/checkPackageVersions.sh && lint-staged",
+      "post-merge": "./bin/hooks/postMerge"
+    }
   },
   "dependencies": {
-    "blueimp-md5": "^2.7.0",
-    "bootstrap-contextmenu": "^1.0.0",
-    "bootstrap-sass": "^3.3.7",
-    "browserify-shim": "^3.8.12",
-    "jquery": "^2.2.4",
-    "jquery-ui": "^1.10.5",
-    "microplugin": "0.0.3",
-    "minimist": "^1.2.0",
-    "npm-check": "^5.4.5",
-    "promise-polyfill": "^6.0.2",
-    "selectize": "^0.12.4",
-    "store": "^2.0.4",
-    "underscore": "^1.8.3",
-    "url-parse": "^1.1.8",
-    "yasgui-utils": "^1.6.7",
-    "yasgui-yasqe": "^2.11.22",
-    "yasgui-yasr": "^2.12.19"
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-transform-runtime": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/runtime": "^7.5.5",
+    "@types/autoprefixer": "^9.5.0",
+    "@types/chai": "^4.1.7",
+    "@types/fs-extra": "^8.0.0",
+    "@types/html-webpack-plugin": "^3.2.0",
+    "@types/mini-css-extract-plugin": "^0.2.1",
+    "@types/mocha": "^5.2.7",
+    "@types/node-static": "^0.7.3",
+    "@types/optimize-css-assets-webpack-plugin": "^1.3.4",
+    "@types/puppeteer": "^1.19.0",
+    "@types/webpack": "^4.4.34",
+    "@types/webpack-bundle-analyzer": "^2.13.1",
+    "@typescript-eslint/eslint-plugin": "^2.10.0",
+    "@typescript-eslint/parser": "^2.10.0",
+    "autoprefixer": "^9.6.1",
+    "babel-loader": "^8.0.6",
+    "better-npm-run": "^0.1.1",
+    "bundlesize": "^0.18.0",
+    "chai": "^4.2.0",
+    "css-loader": "^3.0.0",
+    "eslint": "^6.7.2",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-jest": "^23.1.1",
+    "eslint-plugin-lodash": "^6.0.0",
+    "fs-extra": "^8.1.0",
+    "html-webpack-plugin": "^3.2.0",
+    "husky": "^2.5.0",
+    "lerna": "^3.11.1",
+    "lint-staged": "^8.2.1",
+    "mini-css-extract-plugin": "^0.8.0",
+    "mocha": "^6.2.0",
+    "nightmare": "^3.0.2",
+    "node-sass": "^4.12.0",
+    "node-static": "^0.7.11",
+    "optimize-css-assets-webpack-plugin": "^5.0.1",
+    "postcss-bgimage": "2.0.1",
+    "postcss-loader": "^3.0.0",
+    "prettier": "^1.18.2",
+    "puppeteer": "^1.19.0",
+    "sass-loader": "^7.1.0",
+    "source-map": "^0.7.3",
+    "source-map-loader": "^0.2.4",
+    "source-map-support": "^0.5.12",
+    "style-loader": "^0.23.1",
+    "terser-webpack-plugin": "^1.3.0",
+    "ts-loader": "^6.0.4",
+    "typescript": "^3.5.3",
+    "webpack": "^4.35.0",
+    "webpack-bundle-analyzer": "^3.3.2",
+    "webpack-cli": "^3.3.5",
+    "webpack-dev-server": "^3.7.2",
+    "webpack-livereload-plugin": "^2.2.0"
   },
-  "browserify-shim": {
-    "jQuery": "jquery"
-  },
-  "optionalShim": {
-    "codemirror": {
-      "require": "codemirror",
-      "global": "CodeMirror"
+  "bundlesize": [
+    {
+      "compression": "none",
+      "path": "build/yasgui.min.js",
+      "maxSize": "1.10 mb"
     },
-    "jquery": {
-      "require": "jquery",
-      "global": "jQuery"
+    {
+      "compression": "none",
+      "path": "build/yasr.min.js",
+      "maxSize": "660 kB"
     },
-    "jQuery": {
-      "require": "jquery",
-      "global": "jQuery"
-    },
-    "../../lib/codemirror": {
-      "require": "codemirror",
-      "global": "CodeMirror"
-    },
-    "../lib/DataTables/media/js/jquery.dataTables.js": {
-      "require": "datatables",
-      "global": "jQuery"
+    {
+      "compression": "none",
+      "path": "build/yasqe.min.js",
+      "maxSize": "490 kB"
     }
-  }
+  ]
 }

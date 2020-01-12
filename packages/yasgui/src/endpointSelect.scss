@@ -1,0 +1,100 @@
+.yasgui {
+  .autocomplete {
+    padding: 3px 6px;
+    margin: 4px 0px;
+    border: 2px solid #ccc;
+    width: 100%;
+    &:hover {
+      border-color: #bbb;
+    }
+    &:focus {
+      border-color: #337ab7;
+      background: none;
+      outline: none;
+    }
+    box-sizing: border-box;
+    transition: border-color ease-in 200ms;
+  }
+  .autocompleteWrapper {
+    width: 100%;
+    max-width: 700px;
+    margin-left: 10px;
+    position: relative;
+  }
+  .autocompleteList {
+    position: absolute;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 6;
+    margin: 0;
+    margin-top: -4px;
+    padding: 0;
+    list-style: none;
+    background: white;
+    border: 1px solid #aaa;
+    box-sizing: border-box;
+    left: 0;
+    right: 0;
+    &:hover {
+      .autoComplete_result.autoComplete_selected:not(:hover) {
+        background: unset;
+        .removeItem {
+          visibility: hidden;
+        }
+      }
+    }
+    .autoComplete_result {
+      cursor: pointer;
+      padding: 5px 10px;
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      transition: background visibility ease-in 200ms;
+      b {
+        color: #1f49a3;
+      }
+      .autoComplete_highlighted {
+        font-weight: bold;
+      }
+      &.autoComplete_selected {
+        background: #ccc;
+        .removeItem {
+          visibility: visible;
+        }
+      }
+      &:hover {
+        background: #ccc;
+        .removeItem {
+          visibility: visible;
+        }
+      }
+    }
+    .noResults {
+      padding: 5px 10px;
+      margin: 0;
+    }
+    .removeItem {
+      color: #000;
+      font-size: 15px;
+      text-shadow: 0 1px 0 #fff;
+      opacity: 0.5;
+      font-weight: 700;
+      text-align: end;
+      margin-left: auto; // Make sure x always appears at the same place
+      visibility: hidden;
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin-right: -10px;
+      padding-right: 20px;
+      &:hover {
+        opacity: 0.8;
+        color: #1f49a3;
+      }
+    }
+
+    &:empty {
+      display: none;
+    }
+  }
+}

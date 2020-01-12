@@ -1,0 +1,23 @@
+.yasqe {
+  .CodeMirror {
+    line-height: 1.5em;
+    font-size: 14px;
+    border: 1px solid #d1d1d1;
+  }
+
+  span.cm-error {
+    border-bottom: 2px dotted red;
+  }
+  .gutterErrorBar {
+    width: 4px;
+  }
+
+  .CodeMirror-foldmarker {
+    color: #6e2500;
+    text-shadow: #ff935e 1px 1px 2px, #ff935e -1px -1px 2px, #ff935e 1px -1px 2px, #ff935e -1px 1px 2px;
+    font-size: 19px;
+  }
+  .cm-matchhighlight {
+    background-color: #dbdeed;
+  }
+}

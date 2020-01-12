@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+
+	<style>
+		body {
+			font-family: 'Roboto', sans-serif;
+			margin: 0px;
+		}
+		.navItem a {
+			color: #555;
+			text-decoration: none;
+			padding: 5px;
+			padding-right:15px;
+		}
+		.navItem a:hover {
+			color:#222
+		}
+		.navItem.active a {
+			color: black;
+			font-size:110%;
+		}
+	</style>
+	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+	<title></title>
+</head>
+
+<body>
+  <div style="background:#eee">
+    <nav style="display: flex">
+      <img src="webpack/yasgui.png" style="max-height:50px;padding:5px;margin-left: 10px" alt="Yasgui Logo">
+        <ul style="display: flex; list-style: none; align-self: center">
+					<% _.forEach(links, function(link) { %><li class="navItem <%- link.className %>"><a class="nav-link" href="<%- link.href %>"><%- link.text %></a></li><% }); %>
+        </ul>
+    </nav>
+	</div>
+</body>
+
+</html>

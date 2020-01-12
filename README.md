@@ -1,64 +1,29 @@
-[![NPM](https://img.shields.io/npm/v/yasgui.svg)](https://www.npmjs.org/package/yasgui)
-[![Bower](https://img.shields.io/bower/v/yasgui.svg)](https://github.com/OpenTriply/YASGUI)
-
 # YASGUI
 
-*YASGUI* (Yet Another SPARQL GUI) is part of the the YASGUI suite of
-SPARQL tools.  It includes th Query Editor
-[*YASQE*](https://github.com/OpenTriply/YASGUI.YASQE) and the Result
-Set Visualizer [*YASR*](https://github.com/OpenTriply/YASGUI.YASR).
-For more information about *YASGUI*, its features, and how to include
-it in your own web site, visit https://doc.yasgui.org.
+Useful links:
 
-To give *YASGUI* a try, visit https://yasgui.org
+- User documentation: `https://triply.cc/docs/yasgui`
+- Developer documentation: `https://triply.cc/docs/yasgui-api`
+- Documentation Github repository (feel free to add a PR for improvements): https://github.com/TriplyDB/Documentation
 
-## Developing YASGUI
 
-Feel free to fork and develop this tool.  You can submit your
-contributions as Github pull requests.  To develop *YASGUI* locally:
 
-* `npm install`
-* `npm run dev` for local development
-* `npm run build` for creating the packages
+## Local development
 
-## Used by many
+#### Installing dependencies
 
-*YASGUI* is used by many triple stores, data tools, and data
-publishers.  Here is a partial list:
+Run `yarn install`.
 
-### Triple Stores
+#### Running Yasgui locally
 
-  * [**Apache Jena**](https://jena.apache.org/)
-  * [**OntoText GraphDB**](http://ontotext.com/products/graphdb/)
-  * [**RDF4J**](http://rdf4j.org/) (previously: OpenRDF Sesame)
-  * [**ClioPatria**](http://cliopatria.swi-prolog.org/home)
+To develop locally, run `yarn run dev`
 
-### Data Tools
+#### Compiling Yasgui
 
-  * [**Gosparqled**](https://github.com/scampi/gosparqled)
-    ([demo](http://scampi.github.io/gosparqled/))
-  * [**Snapper**](https://github.com/jiemakel/snapper) Turtle editor
-    ([demo](http://jiemakel.github.io/snapper/#/))
-  * [**Viso**](https://github.com/jiemakel/visu)
-    ([demo](http://demo.seco.tkk.fi/visu/))
-  * [**Brwsr**](https://github.com/Data2Semantics/brwsr), Linked Data
-    browser
-  * [**Trifid**](https://github.com/zazuko/trifid)
-    light-weight Linked Data Server and Proxy
-  
-### Data Publishers
+Run `yarn run build`. It'll store the transpiled js/css files in the `build` directory
 
-  * [**Belgium government**](http://data.vlaanderen.be/sparql)
-  * [**CEDAR project**](http://lod.cedar-project.nl/cedar/data.html)
-  * [**Dutch Cadastre**](https://data.pdok.nl/yasgui)
-  * [**German National Library of Economics (ZWB)**](http://zbw.eu/labs/en/blog/publishing-sparql-queries-live)
-  * [**HealthData.gov**](http://www.healthdata.gov/sparql/)
-  * [**IOS Press**](http://ld.iospress.nl/query-interface)
-  * [**Linked Open Vocabularies**](http://lov.okfn.org/dataset/lov/sparql)
-  * [**LOD Laundromat**](http://lodlaundromat.org/sparql)
-  * [**MetaLex**](http://doc.metalex.eu/query)
-  * [**Smithsonian American Art Museum**](http://americanart.si.edu/collections/search/lod/about/sparql.cfm)
-  * [**Swiss Federal Geoportal**](https://ld.geo.admin.ch/sparql/)
 
-  [1]: http://doc.yasgui.org
-  [2]: http://yasgui.org
+## License
+This software is written by Triply.
+
+This code is released under the MIT license.

@@ -1,0 +1,45 @@
+.yasgui {
+  .tabPanel {
+    display: none;
+    position: relative;
+    &.active {
+      display: block;
+    }
+  }
+  .yasr {
+    margin-top: 5px;
+  }
+
+  .tabContextButton {
+    width: 15px;
+    height: 15px;
+    max-width: 15px;
+    max-height: 15px;
+    align-self: center;
+    padding-left: 10px;
+    cursor: pointer;
+    color: #505050;
+    fill: #505050;
+
+    .svgImg {
+      width: inherit;
+      height: inherit;
+    }
+    // IE11 Needs this specified otherwise it will not resize the svg
+    svg {
+      max-width: 15px;
+      max-height: 15px;
+    }
+
+    &:hover {
+      color: black;
+      fill: black;
+    }
+  }
+
+  .controlbar {
+    display: flex;
+    align-content: center;
+    max-height: 35px;
+  }
+}
