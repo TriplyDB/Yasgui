@@ -103,7 +103,9 @@ if (isDev) {
 if (analyzeBundle) plugins.push(new BundleAnalyzerPlugin());
 
 export const genericConfig: webpack.Configuration = {
-  devtool: isDev ? "source-map" : false,
+  //We're cannot use all source map implementations because of the terser plugin
+  //See https://webpack.js.org/plugins/terser-webpack-plugin/#sourcemap
+  devtool: isDev ? "inline-source-map" : "source-map",
   cache: isDev,
   optimization: {
     minimize: true, //If you're debugging the production build, set this to false
