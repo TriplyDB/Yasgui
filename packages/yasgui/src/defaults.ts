@@ -36,7 +36,7 @@ export default function initialize(): Config<CatalogueItem> {
             endpoint: "https://dbpedia.org/sparql"
           },
           {
-            endpoint: "https://query.wikidata.org"
+            endpoint: "https://query.wikidata.org/bigdata/namespace/wdq/sparql"
           }
         ];
       },
