@@ -930,8 +930,8 @@ export interface RequestConfig {
   acceptHeaderUpdate: string | ((yasqe: Yasqe) => string);
   namedGraphs: string[];
   defaultGraphs: string[];
-  args: Array<{ name: string; value: string }>;
-  headers: { [key: string]: string };
+  args: Array<{ name: string; value: string }> | ((yasqe: Yasqe) => Array<{ name: string; value: string }>);
+  headers: { [key: string]: string } | ((yasqe: Yasqe) => { [key: string]: string });
   adjustQueryBeforeRequest: (yasqe: Yasqe) => string;
   withCredentials: boolean;
 }

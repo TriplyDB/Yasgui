@@ -34,9 +34,10 @@ export default class TabMenu {
     this.rootEl = rootEl;
     this.isOpen = false;
     const requestConfig = tab.getRequestConfig();
-    this.args = requestConfig.args;
-    this.headers = Object.keys(requestConfig.headers).map(key => {
-      return { name: key, value: requestConfig.headers[key] };
+    this.args = typeof requestConfig.args === 'function'?requestConfig.args(tab.getYasqe()):requestConfig.args;
+    const headers= typeof requestConfig.headers === 'function'?requestConfig.headers(tab.getYasqe()):requestConfig.headers;
+    this.headers = Object.keys(headers).map(key => {
+      return { name: key, value: headers[key] };
     });
     this.defaultGraphs = requestConfig.defaultGraphs;
     this.namedGraphs = requestConfig.namedGraphs;

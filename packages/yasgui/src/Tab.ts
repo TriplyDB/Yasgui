@@ -275,7 +275,7 @@ export class Tab extends EventEmitter {
           return {
             ...processedReqConfig,
             args: [
-              ...processedReqConfig.args,
+              ...(Array.isArray(processedReqConfig.args)?processedReqConfig.args:[]),
               { name: "endpoint", value: this.getEndpoint() },
               { name: "method", value: this.persistentJson.requestConfig.method }
             ],

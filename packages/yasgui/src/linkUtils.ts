@@ -47,7 +47,9 @@ export function createShareLink(forUrl: string, tab: Tab) {
     } else if (key === "defaultGraphs") {
       configObject.defaultGraphs.forEach(dg => tmpUrl.addQueryParam("defaultGraph", dg));
     } else if (key === "args") {
-      configObject.args.forEach(arg => tmpUrl.addQueryParam(arg.name, arg.value));
+      const yasqe = tab.getYasqe();
+      const args = typeof configObject.args === "function" ? configObject.args(yasqe) : configObject.args;
+      args.forEach(arg => tmpUrl.addQueryParam(arg.name, arg.value));
     } else if (typeof configObject[key] === "object") {
       if (configObject[key]) tmpUrl.addQueryParam(key, JSON.stringify(configObject[key]));
     } else {
@@ -92,14 +94,14 @@ export function createShareConfig(tab: Tab): ShareConfigObject {
     endpoint: tab.getEndpoint(),
     requestMethod: requestConfig.method,
     tabTitle: tab.getName(),
-    headers: requestConfig.headers,
+    headers: isFunction(requestConfig.headers) ? requestConfig.headers(tab.getYasqe()) : requestConfig.headers,
     contentTypeConstruct: isFunction(requestConfig.acceptHeaderGraph)
       ? requestConfig.acceptHeaderGraph(tab.getYasqe())
       : requestConfig.acceptHeaderGraph,
     contentTypeSelect: isFunction(requestConfig.acceptHeaderSelect)
       ? requestConfig.acceptHeaderSelect(tab.getYasqe())
       : requestConfig.acceptHeaderSelect,
-    args: requestConfig.args,
+    args: isFunction(requestConfig.args) ? requestConfig.args(tab.getYasqe()) : requestConfig.args,
     namedGraphs: requestConfig.namedGraphs,
     defaultGraphs: requestConfig.defaultGraphs,
     outputFormat: yasrPersistentSetting.selectedPlugin,
@@ -148,7 +150,7 @@ export function getConfigFromUrl(defaults: PersistedJson, _url?: string): Persis
     } else {
       //regular arguments. So store them as regular arguments
       if (!options.requestConfig.args) options.requestConfig.args = [];
-      options.requestConfig.args.push({ name: key, value: value });
+      (options.requestConfig.args as Array<{ name: string; value: string }>).push({ name: key, value: value });
     }
   });
   //Only know where to store the plugins config after we've saved the selected plugin

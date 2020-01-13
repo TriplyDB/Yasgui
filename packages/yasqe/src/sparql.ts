@@ -30,12 +30,12 @@ export function getAjaxConfig(yasqe: Yasqe, _config: Partial<Config["requestOpts
   const endpoint = isFunction(config.endpoint) ? config.endpoint(yasqe) : config.endpoint;
   var reqMethod: "GET" | "POST" =
     queryMode == "update" ? "POST" : isFunction(config.method) ? config.method(yasqe) : config.method;
-
+  const headers = isFunction(config.headers) ? config.headers(yasqe) : config.headers;
   return {
     reqMethod,
     url: endpoint,
     args: getUrlArguments(yasqe, config),
-    headers: config.headers,
+    headers: headers,
     accept: getAcceptHeader(yasqe, config),
     withCredentials: config.withCredentials
   };
@@ -104,11 +104,11 @@ export function getUrlArguments(yasqe: Yasqe, _config: Config["requestOpts"]): R
   /**
    * add additional request args
    */
-
-  if (config.args && config.args.length > 0)
+  const args = isFunction(config.args) ? config.args(yasqe) : config.args;
+  if (args && args.length > 0)
     merge(
       data,
-      config.args.reduce((argsObject: { [key: string]: string[] }, arg) => {
+      args.reduce((argsObject: { [key: string]: string[] }, arg) => {
         argsObject[arg.name] ? argsObject[arg.name].push(arg.value) : (argsObject[arg.name] = [arg.value]);
         return argsObject;
       }, {})
