@@ -1,5 +1,5 @@
 import Parser from "./";
-import { mapValues, isEmpty } from "lodash-es";
+import { unescape, isEmpty } from "lodash-es";
 function parseHead(node: ChildNode): Parser.SparqlResults["head"] {
   const head: Parser.SparqlResults["head"] = {
     vars: []
@@ -35,7 +35,7 @@ function parseResults(node: ChildNode, postProcessBinding: Parser.PostProcessBin
             if (allowedBindingValueTypes.indexOf(bindingInf.nodeName as any) < 0) continue;
             const bindingValue: Parser.BindingValue = {
               type: bindingInf.nodeName as Parser.BindingValue["type"],
-              value: bindingInf.innerHTML
+              value: unescape(bindingInf.innerHTML)
             };
             const dataType = bindingInf.getAttribute("datatype");
             if (dataType) bindingValue.datatype = dataType;
