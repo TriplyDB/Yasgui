@@ -517,7 +517,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
             if (state.inPrefixDecl) {
               if (topSymbol === "PNAME_NS" && tokenOb.string.length > 0) {
                 state.currentPnameNs = tokenOb.string.slice(0, -1);
-              } else if (state.currentPnameNs !== undefined && tokenOb.string.length > 1) {
+              } else if (typeof state.currentPnameNs === 'string' && tokenOb.string.length > 1) {
                 state.prefixes[state.currentPnameNs] = tokenOb.string.slice(1, -1);
                 //reset current pname ns
                 state.currentPnameNs = undefined;
