@@ -253,7 +253,7 @@ const getHtml = plugin => `
     window.onload = function () {
       console.log('onload')
       window.yasqe = Yasqe(document.getElementById("yasqe"), {
-        requestOpts: {
+        requestConfig: {
           endpoint: "${endpoint}"
         },
         value: \`

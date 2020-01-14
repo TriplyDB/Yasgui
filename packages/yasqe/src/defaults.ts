@@ -120,7 +120,7 @@ SELECT * WHERE {
 
     showQueryButton: true,
 
-    requestOpts: {
+    requestConfig: {
       queryArgument: undefined, //undefined means: get query argument by getting the query mode
       endpoint: "https://dbpedia.org/sparql",
       method: "POST",

@@ -265,7 +265,7 @@ export class Tab extends EventEmitter {
       persistenceId: null, //yasgui handles persistent storing
       consumeShareLink: null, //not handled by this tab, but by parent yasgui instance
       createShareableLink: () => this.getShareableLink(),
-      requestOpts: () => {
+      requestConfig: () => {
         const processedReqConfig: RequestConfig = {
           acceptHeaderGraph: "text/turtle",
           acceptHeaderSelect: "application/sparql-results+json",

@@ -28,7 +28,6 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   copyEndpointOnNewTab: boolean;
   tabName: string;
   corsProxy: string;
-  endpoint: string;
   endpointCatalogueOptions: EndpointSelectConfig<EndpointObject>;
   //The function allows us to modify the config before we pass it on to a tab
   populateFromUrl: boolean | ((configFromUrl: PersistedTabJson) => PersistedTabJson);

@@ -2,7 +2,7 @@ import { default as Yasqe, Config, RequestConfig } from "./";
 import * as superagent from "superagent";
 import { merge, isFunction } from "lodash-es";
 import * as queryString from "query-string";
-export type YasqeAjaxConfig = Config["requestOpts"];
+export type YasqeAjaxConfig = Config["requestConfig"];
 export interface PopulatedAjaxConfig {
   url: string;
   reqMethod: "POST" | "GET";
@@ -11,14 +11,14 @@ export interface PopulatedAjaxConfig {
   args: RequestArgs;
   withCredentials: boolean;
 }
-function getRequestConfigSettings(yasqe: Yasqe, conf: Partial<Config["requestOpts"]>): RequestConfig {
+function getRequestConfigSettings(yasqe: Yasqe, conf: Partial<Config["requestConfig"]>): RequestConfig {
   return isFunction(conf) ? conf(yasqe) : conf;
 }
 // type callback = AjaxConfig.callbacks['complete'];
-export function getAjaxConfig(yasqe: Yasqe, _config: Partial<Config["requestOpts"]> = {}): PopulatedAjaxConfig {
+export function getAjaxConfig(yasqe: Yasqe, _config: Partial<Config["requestConfig"]> = {}): PopulatedAjaxConfig {
   const config: RequestConfig = merge(
     {},
-    getRequestConfigSettings(yasqe, yasqe.config.requestOpts),
+    getRequestConfigSettings(yasqe, yasqe.config.requestConfig),
     getRequestConfigSettings(yasqe, _config)
   );
   if (!config.endpoint || config.endpoint.length == 0) return; // nothing to query!
@@ -77,7 +77,7 @@ export function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Promise<an
 }
 
 export type RequestArgs = { [argName: string]: string | string[] };
-export function getUrlArguments(yasqe: Yasqe, _config: Config["requestOpts"]): RequestArgs {
+export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]): RequestArgs {
   var queryMode = yasqe.getQueryMode();
 
   var data: RequestArgs = {};
@@ -116,7 +116,7 @@ export function getUrlArguments(yasqe: Yasqe, _config: Config["requestOpts"]): R
 
   return data;
 }
-export function getAcceptHeader(yasqe: Yasqe, _config: Config["requestOpts"]) {
+export function getAcceptHeader(yasqe: Yasqe, _config: Config["requestConfig"]) {
   const config: RequestConfig = getRequestConfigSettings(yasqe, _config);
   var acceptHeader = null;
   if (yasqe.getQueryMode() == "update") {
@@ -133,7 +133,7 @@ export function getAcceptHeader(yasqe: Yasqe, _config: Config["requestOpts"]) {
   }
   return acceptHeader;
 }
-export function getAsCurlString(yasqe: Yasqe, _config: Config["requestOpts"]) {
+export function getAsCurlString(yasqe: Yasqe, _config: Config["requestConfig"]) {
   var ajaxConfig = getAjaxConfig(yasqe, getRequestConfigSettings(yasqe, _config));
   var url = ajaxConfig.url;
   if (ajaxConfig.url.indexOf("http") !== 0) {

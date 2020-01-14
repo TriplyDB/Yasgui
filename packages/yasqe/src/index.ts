@@ -958,7 +958,7 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   persistenceId: ((yasqe: Yasqe) => string) | string;
   persistencyExpire: number; //seconds
   showQueryButton: boolean;
-  requestOpts: RequestConfig | ((yasqe: Yasqe) => RequestConfig);
+  requestConfig: RequestConfig | ((yasqe: Yasqe) => RequestConfig);
   pluginButtons: () => HTMLElement[] | HTMLElement;
   //Addon specific addon ts defs, or missing props from codemirror conf
   highlightSelectionMatches: { showToken?: RegExp; annotateScrollbar?: boolean };

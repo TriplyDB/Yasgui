@@ -28,7 +28,6 @@ export default function initialize(): Config<CatalogueItem> {
     persistenceLabelConfig: "config",
     yasqe: Yasqe.defaults,
     yasr: Yasr.defaults,
-    endpoint: "https://dbpedia.org/sparql",
     endpointCatalogueOptions: {
       getData: () => {
         return [
@@ -58,7 +57,7 @@ export default function initialize(): Config<CatalogueItem> {
     copyEndpointOnNewTab: true,
     populateFromUrl: true,
     autoAddOnInit: true,
-    requestConfig: <RequestConfig>Yasqe.defaults.requestOpts,
+    requestConfig: <RequestConfig>Yasqe.defaults.requestConfig,
     contextMenuContainer: undefined
   };
 }
