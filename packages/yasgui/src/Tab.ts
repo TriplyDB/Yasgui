@@ -298,7 +298,6 @@ export class Tab extends EventEmitter {
             }
           })
         };
-        debugger;
         if (this.yasgui.config.corsProxy && !Yasgui.corsEnabled[this.getEndpoint()]) {
           return {
             ...processedReqConfig,

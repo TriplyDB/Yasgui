@@ -19,6 +19,7 @@ module.exports = {
       errLevel,
       { allow: ["time", "timeEnd", "trace", "warn", "error", "info", "groupEnd", "group", "groupCollapsed"] }
     ],
+    "no-debugger": 2,
     "jest/no-focused-tests": errLevel,
     "lodash/import-scope": [errLevel, "member"]
   }
