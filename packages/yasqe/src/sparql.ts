@@ -11,12 +11,12 @@ export interface PopulatedAjaxConfig {
   args: RequestArgs;
   withCredentials: boolean;
 }
-function getRequestConfigSettings(yasqe: Yasqe, conf: Partial<Config["requestConfig"]>): RequestConfig {
+function getRequestConfigSettings(yasqe: Yasqe, conf: Partial<Config["requestConfig"]>): RequestConfig<Yasqe> {
   return isFunction(conf) ? conf(yasqe) : conf;
 }
 // type callback = AjaxConfig.callbacks['complete'];
 export function getAjaxConfig(yasqe: Yasqe, _config: Partial<Config["requestConfig"]> = {}): PopulatedAjaxConfig {
-  const config: RequestConfig = merge(
+  const config: RequestConfig<Yasqe> = merge(
     {},
     getRequestConfigSettings(yasqe, yasqe.config.requestConfig),
     getRequestConfigSettings(yasqe, _config)
@@ -31,13 +31,15 @@ export function getAjaxConfig(yasqe: Yasqe, _config: Partial<Config["requestConf
   var reqMethod: "GET" | "POST" =
     queryMode == "update" ? "POST" : isFunction(config.method) ? config.method(yasqe) : config.method;
   const headers = isFunction(config.headers) ? config.headers(yasqe) : config.headers;
+  // console.log({headers})
+  const withCredentials = isFunction(config.withCredentials) ? config.withCredentials(yasqe) : config.withCredentials;
   return {
     reqMethod,
     url: endpoint,
     args: getUrlArguments(yasqe, config),
     headers: headers,
     accept: getAcceptHeader(yasqe, config),
-    withCredentials: config.withCredentials
+    withCredentials
   };
   /**
    * merge additional request headers
@@ -58,7 +60,8 @@ export function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Promise<an
     req = superagent.get(populatedConfig.url).query(populatedConfig.args);
   }
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  req.accept(populatedConfig.accept).set(populatedConfig.headers);
+  req.accept(populatedConfig.accept).set(populatedConfig.headers || {});
+
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   if (populatedConfig.withCredentials) req.withCredentials();
   yasqe.emit("query", req, populatedConfig);
@@ -81,24 +84,25 @@ export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]):
   var queryMode = yasqe.getQueryMode();
 
   var data: RequestArgs = {};
-  const config: RequestConfig = getRequestConfigSettings(yasqe, _config);
+  const config: RequestConfig<Yasqe> = getRequestConfigSettings(yasqe, _config);
   var queryArg = isFunction(config.queryArgument) ? config.queryArgument(yasqe) : config.queryArgument;
   if (!queryArg) queryArg = yasqe.getQueryMode();
   data[queryArg] = config.adjustQueryBeforeRequest ? config.adjustQueryBeforeRequest(yasqe) : yasqe.getValue();
-
   /**
    * add named graphs to ajax config
    */
-  if (config.namedGraphs && config.namedGraphs.length > 0) {
+   const namedGraphs = isFunction(config.namedGraphs) ? config.namedGraphs(yasqe) : config.namedGraphs;
+  if (namedGraphs && namedGraphs.length > 0) {
     let argName = queryMode === "query" ? "named-graph-uri" : "using-named-graph-uri ";
-    data[argName] = config.namedGraphs;
+    data[argName] = namedGraphs;
   }
   /**
    * add default graphs to ajax config
    */
-  if (config.defaultGraphs && config.defaultGraphs.length > 0) {
+   const defaultGraphs = isFunction(config.defaultGraphs) ? config.defaultGraphs(yasqe) : config.defaultGraphs;
+  if (defaultGraphs && defaultGraphs.length > 0) {
     let argName = queryMode == "query" ? "default-graph-uri" : "using-graph-uri ";
-    data[argName] = config.namedGraphs;
+    data[argName] = namedGraphs;
   }
 
   /**
@@ -117,7 +121,7 @@ export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]):
   return data;
 }
 export function getAcceptHeader(yasqe: Yasqe, _config: Config["requestConfig"]) {
-  const config: RequestConfig = getRequestConfigSettings(yasqe, _config);
+  const config: RequestConfig<Yasqe> = getRequestConfigSettings(yasqe, _config);
   var acceptHeader = null;
   if (yasqe.getQueryMode() == "update") {
     acceptHeader = isFunction(config.acceptHeaderUpdate) ? config.acceptHeaderUpdate(yasqe) : config.acceptHeaderUpdate;

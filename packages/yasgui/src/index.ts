@@ -38,7 +38,7 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   persistencyExpire: number;
   yasqe: Partial<YasqeConfig>;
   yasr: Partial<YasrConfig>;
-  requestConfig: RequestConfig;
+  requestConfig: RequestConfig<Yasgui>;
   contextMenuContainer: HTMLElement;
   nonSslDomain?: string;
 }
@@ -171,7 +171,7 @@ export class Yasgui extends EventEmitter {
     /**
      * Check request config
      */
-    Object.keys(tab1.requestConfig).forEach((key: keyof RequestConfig) => {
+    Object.keys(tab1.requestConfig).forEach((key: keyof RequestConfig<Yasgui>) => {
       // Skip when current value is falsy
       if (!tab1.requestConfig[key]) return;
       if (!isEqual(tab2.requestConfig[key], tab1.requestConfig[key])) {

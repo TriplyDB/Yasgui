@@ -1,7 +1,8 @@
 import { addClass, drawSvgStringAsElement, removeClass } from "@triply/yasgui-utils";
 import "./TabPanel.scss";
 import Tab from "./Tab";
-
+import { RequestConfig } from "@triply/yasqe";
+import { toPairs,fromPairs } from "lodash-es";
 const AcceptOptionsMap: { key: string; value: string }[] = [
   { key: "JSON", value: "application/sparql-results+json" },
   { key: "XML", value: "application/sparql-results+xml" },
@@ -18,29 +19,19 @@ const AcceptHeaderGraphMap: { key: string; value: string }[] = [
   { key: "CSV", value: "text/csv" },
   { key: "TSV", value: "text/tab-separated-values" }
 ];
-export default class TabMenu {
+type TextInputPair = { name: string; value: string }
+export default class TabPanel {
   menuElement: HTMLElement;
   settingsButton: HTMLElement;
   tab: Tab;
   rootEl: HTMLElement;
   isOpen: boolean;
-  // We make a local copy for the following arguments in order to keep the elements
-  args: { name: string; value: string }[];
-  headers: { name: string; value: string }[];
-  defaultGraphs: string[];
-  namedGraphs: string[];
+
   constructor(tab: Tab, rootEl: HTMLElement, controlBarEl: HTMLElement) {
     this.tab = tab;
     this.rootEl = rootEl;
     this.isOpen = false;
-    const requestConfig = tab.getRequestConfig();
-    this.args = typeof requestConfig.args === 'function'?requestConfig.args(tab.getYasqe()):requestConfig.args;
-    const headers= typeof requestConfig.headers === 'function'?requestConfig.headers(tab.getYasqe()):requestConfig.headers;
-    this.headers = Object.keys(headers).map(key => {
-      return { name: key, value: headers[key] };
-    });
-    this.defaultGraphs = requestConfig.defaultGraphs;
-    this.namedGraphs = requestConfig.namedGraphs;
+
     this.init(controlBarEl);
   }
   private init(controlBarEl: HTMLElement) {
@@ -76,8 +67,36 @@ export default class TabMenu {
     };
     this.drawBody();
   }
+  private updateBody() {
+    const reqConfig = this.tab.getRequestConfig();
+    if (typeof reqConfig.method !== 'function') {
+      this.setRequestMethod(reqConfig.method);
+    }
+
+    // Draw Accept headers
+    this.setAcceptHeader_select(<string>reqConfig.acceptHeaderSelect);
+    this.setAcceptHeader_graph(<string>reqConfig.acceptHeaderGraph);
+    // console.log('setting args',reqConfig.args)
+    if (typeof reqConfig.args !== "function") {
+      this.setArguments([...reqConfig.args] || []);
+    }
+
+    if (typeof reqConfig.headers !== "function") {
+      this.setHeaders(toPairs(reqConfig.headers).map(([name, value]) => ({ name, value })));
+    }
+    if (typeof reqConfig.defaultGraphs !== 'function') {
+
+      this.setDefaultGraphs([...reqConfig.defaultGraphs] || []);
+    }
+    if (typeof reqConfig.namedGraphs !== 'function') {
+
+      this.setNamedGraphs([...reqConfig.namedGraphs] || []);
+    }
+  }
+
   public open(ev: MouseEvent) {
     if (!this.isOpen) {
+      this.updateBody();
       this.isOpen = true;
       addClass(this.menuElement, "open");
       const handleClick = (ev: MouseEvent) => {
@@ -101,19 +120,10 @@ export default class TabMenu {
     if (this.isOpen) {
       this.isOpen = false;
       removeClass(this.menuElement, "open");
-      this.tab.setRequestConfig({
-        args: this.args.filter(arg => arg && arg.name && arg.name.trim().length > 0),
-        headers: this.headers.reduce((headersObject: { [key: string]: string }, headerArrayObject) => {
-          if (headerArrayObject && headerArrayObject.name && headerArrayObject.name.trim().length > 0) {
-            headersObject[headerArrayObject.name] = headerArrayObject.value;
-          }
-          return headersObject;
-        }, {}),
-        defaultGraphs: this.defaultGraphs.filter(arg => arg),
-        namedGraphs: this.namedGraphs.filter(arg => arg)
-      });
     }
   }
+
+  private setRequestMethod: (method: Exclude<RequestConfig<any>["method"], Function>) => void;
   private drawRequestMethodSelector() {
     const requestTypeWrapper = document.createElement("div");
     addClass(requestTypeWrapper, "requestConfigWrapper");
@@ -127,15 +137,23 @@ export default class TabMenu {
     addClass(postButton, "selectorButton");
     postButton.innerText = "POST";
     addClass(this.tab.getRequestConfig().method === "GET" ? getButton : postButton, "selected");
+
+    this.setRequestMethod = method => {
+      if (method === "GET") {
+        addClass(getButton, "selected");
+        removeClass(postButton, "selected");
+      } else if (method === "POST") {
+        addClass(postButton, "selected");
+        removeClass(getButton, "selected");
+      }
+    };
     getButton.onclick = () => {
       this.tab.setRequestConfig({ method: "GET" });
-      addClass(getButton, "selected");
-      removeClass(postButton, "selected");
+      this.setRequestMethod("GET");
     };
     postButton.onclick = () => {
       this.tab.setRequestConfig({ method: "POST" });
-      addClass(postButton, "selected");
-      removeClass(getButton, "selected");
+      this.setRequestMethod("POST");
     };
 
     // Add elements to container
@@ -143,61 +161,113 @@ export default class TabMenu {
     requestTypeWrapper.appendChild(postButton);
     this.menuElement.appendChild(requestTypeWrapper);
   }
+
+  private setAcceptHeader_select: (acceptheader: string) => void;
+  private setAcceptHeader_graph: (acceptheader: string) => void;
   private drawAcceptSelector() {
     const acceptWrapper = document.createElement("div");
     addClass(acceptWrapper, "requestConfigWrapper", "acceptWrapper");
     createLabel("Accept Headers", acceptWrapper);
-
     // Request type
-    createSelector(
+    this.setAcceptHeader_select = createSelector(
       AcceptOptionsMap,
-      <string>this.tab.getRequestConfig().acceptHeaderSelect,
       ev => {
         this.tab.setRequestConfig({ acceptHeaderSelect: (<HTMLOptionElement>ev.target).value });
       },
       "Ask / Select",
       acceptWrapper
     );
-    createSelector(
+
+
+    this.setAcceptHeader_graph = createSelector(
       AcceptHeaderGraphMap,
-      <string>this.tab.getRequestConfig().acceptHeaderGraph,
       ev => {
         this.tab.setRequestConfig({ acceptHeaderGraph: (<HTMLOptionElement>ev.target).value });
       },
       "Construct / Describe",
       acceptWrapper
     );
+
+
     this.menuElement.appendChild(acceptWrapper);
   }
+
+  private setArguments: (args: TextInputPair[]) => void;
   private drawArgumentsInput() {
+    const onBlur = () => {
+      const args:Exclude<RequestConfig<any>['args'], Function> = []
+      argumentsWrapper.querySelectorAll('.textRow').forEach((row) => {
+        const [name,value] = row.children
+        if (name instanceof HTMLInputElement && value instanceof HTMLInputElement && name.value.length) {
+          args.push({name:name.value, value:value.value})
+        }
+      })
+      this.tab.setRequestConfig({args:args})
+    }
     const argumentsWrapper = document.createElement("div");
     addClass(argumentsWrapper, "requestConfigWrapper", "textSetting");
 
     createLabel("Arguments", argumentsWrapper);
-    // Draw the arguments;
-    for (const argIndex in this.args) {
-      const argRow = drawDoubleInputWhenEmpty(argumentsWrapper, parseInt(argIndex), this.args);
-      getRemoveButton(() => (this.args[argIndex] = undefined), argRow);
-    }
-    drawDoubleInput(argumentsWrapper, this.args);
+
     this.menuElement.appendChild(argumentsWrapper);
+
+    this.setArguments = args => {
+      argumentsWrapper.querySelectorAll(".textRow").forEach(child => {
+        argumentsWrapper.removeChild(child);
+      });
+      // Draw the arguments
+      for (let argIndex = 0; argIndex < args.length; argIndex++) {
+        const argRow = drawDoubleInputWhenEmpty(argumentsWrapper, argIndex, args, onBlur);
+        getRemoveButton(() => {
+          args.splice(argIndex,1);
+          this.tab.setRequestConfig({args:args})
+          this.setArguments(args);
+        }, argRow);
+      }
+      drawDoubleInput(argumentsWrapper, args, onBlur);
+    };
   }
 
+  private setHeaders: (headers: TextInputPair[]) => void;
   private drawHeaderInput() {
+    const onBlur = () => {
+      const headers:Exclude<RequestConfig<any>['headers'], Function> = {}
+      headerWrapper.querySelectorAll('.textRow').forEach((row) => {
+        const [name,value] = row.children
+        if (name instanceof HTMLInputElement && value instanceof HTMLInputElement && name.value.length) {
+          headers[name.value]=value.value
+        }
+      })
+      this.tab.setRequestConfig({headers:headers})
+    }
     const headerWrapper = document.createElement("div");
     addClass(headerWrapper, "requestConfigWrapper", "textSetting");
 
     const URLArgLabel = createLabel("Header Arguments");
     headerWrapper.appendChild(URLArgLabel);
-    // Draw the arguments;
-    for (const headerIndex in this.headers) {
-      const headerRow = drawDoubleInputWhenEmpty(headerWrapper, parseInt(headerIndex), this.headers);
-      getRemoveButton(() => (this.headers[headerIndex] = undefined), headerRow);
-    }
-    drawDoubleInput(headerWrapper, this.headers);
+
     this.menuElement.appendChild(headerWrapper);
+
+    this.setHeaders = headers => {
+      headerWrapper.querySelectorAll(".textRow").forEach(child => {
+        headerWrapper.removeChild(child);
+      });
+      // Draw the headers;
+      for (let headerIndex = 0; headerIndex < headers.length; headerIndex++) {
+        const headerRow = drawDoubleInputWhenEmpty(headerWrapper, headerIndex, headers,onBlur);
+        // getRemoveButton(() => (headers[headerIndex] = undefined), headerRow);
+        getRemoveButton(() => {
+          headers.splice(headerIndex,1);
+          this.tab.setRequestConfig({headers:fromPairs(headers.map(h => [h.name, h.value]))})
+          this.setHeaders(headers);
+
+        },headerRow);
+      }
+      drawDoubleInput(headerWrapper, headers,onBlur);
+    };
   }
 
+  private setDefaultGraphs: (defaultGraphs: string[]) => void;
   private drawDefaultGraphInput() {
     const defaultGraphWrapper = document.createElement("div");
     addClass(defaultGraphWrapper, "requestConfigWrapper", "textSetting");
@@ -205,28 +275,61 @@ export default class TabMenu {
     const defaultGraphLabel = createLabel("Default Graphs");
     defaultGraphWrapper.appendChild(defaultGraphLabel);
 
-    for (const graphIndex in this.defaultGraphs) {
-      const graphDiv = drawSingleInputWhenEmpty(defaultGraphWrapper, parseInt(graphIndex), this.defaultGraphs);
-      getRemoveButton(() => (this.defaultGraphs[graphIndex] = undefined), graphDiv);
-    }
-    drawSingleInput(defaultGraphWrapper, this.defaultGraphs);
     this.menuElement.appendChild(defaultGraphWrapper);
+
+    const onBlur = () => {
+      const graphs:Exclude<RequestConfig<any>['defaultGraphs'], Function> = []
+      defaultGraphWrapper.querySelectorAll('.graphInput').forEach((row) => {
+        const [el] = row.children
+        if (el instanceof HTMLInputElement && el.value.length) {
+          graphs.push(el.value)
+        }
+      })
+      this.tab.setRequestConfig({defaultGraphs:graphs})
+    }
+    this.setDefaultGraphs = defaultGraphs => {
+      defaultGraphWrapper.querySelectorAll(".graphInput").forEach(child => {
+        defaultGraphWrapper.removeChild(child);
+      });
+      for (let graphIndex = 0; graphIndex < defaultGraphs.length; graphIndex++) {
+        const graphDiv = drawSingleInputWhenEmpty(defaultGraphWrapper, graphIndex, defaultGraphs, onBlur);
+        getRemoveButton(() => (defaultGraphs[graphIndex] = undefined), graphDiv);
+      }
+      drawSingleInput(defaultGraphWrapper, defaultGraphs,onBlur);
+    };
   }
 
+  private setNamedGraphs: (defaultGraphs: string[]) => void;
   private drawNamedGraphInput() {
     const namedGraphWrapper = document.createElement("div");
     addClass(namedGraphWrapper, "requestConfigWrapper", "textSetting");
 
     const namedGraphLabel = createLabel("Named Graphs");
     namedGraphWrapper.appendChild(namedGraphLabel);
-
-    // Draw default graphs
-    for (const graphIndex in this.namedGraphs) {
-      const graphDiv = drawSingleInputWhenEmpty(namedGraphWrapper, parseInt(graphIndex), this.namedGraphs);
-      getRemoveButton(() => (this.namedGraphs[graphIndex] = undefined), graphDiv);
-    }
-    drawSingleInput(namedGraphWrapper, this.namedGraphs);
     this.menuElement.appendChild(namedGraphWrapper);
+
+    const onBlur = () => {
+      const graphs:Exclude<RequestConfig<any>['namedGraphs'], Function> = []
+      namedGraphWrapper.querySelectorAll('.graphInput').forEach((row) => {
+        const [el] = row.children
+        if (el instanceof HTMLInputElement && el.value.length) {
+          graphs.push(el.value)
+        }
+      })
+      this.tab.setRequestConfig({namedGraphs:graphs})
+    }
+
+    this.setNamedGraphs = namedGraphs => {
+      namedGraphWrapper.querySelectorAll(".graphInput").forEach(child => {
+        namedGraphWrapper.removeChild(child);
+      });
+      // Draw default graphs
+      for (let graphIndex = 0; graphIndex < namedGraphs.length; graphIndex++) {
+        const graphDiv = drawSingleInputWhenEmpty(namedGraphWrapper, graphIndex, namedGraphs,onBlur);
+        getRemoveButton(() => (namedGraphs[graphIndex] = undefined), graphDiv);
+      }
+      drawSingleInput(namedGraphWrapper, namedGraphs,onBlur);
+    };
   }
 
   private drawBody() {
@@ -249,13 +352,16 @@ export default class TabMenu {
     this.drawNamedGraphInput();
   }
 }
+
+/**
+ * This function returns a setter so we can easily set a new value
+ */
 function createSelector(
   options: { key: string; value: string }[],
-  currentValue: string,
   changeHandler: (event: Event) => void,
   label: string,
   parent: HTMLElement
-) {
+): (selected: string) => void {
   const selectorWrapper = document.createElement("div");
   addClass(selectorWrapper, "selector");
 
@@ -265,12 +371,15 @@ function createSelector(
   const selectElement = document.createElement("select");
   selectElement.onchange = changeHandler;
   selectorWrapper.appendChild(selectElement);
-
-  for (const pair of options) {
-    const option = createOption(pair, selectElement);
-    option.selected = pair.value === currentValue;
-  }
+  const optionEls = options.map(o => createOption(o, selectElement));
   parent.appendChild(selectorWrapper);
+  return selected => {
+    if (typeof selected === "string") {
+      for (const optionEl of optionEls) {
+        optionEl.selected = optionEl.value === selected;
+      }
+    }
+  };
 }
 
 function getInputValues(div: HTMLElement) {
@@ -315,41 +424,44 @@ function getRemoveButton(deleteAction: () => void, parent?: HTMLElement) {
   };
   return button;
 }
-function drawSingleInput(root: HTMLElement, content: string[]) {
+function drawSingleInput(root: HTMLElement, content: string[], onBlur: () => void) {
   const lastRow: HTMLDivElement = root.querySelector(".graphInput:last-of-type");
   if (!lastRow || getInputValues(lastRow)[0] !== "" || lastRow.getElementsByTagName("button").length !== 0) {
     const index = content.length;
-    drawSingleInputWhenEmpty(root, index, content);
+    drawSingleInputWhenEmpty(root, index, content,onBlur);
     if (lastRow && lastRow.getElementsByTagName("button").length === 0) {
       getRemoveButton(() => (content[index - 1] = undefined), lastRow);
     }
   }
 }
-function drawSingleInputWhenEmpty(root: HTMLElement, index: number, content: string[]) {
+function drawSingleInputWhenEmpty(root: HTMLElement, index: number, content: string[],onBlur: () => void) {
   const namedGraphItem = document.createElement("div");
   addClass(namedGraphItem, "graphInput");
   const namedGraphInput = createInput(content[index] ? content[index] : "", namedGraphItem);
   namedGraphInput.onkeyup = ev => {
     const target = <HTMLInputElement>ev.target;
     content[index] ? (content[index] = target.value) : content.push(target.value);
-    drawSingleInput(root, content);
+    drawSingleInput(root, content,onBlur);
   };
+  namedGraphItem.onblur = onBlur
   root.appendChild(namedGraphItem);
   return namedGraphItem;
 }
-function drawDoubleInput(root: HTMLElement, content: { name: string; value: string }[]) {
+
+
+function drawDoubleInput(root: HTMLElement, content: TextInputPair[], onBlur: () => void) {
   const lastRow: HTMLDivElement = root.querySelector(".textRow:last-of-type");
   // When there are no row's or the last row has values,
   if (!lastRow || getInputValues(lastRow).filter(value => value).length !== 0) {
     const index = content.length;
-    drawDoubleInputWhenEmpty(root, index, content);
+    drawDoubleInputWhenEmpty(root, index, content, onBlur);
     // If there is a last row and the button is not already there
     if (lastRow && lastRow.getElementsByTagName("button").length === 0) {
       getRemoveButton(() => (content[index - 1] = undefined), lastRow);
     }
   }
 }
-function drawDoubleInputWhenEmpty(root: HTMLElement, index: number, content: { name: string; value: string }[]) {
+function drawDoubleInputWhenEmpty(root: HTMLElement, index: number, content: TextInputPair[], onBlur:() => void) {
   const kvInput = document.createElement("div");
   addClass(kvInput, "textRow");
   const value = content[index];
@@ -359,14 +471,16 @@ function drawDoubleInputWhenEmpty(root: HTMLElement, index: number, content: { n
     content[index]
       ? (content[index].name = (<HTMLInputElement>ev.target).value)
       : content.push({ name: (<HTMLInputElement>ev.target).value, value: "" });
-    drawDoubleInput(root, content);
+    drawDoubleInput(root, content,onBlur);
   };
+  nameField.onblur = onBlur
   valueField.onkeyup = ev => {
     content[index]
       ? (content[index].value = (<HTMLInputElement>ev.target).value)
       : content.push({ value: (<HTMLInputElement>ev.target).value, name: "" });
-    drawDoubleInput(root, content);
+    drawDoubleInput(root, content,onBlur);
   };
+  valueField.onblur = onBlur
   root.appendChild(kvInput);
   return kvInput;
 }

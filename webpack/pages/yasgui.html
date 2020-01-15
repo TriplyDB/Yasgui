@@ -46,8 +46,10 @@
 	<script>
 		window.onpageshow = function () {
 			window.yasgui = new Yasgui(document.getElementById("yasgui"), {
-				endpoint: "<%- endpoint %>",
-				corsProxy: "<%- corsProxy %>"
+				corsProxy: "<%- corsProxy %>",
+				requestConfig: {
+					endpoint: "<%- endpoint %>",
+				}
 			});
 		};
 	</script>

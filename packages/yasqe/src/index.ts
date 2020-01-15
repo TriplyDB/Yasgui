@@ -866,7 +866,7 @@ export class Yasqe extends CodeMirror {
     Yasqe.Autocompleters[name] = value;
     if (enable && Yasqe.defaults.autocompleters.indexOf(name) < 0) Yasqe.defaults.autocompleters.push(name);
   }
-  static defaults: Config = getDefaults();
+  static defaults = getDefaults();
   static forkAutocompleter(
     fromCompleter: string,
     newCompleter: { name: string } & Partial<Autocompleter.CompleterConfig>,
@@ -921,20 +921,21 @@ export interface HintConfig {
   // Like customKeys above, but the bindings will be added to the set of default bindings, instead of replacing them.
   extraKeys?: any;
 }
-export interface RequestConfig {
-  queryArgument: string | ((yasqe: Yasqe) => string);
-  endpoint: string | ((yasqe: Yasqe) => string);
-  method: "POST" | "GET";
-  acceptHeaderGraph: string | ((yasqe: Yasqe) => string);
-  acceptHeaderSelect: string | ((yasqe: Yasqe) => string);
-  acceptHeaderUpdate: string | ((yasqe: Yasqe) => string);
-  namedGraphs: string[];
-  defaultGraphs: string[];
-  args: Array<{ name: string; value: string }> | ((yasqe: Yasqe) => Array<{ name: string; value: string }>);
-  headers: { [key: string]: string } | ((yasqe: Yasqe) => { [key: string]: string });
-  adjustQueryBeforeRequest: (yasqe: Yasqe) => string;
-  withCredentials: boolean;
+export interface RequestConfig<Y> {
+  queryArgument: string | ((yasqe: Y) => string);
+  endpoint: string | ((yasqe: Y) => string);
+  method: "POST" | "GET" | ((yasqe:Y) => "POST" | "GET");
+  acceptHeaderGraph: string | ((yasqe: Y) => string);
+  acceptHeaderSelect: string | ((yasqe: Y) => string);
+  acceptHeaderUpdate: string | ((yasqe: Y) => string);
+  namedGraphs: string[] | ((yasqe:Y) => string[]);
+  defaultGraphs: string[] | ((yasqe:Y) => []);
+  args: Array<{ name: string; value: string }> | ((yasqe: Y) => Array<{ name: string; value: string }>);
+  headers: { [key: string]: string } | ((yasqe: Y) => { [key: string]: string });
+  withCredentials: boolean | ((yasqe:Y) => boolean);
+  adjustQueryBeforeRequest: ((yasqe: Y) => string) | false;
 }
+export type PlainRequestConfig = {[K in keyof RequestConfig<any> ]: Exclude<RequestConfig<any>[K], Function>};
 export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   mode: string;
   collapsePrefixesOnLoad: boolean;
@@ -958,7 +959,7 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   persistenceId: ((yasqe: Yasqe) => string) | string;
   persistencyExpire: number; //seconds
   showQueryButton: boolean;
-  requestConfig: RequestConfig | ((yasqe: Yasqe) => RequestConfig);
+  requestConfig: RequestConfig<Yasqe> | ((yasqe: Yasqe) => RequestConfig<Yasqe>);
   pluginButtons: () => HTMLElement[] | HTMLElement;
   //Addon specific addon ts defs, or missing props from codemirror conf
   highlightSelectionMatches: { showToken?: RegExp; annotateScrollbar?: boolean };

@@ -50,3 +50,8 @@ export function removeClass(el: Element, className: string) {
     el.className = el.className.replace(reg, " ");
   }
 }
+
+export function getAsValue<E, A>(valueOrFn: E | ((arg:A) => E), arg:A): E {
+  if (typeof valueOrFn === 'function') return (valueOrFn as any)(arg)
+  return valueOrFn
+}

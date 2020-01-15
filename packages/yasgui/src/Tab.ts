@@ -1,10 +1,10 @@
 import { EventEmitter } from "events";
-import { addClass, removeClass } from "@triply/yasgui-utils";
+import { addClass, removeClass, getAsValue } from "@triply/yasgui-utils";
 import { TabListEl } from "./TabElements";
-import TabMenu from "./TabPanel";
-import { default as Yasqe, RequestConfig, Config as YasqeConfig } from "@triply/yasqe";
+import TabPanel from "./TabPanel";
+import { default as Yasqe, RequestConfig, PlainRequestConfig, Config as YasqeConfig } from "@triply/yasqe";
 import { default as Yasr, Parser, Config as YasrConfig, PersistentConfig as YasrPersistentConfig } from "@triply/yasr";
-import { mapValues, eq } from "lodash-es";
+import { mapValues, eq, mergeWith } from "lodash-es";
 import * as shareLink from "./linkUtils";
 import EndpointSelect from "./endpointSelect";
 import * as superagent from "superagent";
@@ -24,7 +24,7 @@ export interface PersistedJson {
     settings: YasrPersistentConfig;
     response: Parser.ResponseSummary;
   };
-  requestConfig: RequestConfig;
+  requestConfig: RequestConfig<Yasgui>;
 }
 export interface Tab {
   on(event: string | symbol, listener: (...args: any[]) => void): this;
@@ -48,7 +48,7 @@ export interface Tab {
 }
 export class Tab extends EventEmitter {
   private persistentJson: PersistedJson;
-  private yasgui: Yasgui;
+  public yasgui: Yasgui;
   private yasqe: Yasqe;
   private yasr: Yasr;
   private rootEl: HTMLDivElement;
@@ -61,7 +61,6 @@ export class Tab extends EventEmitter {
     if (!conf || conf.id === undefined) throw new Error("Expected a valid configuration to initialize tab with");
     this.yasgui = yasgui;
     this.persistentJson = conf;
-    // console.trace()
   }
   public name() {
     return this.persistentJson.name;
@@ -160,7 +159,7 @@ export class Tab extends EventEmitter {
     return this.yasr;
   }
   private initTabSettingsMenu() {
-    new TabMenu(this, this.rootEl, this.controlBarEl);
+    new TabPanel(this, this.rootEl, this.controlBarEl);
   }
 
   private initEndpointSelectField() {
@@ -213,9 +212,7 @@ export class Tab extends EventEmitter {
     return this;
   }
   public getEndpoint(): string {
-    return typeof this.persistentJson.requestConfig.endpoint === "string"
-      ? this.persistentJson.requestConfig.endpoint
-      : this.persistentJson.requestConfig.endpoint(this.yasqe);
+    return getAsValue(this.persistentJson.requestConfig.endpoint, this.yasgui);
   }
   /**
    * Updates the position of the Tab's contextmenu
@@ -249,7 +246,7 @@ export class Tab extends EventEmitter {
   public query(): Promise<any> {
     return this.yasqe.query();
   }
-  public setRequestConfig(requestConfig: Partial<RequestConfig>) {
+  public setRequestConfig(requestConfig: Partial<RequestConfig<Yasgui>>) {
     this.persistentJson.requestConfig = {
       ...this.persistentJson.requestConfig,
       ...requestConfig
@@ -257,6 +254,28 @@ export class Tab extends EventEmitter {
 
     this.emit("change", this, this.persistentJson);
   }
+
+  /**
+   * The Yasgui configuration object may contain a custom request config
+   * This request config object can contain getter functions, or plain json
+   * The plain json data is stored in persisted config, and editable via the
+   * tab pane.
+   * The getter functions are not. This function is about fetching this part of the
+   * request configuration, so we can merge this with the configuration from the
+   * persistent config and tab pane.
+   */
+  private getStaticRequestConfig() {
+    const config: Partial<PlainRequestConfig> = {};
+    let key: keyof RequestConfig<Yasgui>;
+    for (key in this.yasgui.config.requestConfig) {
+      const val = this.yasgui.config.requestConfig[key];
+      if (typeof val === "function") {
+        (config[key] as any) = val(this.yasgui);
+      }
+    }
+    return config;
+  }
+
   private initYasqe() {
     const yasqeConf: Partial<YasqeConfig> = {
       ...this.yasgui.config.yasqe,
@@ -266,24 +285,33 @@ export class Tab extends EventEmitter {
       consumeShareLink: null, //not handled by this tab, but by parent yasgui instance
       createShareableLink: () => this.getShareableLink(),
       requestConfig: () => {
-        const processedReqConfig: RequestConfig = {
+        const processedReqConfig: RequestConfig<Yasgui> = {
+          //setting defaults
           acceptHeaderGraph: "text/turtle",
           acceptHeaderSelect: "application/sparql-results+json",
-          ...this.persistentJson.requestConfig
+          ...mergeWith({},this.persistentJson.requestConfig, this.getStaticRequestConfig(), function customizer(
+            objValue,
+            srcValue
+          ) {
+            if (Array.isArray(objValue) || Array.isArray(srcValue)) {
+              return [...(objValue || []), ...(srcValue || [])];
+            }
+          })
         };
+        debugger;
         if (this.yasgui.config.corsProxy && !Yasgui.corsEnabled[this.getEndpoint()]) {
           return {
             ...processedReqConfig,
             args: [
-              ...(Array.isArray(processedReqConfig.args)?processedReqConfig.args:[]),
+              ...(Array.isArray(processedReqConfig.args) ? processedReqConfig.args : []),
               { name: "endpoint", value: this.getEndpoint() },
               { name: "method", value: this.persistentJson.requestConfig.method }
             ],
             method: "POST",
             endpoint: this.yasgui.config.corsProxy
-          };
+          } as PlainRequestConfig;
         }
-        return processedReqConfig;
+        return processedReqConfig as PlainRequestConfig;
       }
     };
     if (!yasqeConf.hintConfig.container) yasqeConf.hintConfig.container = this.yasgui.rootEl;
@@ -346,7 +374,7 @@ export class Tab extends EventEmitter {
       getPlainQueryLinkToEndpoint: () =>
         shareLink.appendArgsToUrl(
           this.getEndpoint(),
-          Yasqe.Sparql.getUrlArguments(this.yasqe, this.persistentJson.requestConfig)
+          Yasqe.Sparql.getUrlArguments(this.yasqe, this.persistentJson.requestConfig as RequestConfig<any>)
         ),
       plugins: mapValues(this.persistentJson.yasr.settings.pluginsConfig, conf => ({
         dynamicConfig: conf

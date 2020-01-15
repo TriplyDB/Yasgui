@@ -1,6 +1,6 @@
 import { Config } from "./";
 import Yasr from "@triply/yasr";
-import { default as Yasqe, RequestConfig } from "@triply/yasqe";
+import { default as Yasqe } from "@triply/yasqe";
 import { CatalogueItem } from "./endpointSelect";
 
 export default function initialize(): Config<CatalogueItem> {
@@ -57,7 +57,7 @@ export default function initialize(): Config<CatalogueItem> {
     copyEndpointOnNewTab: true,
     populateFromUrl: true,
     autoAddOnInit: true,
-    requestConfig: <RequestConfig>Yasqe.defaults.requestConfig,
+    requestConfig: Yasqe.defaults.requestConfig,
     contextMenuContainer: undefined
   };
 }

@@ -1,9 +1,9 @@
 const JsUri = require("jsuri");
 
 import { default as Tab, PersistedJson } from "./Tab";
-import { isFunction } from "lodash-es";
 import Yasr from "@triply/yasr";
-import { RequestConfig } from "@triply/yasqe";
+import { PlainRequestConfig } from "@triply/yasqe";
+import {getAsValue} from "@triply/yasgui-utils"
 var getUrlParams = function(_url?: string) {
   var urlFromWindow = false;
   if (!_url) {
@@ -47,8 +47,7 @@ export function createShareLink(forUrl: string, tab: Tab) {
     } else if (key === "defaultGraphs") {
       configObject.defaultGraphs.forEach(dg => tmpUrl.addQueryParam("defaultGraph", dg));
     } else if (key === "args") {
-      const yasqe = tab.getYasqe();
-      const args = typeof configObject.args === "function" ? configObject.args(yasqe) : configObject.args;
+      const args = getAsValue(configObject.args, tab.yasgui)
       args.forEach(arg => tmpUrl.addQueryParam(arg.name, arg.value));
     } else if (typeof configObject[key] === "object") {
       if (configObject[key]) tmpUrl.addQueryParam(key, JSON.stringify(configObject[key]));
@@ -74,36 +73,34 @@ export function createShareLink(forUrl: string, tab: Tab) {
 export type ShareConfigObject = {
   query: string;
   endpoint: string;
-  requestMethod: RequestConfig["method"];
+  requestMethod: PlainRequestConfig["method"];
   tabTitle: string;
-  headers: RequestConfig["headers"];
+  headers: PlainRequestConfig["headers"];
   contentTypeConstruct: string;
   contentTypeSelect: string;
-  args: RequestConfig["args"];
-  namedGraphs: RequestConfig["namedGraphs"];
-  defaultGraphs: RequestConfig["defaultGraphs"];
+  args: PlainRequestConfig["args"];
+  namedGraphs: PlainRequestConfig["namedGraphs"];
+  defaultGraphs: PlainRequestConfig["defaultGraphs"];
   outputFormat: string;
   outputSettings: any;
 };
 
 export function createShareConfig(tab: Tab): ShareConfigObject {
+  const yasgui = tab.yasgui;
   const requestConfig = tab.getRequestConfig();
   const yasrPersistentSetting = tab.getPersistedJson().yasr.settings;
   return {
     query: tab.getQuery(),
     endpoint: tab.getEndpoint(),
-    requestMethod: requestConfig.method,
+    requestMethod: getAsValue(requestConfig.method, yasgui),
     tabTitle: tab.getName(),
-    headers: isFunction(requestConfig.headers) ? requestConfig.headers(tab.getYasqe()) : requestConfig.headers,
-    contentTypeConstruct: isFunction(requestConfig.acceptHeaderGraph)
-      ? requestConfig.acceptHeaderGraph(tab.getYasqe())
-      : requestConfig.acceptHeaderGraph,
-    contentTypeSelect: isFunction(requestConfig.acceptHeaderSelect)
-      ? requestConfig.acceptHeaderSelect(tab.getYasqe())
-      : requestConfig.acceptHeaderSelect,
-    args: isFunction(requestConfig.args) ? requestConfig.args(tab.getYasqe()) : requestConfig.args,
-    namedGraphs: requestConfig.namedGraphs,
-    defaultGraphs: requestConfig.defaultGraphs,
+    // headers: isFunction(requestConfig.headers) ? requestConfig.headers(tab.yasgui) : requestConfig.headers,
+    headers: getAsValue(requestConfig.headers, yasgui),
+    contentTypeConstruct: getAsValue(requestConfig.acceptHeaderGraph, yasgui),
+    contentTypeSelect: getAsValue(requestConfig.acceptHeaderSelect,yasgui),
+    args: getAsValue(requestConfig.args,yasgui),
+    namedGraphs: getAsValue(requestConfig.namedGraphs,yasgui),
+    defaultGraphs: getAsValue(requestConfig.defaultGraphs,yasgui),
     outputFormat: yasrPersistentSetting.selectedPlugin,
     outputSettings: yasrPersistentSetting.pluginsConfig[yasrPersistentSetting.selectedPlugin]
   };
@@ -139,10 +136,10 @@ export function getConfigFromUrl(defaults: PersistedJson, _url?: string): Persis
     } else if (key == "tabTitle") {
       options.name = value;
     } else if (key == "namedGraph") {
-      if (!options.requestConfig.namedGraphs) options.requestConfig.namedGraphs = [];
+      if (!Array.isArray(options.requestConfig.namedGraphs)) options.requestConfig.namedGraphs = [];
       options.requestConfig.namedGraphs.push(value);
     } else if (key == "defaultGraph") {
-      if (!options.requestConfig.defaultGraphs) options.requestConfig.defaultGraphs = [];
+      if (!Array.isArray(options.requestConfig.defaultGraphs)) options.requestConfig.defaultGraphs = [];
       options.requestConfig.defaultGraphs.push(value);
     } else if (key == "headers") {
       if (!options.requestConfig.headers) options.requestConfig.headers = {};

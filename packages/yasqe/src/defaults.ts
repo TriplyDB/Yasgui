@@ -4,12 +4,12 @@
  * keys). Either change the default options by setting Yasqe.defaults, or by
  * passing your own options as second argument to the YASQE constructor
  */
-import { default as Yasqe, Config } from "./";
+import { default as Yasqe, Config, PlainRequestConfig } from "./";
 import * as queryString from "query-string";
 //need to pass Yasqe object as argument, as the imported version might not have inherited all (e.g. `fold`) props of Codemirror yet
-export default function get(): Config {
+export default function get() {
   const CodeMirror = require("codemirror");
-  return {
+  const config:Omit<Config, 'requestConfig'> ={
     mode: "sparql11",
     value: `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -120,23 +120,25 @@ SELECT * WHERE {
 
     showQueryButton: true,
 
-    requestConfig: {
-      queryArgument: undefined, //undefined means: get query argument by getting the query mode
-      endpoint: "https://dbpedia.org/sparql",
-      method: "POST",
-      acceptHeaderGraph: "text/turtle,*/*;q=0.9",
-      acceptHeaderSelect: "application/sparql-results+json,*/*;q=0.9",
-      acceptHeaderUpdate: "text/plain,*/*;q=0.9",
-      namedGraphs: [],
-      defaultGraphs: [],
-      args: [],
-      headers: {},
-      withCredentials: false,
-      adjustQueryBeforeRequest: null
-    },
+
     hintConfig: {},
     resizeable: true,
     editorHeight: "300px",
     queryingDisabled: undefined
   };
+  const requestConfig:PlainRequestConfig =  {
+    queryArgument: undefined, //undefined means: get query argument by getting the query mode
+    endpoint: "https://dbpedia.org/sparql",
+    method: "POST",
+    acceptHeaderGraph: "text/turtle,*/*;q=0.9",
+    acceptHeaderSelect: "application/sparql-results+json,*/*;q=0.9",
+    acceptHeaderUpdate: "text/plain,*/*;q=0.9",
+    namedGraphs: [],
+    defaultGraphs: [],
+    args: [],
+    headers: {},
+    withCredentials: false,
+    adjustQueryBeforeRequest: undefined
+  }
+  return {...config, requestConfig}
 }
