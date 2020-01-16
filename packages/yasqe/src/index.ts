@@ -937,7 +937,7 @@ export interface RequestConfig<Y> {
 }
 export type PlainRequestConfig = {[K in keyof RequestConfig<any> ]: Exclude<RequestConfig<any>[K], Function>};
 export type PartialConfig = {
-  [P in keyof Config]?: Config[P] extends Object? Partial<Config[P]>:Config[P]
+  [P in keyof Config]?: Config[P] extends object? Partial<Config[P]>:Config[P]
 };
 export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   mode: string;

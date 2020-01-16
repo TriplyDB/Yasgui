@@ -43,7 +43,7 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   nonSslDomain?: string;
 }
 export type PartialConfig = {
-  [P in keyof Config]?: Config[P] extends Object? Partial<Config[P]>:Config[P]
+  [P in keyof Config]?: Config[P] extends object? Partial<Config[P]>:Config[P]
 };
 
 export type TabJson = PersistedTabJson;
