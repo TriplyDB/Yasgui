@@ -61,7 +61,7 @@ export class Yasqe extends CodeMirror {
   public config: Config;
   public persistentConfig: PersistentConfig;
   public superagent = superagent;
-  constructor(parent: HTMLElement, conf: Partial<Config> = {}) {
+  constructor(parent: HTMLElement, conf: PartialConfig = {}) {
     super();
     if (!parent) throw new Error("No parent passed as argument. Dont know where to draw YASQE");
     this.rootEl = document.createElement("div");
@@ -936,6 +936,9 @@ export interface RequestConfig<Y> {
   adjustQueryBeforeRequest: ((yasqe: Y) => string) | false;
 }
 export type PlainRequestConfig = {[K in keyof RequestConfig<any> ]: Exclude<RequestConfig<any>[K], Function>};
+export type PartialConfig = {
+  [P in keyof Config]?: Config[P] extends Object? Partial<Config[P]>:Config[P]
+};
 export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   mode: string;
   collapsePrefixesOnLoad: boolean;

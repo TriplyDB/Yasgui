@@ -42,6 +42,9 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   contextMenuContainer: HTMLElement;
   nonSslDomain?: string;
 }
+export type PartialConfig = {
+  [P in keyof Config]?: Config[P] extends Object? Partial<Config[P]>:Config[P]
+};
 
 export type TabJson = PersistedTabJson;
 
@@ -77,15 +80,13 @@ export interface Yasgui {
 }
 export class Yasgui extends EventEmitter {
   public rootEl: HTMLDivElement;
-  // public store: Store;
   public tabElements: TabElements;
   public _tabs: { [tabId: string]: Tab } = {};
   public tabPanelsEl: HTMLDivElement;
-  // private history: any[] = [];//TODO: add max history length
   public config: Config;
   public persistentConfig: PersistentConfig;
   public static Tab = Tab;
-  constructor(parent: HTMLElement, config: Partial<Config>) {
+  constructor(parent: HTMLElement, config: PartialConfig) {
     super();
     this.rootEl = document.createElement("div");
     addClass(this.rootEl, "yasgui");
