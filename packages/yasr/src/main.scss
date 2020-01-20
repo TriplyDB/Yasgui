@@ -11,19 +11,18 @@
       align-self: center;
     }
   }
-  .yasr_btn.yasr_downloadIcon div {
-    width: 15px;
-    height: 15px;
-  }
-  .btn_help {
+  .yasr_btn.yasr_external_ref_btn {
     font-weight: 600;
     user-select: none;
-    &:active {
-      color: #428bca;
-      text-decoration-color: #428bca;
+    // Active and focus shouldn't color the button since it'll open a new page
+    &:active,
+    &:focus {
+      color: inherit;
+      text-decoration-color: inherit;
     }
-    &.hidden {
-      display: none;
+    .svgImg svg {
+      width: 18px;
+      height: 18px;
     }
   }
   a {
@@ -77,14 +76,13 @@
     display: flex;
     flex-wrap: wrap;
   }
-  .yasr_help {
+  .yasr_fallback_info:not(:empty) {
     margin-top: 5px;
     border: 1px solid #d1d1d1;
-    padding: 5px;
+    padding: 0.5rem;
     background: #f7f7f7;
-    display: none;
-    &.active {
-      display: block;
+    p {
+      margin: 0;
     }
   }
   .yasr_help_variable {
