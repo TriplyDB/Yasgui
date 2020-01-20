@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { merge, filter, mapValues } from "lodash-es";
+import { merge, filter, mapValues, remove } from "lodash-es";
 import getDefaults from "./defaults";
 import { Plugin } from "./plugins";
 import {
@@ -14,6 +14,7 @@ import Parser from "./parsers";
 export { default as Parser } from "./parsers";
 import { addScript, addCss, sanitize } from "./helpers";
 import * as faDownload from "@fortawesome/free-solid-svg-icons/faDownload";
+import * as faQuestionCircle from "@fortawesome/free-solid-svg-icons/faQuestionCircle";
 require("./main.scss");
 
 export interface PersistentConfig {
@@ -35,7 +36,7 @@ export class Yasr extends EventEmitter {
   public results: Parser;
   public rootEl: HTMLDivElement;
   public headerEl: HTMLDivElement;
-  public helpEl: HTMLDivElement;
+  public fallbackInfoEl: HTMLDivElement;
   public resultsEl: HTMLDivElement;
   public pluginControls: HTMLDivElement;
   public config: Config;
@@ -63,15 +64,14 @@ export class Yasr extends EventEmitter {
     this.headerEl = document.createElement("div");
     this.headerEl.className = "yasr_header";
     this.rootEl.appendChild(this.headerEl);
-    this.helpEl = document.createElement("div");
-    this.helpEl.className = "yasr_help";
-    this.rootEl.appendChild(this.helpEl);
+    this.fallbackInfoEl = document.createElement("div");
+    this.fallbackInfoEl.className = "yasr_fallback_info";
+    this.rootEl.appendChild(this.fallbackInfoEl);
     this.resultsEl = document.createElement("div");
     this.resultsEl.className = "yasr_results";
     this.rootEl.appendChild(this.resultsEl);
     this.initializePlugins();
     this.drawHeader();
-    this.drawHelp();
 
     const resp = data || this.getResponseFromStorage();
     if (resp) this.setResponse(resp);
@@ -99,11 +99,14 @@ export class Yasr extends EventEmitter {
   public somethingDrawn() {
     return !!this.resultsEl.children.length;
   }
-  public toggleHelp = () => {
-    this.helpDrawn = !this.helpDrawn;
-    this.drawHelp();
-    this.emit("change", this);
-  };
+  /**
+   * Empties fallback element
+   * CSS will make sure the outline is hidden when empty
+   */
+  public emptyFallbackElement() {
+    // This is quicker than `<node>.innerHtml = ""`
+    while (this.fallbackInfoEl.firstChild) this.fallbackInfoEl.removeChild(this.fallbackInfoEl.firstChild);
+  }
   public getSelectedPluginName(): string {
     return this.selectedPlugin || this.config.defaultPlugin;
   }
@@ -168,11 +171,15 @@ export class Yasr extends EventEmitter {
     var pluginToDraw: string = null;
     if (this.getSelectedPlugin() && this.getSelectedPlugin().canHandleResults()) {
       pluginToDraw = this.getSelectedPluginName();
+      // When present remove fallback box
+      this.emptyFallbackElement();
     } else if (compatiblePlugins[0]) {
       if (this.drawnPlugin && this.plugins[this.drawnPlugin].destroy) {
         this.plugins[this.drawnPlugin].destroy();
       }
       pluginToDraw = compatiblePlugins[0];
+      // Signal to create the plugin+
+      this.fillFallbackBox(pluginToDraw);
     }
     if (pluginToDraw) {
       this.drawnPlugin = pluginToDraw;
@@ -273,16 +280,31 @@ export class Yasr extends EventEmitter {
     if (this.pluginSelectorsEl.children.length >= 1) this.headerEl.appendChild(this.pluginSelectorsEl);
     this.updatePluginSelectors();
   }
-  private drawHelp() {
-    if (this.helpDrawn && this.getSelectedPlugin()) {
-      addClass(this.helpEl, "active");
-      addClass(this.helpButton, "selected");
-      this.helpEl.innerHTML = this.getSelectedPlugin().helpInfo();
-    } else {
-      removeClass(this.helpEl, "active");
-      removeClass(this.helpButton, "selected");
-      this.helpEl.innerHTML = "";
+  private fillFallbackBox(fallbackElement?: string) {
+    this.emptyFallbackElement();
+
+    // Don't draw fallback when plugin is not selectable    if (this.plugins[fallbackElement || this.drawnPlugin].hideFromSelection) return;
+
+    const fallbackPluginLabel =
+      this.plugins[fallbackElement || this.drawnPlugin].label || fallbackElement || this.drawnPlugin;
+    const selectedPluginLabel = this.getSelectedPlugin().label || this.getSelectedPluginName;
+
+    const textElement = document.createElement("p");
+    textElement.innerText = `Could not render results with the ${selectedPluginLabel} plugin, the results currently are rendered with the ${fallbackPluginLabel} plugin. ${
+      this.getSelectedPlugin().helpReference ? "See " : ""
+    }`;
+
+    if (this.getSelectedPlugin().helpReference) {
+      const linkElement = document.createElement("a");
+      linkElement.innerText = `${selectedPluginLabel} documentation`;
+      linkElement.href = this.getSelectedPlugin().helpReference;
+      linkElement.rel = "noopener noreferrer";
+      linkElement.target = "_blank";
+      textElement.append(linkElement);
+      textElement.innerHTML += " for more information.";
     }
+
+    this.fallbackInfoEl.appendChild(textElement);
   }
   private drawPluginElement() {
     const spaceElement = document.createElement("div");
@@ -296,10 +318,10 @@ export class Yasr extends EventEmitter {
 
   private drawHeader() {
     this.drawPluginSelectors();
-    this.drawDownloadIcon();
     this.drawResponseInfo();
     this.drawPluginElement();
-    this.drawHelpButton();
+    this.drawDownloadIcon();
+    this.drawDocumentationButton();
   }
   private stringToBlob(string: string, contentType: string): string {
     if (this.stringToBlobSupported()) {
@@ -348,19 +370,16 @@ export class Yasr extends EventEmitter {
     this.dataElement.innerText = innerText;
   }
   private updateHelpButton() {
-    if (
-      this.getSelectedPlugin() &&
-      (!this.getSelectedPlugin().helpInfo || !this.getSelectedPlugin().canHandleResults())
-    ) {
-      removeClass(this.helpButton, "selected");
-      addClass(this.helpButton, "hidden");
-      if (hasClass(this.helpEl, "active")) removeClass(this.helpEl, "active");
-      this.helpDrawn = false;
+    if (this.getSelectedPlugin().helpReference) {
+      this.documentationButton.href = this.getSelectedPlugin().helpReference;
+      this.documentationButton.title = `View documentation of ${this.getSelectedPlugin().label ||
+        this.getSelectedPluginName()}`;
+      removeClass(this.documentationButton, "disabled");
     } else {
-      removeClass(this.helpButton, "hidden");
+      addClass(this.documentationButton, "disabled");
+      this.documentationButton.title =
+        "This plugin doesn't have a help reference yet. Please contact the maintainer to fix this";
     }
-    this.helpDrawn ? addClass(this.helpButton, "selected") : removeClass(this.helpButton, "selected");
-    this.drawHelp();
   }
   updateExportHeaders() {
     this.downloadBtn.title = "";
@@ -376,19 +395,16 @@ export class Yasr extends EventEmitter {
     this.downloadBtn.title = "Download not supported";
     addClass(this.downloadBtn, "disabled");
   }
-  private helpButton: HTMLDivElement;
-  private drawHelpButton() {
-    this.helpButton = document.createElement("div");
-    addClass(this.helpButton, "yasr_btn", "btn_help");
-    const text = "?";
-    this.helpButton.textContent = text;
-    this.helpButton.onclick = () => {
-      if (hasClass(this.helpButton, "disabled")) return;
-      this.toggleHelp();
-    };
-    this.helpDrawn ? addClass(this.helpButton, "selected") : removeClass(this.helpButton, "selected");
-    this.getSelectedPlugin() && this.getSelectedPlugin().helpInfo ? null : addClass(this.helpButton, "hidden");
-    this.headerEl.appendChild(this.helpButton); // We can do this as long as the help-elemelnt is the last item in the row
+
+  private documentationButton: HTMLAnchorElement;
+  private drawDocumentationButton() {
+    this.documentationButton = document.createElement("a");
+    addClass(this.documentationButton, "yasr_btn", "yasr_external_ref_btn");
+    this.documentationButton.appendChild(drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faQuestionCircle)));
+    this.documentationButton.href = "//triply.cc/docs/yasgui";
+    this.documentationButton.target = "_blank";
+    this.documentationButton.rel = "noopener noreferrer";
+    this.headerEl.appendChild(this.documentationButton); // We can do this as long as the help-element is the last item in the row
   }
   download() {
     const currentPlugin = this.plugins[this.drawnPlugin];

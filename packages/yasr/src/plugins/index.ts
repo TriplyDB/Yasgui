@@ -11,7 +11,7 @@ export interface Plugin<Opts extends any> {
   draw(persistentConfig: any, runtimeConfig?: any): void;
   getIcon(): Element;
   download?(): DownloadInfo;
-  helpInfo?(): string;
+  helpReference?: string;
 }
 export interface DownloadInfo {
   contentType: string;

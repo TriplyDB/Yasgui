@@ -29,6 +29,7 @@ export default class Table implements Plugin<PluginConfig> {
   private yasr: Yasr;
   private tableControls: Element;
   private dataTable: DataTables.Api;
+  public helpReference = "https://triply.cc/docs/yasgui#table";
   public label = "Table";
   public priority = 10;
   public getIcon() {
