@@ -180,10 +180,10 @@ export class Completer extends EventEmitter {
     ) {
       return false;
     }
-    const cur = this.yasqe.getDoc().getCursor();
-    const token: AutocompletionToken = this.yasqe.getCompleteToken();
     const getHints: HintFn = () => {
-      return this.getHints(token).then(list => {
+      return this.getHints(this.yasqe.getCompleteToken()).then(list => {
+        const cur = this.yasqe.getDoc().getCursor();
+        const token: AutocompletionToken = this.yasqe.getCompleteToken();
         const hintResult = {
           list: list,
           from: <Position>{
