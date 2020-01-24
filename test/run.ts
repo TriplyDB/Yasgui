@@ -126,6 +126,27 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
           return window.yasqe.getDoc().getCursor();
         });
       }
+      it("Async autocompletions trickle down when typing", async () => {
+        // Set the new query, and focus on location where we want to autocomplete
+        const cursor = await page.evaluate(() => {
+          const query = `select * where {?x <http://www.opengis.net/ont/geosparql#> ?y}`;
+          window.yasqe.setValue(query);
+          window.yasqe.focus();
+          window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("#> ?y") + 1 });
+          return window.yasqe.getDoc().getCursor();
+        });
+
+        // Issue autocompletion shortcut
+        await issueAutocompletionKeyCombination();
+        // Wait for hint div to appear
+        const allInitialResults = await waitForAutocompletionPopup();
+
+        // Widdle the list down
+        await page.keyboard.type("asWK");
+        const newResults = await waitForAutocompletionPopup(allInitialResults);
+        expect(newResults).is.lessThan(allInitialResults);
+      });
+
       it("Should not append the string we just typed (#1479)", async function() {
         /**
          * Set the new query, and focus on location where we want to autocomplete
