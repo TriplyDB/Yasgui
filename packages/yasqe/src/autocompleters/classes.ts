@@ -25,7 +25,6 @@ var conf: Autocompleter.CompleterConfig = {
   postProcessSuggestion: function(yasqe, token, suggestedString) {
     return Autocompleter.postprocessIriCompletion(yasqe, token, suggestedString);
   },
-  async: true,
   bulk: false,
   name: "class"
 };

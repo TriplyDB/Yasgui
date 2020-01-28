@@ -46,7 +46,6 @@ var conf: autocompleter.CompleterConfig = {
     }
     return vars.sort();
   },
-  async: false,
   bulk: false,
   autoShow: true
 };

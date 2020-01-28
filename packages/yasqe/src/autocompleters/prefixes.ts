@@ -112,7 +112,6 @@ var conf: Autocompleter.CompleterConfig = {
     }
     return token;
   },
-  async: true,
   bulk: true,
   autoShow: true,
   persistenceId: "prefixes",

@@ -5,7 +5,7 @@ import * as path from "path";
 import * as http from "http";
 import * as chai from "chai";
 import { it, describe, before, beforeEach, after, afterEach } from "mocha";
-import * as _ from "lodash";
+import _ from "lodash";
 const expect = chai.expect;
 import Yasqe from "@triply/yasqe";
 //@ts-ignore ignore unused warning
@@ -113,6 +113,36 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       return page.evaluate(() => document.querySelector(".CodeMirror-hints").children.length);
       // return page.waitForFunction(`document.querySelector('.CodeMirror-hints').children.length ${childrenLengthCheck}`);
     }
+    it("Should only trigger get per request", async () => {
+      // Setting up
+      await page.evaluate(() => {
+        const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> select * where {?x rdf:type <htt`;
+        (window as any).showCount = 0;
+        (window as any).hideCount = 0;
+        window.yasqe.setValue(query);
+        window.yasqe.on("autocompletionShown", () => (window as any).showCount++);
+        window.yasqe.on("autocompletionClose", () => (window as any).hideCount++);
+        window.yasqe.focus();
+        window.yasqe.getDoc().setCursor({ line: 0, ch: query.length });
+        return window.yasqe.getDoc().getCursor();
+      });
+      const getHideCount = () =>
+        page.evaluate(() => {
+          return <number>(window as any).hideCount;
+        });
+      const getShowCount = () =>
+        page.evaluate(() => {
+          return <number>(window as any).showCount;
+        });
+      await issueAutocompletionKeyCombination();
+      await waitForAutocompletionPopup();
+      expect(await getShowCount()).to.equal(1);
+      expect(await getHideCount()).to.equal(0);
+      await page.keyboard.type("p://www.");
+      await wait(200);
+      expect(await getShowCount()).to.equal(2);
+      expect(await getHideCount()).to.equal(0);
+    });
     /**
      * This test is tricky, as it uses the LOV API in our test. I.e, if this test fails, first check whether LOV is actually up
      */
@@ -274,6 +304,26 @@ bb
          */
         const allResults = await waitForAutocompletionPopup();
         expect(allResults).to.equal(50);
+      });
+      it("Should not open on its own", async () => {
+        await focusOnAutocompletionPos();
+
+        try {
+          const hasAutocomplete = await page.waitFor(`.CodeMirror-hints`, { timeout: 200 });
+          expect(hasAutocomplete).to.be.undefined("", "Expected codemirror hint to not be there");
+        } catch (e) {
+          // We expect the timeout to trigger here
+          if (e.name !== "TimeoutError") {
+            throw e;
+          }
+        }
+      });
+      it("Should auto open when autocompleter is Async and ontype is enabled", async () => {
+        await page.evaluate(() => {
+          (window.yasqe.autocompleters["class"] as any).config.autoShow = true;
+        });
+        await focusOnAutocompletionPos();
+        const hasAutocomplete = await page.waitFor(`.CodeMirror-hints`);
       });
     });
     describe("Async prefix autocompletion", function() {

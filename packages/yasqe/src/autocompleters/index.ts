@@ -12,7 +12,6 @@ export class CompleterConfig {
   preProcessToken?: (yasqe: Yasqe, token: Token) => AutocompletionToken;
   postProcessSuggestion?: (yasqe: Yasqe, token: AutocompletionToken, suggestedString: string) => string;
   postprocessHints?: (yasqe: Yasqe, hints: Hint[]) => Hint[];
-  async: boolean;
   bulk: boolean;
   autoShow?: boolean;
   persistenceId?: Config["persistenceId"];
@@ -29,6 +28,7 @@ export class Completer extends EventEmitter {
   protected yasqe: Yasqe;
   private trie: Trie;
   private config: CompleterConfig;
+  private active: boolean = false;
   constructor(yasqe: Yasqe, config: CompleterConfig) {
     super();
     this.yasqe = yasqe;
@@ -175,8 +175,7 @@ export class Completer extends EventEmitter {
     if (!this.isValidPosition()) return false;
     if (
       fromAutoShow && // from autoShow, i.e. this gets called each time the editor content changes
-      (!this.config.autoShow || // autoshow for  this particular type of autocompletion is -not- enabled
-        (!this.config.bulk && this.config.async)) // async is enabled (don't want to re-do ajax-like request for every editor change)
+      (!this.config.autoShow || this.active) // Don't show  and don't create a new instance when its already active
     ) {
       return false;
     }
@@ -196,9 +195,11 @@ export class Completer extends EventEmitter {
           }
         };
         CodeMirror.on(hintResult, "shown", () => {
+          this.active = true;
           this.yasqe.emit("autocompletionShown", (this.yasqe as any).state.completionActive.widget);
         });
         CodeMirror.on(hintResult, "close", () => {
+          this.active = false;
           this.yasqe.emit("autocompletionClose");
         });
         return hintResult;
