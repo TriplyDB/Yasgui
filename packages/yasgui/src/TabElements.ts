@@ -166,7 +166,7 @@ export class TabList {
     addClass(this._tabsListEl, "tabsList");
 
     this._tabsListEl.setAttribute("role", "tablist");
-    sortablejs.create(this._tabsListEl, {
+    sortablejs.default.create(this._tabsListEl, {
       group: "tabList",
       animation: 100,
       onUpdate: (_ev: any) => {

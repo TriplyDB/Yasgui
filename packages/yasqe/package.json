@@ -35,18 +35,18 @@
   "dependencies": {
     "@triply/yasgui-utils": "^4.0.94",
     "@types/lodash-es": "^4.17.3",
-    "codemirror": "^5.42.0",
+    "codemirror": "^5.51.0",
     "lodash-es": "^4.17.15",
-    "query-string": "^6.3.0",
-    "superagent": "5.1.0"
+    "query-string": "^6.10.1",
+    "superagent": "5.2.1"
   },
   "peerDependencies": {
     "@triply/yasgui": "4.x"
   },
   "devDependencies": {
-    "@types/codemirror": "0.0.69",
-    "@types/node": "12",
-    "@types/superagent": "^3.8.4",
+    "@types/codemirror": "0.0.84",
+    "@types/node": "13.5.0",
+    "@types/superagent": "^4.1.4",
     "npm-check": "^5.9.0"
   }
 }

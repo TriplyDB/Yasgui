@@ -20,7 +20,7 @@
     "url": "https://github.com/TriplyDB/yasgui.git"
   },
   "dependencies": {
-    "@types/node": "12",
+    "@types/node": "13.5.0",
     "store": "^2.0.12"
   }
 }

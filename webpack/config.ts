@@ -185,6 +185,10 @@ export const genericConfig: webpack.Configuration = {
       },
       {
         test: /\.js$/,
+        exclude: [
+          //Exclude source maps for this package. They are incorrect
+          /node_modules\/column-resizer/g
+        ],
         use: ["source-map-loader"],
         enforce: "pre"
       },
