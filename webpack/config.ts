@@ -13,7 +13,8 @@ import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 export const analyzeBundle = process.env["ANALYZE_BUNDLE"] === "true";
 
-const plugins: webpack.Plugin[] = [
+
+const plugins: any[] = [
   new webpack.DefinePlugin({
     __DEVELOPMENT__: isDev
   })
@@ -96,7 +97,7 @@ if (isDev) {
 } else {
   plugins.push(
     new MiniCssExtractPlugin({
-      moduleFilename: ({ name }) => `${name.toLowerCase()}.min.css`
+      moduleFilename: ({ name }: {name:string}) => `${name.toLowerCase()}.min.css`
     } as any)
   );
 }
@@ -147,7 +148,7 @@ export const genericConfig: webpack.Configuration = {
           {
             loader: "ts-loader",
             options: {
-              configFile: `tsconfig-build.json`
+              configFile: `tsconfig.json`
             }
           }
         ]

@@ -4,7 +4,7 @@
  * 		position tooltip within codemirror frame as much as possible, to avoid z-index issues with external things on page
  * 		use html as content
  */
-import Yasqe from "./";
+import type Yasqe from "./";
 
 export default function tooltip(_yasqe: Yasqe, parent: HTMLDivElement, html: string) {
   var tooltip: HTMLDivElement;

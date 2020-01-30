@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
-import { merge, filter, mapValues, remove } from "lodash-es";
+import { merge, filter, mapValues } from "lodash-es";
 import getDefaults from "./defaults";
-import { Plugin } from "./plugins";
+import type { Plugin } from "./plugins";
 import {
   Storage as YStorage,
   drawFontAwesomeIconAsSvg,
@@ -33,19 +33,19 @@ export interface Yasr {
   emit(event: "toggle-help", instance: Yasr): boolean;
 }
 export class Yasr extends EventEmitter {
-  public results: Parser;
+  public results?: Parser;
   public rootEl: HTMLDivElement;
   public headerEl: HTMLDivElement;
   public fallbackInfoEl: HTMLDivElement;
   public resultsEl: HTMLDivElement;
-  public pluginControls: HTMLDivElement;
+  public pluginControls!: HTMLDivElement;
   public config: Config;
   public storage: YStorage;
   public plugins: { [name: string]: Plugin<any> } = {};
   // private persistentConfig: PersistentConfig;
   public helpDrawn: Boolean = false;
-  private drawnPlugin: string;
-  private selectedPlugin: string;
+  private drawnPlugin: string | undefined;
+  private selectedPlugin: string | undefined;
 
   // Utils
   public utils = { addScript: addScript, addCSS: addCss, sanitize: sanitize };
@@ -79,7 +79,7 @@ export class Yasr extends EventEmitter {
   private getConfigFromStorage() {
     const storageId = this.getStorageId(this.config.persistenceLabelConfig);
     if (storageId) {
-      const persistentConfig: PersistentConfig = this.storage.get(storageId);
+      const persistentConfig: PersistentConfig | undefined = this.storage.get(storageId);
       if (persistentConfig) {
         this.selectedPlugin = persistentConfig.selectedPlugin;
         for (const pluginName in persistentConfig.pluginsConfig) {
@@ -89,9 +89,9 @@ export class Yasr extends EventEmitter {
       }
     }
   }
-  public getStorageId(label: string, getter?: Config["persistenceId"]): string {
+  public getStorageId(label: string, getter?: Config["persistenceId"]): string | undefined {
     const persistenceId = getter || this.config.persistenceId;
-    if (!persistenceId) return undefined;
+    if (!persistenceId) return ;
     if (typeof persistenceId === "string") return persistenceId + "_" + label;
     return persistenceId(this) + "_" + label;
   }
@@ -166,16 +166,16 @@ export class Yasr extends EventEmitter {
       for (var i = length - 1; i >= 0; i--) {
         this.pluginControls.children[i].remove();
       }
-      if (this.plugins[this.drawnPlugin].destroy) this.plugins[this.drawnPlugin].destroy();
+      this.plugins[this.drawnPlugin].destroy?.();
     }
-    var pluginToDraw: string = null;
-    if (this.getSelectedPlugin() && this.getSelectedPlugin().canHandleResults()) {
+    let pluginToDraw: string | undefined;
+    if (this.getSelectedPlugin() && this.getSelectedPlugin()?.canHandleResults()) {
       pluginToDraw = this.getSelectedPluginName();
       // When present remove fallback box
       this.emptyFallbackElement();
     } else if (compatiblePlugins[0]) {
-      if (this.drawnPlugin && this.plugins[this.drawnPlugin].destroy) {
-        this.plugins[this.drawnPlugin].destroy();
+      if (this.drawnPlugin) {
+        this.plugins[this.drawnPlugin].destroy?.();
       }
       pluginToDraw = compatiblePlugins[0];
       // Signal to create the plugin+
@@ -185,19 +185,23 @@ export class Yasr extends EventEmitter {
       this.drawnPlugin = pluginToDraw;
 
       this.emit("draw", this, this.plugins[pluginToDraw]);
-      const initialize: Promise<any> = this.plugins[pluginToDraw].initialize
-        ? this.plugins[pluginToDraw].initialize()
+      const initFn = this.plugins[pluginToDraw].initialize
+      const initialize: Promise<any> = initFn
+        ? initFn()
         : Promise.resolve();
       initialize.then(
         () => {
-          //make sure to clear the innerhtml _here_
-          //otherwise we run into race conditions when draw is executed shortly after each other, and the plugin uses an initialize function
-          //as a result, things can be rendered _twice_
-          this.resultsEl.innerHTML = "";
-          this.plugins[pluginToDraw].draw(this.config.plugins[pluginToDraw].dynamicConfig);
-          this.emit("drawn", this, this.plugins[pluginToDraw]);
-          this.updateExportHeaders();
-          this.updatePluginSelectors(compatiblePlugins);
+          if (pluginToDraw) {
+
+            //make sure to clear the innerhtml _here_
+            //otherwise we run into race conditions when draw is executed shortly after each other, and the plugin uses an initialize function
+            //as a result, things can be rendered _twice_
+            this.resultsEl.innerHTML = "";
+            this.plugins[pluginToDraw].draw(this.config.plugins[pluginToDraw].dynamicConfig);
+            this.emit("drawn", this, this.plugins[pluginToDraw]);
+            this.updateExportHeaders();
+            this.updatePluginSelectors(compatiblePlugins);
+          }
         },
         _e => console.error
       );
@@ -237,7 +241,7 @@ export class Yasr extends EventEmitter {
     this.updatePluginSelectors();
     this.draw();
   }
-  private pluginSelectorsEl: HTMLDivElement;
+  private pluginSelectorsEl!: HTMLDivElement;
   drawPluginSelectors() {
     this.pluginSelectorsEl = document.createElement("div");
     this.pluginSelectorsEl.className = "yasr_btnGroup";
@@ -282,22 +286,20 @@ export class Yasr extends EventEmitter {
   }
   private fillFallbackBox(fallbackElement?: string) {
     this.emptyFallbackElement();
-
-    // Don't draw fallback when plugin is not selectable    if (this.plugins[fallbackElement || this.drawnPlugin].hideFromSelection) return;
-
+    const selectedPlugin = this.getSelectedPlugin()
     const fallbackPluginLabel =
-      this.plugins[fallbackElement || this.drawnPlugin].label || fallbackElement || this.drawnPlugin;
-    const selectedPluginLabel = this.getSelectedPlugin().label || this.getSelectedPluginName;
+      this.plugins[(fallbackElement || this.drawnPlugin) || '']?.label || fallbackElement || this.drawnPlugin;
+    const selectedPluginLabel = selectedPlugin?.label || this.getSelectedPluginName;
 
     const textElement = document.createElement("p");
     textElement.innerText = `Could not render results with the ${selectedPluginLabel} plugin, the results currently are rendered with the ${fallbackPluginLabel} plugin. ${
-      this.getSelectedPlugin().helpReference ? "See " : ""
+      this.getSelectedPlugin()?.helpReference ? "See " : ""
     }`;
 
-    if (this.getSelectedPlugin().helpReference) {
+    if (selectedPlugin?.helpReference) {
       const linkElement = document.createElement("a");
       linkElement.innerText = `${selectedPluginLabel} documentation`;
-      linkElement.href = this.getSelectedPlugin().helpReference;
+      linkElement.href = selectedPlugin.helpReference;
       linkElement.rel = "noopener noreferrer";
       linkElement.target = "_blank";
       textElement.append(linkElement);
@@ -323,7 +325,7 @@ export class Yasr extends EventEmitter {
     this.drawDownloadIcon();
     this.drawDocumentationButton();
   }
-  private stringToBlob(string: string, contentType: string): string {
+  private stringToBlob(string: string, contentType: string): string | undefined{
     if (this.stringToBlobSupported()) {
       var blob = new Blob([string], { type: contentType });
       return window.URL.createObjectURL(blob);
@@ -332,7 +334,7 @@ export class Yasr extends EventEmitter {
   private stringToBlobSupported() {
     return window.URL && Blob;
   }
-  private downloadBtn: HTMLDivElement;
+  private downloadBtn: HTMLDivElement | undefined;
   private drawDownloadIcon() {
     if (!this.stringToBlobSupported()) return;
     this.downloadBtn = document.createElement("div");
@@ -345,7 +347,7 @@ export class Yasr extends EventEmitter {
 
     this.headerEl.appendChild(this.downloadBtn);
   }
-  private dataElement: HTMLDivElement;
+  private dataElement!: HTMLDivElement;
   private drawResponseInfo() {
     this.dataElement = document.createElement("div");
     addClass(this.dataElement, "yasr_response_chip");
@@ -356,12 +358,14 @@ export class Yasr extends EventEmitter {
     var innerText = "";
     if (this.results) {
       removeClass(this.dataElement, "empty");
-      if (this.results.getBindings()) {
-        innerText += `${this.results.getBindings().length} result${this.results.getBindings().length === 1 ? "" : "s"}`; // Set amount of results
+      const bindings = this.results.getBindings()
+      if (bindings) {
+        innerText += `${bindings.length} result${bindings.length === 1 ? "" : "s"}`; // Set amount of results
       }
-      if (this.results.getResponseTime()) {
+      const responseTime = this.results.getResponseTime()
+      if (responseTime) {
         if (!innerText) innerText = "Response";
-        const time = this.results.getResponseTime() / 1000;
+        const time = responseTime / 1000;
         innerText += ` in ${time} second${time === 1 ? "" : "s"}`;
       }
     } else {
@@ -370,9 +374,10 @@ export class Yasr extends EventEmitter {
     this.dataElement.innerText = innerText;
   }
   private updateHelpButton() {
-    if (this.getSelectedPlugin().helpReference) {
-      this.documentationButton.href = this.getSelectedPlugin().helpReference;
-      this.documentationButton.title = `View documentation of ${this.getSelectedPlugin().label ||
+    const selectedPlugin = this.getSelectedPlugin()
+    if (selectedPlugin?.helpReference) {
+      this.documentationButton.href = selectedPlugin.helpReference;
+      this.documentationButton.title = `View documentation of ${selectedPlugin.label ||
         this.getSelectedPluginName()}`;
       removeClass(this.documentationButton, "disabled");
     } else {
@@ -382,6 +387,8 @@ export class Yasr extends EventEmitter {
     }
   }
   updateExportHeaders() {
+    if (this.downloadBtn && this.drawnPlugin) {
+
     this.downloadBtn.title = "";
     const plugin = this.plugins[this.drawnPlugin];
     if (plugin && plugin.download) {
@@ -395,8 +402,9 @@ export class Yasr extends EventEmitter {
     this.downloadBtn.title = "Download not supported";
     addClass(this.downloadBtn, "disabled");
   }
+  }
 
-  private documentationButton: HTMLAnchorElement;
+  private documentationButton!: HTMLAnchorElement;
   private drawDocumentationButton() {
     this.documentationButton = document.createElement("a");
     addClass(this.documentationButton, "yasr_btn", "yasr_external_ref_btn");
@@ -407,6 +415,7 @@ export class Yasr extends EventEmitter {
     this.headerEl.appendChild(this.documentationButton); // We can do this as long as the help-element is the last item in the row
   }
   download() {
+    if (!this.drawnPlugin) return
     const currentPlugin = this.plugins[this.drawnPlugin];
     if (currentPlugin && currentPlugin.download) {
       const downloadInfo = currentPlugin.download();
@@ -415,21 +424,22 @@ export class Yasr extends EventEmitter {
         downloadInfo.getData(),
         downloadInfo.contentType ? downloadInfo.contentType : "text/plain"
       );
-
-      const mockLink = document.createElement("a");
-      mockLink.href = downloadUrl;
-      mockLink.download = downloadInfo.filename;
-
-      //simulate click
-      if (document.dispatchEvent) {
-        // W3C
-        const oEvent = document.createEvent("MouseEvents");
-        oEvent.initMouseEvent("click", true, true, window, 1, 1, 1, 1, 1, false, false, false, false, 0, mockLink);
-        mockLink.dispatchEvent(oEvent);
-      } else if ((<any>document).fireEvent) {
-        // IE
-        mockLink.click();
+      if (downloadUrl) {
+        const mockLink = document.createElement("a");
+        mockLink.href = downloadUrl;
+        mockLink.download = downloadInfo.filename;
+        //simulate click
+        if (document.dispatchEvent as any) {
+          // W3C
+          const oEvent = document.createEvent("MouseEvents");
+          oEvent.initMouseEvent("click", true, true, window, 1, 1, 1, 1, 1, false, false, false, false, 0, mockLink);
+          mockLink.dispatchEvent(oEvent);
+        } else if ((<any>document).fireEvent) {
+          // IE
+          mockLink.click();
+        }
       }
+
     }
   }
 
@@ -469,7 +479,7 @@ export class Yasr extends EventEmitter {
   }
   private storeResponse() {
     const storageId = this.getStorageId(this.config.persistenceLabelResponse);
-    if (storageId) {
+    if (storageId && this.results) {
       const storeObj = this.results.getAsStoreObject(this.config.maxPersistentResponseSize);
       if (storeObj && !storeObj.error) {
         this.storage.set(storageId, storeObj, this.config.persistencyExpire, this.handleLocalStorageQuotaFull);
@@ -533,7 +543,7 @@ export interface Config {
   persistenceLabelConfig: string;
   maxPersistentResponseSize: number;
   persistencyExpire: number;
-  getPlainQueryLinkToEndpoint: () => string;
+  getPlainQueryLinkToEndpoint: (() => string | undefined) | undefined;
   plugins: { [pluginName: string]: PluginConfig };
   pluginOrder: string[];
   defaultPlugin: string;

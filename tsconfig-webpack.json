@@ -5,7 +5,8 @@
     "module": "commonjs",
     "rootDir": "./webpack",
     "incremental": true,
-    "composite": true
+    "composite": true,
+    "strict": false
   },
   "files": [
     "./webpack/config.ts"

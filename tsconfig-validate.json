@@ -1,10 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "declaration": true,
-    "noImplicitAny": true,
-    "noImplicitThis": false,
-    "noUnusedLocals": false
-  },
-  "outDir": "./build/ts"
+    "noUnusedLocals": false,
+    "noEmit": true
+  }
 }

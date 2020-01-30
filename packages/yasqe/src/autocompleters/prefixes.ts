@@ -1,4 +1,4 @@
-import * as Autocompleter from "./";
+import type * as Autocompleter from "./";
 import { sortBy } from "lodash-es";
 var tokenTypes: { [id: string]: "prefixed" | "var" } = {
   "string-2": "prefixed",
@@ -21,7 +21,7 @@ var conf: Autocompleter.CompleterConfig = {
       var cur = yasqe.getDoc().getCursor();
 
       var token: Autocompleter.AutocompletionToken = yasqe.getTokenAt(cur);
-      if (tokenTypes[token.type] == "prefixed") {
+      if (token.type && tokenTypes[token.type] == "prefixed") {
         var colonIndex = token.string.indexOf(":");
         if (colonIndex !== -1) {
           // check previous token isnt PREFIX, or a '<'(which would mean we are in a uri)
@@ -48,7 +48,7 @@ var conf: Autocompleter.CompleterConfig = {
               // ok, so it isn't added yet!
               // var completions = yasqe.autocompleters.getTrie(completerName).autoComplete(currentPrefix);
               token.autocompletionString = currentPrefix;
-              yasqe.autocompleters[this.name].getCompletions(token).then(suggestions => {
+              yasqe.autocompleters[this.name]?.getCompletions(token).then(suggestions => {
                 if (suggestions.length) {
                   yasqe.addPrefixes(suggestions[0]);
                   // Re-activate auto-completer after adding prefixes, so another auto-completer can kick in

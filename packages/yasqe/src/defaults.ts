@@ -4,7 +4,7 @@
  * keys). Either change the default options by setting Yasqe.defaults, or by
  * passing your own options as second argument to the YASQE constructor
  */
-import { default as Yasqe, Config, PlainRequestConfig } from "./";
+import type { default as Yasqe, Config, PlainRequestConfig } from "./";
 import * as queryString from "query-string";
 //need to pass Yasqe object as argument, as the imported version might not have inherited all (e.g. `fold`) props of Codemirror yet
 export default function get() {
@@ -95,9 +95,9 @@ SELECT * WHERE {
         queryString.stringify(yasqe.configToQueryParams())
       );
     },
-    pluginButtons: null,
+    pluginButtons: undefined,
 
-    createShortLink: null,
+    createShortLink: undefined,
 
     consumeShareLink: function(yasqe: Yasqe) {
       yasqe.queryParamsToConfig(yasqe.getUrlParams());
@@ -105,8 +105,8 @@ SELECT * WHERE {
     persistenceId: function(yasqe: Yasqe) {
       //Traverse parents untl we've got an id
       // Get matching parent elements
-      var id = "";
-      var elem = <Node>yasqe.rootEl;
+      let id = "";
+      let elem:any = yasqe.rootEl;
       if ((<any>elem).id) id = (<any>elem).id;
       for (; elem && elem !== <any>document; elem = elem.parentNode) {
         if (elem) {
@@ -127,7 +127,7 @@ SELECT * WHERE {
     queryingDisabled: undefined
   };
   const requestConfig:PlainRequestConfig =  {
-    queryArgument: undefined, //undefined means: get query argument by getting the query mode
+    queryArgument: undefined, //undefined means: get query argument based on query mode
     endpoint: "https://dbpedia.org/sparql",
     method: "POST",
     acceptHeaderGraph: "text/turtle,*/*;q=0.9",
@@ -138,7 +138,7 @@ SELECT * WHERE {
     args: [],
     headers: {},
     withCredentials: false,
-    adjustQueryBeforeRequest: undefined
+    adjustQueryBeforeRequest: false
   }
   return {...config, requestConfig}
 }

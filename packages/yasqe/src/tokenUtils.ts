@@ -7,12 +7,12 @@ import { default as Yasqe, Token, Position } from "./";
  * these
  */
 
-export function getCompleteToken(yasqe: Yasqe, token: Token, cur: Position): Token {
+export function getCompleteToken(yasqe: Yasqe, token?: Token, cur?: Position): Token {
   if (!cur) {
-    cur = yasqe.getDoc().getCursor();
+    cur = yasqe.getDoc().getCursor() as Position;
   }
   if (!token) {
-    token = yasqe.getTokenAt(cur);
+    token = yasqe.getTokenAt(cur) as Token;
   }
 
   return expandTokenToEnd(yasqe, expandTokenToStart(yasqe, token, cur), cur);
@@ -101,14 +101,14 @@ export function getPreviousNonWsToken(yasqe: Yasqe, line: number, token: Token):
   }
   return previousToken;
 }
-export function getNextNonWsToken(yasqe: Yasqe, lineNumber: number, charNumber: number): Token {
+export function getNextNonWsToken(yasqe: Yasqe, lineNumber: number, charNumber?: number): Token | undefined{
   if (charNumber == undefined) charNumber = 1;
   var token = yasqe.getTokenAt({
     line: lineNumber,
     ch: charNumber
   });
   if (token == null || token == undefined || token.end < charNumber) {
-    return null;
+    return undefined;
   }
   if (token.type == "ws") {
     return getNextNonWsToken(yasqe, lineNumber, token.end + 1);

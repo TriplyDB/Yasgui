@@ -1,12 +1,12 @@
 /**
  * Make sure not to include any deps from our main index file. That way, we can easily publish the publin as standalone build
  */
-import { Plugin } from "../";
-import Yasr from "../../";
+import type { Plugin } from "../";
+import type Yasr from "../../";
 import Parser from "../../parsers";
 require("./index.scss");
 export interface PluginConfig {
-  renderError?: (error: Parser.ErrorSummary) => HTMLElement;
+  renderError?: (error: Parser.ErrorSummary ) => HTMLElement;
 }
 
 export default class Error implements Plugin<PluginConfig> {
@@ -17,7 +17,7 @@ export default class Error implements Plugin<PluginConfig> {
     this.options = Error.defaults;
   }
   canHandleResults() {
-    return this.yasr.results && !!this.yasr.results.getError();
+    return !!this.yasr.results && !!this.yasr.results.getError();
   }
   private getTryBtn(link: string) {
     const tryBtn = document.createElement("a");
@@ -64,12 +64,14 @@ export default class Error implements Plugin<PluginConfig> {
     el.className = "errorResult";
     this.yasr.resultsEl.appendChild(el);
 
-    const error = this.yasr.results.getError();
+    const error = this.yasr.results?.getError();
+    if (!error) return;
     const header = document.createElement("div");
     header.className = "errorHeader";
     el.appendChild(header);
-    if (this.options.renderError) {
-      const newMessage = this.options.renderError(error);
+    const renderError = this.options.renderError
+    if (renderError) {
+      const newMessage = renderError(error);
       if (newMessage) {
         const customMessage = document.createElement("div");
         customMessage.className = "redOutline";
@@ -92,7 +94,8 @@ export default class Error implements Plugin<PluginConfig> {
 
       header.appendChild(statusTextEl);
       if (this.yasr.config.getPlainQueryLinkToEndpoint) {
-        header.appendChild(this.getTryBtn(this.yasr.config.getPlainQueryLinkToEndpoint()));
+        const link  = this.yasr.config.getPlainQueryLinkToEndpoint()
+        if (link) header.appendChild(this.getTryBtn(link));
       }
 
       if (error.text) {
@@ -102,35 +105,11 @@ export default class Error implements Plugin<PluginConfig> {
       }
     } else {
       if (this.yasr.config.getPlainQueryLinkToEndpoint) {
-        header.appendChild(this.getTryBtn(this.yasr.config.getPlainQueryLinkToEndpoint()));
+        const link  = this.yasr.config.getPlainQueryLinkToEndpoint()
+        if (link) header.appendChild(this.getTryBtn(link));
       }
       el.appendChild(this.getCorsMessage());
     }
-    //
-    //   $header
-    //     .append(
-    //       $("<span>", {
-    //         class: "exception"
-    //       }).text(statusText)
-    //     )
-    //     .append(getTryBtn());
-    //
-    //   var responseText = null;
-    //   if (error.responseText) {
-    //     responseText = error.responseText;
-    //   } else if (typeof error == "string") {
-    //     //for backwards compatability (when creating the error string was done externally
-    //     responseText = error;
-    //   }
-    //   if (responseText) $container.append($("<pre>").text(responseText));
-    // } else {
-    //   $header.append(getTryBtn());
-    //   //cors disabled, wrong url, or endpoint down
-    //   $container.append(
-    //     $("<div>", {
-    //       class: "corsMessage"
-    //     }).append(options.corsMessage)
-    //   );
   }
   getIcon() {
     return document.createElement("");

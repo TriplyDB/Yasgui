@@ -1,4 +1,4 @@
-import { default as Yasqe, Token } from "./";
+import type { default as Yasqe, Token } from "./";
 export type Prefixes = { [prefixLabel: string]: string };
 export function addPrefixes(yasqe: Yasqe, prefixes: string | Prefixes) {
   var existingPrefixes = yasqe.getPrefixesFromQuery();

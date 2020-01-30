@@ -8,8 +8,8 @@ require("datatables.net");
 import $ from "jquery";
 import Parser from "../../parsers";
 import { escape } from "lodash-es";
-import { Plugin, DownloadInfo } from "../";
-import Yasr from "../../";
+import type { Plugin, DownloadInfo } from "../";
+import  type Yasr from "../../";
 import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg } from "@triply/yasgui-utils";
 import * as faTableIcon from "@fortawesome/free-solid-svg-icons/faTable";
 
@@ -27,8 +27,8 @@ export default class Table implements Plugin<PluginConfig> {
   private config: PluginConfig;
   private persistentConfig: PersistentConfig = {};
   private yasr: Yasr;
-  private tableControls: Element;
-  private dataTable: DataTables.Api;
+  private tableControls: Element | undefined;
+  private dataTable: DataTables.Api | undefined;
   public helpReference = "https://triply.cc/docs/yasgui#table";
   public label = "Table";
   public priority = 10;
@@ -45,7 +45,10 @@ export default class Table implements Plugin<PluginConfig> {
   };
   private getRows(): string[][] {
     const rows: string[][] = [];
+
+    if (!this.yasr.results) return [];
     const bindings = this.yasr.results.getBindings();
+    if (!bindings) return rows
     const vars = this.yasr.results.getVariables();
     const prefixes = this.yasr.getPrefixes();
     for (let rowId = 0; rowId < bindings.length; rowId++) {
@@ -64,7 +67,7 @@ export default class Table implements Plugin<PluginConfig> {
     return rows;
   }
 
-  private getUriLinkFromBinding(binding: Parser.BindingValue, prefixes: { [key: string]: string }) {
+  private getUriLinkFromBinding(binding: Parser.BindingValue, prefixes?: { [key: string]: string }) {
     const href = binding.value;
     let visibleString = href;
     let prefixed = false;
@@ -91,7 +94,7 @@ export default class Table implements Plugin<PluginConfig> {
     }
     return "<div>" + content + "</div>";
   }
-  private formatLiteral(literalBinding: any, prefixes: { [key: string]: string }) {
+  private formatLiteral(literalBinding: any, prefixes?: { [key: string]: string }) {
     let stringRepresentation = escape(literalBinding.value);
     if (literalBinding["xml:lang"]) {
       stringRepresentation = `"${stringRepresentation}"<sup>@${literalBinding["xml:lang"]}</sup>`;
@@ -102,15 +105,16 @@ export default class Table implements Plugin<PluginConfig> {
     return stringRepresentation;
   }
   private getColumns() {
+    if (!this.yasr.results) return []
     return [
       { name: "", searchable: false, width: this.getSizeFirstColumn(), sortable: false }, //prepend with row numbers column
-      ...this.yasr.results.getVariables().map(name => {
+      ...this.yasr.results?.getVariables().map(name => {
         return { name: name, title: name };
       })
     ];
   }
   private getSizeFirstColumn() {
-    const numResults = this.yasr.results.getBindings().length;
+    const numResults = this.yasr.results?.getBindings()?.length || 0;
     if (numResults > 999) {
       return "30px";
     } else if (numResults > 99) {
@@ -201,17 +205,16 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableControls.appendChild(pageSizerWrapper);
     this.yasr.pluginControls.appendChild(this.tableControls);
   }
-  download(): DownloadInfo {
-    if (!this.yasr.results) return;
+  download()  {
     return {
-      getData: () => this.yasr.results.asCsv(),
+      getData: () => this.yasr.results?.asCsv() || '',
       contentType: "text/csv",
       title: "Download result",
       filename: "queryResults.csv"
-    };
+    } as DownloadInfo;
   }
 
   public canHandleResults() {
-    return this.yasr.results && this.yasr.results.getVariables() && this.yasr.results.getVariables().length > 0;
+    return !!this.yasr.results && this.yasr.results.getVariables() && this.yasr.results.getVariables().length > 0;
   }
 }

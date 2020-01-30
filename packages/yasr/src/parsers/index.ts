@@ -57,12 +57,12 @@ const applyMustacheToLiterals: Parser.PostProcessBinding = (binding: Parser.Bind
 };
 
 class Parser {
-  private res: SuperAgent.Response;
-  private summary: Parser.ResponseSummary;
-  private errorSummary: Parser.ErrorSummary;
+  private res: SuperAgent.Response | undefined;
+  private summary: Parser.ResponseSummary | undefined;
+  private errorSummary: Parser.ErrorSummary | undefined;
   private error: any;
-  private type: "json" | "xml" | "csv" | "tsv" | "ttl";
-  private executionTime: number;
+  private type: "json" | "xml" | "csv" | "tsv" | "ttl" | undefined;
+  private executionTime: number | undefined;
   // private contentType: string;
   constructor(responseOrObject: Parser.ResponseSummary | SuperAgent.Response | Error | any, executionTime?: number) {
     if (responseOrObject.executionTime) this.executionTime = responseOrObject.executionTime;
@@ -129,7 +129,7 @@ class Parser {
     if (this.res) return this.res.header["content-type"];
     if (this.summary) return this.summary.contentType;
   }
-  private json: false | Parser.SparqlResults;
+  private json: false | Parser.SparqlResults | undefined;
   getAsJson() {
     if (this.json) return this.json;
     if (this.json === false || this.hasError()) return; //already tried parsing this, and failed. do not try again...
@@ -138,7 +138,6 @@ class Parser {
 
     if (!this.json) this.json = false; //explicitly set to false, so we don't try to parse this thing again..
     return this.json;
-    // return
   }
   private getData(): any {
     if (this.res) {
@@ -208,12 +207,11 @@ class Parser {
 
   public getVariables(): string[] {
     var json = this.getAsJson();
-    if (json && json.head) {
-      return json.head.vars;
-    }
+    if (json && json.head) return json.head.vars
+    return []
   }
 
-  public getBoolean(): boolean {
+  public getBoolean(): boolean | undefined {
     var json = this.getAsJson();
     if (json && "boolean" in json) {
       return json.boolean;
@@ -239,14 +237,14 @@ class Parser {
   }
 
   getOriginalResponse() {
-    return this.res.body;
+    return this.res?.body;
   }
 
   getType() {
     if (!this.type) this.getAsJson(); //detects type as well
     return this.type;
   }
-  getStatus(): number {
+  getStatus(): number  | undefined{
     if (this.res) return this.res.status;
     if (this.summary) return this.summary.status;
   }
@@ -254,7 +252,7 @@ class Parser {
   //process the input parameters in such a way that we can store it in local storage (i.e., no function)
   //and, make sure we can easily pass it on back to this wrapper function when loading it again from storage
   //When an object is too large to store, this method returns undefined
-  public getAsStoreObject(maxResponseSize: number): Parser.ResponseSummary {
+  public getAsStoreObject(maxResponseSize: number): Parser.ResponseSummary | undefined {
     var summary = this.summary;
     if (!summary && this.res) {
       summary = {

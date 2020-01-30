@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import { addClass, removeClass, getAsValue } from "@triply/yasgui-utils";
-import { TabListEl } from "./TabElements";
+import type { TabListEl } from "./TabElements";
 import TabPanel from "./TabPanel";
 import { default as Yasqe, RequestConfig, PlainRequestConfig, Config as YasqeConfig } from "@triply/yasqe";
 import { default as Yasr, Parser, Config as YasrConfig, PersistentConfig as YasrPersistentConfig } from "@triply/yasr";
@@ -22,7 +22,7 @@ export interface PersistedJson {
   };
   yasr: {
     settings: YasrPersistentConfig;
-    response: Parser.ResponseSummary;
+    response: Parser.ResponseSummary | undefined;
   };
   requestConfig: RequestConfig<Yasgui>;
 }
@@ -49,13 +49,13 @@ export interface Tab {
 export class Tab extends EventEmitter {
   private persistentJson: PersistedJson;
   public yasgui: Yasgui;
-  private yasqe: Yasqe;
-  private yasr: Yasr;
-  private rootEl: HTMLDivElement;
-  private controlBarEl: HTMLDivElement;
-  private yasqeWrapperEl: HTMLDivElement;
-  private yasrWrapperEl: HTMLDivElement;
-  private endpointSelect: EndpointSelect;
+  private yasqe: Yasqe | undefined;
+  private yasr: Yasr | undefined;
+  private rootEl: HTMLDivElement | undefined;
+  private controlBarEl: HTMLDivElement | undefined;
+  private yasqeWrapperEl: HTMLDivElement | undefined;
+  private yasrWrapperEl: HTMLDivElement | undefined;
+  private endpointSelect: EndpointSelect | undefined;
   constructor(yasgui: Yasgui, conf: PersistedJson) {
     super();
     if (!conf || conf.id === undefined) throw new Error("Expected a valid configuration to initialize tab with");
@@ -71,8 +71,8 @@ export class Tab extends EventEmitter {
   public getId() {
     return this.persistentJson.id;
   }
-  public draw() {
-    if (this.rootEl) return;
+  private draw() {
+    if (this.rootEl) return;//aready drawn
     this.rootEl = document.createElement("div");
     this.rootEl.className = "tabPanel";
     const wrapper = document.createElement("div");
@@ -135,9 +135,15 @@ export class Tab extends EventEmitter {
     delete this.yasgui._tabs[this.persistentJson.id];
   }
   public getQuery() {
-    return this.yasqe.getValue();
+    if (!this.yasqe) {
+      throw new Error("Cannot get value from uninitialized editor");
+    }
+    return this.yasqe?.getValue();
   }
   public setQuery(query: string) {
+    if (!this.yasqe) {
+      throw new Error("Cannot set value for uninitialized editor");
+    }
     this.yasqe.setValue(query);
     this.persistentJson.yasqe.value = query;
     this.emit("change", this, this.persistentJson);
@@ -148,7 +154,7 @@ export class Tab extends EventEmitter {
   }
   private initControlbar() {
     this.initEndpointSelectField();
-    if (this.yasgui.config.endpointInfo) {
+    if (this.yasgui.config.endpointInfo && this.controlBarEl) {
       this.controlBarEl.appendChild(this.yasgui.config.endpointInfo());
     }
   }
@@ -159,20 +165,24 @@ export class Tab extends EventEmitter {
     return this.yasr;
   }
   private initTabSettingsMenu() {
+    if (!this.rootEl || !this.controlBarEl)
+      throw new Error("Need to initialize wrapper elements before drawing tab pabel");
     new TabPanel(this, this.rootEl, this.controlBarEl);
   }
 
   private initEndpointSelectField() {
-    this.endpointSelect = new EndpointSelect(
+    if ( !this.controlBarEl)
+      throw new Error("Need to initialize wrapper elements before drawing endpoint field");
+    const endpointSelect = this.endpointSelect = new EndpointSelect(
       this.getEndpoint(),
       this.controlBarEl,
       this.yasgui.config.endpointCatalogueOptions,
       this.yasgui.persistentConfig.getEndpointHistory()
     );
-    this.endpointSelect.on("select", (endpoint, endpointHistory) => {
+    endpointSelect.on("select", (endpoint, endpointHistory) => {
       this.setEndpoint(endpoint, endpointHistory);
     });
-    this.endpointSelect.on("remove", (endpoint, endpointHistory) => {
+    endpointSelect.on("remove", (endpoint, endpointHistory) => {
       this.setEndpoint(endpoint, endpointHistory);
     });
   }
@@ -237,13 +247,14 @@ export class Tab extends EventEmitter {
     return this;
   }
   public hasResults() {
-    return !!this.yasr.results;
+    return !!this.yasr?.results;
   }
 
   public getName() {
     return this.persistentJson.name;
   }
   public query(): Promise<any> {
+    if (!this.yasqe) return Promise.reject(new Error("No yasqe editor initialized"))
     return this.yasqe.query();
   }
   public setRequestConfig(requestConfig: Partial<RequestConfig<Yasgui>>) {
@@ -281,15 +292,15 @@ export class Tab extends EventEmitter {
       ...this.yasgui.config.yasqe,
       value: this.persistentJson.yasqe.value,
       editorHeight: this.persistentJson.yasqe.editorHeight ? this.persistentJson.yasqe.editorHeight : undefined,
-      persistenceId: null, //yasgui handles persistent storing
-      consumeShareLink: null, //not handled by this tab, but by parent yasgui instance
+      persistenceId: undefined, //yasgui handles persistent storing
+      consumeShareLink: undefined, //not handled by this tab, but by parent yasgui instance
       createShareableLink: () => this.getShareableLink(),
       requestConfig: () => {
         const processedReqConfig: RequestConfig<Yasgui> = {
           //setting defaults
           acceptHeaderGraph: "text/turtle",
           acceptHeaderSelect: "application/sparql-results+json",
-          ...mergeWith({},this.persistentJson.requestConfig, this.getStaticRequestConfig(), function customizer(
+          ...mergeWith({}, this.persistentJson.requestConfig, this.getStaticRequestConfig(), function customizer(
             objValue,
             srcValue
           ) {
@@ -313,18 +324,25 @@ export class Tab extends EventEmitter {
         return processedReqConfig as PlainRequestConfig;
       }
     };
-    if (!yasqeConf.hintConfig.container) yasqeConf.hintConfig.container = this.yasgui.rootEl;
-
+    if (!yasqeConf.hintConfig) {
+      yasqeConf.hintConfig = {};
+    }
+    if (!yasqeConf.hintConfig.container) {
+      yasqeConf.hintConfig.container = this.yasgui.rootEl;
+    }
+    if (!this.yasqeWrapperEl) {
+      throw new Error("Expected a wrapper element before instantiating yasqe")
+    }
     this.yasqe = new Yasqe(this.yasqeWrapperEl, yasqeConf);
 
     this.yasqe.on("blur", yasqe => {
       this.persistentJson.yasqe.value = yasqe.getValue();
       this.emit("change", this, this.persistentJson);
     });
-    this.yasqe.on("query", () => {
+    this.yasqe.on("query", (yasqe) => {
       //the blur event might not have fired (e.g. when pressing ctrl-enter). So, we'd like to persist the query as well if needed
-      if (this.yasqe.getValue() !== this.persistentJson.yasqe.value) {
-        this.persistentJson.yasqe.value = this.yasqe.getValue();
+      if (yasqe.getValue() !== this.persistentJson.yasqe.value) {
+        this.persistentJson.yasqe.value = yasqe.getValue();
         this.emit("change", this, this.persistentJson);
       }
       this.emit("query", this);
@@ -346,7 +364,9 @@ export class Tab extends EventEmitter {
 
     this.yasqe.on("queryResponse", (_yasqe: Yasqe, response: any, duration: number) => {
       this.emit("queryResponse", this);
+      if (!this.yasr) throw new Error("Resultset visualizer not initialized. Cannot draw results")
       this.yasr.setResponse(response, duration);
+      if (!this.yasr.results) return
       if (!this.yasr.results.hasError()) {
         this.persistentJson.yasr.response = this.yasr.results.getAsStoreObject(
           this.yasgui.config.yasr.maxPersistentResponseSize
@@ -366,15 +386,20 @@ export class Tab extends EventEmitter {
     });
   }
   private initYasr() {
+    if (!this.yasrWrapperEl) throw new Error('Wrapper for yasr does not exist')
     const yasrConf: Partial<YasrConfig> = {
-      persistenceId: null, //yasgui handles persistent storing
-      prefixes: () => this.yasqe.getPrefixesFromQuery(),
+      persistenceId: undefined, //yasgui handles persistent storing
+      prefixes: () => this.yasqe?.getPrefixesFromQuery() || {},
       defaultPlugin: this.persistentJson.yasr.settings.selectedPlugin,
-      getPlainQueryLinkToEndpoint: () =>
-        shareLink.appendArgsToUrl(
-          this.getEndpoint(),
-          Yasqe.Sparql.getUrlArguments(this.yasqe, this.persistentJson.requestConfig as RequestConfig<any>)
-        ),
+      getPlainQueryLinkToEndpoint: () => {
+        if (this.yasqe) {
+
+          return shareLink.appendArgsToUrl(
+            this.getEndpoint(),
+            Yasqe.Sparql.getUrlArguments(this.yasqe, this.persistentJson.requestConfig as RequestConfig<any>)
+          )
+        }
+      },
       plugins: mapValues(this.persistentJson.yasr.settings.pluginsConfig, conf => ({
         dynamicConfig: conf
       }))
@@ -410,7 +435,10 @@ export class Tab extends EventEmitter {
     //populate our own persistent config
     this.persistentJson.yasr.settings = this.yasr.getPersistentConfig();
     this.yasr.on("change", () => {
-      this.persistentJson.yasr.settings = this.yasr.getPersistentConfig();
+      if (this.yasr) {
+
+        this.persistentJson.yasr.settings = this.yasr.getPersistentConfig();
+      }
 
       this.emit("change", this, this.persistentJson);
     });

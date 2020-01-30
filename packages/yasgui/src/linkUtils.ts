@@ -2,8 +2,8 @@ const JsUri = require("jsuri");
 
 import { default as Tab, PersistedJson } from "./Tab";
 import Yasr from "@triply/yasr";
-import { PlainRequestConfig } from "@triply/yasqe";
-import {getAsValue} from "@triply/yasgui-utils"
+import type { PlainRequestConfig } from "@triply/yasqe";
+import { getAsValue } from "@triply/yasgui-utils";
 var getUrlParams = function(_url?: string) {
   var urlFromWindow = false;
   if (!_url) {
@@ -47,7 +47,7 @@ export function createShareLink(forUrl: string, tab: Tab) {
     } else if (key === "defaultGraphs") {
       configObject.defaultGraphs.forEach(dg => tmpUrl.addQueryParam("defaultGraph", dg));
     } else if (key === "args") {
-      const args = getAsValue(configObject.args, tab.yasgui)
+      const args = getAsValue(configObject.args, tab.yasgui);
       args.forEach(arg => tmpUrl.addQueryParam(arg.name, arg.value));
     } else if (typeof configObject[key] === "object") {
       if (configObject[key]) tmpUrl.addQueryParam(key, JSON.stringify(configObject[key]));
@@ -81,7 +81,7 @@ export type ShareConfigObject = {
   args: PlainRequestConfig["args"];
   namedGraphs: PlainRequestConfig["namedGraphs"];
   defaultGraphs: PlainRequestConfig["defaultGraphs"];
-  outputFormat: string;
+  outputFormat?: string;
   outputSettings: any;
 };
 
@@ -97,16 +97,18 @@ export function createShareConfig(tab: Tab): ShareConfigObject {
     // headers: isFunction(requestConfig.headers) ? requestConfig.headers(tab.yasgui) : requestConfig.headers,
     headers: getAsValue(requestConfig.headers, yasgui),
     contentTypeConstruct: getAsValue(requestConfig.acceptHeaderGraph, yasgui),
-    contentTypeSelect: getAsValue(requestConfig.acceptHeaderSelect,yasgui),
-    args: getAsValue(requestConfig.args,yasgui),
-    namedGraphs: getAsValue(requestConfig.namedGraphs,yasgui),
-    defaultGraphs: getAsValue(requestConfig.defaultGraphs,yasgui),
+    contentTypeSelect: getAsValue(requestConfig.acceptHeaderSelect, yasgui),
+    args: getAsValue(requestConfig.args, yasgui),
+    namedGraphs: getAsValue(requestConfig.namedGraphs, yasgui),
+    defaultGraphs: getAsValue(requestConfig.defaultGraphs, yasgui),
     outputFormat: yasrPersistentSetting.selectedPlugin,
-    outputSettings: yasrPersistentSetting.pluginsConfig[yasrPersistentSetting.selectedPlugin]
+    outputSettings: yasrPersistentSetting.pluginsConfig && yasrPersistentSetting.selectedPlugin
+      ? yasrPersistentSetting.pluginsConfig[yasrPersistentSetting.selectedPlugin]
+      : undefined
   };
 }
 
-export function getConfigFromUrl(defaults: PersistedJson, _url?: string): PersistedJson {
+export function getConfigFromUrl(defaults: PersistedJson, _url?: string): PersistedJson | undefined {
   const options = defaults;
 
   var url = getUrlParams(_url);
@@ -152,13 +154,11 @@ export function getConfigFromUrl(defaults: PersistedJson, _url?: string): Persis
   });
   //Only know where to store the plugins config after we've saved the selected plugin
   //i.e., do this after the previous loop
-  if (pluginsConfig && options.yasr.settings.selectedPlugin) {
+  if (pluginsConfig && options.yasr.settings.selectedPlugin && options.yasr.settings.pluginsConfig) {
     options.yasr.settings.pluginsConfig[options.yasr.settings.selectedPlugin] = pluginsConfig;
   }
   if (hasQuery) {
     return options;
-  } else {
-    return null;
   }
 }
 
@@ -199,7 +199,7 @@ export function queryCatalogConfigToTabConfig<Q extends QueryCatalogConfig>(
       }
     }
     if (catalogConfig.renderConfig.settings) {
-      if (Yasr.plugins[catalogConfig.renderConfig.output]) {
+      if (Yasr.plugins[catalogConfig.renderConfig.output] && options.yasr.settings.pluginsConfig) {
         options.yasr.settings.pluginsConfig[catalogConfig.renderConfig.output] = catalogConfig.renderConfig.settings;
       } else {
         console.warn(`Output format plugin "${catalogConfig.renderConfig.output}" not found, cannot apply settings`);

@@ -61,7 +61,7 @@ export class EndpointSelect extends EventEmitter {
   private options: EndpointSelectConfig;
   private value: string;
   private history: CatalogueItem[];
-  private inputField: HTMLInputElement;
+  private inputField!: HTMLInputElement;
   constructor(initialValue: string, container: HTMLDivElement, options: EndpointSelectConfig, history: string[]) {
     super();
     this.container = container;
@@ -74,7 +74,7 @@ export class EndpointSelect extends EventEmitter {
     if (this.options.keys.indexOf("endpoint") <= 0) this.options.keys.push("endpoint");
     this.draw();
   }
-  draw() {
+  private draw() {
     // Create container, we don't need to interact with it anymore
     const autocompleteWrapper = document.createElement("div");
     addClass(autocompleteWrapper, "autocompleteWrapper");
@@ -162,7 +162,11 @@ export class EndpointSelect extends EventEmitter {
             // Add our own field highlighting
             const matches: RenderedCatalogueItem<CatalogueItem> = { matches: {} };
             for (const key of [...this.options.keys]) {
-              matches.matches[key] = parse(data.value[key], createHighlights(data.value[key], this.inputField.value));
+              const val = data.value[key];
+              if (val) {
+                matches.matches[key] = parse(val, createHighlights(val, this.inputField.value));
+              }
+
             }
             this.options.renderItem({ ...data, ...matches }, source);
           }
@@ -181,10 +185,13 @@ export class EndpointSelect extends EventEmitter {
       },
       noResults: () => {
         const container = this.container.querySelector(".autocompleteList");
-        const noResults = document.createElement("div");
-        addClass(noResults, "noResults");
-        noResults.innerText = 'Press "enter" to add this endpoint';
-        container.appendChild(noResults);
+        if (container) {
+
+          const noResults = document.createElement("div");
+          addClass(noResults, "noResults");
+          noResults.innerText = 'Press "enter" to add this endpoint';
+          container.appendChild(noResults);
+        }
       }
     });
     // New data handler
@@ -239,7 +246,7 @@ export class EndpointSelect extends EventEmitter {
       // Stop moving caret around when hitting up and down keys
       if (event.keyCode === 38 || event.keyCode === 40) {
         event.stopPropagation();
-        const selected: HTMLLIElement = this.container.querySelector(
+        const selected: HTMLLIElement | null = this.container.querySelector(
           ".autocompleteList .autoComplete_result.autoComplete_selected"
         );
         if (selected && !listElementIsFullyVissible(selected)) {
@@ -271,7 +278,8 @@ export class EndpointSelect extends EventEmitter {
     });
   }
   private clearListSuggestionList = () => {
-    this.container.querySelector(".autocompleteList").innerHTML = "";
+    const autocompleteList = this.container.querySelector(".autocompleteList")
+    if (autocompleteList) autocompleteList.innerHTML = "";
   };
 
   public setEndpoint(endpoint: string, endpointHistory?: string[]) {

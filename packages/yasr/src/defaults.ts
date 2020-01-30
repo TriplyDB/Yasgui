@@ -1,11 +1,11 @@
-import { Config } from "./";
+import type { Config } from "./";
 export default function get(): Config {
   return {
     persistenceId: function(yasr) {
       //Traverse parents untl we've got an id
       // Get matching parent elements
       var id = "";
-      var elem = <Node>yasr.rootEl;
+      var elem:any = yasr.rootEl;
       if ((<any>elem).id) id = (<any>elem).id;
       for (; elem && elem !== <any>document; elem = elem.parentNode) {
         if (elem) {

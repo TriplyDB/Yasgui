@@ -1,7 +1,7 @@
 import { addClass, drawSvgStringAsElement, removeClass } from "@triply/yasgui-utils";
 import "./TabPanel.scss";
-import Tab from "./Tab";
-import { RequestConfig } from "@triply/yasqe";
+import type Tab from "./Tab";
+import type { RequestConfig } from "@triply/yasqe";
 import { toPairs,fromPairs } from "lodash-es";
 const AcceptOptionsMap: { key: string; value: string }[] = [
   { key: "JSON", value: "application/sparql-results+json" },
@@ -21,8 +21,8 @@ const AcceptHeaderGraphMap: { key: string; value: string }[] = [
 ];
 type TextInputPair = { name: string; value: string }
 export default class TabPanel {
-  menuElement: HTMLElement;
-  settingsButton: HTMLElement;
+  menuElement!: HTMLElement;
+  settingsButton!: HTMLElement;
   tab: Tab;
   rootEl: HTMLElement;
   isOpen: boolean;
@@ -123,7 +123,7 @@ export default class TabPanel {
     }
   }
 
-  private setRequestMethod: (method: Exclude<RequestConfig<any>["method"], Function>) => void;
+  private setRequestMethod!: (method: Exclude<RequestConfig<any>["method"], Function>) => void;
   private drawRequestMethodSelector() {
     const requestTypeWrapper = document.createElement("div");
     addClass(requestTypeWrapper, "requestConfigWrapper");
@@ -162,8 +162,8 @@ export default class TabPanel {
     this.menuElement.appendChild(requestTypeWrapper);
   }
 
-  private setAcceptHeader_select: (acceptheader: string) => void;
-  private setAcceptHeader_graph: (acceptheader: string) => void;
+  private setAcceptHeader_select!: (acceptheader: string) => void;
+  private setAcceptHeader_graph!: (acceptheader: string) => void;
   private drawAcceptSelector() {
     const acceptWrapper = document.createElement("div");
     addClass(acceptWrapper, "requestConfigWrapper", "acceptWrapper");
@@ -192,7 +192,7 @@ export default class TabPanel {
     this.menuElement.appendChild(acceptWrapper);
   }
 
-  private setArguments: (args: TextInputPair[]) => void;
+  private setArguments!: (args: TextInputPair[]) => void;
   private drawArgumentsInput() {
     const onBlur = () => {
       const args:Exclude<RequestConfig<any>['args'], Function> = []
@@ -228,7 +228,7 @@ export default class TabPanel {
     };
   }
 
-  private setHeaders: (headers: TextInputPair[]) => void;
+  private setHeaders!: (headers: TextInputPair[]) => void;
   private drawHeaderInput() {
     const onBlur = () => {
       const headers:Exclude<RequestConfig<any>['headers'], Function> = {}
@@ -267,7 +267,7 @@ export default class TabPanel {
     };
   }
 
-  private setDefaultGraphs: (defaultGraphs: string[]) => void;
+  private setDefaultGraphs!: (defaultGraphs: Array<string | undefined>) => void;
   private drawDefaultGraphInput() {
     const defaultGraphWrapper = document.createElement("div");
     addClass(defaultGraphWrapper, "requestConfigWrapper", "textSetting");
@@ -299,7 +299,7 @@ export default class TabPanel {
     };
   }
 
-  private setNamedGraphs: (defaultGraphs: string[]) => void;
+  private setNamedGraphs!: (defaultGraphs: Array<string|undefined>) => void;
   private drawNamedGraphInput() {
     const namedGraphWrapper = document.createElement("div");
     addClass(namedGraphWrapper, "requestConfigWrapper", "textSetting");
@@ -398,7 +398,7 @@ function createLabel(content: string, parent?: HTMLElement) {
   return label;
 }
 
-function createOption(content: { key: string; value: string }, parent?: HTMLElement) {
+function createOption(content: { key: string; value: string }, parent: HTMLElement) {
   const option = document.createElement("option");
   option.textContent = content.key;
   option.value = content.value;
@@ -420,12 +420,12 @@ function getRemoveButton(deleteAction: () => void, parent?: HTMLElement) {
   if (parent) parent.appendChild(button);
   button.onclick = ev => {
     deleteAction();
-    (<HTMLButtonElement>ev.target).parentElement.remove();
+    (<HTMLButtonElement>ev.target).parentElement?.remove();
   };
   return button;
 }
-function drawSingleInput(root: HTMLElement, content: string[], onBlur: () => void) {
-  const lastRow: HTMLDivElement = root.querySelector(".graphInput:last-of-type");
+function drawSingleInput(root: HTMLElement, content: Array<string | undefined>, onBlur: () => void) {
+  const lastRow: HTMLDivElement | null = root.querySelector(".graphInput:last-of-type");
   if (!lastRow || getInputValues(lastRow)[0] !== "" || lastRow.getElementsByTagName("button").length !== 0) {
     const index = content.length;
     drawSingleInputWhenEmpty(root, index, content,onBlur);
@@ -434,10 +434,10 @@ function drawSingleInput(root: HTMLElement, content: string[], onBlur: () => voi
     }
   }
 }
-function drawSingleInputWhenEmpty(root: HTMLElement, index: number, content: string[],onBlur: () => void) {
+function drawSingleInputWhenEmpty(root: HTMLElement, index: number, content: Array<string | undefined>,onBlur: () => void) {
   const namedGraphItem = document.createElement("div");
   addClass(namedGraphItem, "graphInput");
-  const namedGraphInput = createInput(content[index] ? content[index] : "", namedGraphItem);
+  const namedGraphInput = createInput(content[index] || "", namedGraphItem);
   namedGraphInput.onkeyup = ev => {
     const target = <HTMLInputElement>ev.target;
     content[index] ? (content[index] = target.value) : content.push(target.value);
@@ -449,8 +449,8 @@ function drawSingleInputWhenEmpty(root: HTMLElement, index: number, content: str
 }
 
 
-function drawDoubleInput(root: HTMLElement, content: TextInputPair[], onBlur: () => void) {
-  const lastRow: HTMLDivElement = root.querySelector(".textRow:last-of-type");
+function drawDoubleInput(root: HTMLElement, content: Array<TextInputPair|undefined>, onBlur: () => void) {
+  const lastRow: HTMLDivElement|null = root.querySelector(".textRow:last-of-type");
   // When there are no row's or the last row has values,
   if (!lastRow || getInputValues(lastRow).filter(value => value).length !== 0) {
     const index = content.length;
@@ -461,22 +461,24 @@ function drawDoubleInput(root: HTMLElement, content: TextInputPair[], onBlur: ()
     }
   }
 }
-function drawDoubleInputWhenEmpty(root: HTMLElement, index: number, content: TextInputPair[], onBlur:() => void) {
+function drawDoubleInputWhenEmpty(root: HTMLElement, index: number, content: Array<TextInputPair|undefined>, onBlur:() => void) {
   const kvInput = document.createElement("div");
   addClass(kvInput, "textRow");
   const value = content[index];
   const nameField = createInput(value ? value.name : "", kvInput);
   const valueField = createInput(value ? value.value : "", kvInput);
   nameField.onkeyup = ev => {
-    content[index]
-      ? (content[index].name = (<HTMLInputElement>ev.target).value)
+    const val = content[index]
+    val
+      ? (val.name = (<HTMLInputElement>ev.target).value)
       : content.push({ name: (<HTMLInputElement>ev.target).value, value: "" });
     drawDoubleInput(root, content,onBlur);
   };
   nameField.onblur = onBlur
   valueField.onkeyup = ev => {
-    content[index]
-      ? (content[index].value = (<HTMLInputElement>ev.target).value)
+    const val = content[index];
+    val
+      ? (val.value = (<HTMLInputElement>ev.target).value)
       : content.push({ value: (<HTMLInputElement>ev.target).value, name: "" });
     drawDoubleInput(root, content,onBlur);
   };

@@ -1,7 +1,7 @@
-import { Config } from "./";
+import type { Config } from "./";
 import Yasr from "@triply/yasr";
 import { default as Yasqe } from "@triply/yasqe";
-import { CatalogueItem } from "./endpointSelect";
+import type { CatalogueItem } from "./endpointSelect";
 
 export default function initialize(): Config<CatalogueItem> {
   return {
@@ -11,7 +11,7 @@ export default function initialize(): Config<CatalogueItem> {
       //Traverse parents untl we've got an id
       // Get matching parent elements
       var id = "";
-      var elem = <Node>yasgui.rootEl;
+      var elem:any = yasgui.rootEl;
       if ((<any>elem).id) id = (<any>elem).id;
       for (; elem && elem !== <any>document; elem = elem.parentNode) {
         if (elem) {
@@ -46,10 +46,10 @@ export default function initialize(): Config<CatalogueItem> {
         contentDiv.style.display = "flex";
         contentDiv.style.flexDirection = "column";
         const endpointSpan = document.createElement("span");
-        endpointSpan.innerHTML = data.matches.endpoint.reduce(
+        endpointSpan.innerHTML = data.matches.endpoint?.reduce(
           (current, object) => (object.highlight ? current + object.text.bold() : current + object.text),
           ""
-        );
+        ) || "";
         contentDiv.appendChild(endpointSpan);
         source.appendChild(contentDiv);
       }

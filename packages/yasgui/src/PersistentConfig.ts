@@ -5,23 +5,23 @@ export var storageNamespace = "triply";
 export interface PersistedJson {
   endpointHistory: string[];
   tabs: string[];
-  active: string;
+  active: string | undefined;
   tabConfig: { [tabId: string]: Tab.PersistedJson };
-  lastClosedTab: { index: number; tab: Tab.PersistedJson };
+  lastClosedTab: { index: number; tab: Tab.PersistedJson } | undefined;
 }
 function getDefaults(): PersistedJson {
   return {
     endpointHistory: [],
     tabs: [],
-    active: null,
+    active: undefined,
     tabConfig: {},
     lastClosedTab: undefined
   };
 }
 
 export default class PersistentConfig {
-  private persistedJson: PersistedJson;
-  private storageId: string;
+  private persistedJson!: PersistedJson ;
+  private storageId: string | undefined;
   private yasgui: Yasgui;
   private storage: YStorage;
   constructor(yasgui: Yasgui) {
@@ -36,7 +36,7 @@ export default class PersistentConfig {
     this.persistedJson.active = id;
     this.toStorage();
   }
-  public getActiveId(): string {
+  public getActiveId(): string | undefined {
     return this.persistedJson.active;
   }
   public addToTabList(tabId: string, index?: number) {
@@ -88,7 +88,7 @@ export default class PersistentConfig {
   }
 
   private toStorage() {
-    // console.trace();
+
     this.storage.set(
       this.storageId,
       this.persistedJson,

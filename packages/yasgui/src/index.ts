@@ -4,7 +4,7 @@ import initializeDefaults from "./defaults";
 import PersistentConfig from "./PersistentConfig";
 import { default as Tab, PersistedJson as PersistedTabJson } from "./Tab";
 
-import { EndpointSelectConfig, CatalogueItem } from "./endpointSelect";
+import type { EndpointSelectConfig, CatalogueItem } from "./endpointSelect";
 import * as shareLink from "./linkUtils";
 import TabElements from "./TabElements";
 import { default as Yasqe, Config as YasqeConfig, RequestConfig } from "@triply/yasqe";
@@ -24,10 +24,10 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
    * Autofocus yasqe on load or tab switch
    */
   autofocus: boolean;
-  endpointInfo: (tab?: Tab) => Element;
+  endpointInfo: ((tab?: Tab) => Element) | undefined;
   copyEndpointOnNewTab: boolean;
   tabName: string;
-  corsProxy: string;
+  corsProxy: string | undefined;
   endpointCatalogueOptions: EndpointSelectConfig<EndpointObject>;
   //The function allows us to modify the config before we pass it on to a tab
   populateFromUrl: boolean | ((configFromUrl: PersistedTabJson) => PersistedTabJson);
@@ -37,9 +37,9 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   persistenceLabelResponse: string;
   persistencyExpire: number;
   yasqe: Partial<YasqeConfig>;
-  yasr: Partial<YasrConfig>;
+  yasr: YasrConfig;
   requestConfig: RequestConfig<Yasgui>;
-  contextMenuContainer: HTMLElement;
+  contextMenuContainer: HTMLElement | undefined;
   nonSslDomain?: string;
 }
 export type PartialConfig = {
@@ -94,128 +94,15 @@ export class Yasgui extends EventEmitter {
 
     this.config = merge({}, Yasgui.defaults, config);
     this.persistentConfig = new PersistentConfig(this);
-    this.init();
-  }
-  public hasFullscreen(fullscreen: boolean) {
-    if (fullscreen) {
-      this.emit("fullscreen-enter", this);
-      addClass(this.rootEl, "hasFullscreen");
-    } else {
-      this.emit("fullscreen-leave", this);
-      removeClass(this.rootEl, "hasFullscreen");
-    }
-  }
-  public getStorageId(label: string, getter?: Config["persistenceId"]): string {
-    const persistenceId = getter || this.config.persistenceId;
-    if (!persistenceId) return undefined;
-    if (typeof persistenceId === "string") return persistenceId + "_" + label;
-    return persistenceId(this) + "_" + label;
-  }
-  public createTabName(name?: string, i: number = 0) {
-    if (!name) name = this.config.tabName;
-    var fullName = name + (i > 0 ? " " + i : "");
-    if (this.tabNameTaken(fullName)) fullName = this.createTabName(name, i + 1);
-    return fullName;
-  }
-  public tabNameTaken(name: string) {
-    return find(this._tabs, tab => tab.getName() === name);
-  }
-  public getTab(tabId?: string): Tab {
-    if (tabId === undefined) {
-      return this._tabs[this.persistentConfig.currentId()];
-    } else {
-      return this._tabs[tabId];
-    }
-  }
 
-  //only handle UI interaction, don't emit or store anything
-  private markTabSelected(tabId: string): boolean {
-    if (!this.persistentConfig.getTab(tabId)) {
-      //there is no tab config for this id. We _probably_ deleted a tab by pressing 'x', which fires the 'selectTab'
-      //event after. I.e., nothing to select anymore, and we should just ignore this
-      return false;
-    }
-    //mark tab active
-    this.tabElements.selectTab(tabId);
 
-    //draw tab content
-    if (!this._tabs[tabId]) {
-      this._tabs[tabId] = new Tab(this, Tab.getDefaults(this));
-    }
-    this._tabs[tabId].show();
-    for (const otherTabId in this._tabs) {
-      if (otherTabId !== tabId) this._tabs[otherTabId].hide();
-    }
-    return true;
-  }
-  public selectTabId(tabId: string) {
-    const tab = this.getTab();
-    if (tab && tab.getId() !== tabId) {
-      if (this.markTabSelected(tabId)) {
-        //emit
-        this.emit("tabSelect", this, tabId);
-        this.persistentConfig.setActive(tabId);
-      }
-    }
-    return tab;
-  }
-  /**
-   * Checks if two persistent tab configuration are the same based.
-   * It isnt a strict equality, as falsy values (e.g. a header that isnt set in one tabjson) isnt taken into consideration
-   * Things like the yasr response are also not taken into consideration
-   * @param tab1 Base comparable object
-   * @param tab2 Second comparable object
-   */
-  private tabConfigEquals(tab1: PersistedTabJson, tab2: PersistedTabJson): boolean {
-    let sameRequest = true;
-
-    /**
-     * Check request config
-     */
-    Object.keys(tab1.requestConfig).forEach((key: keyof RequestConfig<Yasgui>) => {
-      // Skip when current value is falsy
-      if (!tab1.requestConfig[key]) return;
-      if (!isEqual(tab2.requestConfig[key], tab1.requestConfig[key])) {
-        sameRequest = false;
-      }
-    });
-    /**
-     * Check yasqe settings
-     */
-    if (sameRequest) {
-      sameRequest = (<Array<keyof PersistedTabJson["yasqe"]>>["endpoint", "value"]).every(
-        key => tab1.yasqe[key] === tab2.yasqe[key]
-      );
-    }
-
-    /**
-     * Check yasr settings
-     */
-    if (sameRequest) {
-      sameRequest =
-        tab1.yasr.settings.selectedPlugin === tab2.yasr.settings.selectedPlugin &&
-        isEqual(
-          tab1.yasr.settings.pluginsConfig[tab1.yasr.settings.selectedPlugin],
-          tab2.yasr.settings.pluginsConfig[tab2.yasr.settings.selectedPlugin]
-        );
-    }
-
-    return sameRequest && tab1.name === tab2.name;
-  }
-  private findTabIdForConfig(tabConfig: PersistedTabJson) {
-    return this.persistentConfig.getTabs().find(tabId => {
-      const tab = this.persistentConfig.getTab(tabId);
-      return this.tabConfigEquals(tab, tabConfig);
-    });
-  }
-  private init() {
     this.tabElements = new TabElements(this);
     this.tabPanelsEl = document.createElement("div");
 
     this.rootEl.appendChild(this.tabElements.drawTabsList());
     this.rootEl.appendChild(this.tabPanelsEl);
-    var executeIdAfterInit: string;
-    var optionsFromUrl: PersistedTabJson;
+    let executeIdAfterInit: string | undefined;
+    let optionsFromUrl: PersistedTabJson | undefined;
     if (this.config.populateFromUrl) {
       optionsFromUrl = shareLink.getConfigFromUrl(Tab.getDefaults(this));
       if (optionsFromUrl) {
@@ -263,7 +150,7 @@ export class Yasgui extends EventEmitter {
       if (activeTabId) {
         this.markTabSelected(activeTabId);
         if (executeIdAfterInit && executeIdAfterInit === activeTabId) {
-          this.getTab(activeTabId)
+          (this.getTab(activeTabId) as Tab)
             .query()
             .catch(() => {});
         }
@@ -271,6 +158,121 @@ export class Yasgui extends EventEmitter {
       }
     }
   }
+  public hasFullscreen(fullscreen: boolean) {
+    if (fullscreen) {
+      this.emit("fullscreen-enter", this);
+      addClass(this.rootEl, "hasFullscreen");
+    } else {
+      this.emit("fullscreen-leave", this);
+      removeClass(this.rootEl, "hasFullscreen");
+    }
+  }
+  public getStorageId(label: string, getter?: Config["persistenceId"]): string | undefined {
+    const persistenceId = getter || this.config.persistenceId;
+    if (!persistenceId) return undefined;
+    if (typeof persistenceId === "string") return persistenceId + "_" + label;
+    return persistenceId(this) + "_" + label;
+  }
+  public createTabName(name?: string, i: number = 0) {
+    if (!name) name = this.config.tabName;
+    var fullName = name + (i > 0 ? " " + i : "");
+    if (this.tabNameTaken(fullName)) fullName = this.createTabName(name, i + 1);
+    return fullName;
+  }
+  public tabNameTaken(name: string) {
+    return find(this._tabs, tab => tab.getName() === name);
+  }
+  public getTab(tabId?: string): Tab | undefined {
+    if (tabId) {
+      return this._tabs[tabId];
+    }
+    const currentTabId = this.persistentConfig.currentId()
+    if (currentTabId) return this._tabs[currentTabId]
+
+
+  }
+
+  //only handle UI interaction, don't emit or store anything
+  private markTabSelected(tabId: string): boolean {
+    if (!this.persistentConfig.getTab(tabId)) {
+      //there is no tab config for this id. We _probably_ deleted a tab by pressing 'x', which fires the 'selectTab'
+      //event after. I.e., nothing to select anymore, and we should just ignore this
+      return false;
+    }
+    //mark tab active
+    this.tabElements.selectTab(tabId);
+
+    //draw tab content
+    if (!this._tabs[tabId]) {
+      this._tabs[tabId] = new Tab(this, Tab.getDefaults(this));
+    }
+    this._tabs[tabId].show();
+    for (const otherTabId in this._tabs) {
+      if (otherTabId !== tabId) this._tabs[otherTabId].hide();
+    }
+    return true;
+  }
+  public selectTabId(tabId: string) {
+    const tab = this.getTab();
+    if (tab && tab.getId() !== tabId) {
+      if (this.markTabSelected(tabId)) {
+        //emit
+        this.emit("tabSelect", this, tabId);
+        this.persistentConfig.setActive(tabId);
+      }
+    }
+    return tab;
+  }
+  /**
+   * Checks if two persistent tab configuration are the same based.
+   * It isnt a strict equality, as falsy values (e.g. a header that isnt set in one tabjson) isnt taken into consideration
+   * Things like the yasr response are also not taken into consideration
+   * @param tab1 Base comparable object
+   * @param tab2 Second comparable object
+   */
+  private tabConfigEquals(tab1: PersistedTabJson, tab2: PersistedTabJson): boolean {
+    let sameRequest = true;
+
+    /**
+     * Check request config
+     */
+    let key:keyof RequestConfig<Yasgui>
+    for (key in tab1.requestConfig) {
+      if (!tab1.requestConfig[key]) continue;
+      if (!isEqual(tab2.requestConfig[key], tab1.requestConfig[key])) {
+        sameRequest = false;
+      }
+    }
+    /**
+     * Check yasqe settings
+     */
+    if (sameRequest) {
+      sameRequest = (<Array<keyof PersistedTabJson["yasqe"]>>["endpoint", "value"]).every(
+        key => tab1.yasqe[key] === tab2.yasqe[key]
+      );
+    }
+
+    /**
+     * Check yasr settings
+     */
+    if (sameRequest) {
+      sameRequest =
+        tab1.yasr.settings.selectedPlugin === tab2.yasr.settings.selectedPlugin &&
+        isEqual(
+          tab1.yasr.settings.pluginsConfig?.[tab1.yasr.settings?.selectedPlugin || ''],
+          tab2.yasr.settings.pluginsConfig?.[tab2.yasr.settings?.selectedPlugin || '']
+        );
+    }
+
+    return sameRequest && tab1.name === tab2.name;
+  }
+  private findTabIdForConfig(tabConfig: PersistedTabJson) {
+    return this.persistentConfig.getTabs().find(tabId => {
+      const tab = this.persistentConfig.getTab(tabId);
+      return this.tabConfigEquals(tab, tabConfig);
+    });
+  }
+
 
   private _registerTabListeners(tab: Tab) {
     tab.on("change", tab => this.emit("tabChange", this, tab));
@@ -286,7 +288,7 @@ export class Yasgui extends EventEmitter {
     }
     this.tabPanelsEl.appendChild(panel);
   }
-  public _removePanel(panel: HTMLDivElement) {
+  public _removePanel(panel : HTMLDivElement | undefined) {
     if (panel) this.tabPanelsEl.removeChild(panel);
   }
   /**
@@ -315,7 +317,9 @@ export class Yasgui extends EventEmitter {
     }
     if (opts.avoidDuplicateTabs) {
       const foundTabId = this.findTabIdForConfig(tabConfig);
-      if (foundTabId) return this.selectTabId(foundTabId);
+      if (foundTabId) {
+        return this.selectTabId(foundTabId) as Tab;
+      }
     }
     const tabId = tabConfig.id;
     const index = opts.atIndex;

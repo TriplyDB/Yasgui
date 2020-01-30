@@ -1,4 +1,4 @@
-import * as autocompleter from "./";
+import type * as autocompleter from "./";
 
 var conf: autocompleter.CompleterConfig = {
   name: "variables",
@@ -13,7 +13,7 @@ var conf: autocompleter.CompleterConfig = {
     return false;
   },
   get: function(yasqe, token) {
-    if (token.string.length == 0) return []; //nothing to autocomplete
+    if (!token || token.string.length == 0) return []; //nothing to autocomplete
     const distinctVars: { [varname: string]: any } = {};
     const vars: string[] = [];
     //do this outside of codemirror. I expect jquery to be faster here (just finding dom elements with classnames)

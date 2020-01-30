@@ -10,8 +10,9 @@ export default class Storage {
   constructor(namespace: string) {
     this.namespace = namespace;
   }
-  public set<V = {}>(key: string, val: any, expInSeconds: number, onQuotaExceeded: (e: any) => void) {
+  public set<V = {}>(key: string | undefined, val: any, expInSeconds: number, onQuotaExceeded: (e: any) => void) {
     if (!store.enabled) return; //this is probably in private mode. Don't run, as we might get Js errors
+    if (!key) throw new Error("Key is not set. Cannot persist to localstorage")
     this.removeExpiredKeys();
     if (key && val !== undefined) {
       //try to store string for dom objects (e.g. XML result). Otherwise, we might get a circular reference error when stringifying this
@@ -53,17 +54,18 @@ export default class Storage {
       if (value.namespace && value.namespace === this.namespace) this.remove(key);
     });
   }
-  get<V>(key: string): V {
-    if (!store.enabled) return null; //this is probably in private mode. Don't run, as we might get Js errors
+  get<V>(key?: string): V | undefined {
+    if (!store.enabled) return; //this is probably in private mode. Don't run, as we might get Js errors
+    if (!key) return
     this.removeExpiredKeys();
     if (key) {
       var info: ItemWrapper<V> = store.get(key);
       if (!info) {
-        return null;
+        return ;
       }
       return info.val;
     } else {
-      return null;
+      return ;
     }
   }
 }

@@ -5,8 +5,8 @@ import * as superagent from "superagent";
 import { take } from "lodash-es";
 const CodeMirror = require("codemirror");
 require("./show-hint.scss");
-export class CompleterConfig {
-  onInitialize?: (this: CompleterConfig, yasqe: Yasqe) => void; //allows for e.g. registering event listeners in yasqe, like the prefix auto-completer does
+export interface CompleterConfig {
+  onInitialize?: (this: CompleterConfig, yasqe: Yasqe) => void; //allows for e.g. registering event listeners in yasqe, like the prefix autocompleter does
   isValidCompletionPosition: (yasqe: Yasqe) => boolean;
   get: (yasqe: Yasqe, token?: AutocompletionToken) => Promise<string[]> | string[];
   preProcessToken?: (yasqe: Yasqe, token: Token) => AutocompletionToken;
@@ -27,7 +27,7 @@ export interface AutocompletionToken extends Token {
 }
 export class Completer extends EventEmitter {
   protected yasqe: Yasqe;
-  private trie: Trie;
+  private trie?: Trie;
   private config: CompleterConfig;
   constructor(yasqe: Yasqe, config: CompleterConfig) {
     super();
@@ -51,7 +51,9 @@ export class Completer extends EventEmitter {
     if (!completions || !(completions instanceof Array)) return;
     // store array as trie
     this.trie = new Trie();
-    completions.forEach(c => this.trie.insert(c));
+    for (const c of completions) {
+      this.trie.insert(c)
+    }
 
     // store in localstorage as well
     var storageId = this.getStorageId();
@@ -103,7 +105,7 @@ export class Completer extends EventEmitter {
       } else {
         // if completions are defined in localstorage, use those! (calling the
         // function may come with overhead (e.g. async calls))
-        var completionsFromStorage: string[];
+        var completionsFromStorage: string[] | undefined;
         var storageId = this.getStorageId();
         if (storageId) completionsFromStorage = this.yasqe.storage.get<string[]>(storageId);
         if (completionsFromStorage && completionsFromStorage.length > 0) {
@@ -135,8 +137,8 @@ export class Completer extends EventEmitter {
     if (this.config.postProcessSuggestion) {
       suggestedString = this.config.postProcessSuggestion(this.yasqe, autocompletionToken, suggestedString);
     }
-    var from: Position;
-    var to: Position;
+    let from: Position | undefined;
+    let to: Position;
     const cursor = this.yasqe.getDoc().getCursor();
     if (autocompletionToken.from) {
       from = { ...cursor, ...autocompletionToken.from };

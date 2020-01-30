@@ -1,6 +1,7 @@
 import { addClass } from "@triply/yasgui-utils";
 import { default as Yasgui, getRandomId } from "./";
-import { TabListEl } from "./TabElements";
+import type Tab from './Tab'
+import type { TabListEl } from "./TabElements";
 import { cloneDeep } from "lodash-es";
 require("./TabContextMenu.scss");
 export interface TabContextConfig {
@@ -10,15 +11,15 @@ export interface TabContextConfig {
 }
 export default class TabContextMenu {
   private yasgui: Yasgui;
-  private contextEl: HTMLElement;
-  private newTabEl: HTMLElement;
-  private renameTabEl: HTMLElement;
-  private copyTabEl: HTMLElement;
-  private closeTabEl: HTMLElement;
-  private closeOtherTabsEl: HTMLElement;
-  private reOpenOldTab: HTMLElement;
+  private contextEl!: HTMLElement;
+  private newTabEl!: HTMLElement;
+  private renameTabEl!: HTMLElement;
+  private copyTabEl!: HTMLElement;
+  private closeTabEl!: HTMLElement;
+  private closeOtherTabsEl!: HTMLElement;
+  private reOpenOldTab!: HTMLElement;
   private rootEl: HTMLElement;
-  private tabRef: TabListEl; // Need to store it due to scrolling updates
+  private tabRef: TabListEl | undefined; // Need to store it due to scrolling updates
   constructor(yasgui: Yasgui, rootEl: HTMLElement) {
     this.yasgui = yasgui;
     this.rootEl = rootEl;
@@ -78,13 +79,14 @@ export default class TabContextMenu {
     rootEl.appendChild(this.contextEl);
   }
   public redraw() {
-    if (this.contextEl && this.tabRef) {
+    if (this.contextEl  && this.tabRef?.tabEl) {
       const bounding = this.tabRef.tabEl.getBoundingClientRect();
       this.contextEl.style.top = `${window.pageYOffset + bounding.bottom}px`;
     }
   }
 
-  public openConfigMenu(currentTabId: string, currentTabEl: TabListEl, event: PointerEvent) {
+  public openConfigMenu(currentTabId: string, currentTabEl: TabListEl, event: MouseEvent) {
+    if (!currentTabEl.tabEl) return;
     this.draw(this.rootEl);
     this.tabRef = currentTabEl;
     const tab = this.yasgui.getTab(currentTabId);
@@ -98,13 +100,14 @@ export default class TabContextMenu {
 
     // Copy tab functionality`
     this.copyTabEl.onclick = () => {
+      if (!tab) return
       const config = cloneDeep(tab.getPersistedJson());
       config.id = getRandomId();
       this.yasgui.addTab(true, config);
     };
 
     // Close tab functionality
-    this.closeTabEl.onclick = () => tab.close();
+    this.closeTabEl.onclick = () => tab?.close();
 
     // Close other tab functionality
     if (Object.keys(this.yasgui._tabs).length === 1) {
@@ -112,7 +115,7 @@ export default class TabContextMenu {
     } else {
       this.closeOtherTabsEl.onclick = () => {
         for (const tabId of Object.keys(this.yasgui._tabs)) {
-          if (tabId !== currentTabId) this.yasgui.getTab(tabId).close();
+          if (tabId !== currentTabId) (this.yasgui.getTab(tabId) as Tab).close();
         }
       };
     }

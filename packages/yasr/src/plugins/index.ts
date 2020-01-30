@@ -9,8 +9,8 @@ export interface Plugin<Opts extends any> {
   initialize?(): Promise<void>;
   destroy?(): void;
   draw(persistentConfig: any, runtimeConfig?: any): void;
-  getIcon(): Element;
-  download?(): DownloadInfo;
+  getIcon(): Element | undefined;
+  download?(): DownloadInfo | undefined;
   helpReference?: string;
 }
 export interface DownloadInfo {

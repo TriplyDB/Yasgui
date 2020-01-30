@@ -1,8 +1,8 @@
 /**
  * Make sure not to include any deps from our main index file. That way, we can easily publish the publin as standalone build
  */
-import Yasr from "../../";
-import { Plugin } from "../";
+import type Yasr from "../../";
+import type { Plugin } from "../";
 require("./index.scss");
 export interface PluginConfig {}
 import { drawSvgStringAsElement } from "@triply/yasgui-utils";
@@ -22,7 +22,7 @@ export default class Boolean implements Plugin<PluginConfig> {
     const el = document.createElement("div");
     el.className = "booleanResult";
 
-    const boolVal = this.yasr.results.getBoolean();
+    const boolVal = this.yasr.results?.getBoolean();
     el.appendChild(drawSvgStringAsElement(boolVal ? check : cross));
     const textEl = document.createElement("span");
     textEl.textContent = boolVal ? "True" : "False";
@@ -32,7 +32,7 @@ export default class Boolean implements Plugin<PluginConfig> {
   }
   canHandleResults() {
     return (
-      this.yasr.results.getBoolean &&
+      !!this.yasr.results?.getBoolean &&
       (this.yasr.results.getBoolean() === true || this.yasr.results.getBoolean() == false)
     );
   }

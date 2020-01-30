@@ -4,7 +4,7 @@ import * as superagent from "superagent";
 import { findFirstPrefixLine } from "./prefixFold";
 import { getPrefixesFromQuery, addPrefixes, removePrefixes, Prefixes } from "./prefixUtils";
 import { getPreviousNonWsToken, getNextNonWsToken, getCompleteToken } from "./tokenUtils";
-import * as sparql11Mode from "../grammar/tokenizer";
+import type * as sparql11Mode from "../grammar/tokenizer";
 import { Storage as YStorage } from "@triply/yasgui-utils";
 import * as queryString from "query-string";
 import tooltip from "./tooltip";
@@ -15,8 +15,8 @@ import * as Autocompleter from "./autocompleters";
 import { merge, escape } from "lodash-es";
 
 import getDefaults from "./defaults";
-import { CodeMirror, Token } from "./CodeMirror";
-export { Token } from "./CodeMirror";
+import CodeMirror from "./CodeMirror";
+// export { Token } from "./CodeMirror";
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: superagent.SuperAgentRequest) => void): void;
@@ -46,20 +46,21 @@ export interface Yasqe {
   off(eventName: "resize", handler: (instance: Yasqe, newSize: string) => void): void;
   on(eventName: string, handler: () => void): void;
 }
-
+// let bla: CodeMirror;
+// bla.focu
 export class Yasqe extends CodeMirror {
   private static storageNamespace = "triply";
-  public autocompleters: { [name: string]: Autocompleter.Completer } = {};
+  public autocompleters: { [name: string]: Autocompleter.Completer | undefined} = {};
   private prevQueryValid = false;
   public queryValid = true;
-  public lastQueryDuration: number;
-  private req: superagent.SuperAgentRequest;
-  private queryStatus: "valid" | "error";
-  private queryBtn: HTMLDivElement;
+  public lastQueryDuration: number | undefined;
+  private req: superagent.SuperAgentRequest | undefined;
+  private queryStatus: "valid" | "error" | undefined;
+  private queryBtn: HTMLDivElement | undefined;
   public rootEl: HTMLDivElement;
   public storage: YStorage;
   public config: Config;
-  public persistentConfig: PersistentConfig;
+  public persistentConfig: PersistentConfig | undefined;
   public superagent = superagent;
   constructor(parent: HTMLElement, conf: PartialConfig = {}) {
     super();
@@ -69,7 +70,7 @@ export class Yasqe extends CodeMirror {
     parent.appendChild(this.rootEl);
     this.config = merge({}, Yasqe.defaults, conf);
     //inherit codemirror props
-    const cm = CodeMirror(this.rootEl, this.config);
+    const cm = (CodeMirror as any)(this.rootEl, this.config);
     //Assign our functions to the cm object. This is needed, as some functions (like the ctrl-enter callback)
     //get the original cm as argument, and not yasqe
     for (const key of Object.getOwnPropertyNames(Yasqe.prototype)) {
@@ -82,6 +83,7 @@ export class Yasqe extends CodeMirror {
     this.storage = new YStorage(Yasqe.storageNamespace);
     this.drawButtons();
     const storageId = this.getStorageId();
+    // this.getWrapperElement
     if (storageId) {
       const persConf = this.storage.get<any>(storageId);
       if (persConf && typeof persConf === "string") {
@@ -99,7 +101,7 @@ export class Yasqe extends CodeMirror {
       this.config.consumeShareLink(this);
       //and: add a hash listener!
       window.addEventListener("hashchange", () => {
-        this.config.consumeShareLink(this);
+        this.config.consumeShareLink?.(this);
       });
     }
     this.checkSyntax();
@@ -141,11 +143,11 @@ export class Yasqe extends CodeMirror {
     });
     this.on("queryResponse", (_yasqe, _response, duration) => {
       this.lastQueryDuration = duration;
-      this.req = null;
+      this.req = undefined;
       this.updateQueryButton();
     });
     this.on("queryAbort", (_yasqe, _req) => {
-      this.req = null;
+      this.req = undefined;
       this.updateQueryButton();
     });
   }
@@ -157,7 +159,7 @@ export class Yasqe extends CodeMirror {
     CodeMirror.signal(this, event, this, ...data);
   }
 
-  public getStorageId(getter?: Config["persistenceId"]): string {
+  public getStorageId(getter?: Config["persistenceId"]): string | undefined {
     const persistenceId = getter || this.config.persistenceId;
     if (!persistenceId) return undefined;
     if (typeof persistenceId === "string") return persistenceId;
@@ -190,7 +192,7 @@ export class Yasqe extends CodeMirror {
       buttons.appendChild(svgShare);
       svgShare.onclick = (event: MouseEvent) => {
         event.stopPropagation();
-        var popup = document.createElement("div");
+        let popup:HTMLDivElement | undefined = document.createElement("div");
         popup.className = "yasqe_sharePopup";
         buttons.appendChild(popup);
         document.body.addEventListener(
@@ -226,8 +228,8 @@ export class Yasqe extends CodeMirror {
 
         // We need to track which buttons are drawn here since the two implementations don't play nice together
         const popupInputButtons: HTMLButtonElement[] = [];
-
-        if (this.config.createShortLink) {
+        const createShortLink = this.config.createShortLink
+        if (createShortLink) {
           popup.className = popup.className += " enableShort";
           const shortBtn = document.createElement("button");
           popupInputButtons.push(shortBtn);
@@ -235,8 +237,9 @@ export class Yasqe extends CodeMirror {
           shortBtn.className = "yasqe_btn yasqe_btn-sm shorten";
           popup.appendChild(shortBtn);
           shortBtn.onclick = () => {
+
             popupInputButtons.forEach(button => (button.disabled = true));
-            this.config.createShortLink(this, input.value).then(
+            createShortLink(this, input.value).then(
               value => {
                 input.value = value;
                 input.focus();
@@ -267,7 +270,7 @@ export class Yasqe extends CodeMirror {
           popupInputButtons.forEach(button => (button.disabled = true));
           input.value = this.getAsCurlString();
           input.focus();
-          popup.appendChild(curlBtn);
+          popup?.appendChild(curlBtn);
         };
 
         const svgPos = svgShare.getBoundingClientRect();
@@ -341,7 +344,7 @@ export class Yasqe extends CodeMirror {
     document.documentElement.removeEventListener("mousemove", this.doDrag, false);
     document.documentElement.removeEventListener("mouseup", this.stopDrag, false);
     this.emit("resize", this.getWrapperElement().style.height);
-    if (this.getStorageId()) {
+    if (this.getStorageId() && this.persistentConfig) {
       // If there is no storage id there is no persistency wanted
       this.persistentConfig.editorHeight = this.getWrapperElement().style.height;
       this.saveQuery();
@@ -394,10 +397,11 @@ export class Yasqe extends CodeMirror {
   }
 
   public saveQuery() {
-    if (!this.getStorageId()) return;
+    const storageId = this.getStorageId()
+    if (!storageId || !this.persistentConfig) return;
     this.persistentConfig.query = this.getValue();
     this.storage.set(
-      this.getStorageId(),
+      storageId,
       this.persistentConfig,
       this.config.persistencyExpire,
       this.handleLocalStorageQuotaFull
@@ -647,7 +651,7 @@ export class Yasqe extends CodeMirror {
 
     this.clearGutter("gutterErrorBar");
 
-    var state: TokenizerState = null;
+    var state: TokenizerState;
     for (var l = 0; l < this.getDoc().lineCount(); ++l) {
       var precise = false;
       if (!this.prevQueryValid) {
@@ -707,7 +711,7 @@ export class Yasqe extends CodeMirror {
   public getPreviousNonWsToken(line: number, token: Token): Token {
     return getPreviousNonWsToken(this, line, token);
   }
-  public getNextNonWsToken(lineNumber: number, charNumber?: number): Token {
+  public getNextNonWsToken(lineNumber: number, charNumber?: number): Token | undefined {
     return getNextNonWsToken(this, lineNumber, charNumber);
   }
   /**
@@ -757,8 +761,8 @@ export class Yasqe extends CodeMirror {
     if (!Yasqe.Autocompleters[name])
       return Promise.reject(new Error("Autocompleter " + name + " is not a registered autocompleter"));
     if (this.config.autocompleters.indexOf(name) < 0) this.config.autocompleters.push(name);
-    this.autocompleters[name] = new Autocompleter.Completer(this, Yasqe.Autocompleters[name]);
-    return this.autocompleters[name].initialize();
+    const autocompleter = this.autocompleters[name] = new Autocompleter.Completer(this, Yasqe.Autocompleters[name]);
+    return autocompleter.initialize();
   }
   public disableCompleter(name: string) {
     this.config.autocompleters = this.config.autocompleters.filter(a => a !== name);
@@ -768,8 +772,8 @@ export class Yasqe extends CodeMirror {
     if (this.getDoc().somethingSelected()) return;
 
     for (let i in this.config.autocompleters) {
-      const completerName = this.config.autocompleters[i];
-      if (!this.autocompleters[completerName] || !this.autocompleters[completerName].autocomplete(fromAutoShow))
+      const autocompleter = this.autocompleters[this.config.autocompleters[i]]
+      if (!autocompleter|| !autocompleter.autocomplete(fromAutoShow))
         continue;
     }
   }
@@ -814,7 +818,7 @@ export class Yasqe extends CodeMirror {
   }
   public getUrlParams() {
     //first try hash
-    var urlParams: queryString.ParsedQuery = null;
+    let urlParams: queryString.ParsedQuery = {};
     if (window.location.hash.length > 1) {
       //firefox does some decoding if we're using window.location.hash (e.g. the + sign in contentType settings)
       //Don't want this. So simply get the hash string ourselves
@@ -887,6 +891,7 @@ export class Yasqe extends CodeMirror {
 
 export type TokenizerState = sparql11Mode.State;
 export type Position = CodeMirror.Position;
+export type Token = CodeMirror.Token;
 
 export interface HintList {
   list: Hint[];
@@ -955,7 +960,7 @@ export interface HintConfig {
   };
 }
 export interface RequestConfig<Y> {
-  queryArgument: string | ((yasqe: Y) => string);
+  queryArgument: string | ((yasqe: Y) => string) | undefined;
   endpoint: string | ((yasqe: Y) => string);
   method: "POST" | "GET" | ((yasqe: Y) => "POST" | "GET");
   acceptHeaderGraph: string | ((yasqe: Y) => string);
@@ -982,8 +987,8 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
    * ps. This function should return an object which is parseable by jQuery.param (http://api.jquery.com/jQuery.param/)
    */
   createShareableLink: (yasqe: Yasqe) => string;
-  createShortLink: (yasqe: Yasqe, longLink: string) => Promise<string>;
-  consumeShareLink: (yasqe: Yasqe) => void;
+  createShortLink: ((yasqe: Yasqe, longLink: string) => Promise<string>) | undefined;
+  consumeShareLink: ((yasqe: Yasqe) => void) | undefined;
   /**
    * Change persistency settings for the YASQE query value. Setting the values
    * to null, will disable persistancy: nothing is stored between browser
@@ -992,12 +997,12 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
    * By default, the ID is dynamically generated using the closest dom ID, to avoid collissions when using multiple YASQE items on one
    * page
    */
-  persistenceId: ((yasqe: Yasqe) => string) | string;
+  persistenceId: ((yasqe: Yasqe) => string) | string | undefined;
   persistencyExpire: number; //seconds
   showQueryButton: boolean;
   requestConfig: RequestConfig<Yasqe> | ((yasqe: Yasqe) => RequestConfig<Yasqe>);
-  pluginButtons: () => HTMLElement[] | HTMLElement;
-  //Addon specific addon ts defs, or missing props from CodeMirror conf
+  pluginButtons: (() => HTMLElement[] | HTMLElement )| undefined;
+  //Addon specific addon ts defs, or missing props from codemirror conf
   highlightSelectionMatches: { showToken?: RegExp; annotateScrollbar?: boolean };
   tabMode: string;
   foldGutter: any; //This should be of type boolean, or an object. However, setting it to any to avoid
@@ -1006,8 +1011,8 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   autocompleters: string[];
   hintConfig: Partial<HintConfig>;
   resizeable: boolean;
-  editorHeight: string;
-  queryingDisabled: string; // The string will be the message displayed when hovered
+  editorHeight: string ;
+  queryingDisabled: string | undefined; // The string will be the message displayed when hovered
 }
 export interface PersistentConfig {
   query: string;

@@ -3,17 +3,15 @@
     "target": "es6",
     "module": "esnext",
     "moduleResolution": "node",
+
+    "strict": true,
     "allowSyntheticDefaultImports": true,
-    "declaration": false,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": false,
+
     "removeComments": true,
     "sourceMap": true,
     "listFiles": false,
     "outDir": "./build/ts",
-    "experimentalDecorators": true,
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
@@ -25,11 +23,10 @@
     "types": ["datatables.net"]
   },
   "files": ["./packages/yasgui/typings-custom/main.d.ts"],
-  "include": ["./packages/*/src/**/*", "./webpack/**/*"],
+  "include": ["./packages/*/src/**/**/*", "./webpack/**/*"],
   "compileOnSave": false,
   "exclude": [
     "**/build/**",
-    "webpack",
     "test"
   ]
 }

@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "./build/test",
     "module": "commonjs",
+    "strict": true,
     "incremental": true
   },
   "files": ["./test/run.ts"],

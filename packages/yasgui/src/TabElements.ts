@@ -1,4 +1,4 @@
-import Yasgui from "./";
+import type Yasgui from "./";
 import TabContextMenu from "./TabContextMenu";
 import { hasClass, addClass, removeClass } from "@triply/yasgui-utils";
 const sortablejs = require("sortablejs");
@@ -8,23 +8,30 @@ export class TabListEl {
   private tabList: TabList;
   private tabId: string;
   private yasgui: Yasgui;
-  private renameEl: HTMLInputElement;
-  private nameEl: HTMLSpanElement;
-  public tabEl: HTMLDivElement;
+  private renameEl?: HTMLInputElement;
+  private nameEl?: HTMLSpanElement;
+  public tabEl?: HTMLDivElement;
   constructor(yasgui: Yasgui, tabList: TabList, tabId: string) {
     this.tabList = tabList;
     this.yasgui = yasgui;
     this.tabId = tabId;
-    // this.registerListeners();
   }
   public delete() {
-    this.tabList._tabsListEl.removeChild(this.tabEl);
-    delete this.tabList._tabs[this.tabId];
+    if (this.tabEl) {
+      this.tabList._tabsListEl?.removeChild(this.tabEl);
+      delete this.tabList._tabs[this.tabId];
+    }
   }
   public startRename() {
-    this.renameEl.value = this.yasgui.getTab(this.tabId).name();
-    addClass(this.tabEl, "renaming");
-    this.renameEl.focus();
+    if (this.renameEl) {
+      const tab = this.yasgui.getTab(this.tabId)
+      if (tab) {
+
+        this.renameEl.value = tab.name();
+        addClass(this.tabEl, "renaming");
+        this.renameEl.focus();
+      }
+    }
   }
   public active(active: boolean) {
     if (active) {
@@ -34,7 +41,9 @@ export class TabListEl {
     }
   }
   public rename(name: string) {
-    this.nameEl.textContent = name;
+    if (this.nameEl) {
+      this.nameEl.textContent = name;
+    }
   }
   public setAsQuerying(querying: boolean) {
     if (querying) {
@@ -44,14 +53,6 @@ export class TabListEl {
     }
   }
   public draw(name: string) {
-    //     if (!("tabs" in persistentOptions)) persistentOptions.tabs = {};
-    //     var name = null;
-    //     if (persistentOptions.tabs[tabId] && persistentOptions.tabs[tabId].name) {
-    //       name = persistentOptions.tabs[tabId].name;
-    //     }
-    //     if (!name) name = getTabName();
-    // const name = this.yasgui.createTabName();
-
     this.tabEl = document.createElement("div");
     this.tabEl.setAttribute("role", "presentation");
     this.tabEl.ondblclick = () => {
@@ -82,27 +83,27 @@ export class TabListEl {
     addClass(closeBtn, "closeTab");
     closeBtn.onclick = e => {
       e.preventDefault();
-      this.yasgui.getTab(this.tabId).close();
+      this.yasgui.getTab(this.tabId)?.close();
     };
     tabLinkEl.appendChild(closeBtn);
 
-    this.renameEl = document.createElement("input");
-    this.renameEl.type = "text";
-    this.renameEl.value = name;
-    this.renameEl.onkeyup = event => {
+    const renameEl = this.renameEl = document.createElement("input");
+    renameEl.type = "text";
+    renameEl.value = name;
+    renameEl.onkeyup = event => {
       if (event.key === "Enter") {
-        this.yasgui.getTab(this.tabId).setName(this.renameEl.value);
+        this.yasgui.getTab(this.tabId)?.setName(renameEl.value);
         removeClass(this.tabEl, "renaming");
       }
     };
-    this.renameEl.onblur = () => {
-      this.yasgui.getTab(this.tabId).setName(this.renameEl.value);
+    renameEl.onblur = () => {
+      this.yasgui.getTab(this.tabId)?.setName(renameEl.value);
       removeClass(this.tabEl, "renaming");
     };
     tabLinkEl.appendChild(this.renameEl);
-    tabLinkEl.oncontextmenu = (ev: PointerEvent) => {
+    tabLinkEl.oncontextmenu = (ev: MouseEvent) => {
       // Close possible old
-      this.tabList.tabContextMenu.closeConfigMenu();
+      this.tabList.tabContextMenu?.closeConfigMenu();
       this.openTabConfigMenu(ev);
       ev.preventDefault();
       ev.stopPropagation();
@@ -116,22 +117,22 @@ export class TabListEl {
 
     return this.tabEl;
   }
-  private openTabConfigMenu(event: PointerEvent) {
-    this.tabList.tabContextMenu.openConfigMenu(this.tabId, this, event);
+  private openTabConfigMenu(event: MouseEvent) {
+    this.tabList.tabContextMenu?.openConfigMenu(this.tabId, this, event);
   }
   redrawContextMenu() {
-    this.tabList.tabContextMenu.redraw();
+    this.tabList.tabContextMenu?.redraw();
   }
 }
 
 export class TabList {
   yasgui: Yasgui;
 
-  private _selectedTab: string;
-  private addTabEl: HTMLDivElement;
+  private _selectedTab?: string;
+  private addTabEl?: HTMLDivElement;
   public _tabs: { [tabId: string]: TabListEl } = {};
-  public _tabsListEl: HTMLDivElement; //the list of actual tabs
-  public tabContextMenu: TabContextMenu;
+  public _tabsListEl?: HTMLDivElement; //the list of actual tabs
+  public tabContextMenu?: TabContextMenu;
 
   constructor(yasgui: Yasgui) {
     this.yasgui = yasgui;
@@ -211,13 +212,16 @@ export class TabList {
   }
   public deriveTabOrderFromEls() {
     const tabs: string[] = [];
-    for (let i = 0; i < this._tabsListEl.children.length; i++) {
-      const child = this._tabsListEl.children[i]; //this is the tab div
-      const anchorTag = child.children[0]; //this one has an href
-      if (anchorTag) {
-        const href = (<HTMLAnchorElement>anchorTag).href;
-        if (href && href.indexOf("#") >= 0) {
-          tabs.push(href.substr(href.indexOf("#") + 1));
+    if (this._tabsListEl) {
+
+      for (let i = 0; i < this._tabsListEl.children.length; i++) {
+        const child = this._tabsListEl.children[i]; //this is the tab div
+        const anchorTag = child.children[0]; //this one has an href
+        if (anchorTag) {
+          const href = (<HTMLAnchorElement>anchorTag).href;
+          if (href && href.indexOf("#") >= 0) {
+            tabs.push(href.substr(href.indexOf("#") + 1));
+          }
         }
       }
     }
@@ -235,12 +239,12 @@ export class TabList {
     this._tabs[tabId] = new TabListEl(this.yasgui, this, tabId);
     const tabConf = this.yasgui.persistentConfig.getTab(tabId);
     if (index !== undefined && index < this.yasgui.persistentConfig.getTabs().length - 1) {
-      this._tabsListEl.insertBefore(
+      this._tabsListEl?.insertBefore(
         this._tabs[tabId].draw(tabConf.name),
-        this._tabs[this.yasgui.persistentConfig.getTabs()[index + 1]].tabEl
+        this._tabs[this.yasgui.persistentConfig.getTabs()[index + 1]].tabEl || null
       );
     } else {
-      this._tabsListEl.insertBefore(this._tabs[tabId].draw(tabConf.name), this.addTabEl);
+      this._tabsListEl?.insertBefore(this._tabs[tabId].draw(tabConf.name), this.addTabEl || null);
     }
   }
 }

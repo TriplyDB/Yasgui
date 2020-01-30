@@ -1,4 +1,4 @@
-import { default as Yasqe, Config, RequestConfig } from "./";
+import type { default as Yasqe, Config, RequestConfig } from "./";
 import * as superagent from "superagent";
 import { merge, isFunction } from "lodash-es";
 import * as queryString from "query-string";
@@ -11,11 +11,11 @@ export interface PopulatedAjaxConfig {
   args: RequestArgs;
   withCredentials: boolean;
 }
-function getRequestConfigSettings(yasqe: Yasqe, conf: Partial<Config["requestConfig"]>): RequestConfig<Yasqe> {
+function getRequestConfigSettings(yasqe: Yasqe, conf?: Partial<Config["requestConfig"]>): RequestConfig<Yasqe> {
   return isFunction(conf) ? conf(yasqe) : conf;
 }
 // type callback = AjaxConfig.callbacks['complete'];
-export function getAjaxConfig(yasqe: Yasqe, _config: Partial<Config["requestConfig"]> = {}): PopulatedAjaxConfig {
+export function getAjaxConfig(yasqe: Yasqe, _config: Partial<Config["requestConfig"]> = {}): PopulatedAjaxConfig | undefined {
   const config: RequestConfig<Yasqe> = merge(
     {},
     getRequestConfigSettings(yasqe, yasqe.config.requestConfig),
@@ -46,8 +46,12 @@ export function getAjaxConfig(yasqe: Yasqe, _config: Partial<Config["requestConf
    */
 }
 
-export function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Promise<any> {
+export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Promise<any> {
   const populatedConfig = getAjaxConfig(yasqe, config);
+  if (!populatedConfig) {
+    //nothing to query
+    return
+  }
   var queryStart = Date.now();
 
   var req: superagent.SuperAgentRequest;
@@ -137,8 +141,9 @@ export function getAcceptHeader(yasqe: Yasqe, _config: Config["requestConfig"]) 
   }
   return acceptHeader;
 }
-export function getAsCurlString(yasqe: Yasqe, _config: Config["requestConfig"]) {
-  var ajaxConfig = getAjaxConfig(yasqe, getRequestConfigSettings(yasqe, _config));
+export function getAsCurlString(yasqe: Yasqe, _config?: Config["requestConfig"]) {
+  let ajaxConfig = getAjaxConfig(yasqe, getRequestConfigSettings(yasqe, _config));
+  if (!ajaxConfig) return ''
   var url = ajaxConfig.url;
   if (ajaxConfig.url.indexOf("http") !== 0) {
     //this is either a relative or absolute url, which is not supported by CURL.

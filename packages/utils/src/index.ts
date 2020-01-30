@@ -12,6 +12,7 @@ export function drawSvgStringAsElement(svgString: string) {
     svgContainer.appendChild(svg);
     return svgContainer;
   }
+  throw new Error("No svg string given. Cannot draw")
 }
 export interface FaIcon {
   width: number;
@@ -28,13 +29,13 @@ export function drawFontAwesomeIconAsSvg(faIcon: FaIcon) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${faIcon.width} ${faIcon.height}"><path fill="currentColor" d="${faIcon.svgPathData}"></path></svg>`;
 }
 
-export function hasClass(el: Element, className: string) {
+export function hasClass(el: Element | undefined, className: string) {
   if (!el) return;
   if (el.classList) return el.classList.contains(className);
   else return !!el.className.match(new RegExp("(\\s|^)" + className + "(\\s|$)"));
 }
 
-export function addClass(el: Element, ...classNames: string[]) {
+export function addClass(el: Element |  undefined | null, ...classNames: string[]) {
   if (!el) return;
   for (const className of classNames) {
     if (el.classList) el.classList.add(className);
@@ -42,7 +43,7 @@ export function addClass(el: Element, ...classNames: string[]) {
   }
 }
 
-export function removeClass(el: Element, className: string) {
+export function removeClass(el: Element | undefined | null, className: string) {
   if (!el) return;
   if (el.classList) el.classList.remove(className);
   else if (hasClass(el, className)) {

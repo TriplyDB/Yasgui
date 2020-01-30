@@ -1,9 +1,9 @@
-import * as CodeMirror from "codemirror";
+import type CodeMirror from "codemirror";
 export interface State {
   tokenize: (stream: CodeMirror.StringStream, state: State) => string;
-  inLiteral: "SINGLE" | "DOUBLE";
-  errorStartPos: number;
-  errorEndPos: number;
+  inLiteral: "SINGLE" | "DOUBLE" | undefined;
+  errorStartPos: number | undefined;
+  errorEndPos: number | undefined;
   queryType:
     | "SELECT"
     | "CONSTRUCT"
@@ -17,7 +17,8 @@ export interface State {
     | "DROP"
     | "COPY"
     | "MOVE"
-    | "ADD";
+    | "ADD"
+    | undefined
   inPrefixDecl: boolean;
   allowVars: boolean;
   allowBnodes: boolean;
@@ -31,19 +32,19 @@ export interface State {
   complete: boolean;
   lastProperty: string;
   lastPropertyIndex: number;
-  errorMsg: string;
+  errorMsg: string | undefined;
   lastPredicateOffset: number;
-  currentPnameNs: string;
+  currentPnameNs: string | undefined;
   possibleFullIri: boolean;
 }
 export interface Token {
-  quotePos: "end" | "start" | "content";
+  quotePos: "end" | "start" | "content" | undefined;
   cat: string;
   style: string;
   string: string;
   start: number;
 }
-export default function(config: CodeMirror.EditorConfiguration, parserConfig: any): CodeMirror.Mode<State> {
+export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode<State> {
   const grammar = require("./_tokenizer-table.js");
   const ll1_table = grammar.table;
 
@@ -318,7 +319,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
 
   function tokenBase(stream: CodeMirror.StringStream, state: State) {
     function nextToken(): Token {
-      var consumed: string[] = null;
+      let consumed: string[];
       if (state.inLiteral) {
         var closingQuotes = false;
         //multi-line literal. try to parse contents.
@@ -338,7 +339,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
             string: consumed[0],
             start: stream.start
           };
-          if (closingQuotes) state.inLiteral = null;
+          if (closingQuotes) state.inLiteral = undefined;
           return returnObj;
         }
       }
@@ -350,7 +351,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
           var quotePos: Token["quotePos"];
           if (state.inLiteral) {
             //end of literal. everything is fine
-            state.inLiteral = null;
+            state.inLiteral = undefined;
             quotePos = "end";
           } else {
             state.inLiteral = <any>quoteType;
@@ -375,7 +376,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
             style: terminals[i].style,
             string: consumed[0],
             start: stream.start,
-            quotePos: null
+            quotePos: undefined
           };
         }
       }
@@ -388,7 +389,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
           style: "keyword",
           string: consumed[0],
           start: stream.start,
-          quotePos: null
+          quotePos: undefined
         };
 
       // Punctuation
@@ -399,7 +400,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
           style: "punc",
           string: consumed[0],
           start: stream.start,
-          quotePos: null
+          quotePos: undefined
         };
 
       // Token is invalid
@@ -410,7 +411,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
         style: "error",
         string: consumed[0],
         start: stream.start,
-        quotePos: null
+        quotePos: undefined
       };
     }
 
@@ -658,7 +659,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
   function indent(state: State, textAfter: string) {
     //just avoid we don't indent multi-line  literals
     if (state.inLiteral) return 0;
-    if (state.stack.length && state.stack[state.stack.length - 1] == "?[or([verbPath,verbSimple]),objectListPath]") {
+    if (state.lastPredicateOffset !== undefined && state.stack.length && state.stack[state.stack.length - 1] == "?[or([verbPath,verbSimple]),objectListPath]") {
       //we are after a semi-colon. I.e., nicely align this line with predicate position of previous line
       return state.lastPredicateOffset;
     } else {
@@ -687,7 +688,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
           n += dn;
         }
       }
-      return n * config.indentUnit;
+      return n * (config.indentUnit ?? 2);
     }
   }
 
@@ -698,9 +699,9 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
         tokenize: tokenBase,
         OK: true,
         complete: grammar.acceptEmpty,
-        errorStartPos: null,
-        errorEndPos: null,
-        queryType: null,
+        errorStartPos: undefined,
+        errorEndPos: undefined,
+        queryType: undefined,
         possibleCurrent: getPossibles(grammar.startSymbol),
         possibleNext: getPossibles(grammar.startSymbol),
         allowVars: true,
@@ -708,12 +709,12 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
         storeProperty: false,
         lastProperty: "",
         lastPropertyIndex: 0,
-        inLiteral: null,
+        inLiteral: undefined,
         stack: [grammar.startSymbol],
-        lastPredicateOffset: config.indentUnit,
+        lastPredicateOffset: config.indentUnit || 2,
         prefixes: {},
         variables: {},
-        currentPnameNs: null,
+        currentPnameNs: undefined,
         errorMsg: undefined,
         inPrefixDecl: false,
         possibleFullIri: false
