@@ -5,7 +5,6 @@ import * as path from "path";
 import * as http from "http";
 import * as chai from "chai";
 import { it, describe, before, beforeEach, after, afterEach } from "mocha";
-import _ from "lodash";
 const expect = chai.expect;
 import Yasqe from "@triply/yasqe";
 //@ts-ignore ignore unused warning
@@ -46,6 +45,25 @@ describe("Yasqe", function() {
     });
     expect(value).to.contain("SELECT");
   });
+
+  async function waitForAutocompletionPopup(shouldNotHaveLength?: number): Promise<number> {
+    if (shouldNotHaveLength) {
+      await page.waitForFunction(
+        `document.querySelector('.CodeMirror-hints').children.length !== ${shouldNotHaveLength}`,
+        { timeout: 600 }
+      );
+    } else {
+      await page.waitFor(`.CodeMirror-hints`, { timeout: 600 });
+    }
+    return page.evaluate(() => document.querySelector(".CodeMirror-hints").children.length);
+  }
+
+  async function issueAutocompletionKeyCombination() {
+    await page.keyboard.down("Control");
+    await page.keyboard.press("Space");
+    await page.keyboard.up("Control");
+  }
+
   describe("Autoformatting", function() {
     it("With literal", async function() {
       const value = await page.evaluate(() => {
@@ -95,25 +113,59 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         }
       );
     });
+    it("should show prefix completions after adding new prefix", async () => {
+      await page.evaluate(() => {
+        const query = `# prefix #
+PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
+* where { ?sub `;
+        window.yasqe.setValue(query);
+        window.yasqe.focus();
+        window.yasqe.getDoc().setCursor({ line: window.yasqe.getDoc().lineCount(), ch: 0 });
+        return window.yasqe.getDoc().getCursor();
+      });
+      await page.keyboard.type("foaf:");
+      await page.waitForFunction(
+        () => {
+          return window.yasqe.getValue().indexOf("PREFIX foaf: <http://xmlns.com/foaf/0.1/>") >= 0;
+        },
+        {
+          polling: 10
+        }
+      );
+      await waitForAutocompletionPopup();
+    });
+    it("path traversal should change the correct segment", async () => {
+      await page.evaluate(() => {
+        const query =
+          "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?s geo:asWkt/geo:/geo:rcc8po";
+        window.yasqe.setValue(query);
+        window.yasqe.focus();
+        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf(":/geo:rcc8po") });
+        return window.yasqe.getDoc().getCursor();
+      });
+      await issueAutocompletionKeyCombination();
+      await waitForAutocompletionPopup();
+      await page.keyboard.press("Enter");
+      const newValue = await page.evaluate(() => window.yasqe.getValue());
+      expect(newValue).to.equal(
+        "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?s geo:asWkt/geo:defaultGeometry/geo:rcc8po"
+      );
+    });
   });
   describe("Autocompleting", function() {
-    async function issueAutocompletionKeyCombination() {
-      await page.keyboard.down("Control");
-      await page.keyboard.press("Space");
-      await page.keyboard.up("Control");
-    }
-    async function waitForAutocompletionPopup(shouldNotHaveLength?: number): Promise<number> {
-      if (shouldNotHaveLength) {
-        await page.waitForFunction(
-          `document.querySelector('.CodeMirror-hints').children.length !== ${shouldNotHaveLength}`
-        );
-      } else {
-        await page.waitFor(`.CodeMirror-hints`);
-      }
-      return page.evaluate(() => document.querySelector(".CodeMirror-hints").children.length);
-      // return page.waitForFunction(`document.querySelector('.CodeMirror-hints').children.length ${childrenLengthCheck}`);
-    }
-    it("Should only trigger get per request", async () => {
+    const getCompleteToken = () => {
+      return page.evaluate(() => window.yasqe.getCompleteToken());
+    };
+    const getCompleteTokenAt = (character: number, line?: number) => {
+      return page.evaluate(
+        (at: { character: number; line: number }) => {
+          window.yasqe.getDoc().setCursor({ line: at.line || window.yasqe.getCursor().line, ch: at.character });
+          return window.yasqe.getCompleteToken();
+        },
+        { character: character, line: line }
+      );
+    };
+    it("Should only trigger get request when needed", async () => {
       // Setting up
       await page.evaluate(() => {
         const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> select * where {?x rdf:type <htt`;
@@ -140,8 +192,139 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       expect(await getHideCount()).to.equal(0);
       await page.keyboard.type("p://www.");
       await wait(200);
-      expect(await getShowCount()).to.equal(2);
+      expect(await getShowCount()).to.be.lessThan(3);
       expect(await getHideCount()).to.equal(0);
+    });
+    it("Should show the same results irregardless of where the cursor is", async () => {
+      await page.evaluate(() => {
+        const query = `select * where { ?s <http://www.opengis.net/ont/geosparql#as`;
+        window.yasqe.setValue(query);
+        window.yasqe.focus();
+        window.yasqe.getDoc().setCursor({ line: 0, ch: query.length });
+        return window.yasqe.getDoc().getCursor();
+      });
+      await issueAutocompletionKeyCombination();
+      const resultCount = await waitForAutocompletionPopup();
+      await page.keyboard.press("Escape");
+      await page.evaluate(() => {
+        const query = `select * where { ?s <http://www.opengis.net/ont/geosparql#as`;
+        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("/geos") });
+      });
+      await issueAutocompletionKeyCombination();
+      expect(resultCount).to.equal(await waitForAutocompletionPopup());
+      await page.keyboard.press("Escape");
+      await page.evaluate(() => {
+        const query = `select * where { ?s <http://www.opengis.net/ont/geosparql#as`;
+        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("engis") });
+      });
+      await issueAutocompletionKeyCombination();
+      expect(resultCount).to.equal(await waitForAutocompletionPopup());
+      await page.keyboard.press("Escape");
+      await page.evaluate(() => {
+        const query = `select * where { ?s <http://www.opengis.net/ont/geosparql#as`;
+        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("http") });
+      });
+      await issueAutocompletionKeyCombination();
+      expect(resultCount).to.equal(await waitForAutocompletionPopup());
+    });
+    it("Should work without trailing whitespace", async () => {
+      await page.evaluate(() => {
+        const query = "select * where { ?subject ?predicate ?s}";
+        window.yasqe.setValue(query);
+        window.yasqe.focus();
+        window.yasqe.getDoc().setCursor({ line: 0, ch: query.length - 2 });
+        return window.yasqe.getDoc().getCursor();
+      });
+      await issueAutocompletionKeyCombination();
+      await waitForAutocompletionPopup();
+
+      await page.keyboard.press("Enter");
+      const newValue = await page.evaluate(() => window.yasqe.getValue());
+      expect(newValue).to.equal("select * where { ?subject ?predicate ?subject}");
+    });
+
+    it("Should scope to only one part of a path expression", async () => {
+      const oneLineQuery =
+        "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:a/geo:c/geo:i";
+
+      await page.evaluate(() => {
+        // Pref 1 = asWkt,asGML, Pref 2 = coordinateDimension, Pref 3 = geo:isEmpty,isSimple
+        const oneLineQuery =
+          "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:a/geo:c/geo:i";
+        window.yasqe.setValue(oneLineQuery);
+        window.yasqe.focus();
+        window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.length - 1 });
+      });
+      let token = await getCompleteToken();
+      expect(token.string).to.equal("geo:i");
+      token = await getCompleteTokenAt(oneLineQuery.length - 6);
+      expect(token.string).to.equal("geo:c");
+      token = await getCompleteTokenAt(oneLineQuery.length - 15);
+      expect(token.string).to.equal("geo:a");
+
+      //token is now in beginning of property path
+      await issueAutocompletionKeyCombination();
+      await waitForAutocompletionPopup();
+
+      await page.keyboard.press("Enter");
+      const newValue = await page.evaluate(() => window.yasqe.getValue());
+      expect(newValue).to.equal(
+        "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:asGML/geo:c/geo:i"
+      );
+    });
+
+    it("Should deal with infinished full iri", async () => {
+      await page.evaluate(() => {
+        const oneLineQuery = "select * where { ?subject <http://www.opengis.net/ont/geosparql# ?s";
+        window.yasqe.setValue(oneLineQuery);
+        window.yasqe.focus();
+        window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.length - 5 });
+      });
+
+      await issueAutocompletionKeyCombination();
+      await waitForAutocompletionPopup();
+
+      await page.keyboard.press("Enter");
+      const newValue = await page.evaluate(() => window.yasqe.getValue());
+      expect(newValue).to.equal("select * where { ?subject <http://www.opengis.net/ont/geosparql#defaultGeometry> ?s");
+    });
+
+    it("Should autocomplete from middle of unfinished iri", async () => {
+      await page.evaluate(() => {
+        const oneLineQuery = "select * where { ?subject <http://www.opengis.net/ont/geosparql#";
+        window.yasqe.setValue(oneLineQuery);
+        window.yasqe.focus();
+        window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("opengis") });
+      });
+
+      await issueAutocompletionKeyCombination();
+      await waitForAutocompletionPopup();
+
+      await page.keyboard.press("Enter");
+      const newValue = await page.evaluate(() => window.yasqe.getValue());
+      expect(newValue).to.equal("select * where { ?subject <http://www.opengis.net/ont/geosparql#defaultGeometry>");
+
+      await page.evaluate(() => {
+        const oneLineQuery = "select * where { ?subject <http://www.opengis.net/ont/geosparql#";
+        window.yasqe.setValue(oneLineQuery);
+        window.yasqe.focus();
+        window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("opengis") });
+      });
+      const token = await getCompleteToken();
+      expect(token.string).to.equal("<http://www.opengis.net/ont/geosparql#");
+    });
+
+    describe("getCompleteToken", () => {
+      it("Should expand to the end", async () => {
+        await page.evaluate(() => {
+          const oneLineQuery = "select * where { ?subject <http://www.opengis.net/ont/geosparql#";
+          window.yasqe.setValue(oneLineQuery);
+          window.yasqe.focus();
+          window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("opengis") });
+        });
+        const token = await getCompleteToken();
+        expect(token.string).to.equal("<http://www.opengis.net/ont/geosparql#");
+      });
     });
     /**
      * This test is tricky, as it uses the LOV API in our test. I.e, if this test fails, first check whether LOV is actually up
@@ -348,13 +531,12 @@ bb
          * Issue autocompletion shortcut
          */
         await page.keyboard.type("prefix a");
-
+        await wait(200);
         /**
          * Wait for hint div to appear
          */
         const firstResults = await waitForAutocompletionPopup();
-        //not sure why this isnt a 100. Disabled for now, try again later
-        // expect(firstResults).to.equal(100, 'Expected the hard limit of 100 to be applied')
+        expect(firstResults).to.equal(100, "Expected the hard limit of 100 to be applied");
 
         /**
          * Type a string to reduce autocompletion list

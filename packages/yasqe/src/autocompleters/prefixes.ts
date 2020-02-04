@@ -51,6 +51,8 @@ var conf: Autocompleter.CompleterConfig = {
               yasqe.autocompleters[this.name].getCompletions(token).then(suggestions => {
                 if (suggestions.length) {
                   yasqe.addPrefixes(suggestions[0]);
+                  // Re-activate autocompleter after adding prefixes, so another autocompleter can kick in
+                  yasqe.autocomplete();
                 }
               }, console.warn);
             }

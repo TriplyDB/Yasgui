@@ -23,12 +23,12 @@ export interface AutocompletionToken extends Token {
   tokenPrefix?: string;
   tokenPrefixUri?: string;
   from?: Partial<Position>;
+  to?: Partial<Position>;
 }
 export class Completer extends EventEmitter {
   protected yasqe: Yasqe;
   private trie: Trie;
   private config: CompleterConfig;
-  private active: boolean = false;
   constructor(yasqe: Yasqe, config: CompleterConfig) {
     super();
     this.yasqe = yasqe;
@@ -137,13 +137,15 @@ export class Completer extends EventEmitter {
     }
     var from: Position;
     var to: Position;
+    const cursor = this.yasqe.getDoc().getCursor();
     if (autocompletionToken.from) {
-      const cur = this.yasqe.getDoc().getCursor();
-      from = { ...cur, ...autocompletionToken.from };
+      from = { ...cursor, ...autocompletionToken.from };
     }
     // Need to set a 'to' part as well, as otherwise we'd be appending the result to the already typed filter
-    if (autocompletionToken.string.length > 0) {
-      const line = this.yasqe.getDoc().getCursor().line;
+    const line = this.yasqe.getDoc().getCursor().line;
+    if (autocompletionToken.to) {
+      to = { ch: autocompletionToken?.to?.ch || this.yasqe.getCompleteToken().end, line: line };
+    } else if (autocompletionToken.string.length > 0) {
       to = { ch: this.yasqe.getCompleteToken().end, line: line };
     } else {
       to = <any>autocompletionToken.from;
@@ -173,9 +175,27 @@ export class Completer extends EventEmitter {
   public autocomplete(fromAutoShow: boolean) {
     //this part goes before the autoshow check, as we _would_ like notification showing to indicate a user can press ctrl-space
     if (!this.isValidPosition()) return false;
+    const previousCompletionItem = this.yasqe.state.completionActive;
+
+    // Showhint by defaults takes the autocomplete start position (the location of the cursor at the time of starting the autocompletion).
+    const cursor = this.yasqe.getDoc().getCursor();
+    if (
+      // When the cursor goes before current completionItem (e.g. using arrow keys), it would close the autocompletions.
+      // We want the autocompletion to be active at whatever point we are in the token, so let's modify this start pos with the start pos of the token
+      previousCompletionItem &&
+      cursor.sticky && // Is undefined at the end of the token, otherwise it is set as either "before" or "after" (The movement of the cursor)
+      cursor.ch !== previousCompletionItem.startPos.ch
+    ) {
+      this.yasqe.state.completionActive.startPos = cursor;
+    } else if (previousCompletionItem && !cursor.sticky && cursor.ch < previousCompletionItem.startPos.ch) {
+      // A similar thing happens when pressing backspace, CodeMirror will close this autocomplete when 'startLen' changes downward
+      cursor.sticky = previousCompletionItem.startPos.sticky;
+      this.yasqe.state.completionActive.startPos.ch = cursor.ch;
+      this.yasqe.state.completionActive.startLen--;
+    }
     if (
       fromAutoShow && // from autoShow, i.e. this gets called each time the editor content changes
-      (!this.config.autoShow || this.active) // Don't show  and don't create a new instance when its already active
+      (!this.config.autoShow || this.yasqe.state.completionActive) // Don't show  and don't create a new instance when its already active
     ) {
       return false;
     }
@@ -195,11 +215,9 @@ export class Completer extends EventEmitter {
           }
         };
         CodeMirror.on(hintResult, "shown", () => {
-          this.active = true;
           this.yasqe.emit("autocompletionShown", (this.yasqe as any).state.completionActive.widget);
         });
         CodeMirror.on(hintResult, "close", () => {
-          this.active = false;
           this.yasqe.emit("autocompletionClose");
         });
         return hintResult;
@@ -209,7 +227,7 @@ export class Completer extends EventEmitter {
     getHints.async = false; //in their code, async means using a callback
     //we always return a promise, which should be properly handled regardless of this val
     var hintConfig: HintConfig = {
-      closeCharacters: /(?=a)b/,
+      closeCharacters: /[\s>"]/,
       completeSingle: false,
       hint: getHints,
       container: this.yasqe.rootEl,
@@ -237,7 +255,7 @@ export function preprocessIriForCompletion(yasqe: Yasqe, token: AutocompletionTo
     const currentLine = yasqe.getDoc().getLine(yasqe.getDoc().getCursor().line);
 
     //We're not supporting property paths with line breaks in them. That way, we can more easily avoid issues
-    //where we're in a property position, but are actually autocompletion the property of a triply-pattern above
+    //where we're in a property position, but are actually autocompletion the property of a triple-pattern above
     if (currentLine.indexOf(token.state.lastProperty) >= 0) {
       //The lastProperty is not neccesarily the full property (getHint messes things up).
       //Instead, it can be something like `rdf:`, where it actually should be `rdf:t`
@@ -246,8 +264,10 @@ export function preprocessIriForCompletion(yasqe: Yasqe, token: AutocompletionTo
       const remainingProp = remainingPath.match(/^[\w\d]*/);
       stringToPreprocess = token.state.lastProperty + (remainingProp ? remainingProp[0] : "");
       token.from = {
-        ch: token.start + token.string.length - token.state.lastProperty.length
+        ch: token.state.lastPropertyIndex
       };
+      // This might not be the last item in the path-chain so we need to make sure we are
+      token.to = { ch: token.state.lastPropertyIndex + token.state.lastProperty.length };
     }
   }
   if (stringToPreprocess.indexOf("<") < 0) {
@@ -289,7 +309,11 @@ export function postprocessIriCompletion(_yasqe: Yasqe, token: AutocompletionTok
 }
 
 //Use protocol relative request when served via http[s]*. Otherwise (e.g. file://, fetch via http)
-export function fetchFromLov(yasqe: Yasqe, type: "class" | "property", token: AutocompletionToken): Promise<string[]> {
+export const fetchFromLov = (
+  yasqe: Yasqe,
+  type: "class" | "property",
+  token: AutocompletionToken
+): Promise<string[]> => {
   var reqProtocol = window.location.protocol.indexOf("http") === 0 ? "https://" : "http://";
   const notificationKey = "autocomplete_" + type;
   if (!token || !token.string || token.string.trim().length == 0) {
@@ -321,7 +345,7 @@ export function fetchFromLov(yasqe: Yasqe, type: "class" | "property", token: Au
         yasqe.showNotification(notificationKey, "Failed fetching suggestions");
       }
     );
-}
+};
 
 import variableCompleter from "./variables";
 import prefixCompleter from "./prefixes";
