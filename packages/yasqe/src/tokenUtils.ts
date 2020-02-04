@@ -14,6 +14,10 @@ export function getCompleteToken(yasqe: Yasqe, token: Token, cur: Position): Tok
   if (!token) {
     token = yasqe.getTokenAt(cur);
   }
+
+  return expandTokenToEnd(yasqe, expandTokenToStart(yasqe, token, cur), cur);
+}
+function expandTokenToStart(yasqe: Yasqe, token: Token, cur: Position): Token {
   var prevToken = yasqe.getTokenAt({
     line: cur.line,
     ch: token.start
@@ -22,7 +26,7 @@ export function getCompleteToken(yasqe: Yasqe, token: Token, cur: Position): Tok
   if (prevToken.type != null && prevToken.type != "ws" && token.type != null && token.type != "ws") {
     token.start = prevToken.start;
     token.string = prevToken.string + token.string;
-    return getCompleteToken(yasqe, token, {
+    return expandTokenToStart(yasqe, token, {
       line: cur.line,
       ch: prevToken.start
     }); // recursively, might have multiple tokens which it should include
@@ -30,6 +34,35 @@ export function getCompleteToken(yasqe: Yasqe, token: Token, cur: Position): Tok
     //always keep 1 char of whitespace between tokens. Otherwise, autocompletions might end up next to the previous node, without whitespace between them
     token.start = token.start + 1;
     token.string = token.string.substring(1);
+    return token;
+  } else {
+    return token;
+  }
+}
+function expandTokenToEnd(yasqe: Yasqe, token: Token, cur: Position): Token {
+  var nextToken = yasqe.getTokenAt({
+    line: cur.line,
+    ch: token.end + 1
+  });
+  // not end of line, and not whitespace
+  if (
+    nextToken.type != null &&
+    nextToken.type != "ws" &&
+    token.type != null &&
+    token.type != "ws" &&
+    // Avoid infinite loops as CM will give back the last token of in a line when requesting something larger then the lines length
+    nextToken.end !== token.end
+  ) {
+    token.end = nextToken.end;
+    token.string = token.string + nextToken.string;
+    return expandTokenToEnd(yasqe, token, {
+      line: cur.line,
+      ch: nextToken.end
+    }); // recursively, might have multiple tokens which it should include
+  } else if (token.type != null && token.type == "ws") {
+    //always keep 1 char of whitespace between tokens. Otherwise, autocompletions might end up next to the previous node, without whitespace between them
+    token.end = token.end + 1;
+    token.string = token.string.substring(token.string.length - 1);
     return token;
   } else {
     return token;
