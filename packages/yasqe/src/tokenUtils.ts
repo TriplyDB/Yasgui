@@ -32,7 +32,6 @@ function expandTokenToStart(yasqe: Yasqe, token: Token, cur: Position): Token {
   if (prevToken.type != null && prevToken.type != "ws" && token.type != null && token.type != "ws") {
     token.start = prevToken.start;
     token.string = prevToken.string + token.string;
-    // token.type = prevToken.type
     return expandTokenToStart(yasqe, token, {
       line: cur.line,
       ch: prevToken.start
@@ -43,7 +42,6 @@ function expandTokenToStart(yasqe: Yasqe, token: Token, cur: Position): Token {
     token.string = token.string.substring(1);
     return token;
   } else {
-    // console.log(token.string)
     return token;
   }
 }
@@ -57,7 +55,7 @@ function expandTokenToEnd(yasqe: Yasqe, token: Token, cur: Position): Token {
      */
     const whitespaceIndex = token.string.indexOf(" ");
     token.string = token.string.substr(0, whitespaceIndex);
-    token.end = token.end - (token.string.length - whitespaceIndex);
+    token.end = token.start + token.string.length;
     return token;
   }
   if (!token.type) return token;

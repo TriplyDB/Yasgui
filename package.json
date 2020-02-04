@@ -16,6 +16,7 @@
     "util:analyzeBundle": "ANALYZE_BUNDLE=true yarn run build",
     "util:bundlesize": "bundlesize",
     "pretest": "[ -z \"$(ls -A ./build 2> /dev/null)\" ] && echo Run \\\"yarn build\\\" before running a test && exit 1 || true",
+    "test:dev": "TEST_ON_DEV_BUILD=1 yarn run test",
     "test": "yarn run puppeteer-test && yarn run unit-test",
     "unit-test": "tsc -p ./tsconfig-test.json && mocha $(find ./build/test -name '*-test.js') --require source-map-support/register || true",
     "puppeteer-test": "tsc -p ./tsconfig-test.json && mocha --timeout 30000 ./build/test/test/run.js --require source-map-support/register",

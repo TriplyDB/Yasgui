@@ -496,8 +496,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
       // alert("Invalid:"+tokenOb.text);
       return tokenOb.style;
     }
-
-    if (tokenOb.cat == "WS" || tokenOb.cat == "COMMENT" || (tokenOb.quotePos && tokenOb.quotePos != "end")) {
+    if (tokenOb.cat === "WS" || tokenOb.cat === "COMMENT" || (tokenOb.quotePos && tokenOb.quotePos != "end")) {
       state.possibleCurrent = state.possibleNext;
       state.possibleFullIri = false;
       return tokenOb.style;
@@ -599,7 +598,6 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
       recordFailurePos();
     }
     if (state.possibleNext.indexOf("a") >= 0) {
-      // if ()
       //only store last pred offset when this prop isnt part of a property path
       //see #https://github.com/TriplyDB/YASGUI.YASQE/issues/105
       const line = stream.string;
