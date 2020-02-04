@@ -18,14 +18,21 @@ export function getCompleteToken(yasqe: Yasqe, token: Token, cur: Position): Tok
   return expandTokenToEnd(yasqe, expandTokenToStart(yasqe, token, cur), cur);
 }
 function expandTokenToStart(yasqe: Yasqe, token: Token, cur: Position): Token {
-  var prevToken = yasqe.getTokenAt({
+  var prevToken: Token = yasqe.getTokenAt({
     line: cur.line,
     ch: token.start
   });
+
+  if (prevToken.type === "punc" && !prevToken.state.possibleFullIri && !prevToken.state.inPrefixDecl) {
+    //assuming this is a path expression. Should not expand the token anymore
+    //Also checking whether current token isnt an error, to avoid stopping on iri path delimiters
+    return token;
+  }
   // not start of line, and not whitespace
   if (prevToken.type != null && prevToken.type != "ws" && token.type != null && token.type != "ws") {
     token.start = prevToken.start;
     token.string = prevToken.string + token.string;
+    // token.type = prevToken.type
     return expandTokenToStart(yasqe, token, {
       line: cur.line,
       ch: prevToken.start
@@ -36,20 +43,38 @@ function expandTokenToStart(yasqe: Yasqe, token: Token, cur: Position): Token {
     token.string = token.string.substring(1);
     return token;
   } else {
+    // console.log(token.string)
     return token;
   }
 }
+
 function expandTokenToEnd(yasqe: Yasqe, token: Token, cur: Position): Token {
-  var nextToken = yasqe.getTokenAt({
+  if (token.string.indexOf(" ") >= 0) {
+    /**
+     * This is most likely a query ending with `<http://www.opengis.net/ont/geosparql# ?a`
+     *                                                                                ^ cursor
+     * In this case, separate by whitespace, and assume we're finished
+     */
+    const whitespaceIndex = token.string.indexOf(" ");
+    token.string = token.string.substr(0, whitespaceIndex);
+    token.end = token.end - (token.string.length - whitespaceIndex);
+    return token;
+  }
+  if (!token.type) return token;
+
+  var nextToken: Token = yasqe.getTokenAt({
     line: cur.line,
     ch: token.end + 1
   });
-  // not end of line, and not whitespace
+
   if (
-    nextToken.type != null &&
-    nextToken.type != "ws" &&
-    token.type != null &&
-    token.type != "ws" &&
+    // not end of line
+    nextToken.type !== "ws" &&
+    //not a punctuation (for eg '?subject}', we dont want to include '}')
+    token.state.possibleFullIri &&
+    //not whitespace
+    token.type !== null &&
+    token.type !== "ws" &&
     // Avoid infinite loops as CM will give back the last token of in a line when requesting something larger then the lines length
     nextToken.end !== token.end
   ) {
@@ -59,7 +84,7 @@ function expandTokenToEnd(yasqe: Yasqe, token: Token, cur: Position): Token {
       line: cur.line,
       ch: nextToken.end
     }); // recursively, might have multiple tokens which it should include
-  } else if (token.type != null && token.type == "ws") {
+  } else if (token.type === "ws") {
     //always keep 1 char of whitespace between tokens. Otherwise, autocompletions might end up next to the previous node, without whitespace between them
     token.end = token.end + 1;
     token.string = token.string.substring(token.string.length - 1);

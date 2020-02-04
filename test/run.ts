@@ -153,7 +153,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.keyboard.press("Space");
       await page.keyboard.up("Control");
     }
-    it("Should only trigger get per request", async () => {
+    it("Should only trigger get request when needed", async () => {
       // Setting up
       await page.evaluate(() => {
         const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> select * where {?x rdf:type <htt`;
@@ -241,12 +241,12 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       });
       it("Should scope to only one part of a path expression", async () => {
         const oneLineQuery =
-          "PREFIX geo: <http://www.opengis.net/ont/geosparql#>; select * where { ?subject geo:a/geo:c/geo:i";
+          "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:a/geo:c/geo:i";
 
         await page.evaluate(() => {
           // Pref 1 = asWkt,asGML, Pref 2 = coordinateDimension, Pref 3 = geo:isEmpty,isSimple
           const oneLineQuery =
-            "PREFIX geo: <http://www.opengis.net/ont/geosparql#>; select * where { ?subject geo:a/geo:c/geo:i";
+            "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:a/geo:c/geo:i";
           window.yasqe.setValue(oneLineQuery);
           window.yasqe.focus();
           window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.length - 1 });
@@ -269,7 +269,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         const token = await getCompleteToken();
         expect(token.string).to.equal("<http://www.opengis.net/ont/geosparql#");
       });
-      it("Should expand when the token is in an error state", async () => {
+      it("Should expand to the end", async () => {
         await page.evaluate(() => {
           const oneLineQuery = "select * where { ?subject <http://www.opengis.net/ont/geosparql#";
           window.yasqe.setValue(oneLineQuery);
@@ -490,8 +490,7 @@ bb
          * Wait for hint div to appear
          */
         const firstResults = await waitForAutocompletionPopup();
-        //not sure why this isnt a 100. Disabled for now, try again later
-        // expect(firstResults).to.equal(100, 'Expected the hard limit of 100 to be applied')
+        expect(firstResults).to.equal(100, "Expected the hard limit of 100 to be applied");
 
         /**
          * Type a string to reduce autocompletion list

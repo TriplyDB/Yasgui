@@ -3,9 +3,13 @@ import * as fs from "fs-extra";
 import * as puppeteer from "puppeteer";
 import * as http from "http";
 import * as Mocha from "mocha";
-const PORT = 40001;
-import * as _ from "lodash";
+
+const TEST_ON_DEV_BUILD = !!process.env["TEST_ON_DEV_BUILD"];
+const PORT = TEST_ON_DEV_BUILD ? 4000 : 40001;
+
+import * as _ from "lodash"; // eslint-disable-line
 export function setupServer(buildDir: string): Promise<http.Server> {
+  if (TEST_ON_DEV_BUILD) return Promise.resolve(undefined);
   let staticFileServer = new NodeStatic.Server(buildDir);
   return new Promise<http.Server>((resolve, reject) => {
     var server = http
@@ -44,7 +48,7 @@ export async function setup(ctx: Mocha.Context, buildDir: string) {
 }
 export async function destroy(browser: puppeteer.Browser, server: http.Server) {
   if (browser) await browser.close();
-  if (server) await server.close();
+  if (server) server.close();
 }
 export async function getPage(browser: puppeteer.Browser, path: string) {
   const page = await browser.newPage();

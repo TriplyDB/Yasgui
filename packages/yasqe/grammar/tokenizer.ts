@@ -34,6 +34,7 @@ export interface State {
   errorMsg: string;
   lastPredicateOffset: number;
   currentPnameNs: string;
+  possibleFullIri: boolean;
 }
 export interface Token {
   quotePos: "end" | "start" | "content";
@@ -498,6 +499,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
 
     if (tokenOb.cat == "WS" || tokenOb.cat == "COMMENT" || (tokenOb.quotePos && tokenOb.quotePos != "end")) {
       state.possibleCurrent = state.possibleNext;
+      state.possibleFullIri = false;
       return tokenOb.style;
     }
     // Otherwise, run the parser until the token is digested
@@ -505,7 +507,12 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
     var finished = false;
     var topSymbol;
     const tokenCat = tokenOb.cat;
-
+    if (state.possibleFullIri && tokenOb.string === ">") {
+      state.possibleFullIri = false;
+    }
+    if (!state.possibleFullIri && tokenOb.string === "<") {
+      state.possibleFullIri = true;
+    }
     if (!tokenOb.quotePos || tokenOb.quotePos == "end") {
       // Incremental LL1 parse
       while (state.stack.length > 0 && tokenCat && state.OK && !finished) {
@@ -517,7 +524,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
             if (state.inPrefixDecl) {
               if (topSymbol === "PNAME_NS" && tokenOb.string.length > 0) {
                 state.currentPnameNs = tokenOb.string.slice(0, -1);
-              } else if (typeof state.currentPnameNs === 'string' && tokenOb.string.length > 1) {
+              } else if (typeof state.currentPnameNs === "string" && tokenOb.string.length > 1) {
                 state.prefixes[state.currentPnameNs] = tokenOb.string.slice(1, -1);
                 //reset current pname ns
                 state.currentPnameNs = undefined;
@@ -534,6 +541,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
               const item = ll1_table[state.stack[sp - 1]];
               if (!item || !item["$"]) allNillable = false;
             }
+
             state.complete = allNillable;
             if (state.storeProperty && tokenCat != "punc") {
               state.lastProperty = tokenOb.string;
@@ -591,6 +599,7 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
       recordFailurePos();
     }
     if (state.possibleNext.indexOf("a") >= 0) {
+      // if ()
       //only store last pred offset when this prop isnt part of a property path
       //see #https://github.com/TriplyDB/YASGUI.YASQE/issues/105
       const line = stream.string;
@@ -708,7 +717,8 @@ export default function(config: CodeMirror.EditorConfiguration, parserConfig: an
         variables: {},
         currentPnameNs: null,
         errorMsg: undefined,
-        inPrefixDecl: false
+        inPrefixDecl: false,
+        possibleFullIri: false
       };
     },
     indent: indent,
