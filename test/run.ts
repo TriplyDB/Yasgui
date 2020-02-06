@@ -269,7 +269,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.keyboard.press("Enter");
       const newValue = await page.evaluate(() => window.yasqe.getValue());
       expect(newValue).to.equal(
-        "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:asGML/geo:c/geo:i"
+        "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:asWKT/geo:c/geo:i"
       );
     });
 
