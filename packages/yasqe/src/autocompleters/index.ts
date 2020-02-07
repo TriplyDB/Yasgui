@@ -231,6 +231,16 @@ export class Completer extends EventEmitter {
       completeSingle: false,
       hint: getHints,
       container: this.yasqe.rootEl,
+      // Override these actions back to use their default function
+      // Otherwise these would navigate to the start/end of the suggestion list, while this can also be accomplished with PgUp and PgDn
+      extraKeys: {
+        Home: (yasqe, event) => {
+          yasqe.getDoc().setCursor({ ch: 0, line: event.data.from.line });
+        },
+        End: (yasqe, event) => {
+          yasqe.getDoc().setCursor({ ch: yasqe.getLine(event.data.to.line).length, line: event.data.to.line });
+        }
+      },
       ...this.yasqe.config.hintConfig
     };
     this.yasqe.showHint(hintConfig);

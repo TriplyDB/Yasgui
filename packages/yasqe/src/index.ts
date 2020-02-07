@@ -901,6 +901,22 @@ export interface Hint {
   from?: Position;
   to?: Position;
 }
+// type AutocompleteEventHandler = (
+//   yasqe: Yasqe,
+//   event: {
+//     close: () => void;
+//     data: {
+//       from: Position;
+//       to: Position;
+//       list: Hint[];
+//     };
+//     length: number;
+//     menuSize: () => void;
+//     moveFocus: () => void;
+//     pick: () => void;
+//     setFocus: () => void;
+//   }
+// ) => {};
 
 export type HintFn = { async?: boolean } & (() => Promise<HintList> | HintList);
 export interface HintConfig {
@@ -919,25 +935,42 @@ export interface HintConfig {
   customKeys?: any;
 
   // Like customKeys above, but the bindings will be added to the set of default bindings, instead of replacing them.
-  extraKeys?: any;
+  extraKeys?: {
+    [key: string]: (
+      yasqe: Yasqe,
+      event: {
+        close: () => void;
+        data: {
+          from: Position;
+          to: Position;
+          list: Hint[];
+        };
+        length: number;
+        menuSize: () => void;
+        moveFocus: (movement: number) => void;
+        pick: () => void;
+        setFocus: (index: number) => void;
+      }
+    ) => void;
+  };
 }
 export interface RequestConfig<Y> {
   queryArgument: string | ((yasqe: Y) => string);
   endpoint: string | ((yasqe: Y) => string);
-  method: "POST" | "GET" | ((yasqe:Y) => "POST" | "GET");
+  method: "POST" | "GET" | ((yasqe: Y) => "POST" | "GET");
   acceptHeaderGraph: string | ((yasqe: Y) => string);
   acceptHeaderSelect: string | ((yasqe: Y) => string);
   acceptHeaderUpdate: string | ((yasqe: Y) => string);
-  namedGraphs: string[] | ((yasqe:Y) => string[]);
-  defaultGraphs: string[] | ((yasqe:Y) => []);
+  namedGraphs: string[] | ((yasqe: Y) => string[]);
+  defaultGraphs: string[] | ((yasqe: Y) => []);
   args: Array<{ name: string; value: string }> | ((yasqe: Y) => Array<{ name: string; value: string }>);
   headers: { [key: string]: string } | ((yasqe: Y) => { [key: string]: string });
-  withCredentials: boolean | ((yasqe:Y) => boolean);
+  withCredentials: boolean | ((yasqe: Y) => boolean);
   adjustQueryBeforeRequest: ((yasqe: Y) => string) | false;
 }
-export type PlainRequestConfig = {[K in keyof RequestConfig<any> ]: Exclude<RequestConfig<any>[K], Function>};
+export type PlainRequestConfig = { [K in keyof RequestConfig<any>]: Exclude<RequestConfig<any>[K], Function> };
 export type PartialConfig = {
-  [P in keyof Config]?: Config[P] extends object? Partial<Config[P]>:Config[P]
+  [P in keyof Config]?: Config[P] extends object ? Partial<Config[P]> : Config[P];
 };
 export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   mode: string;
