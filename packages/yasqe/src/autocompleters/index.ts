@@ -199,6 +199,7 @@ export class Completer extends EventEmitter {
     ) {
       return false;
     }
+
     const getHints: HintFn = () => {
       return this.getHints(this.yasqe.getCompleteToken()).then(list => {
         const cur = this.yasqe.getDoc().getCursor();
