@@ -6,7 +6,7 @@ import { take } from "lodash-es";
 const CodeMirror = require("codemirror");
 require("./show-hint.scss");
 export class CompleterConfig {
-  onInitialize?: (this: CompleterConfig, yasqe: Yasqe) => void; //allows for e.g. registering event listeners in yasqe, like the prefix autocompleter does
+  onInitialize?: (this: CompleterConfig, yasqe: Yasqe) => void; //allows for e.g. registering event listeners in yasqe, like the prefix auto-completer does
   isValidCompletionPosition: (yasqe: Yasqe) => boolean;
   get: (yasqe: Yasqe, token?: AutocompletionToken) => Promise<string[]> | string[];
   preProcessToken?: (yasqe: Yasqe, token: Token) => AutocompletionToken;
