@@ -39,19 +39,19 @@ var conf: Autocompleter.CompleterConfig = {
               (previousToken.type === "punc" &&
                 (previousToken.string === "|" || previousToken.string === "/" || previousToken.string == "^^")))
           ) {
-            // check whether it isnt defined already (saves us from looping
+            // check whether it isn't defined already (saves us from looping
             // through the array)
             var currentPrefix = token.string.substring(0, colonIndex + 1);
 
             var queryPrefixes = yasqe.getPrefixesFromQuery();
             if (queryPrefixes[currentPrefix.slice(0, -1)] == null) {
-              // ok, so it isnt added yet!
+              // ok, so it isn't added yet!
               // var completions = yasqe.autocompleters.getTrie(completerName).autoComplete(currentPrefix);
               token.autocompletionString = currentPrefix;
               yasqe.autocompleters[this.name].getCompletions(token).then(suggestions => {
                 if (suggestions.length) {
                   yasqe.addPrefixes(suggestions[0]);
-                  // Re-activate autocompleter after adding prefixes, so another autocompleter can kick in
+                  // Re-activate auto-completer after adding prefixes, so another auto-completer can kick in
                   yasqe.autocomplete();
                 }
               }, console.warn);
