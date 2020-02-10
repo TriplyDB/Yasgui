@@ -997,7 +997,7 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   showQueryButton: boolean;
   requestConfig: RequestConfig<Yasqe> | ((yasqe: Yasqe) => RequestConfig<Yasqe>);
   pluginButtons: () => HTMLElement[] | HTMLElement;
-  //Addon specific addon ts defs, or missing props from codemirror conf
+  //Addon specific addon ts defs, or missing props from CodeMirror conf
   highlightSelectionMatches: { showToken?: RegExp; annotateScrollbar?: boolean };
   tabMode: string;
   foldGutter: any; //This should be of type boolean, or an object. However, setting it to any to avoid
