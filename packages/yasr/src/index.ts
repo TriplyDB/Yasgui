@@ -185,11 +185,9 @@ export class Yasr extends EventEmitter {
       this.drawnPlugin = pluginToDraw;
 
       this.emit("draw", this, this.plugins[pluginToDraw]);
-      const initFn = this.plugins[pluginToDraw].initialize
-      const initialize: Promise<any> = initFn
-        ? initFn()
-        : Promise.resolve();
-      initialize.then(
+      const plugin = this.plugins[pluginToDraw]
+      let initPromise = plugin.initialize ? plugin.initialize() :Promise.resolve();
+      initPromise.then(
         () => {
           if (pluginToDraw) {
 
