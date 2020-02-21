@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "./webpack",
     "module": "commonjs",
+    "esModuleInterop": true,
     "rootDir": "./webpack",
     "incremental": true,
     "composite": true,

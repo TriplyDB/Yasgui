@@ -19,7 +19,7 @@ describe("Yasqe", function() {
   // Define global variables
   let browser: puppeteer.Browser;
   let page: puppeteer.Page;
-  let server: http.Server;
+  let server: http.Server | undefined;
 
   before(async function() {
     const refs = await setup(this, path.resolve("./build"));
@@ -46,7 +46,7 @@ describe("Yasqe", function() {
     expect(value).to.contain("SELECT");
   });
 
-  async function waitForAutocompletionPopup(shouldNotHaveLength?: number): Promise<number> {
+  async function waitForAutocompletionPopup(shouldNotHaveLength?: number): Promise<number | undefined> {
     if (shouldNotHaveLength) {
       await page.waitForFunction(
         `document.querySelector('.CodeMirror-hints').children.length !== ${shouldNotHaveLength}`,
@@ -55,7 +55,7 @@ describe("Yasqe", function() {
     } else {
       await page.waitFor(`.CodeMirror-hints`, { timeout: 600 });
     }
-    return page.evaluate(() => document.querySelector(".CodeMirror-hints").children.length);
+    return page.evaluate(() => document.querySelector(".CodeMirror-hints")?.children.length);
   }
 
   async function issueAutocompletionKeyCombination() {
@@ -158,11 +158,11 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
     };
     const getCompleteTokenAt = (character: number, line?: number) => {
       return page.evaluate(
-        (at: { character: number; line: number }) => {
+        (at: { character: number; line?: number }) => {
           window.yasqe.getDoc().setCursor({ line: at.line || window.yasqe.getCursor().line, ch: at.character });
           return window.yasqe.getCompleteToken();
         },
-        { character: character, line: line }
+        { character: character, line: line } as puppeteer.Serializable
       );
     };
     it("Should only trigger get request when needed", async () => {
@@ -269,7 +269,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.keyboard.press("Enter");
       const newValue = await page.evaluate(() => window.yasqe.getValue());
       expect(newValue).to.equal(
-        "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:asWKT/geo:c/geo:i"
+        "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:asGML/geo:c/geo:i"
       );
     });
 
@@ -341,7 +341,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       }
       it("Async autocompletions trickle down when typing", async () => {
         // Set the new query, and focus on location where we want to autocomplete
-        const cursor = await page.evaluate(() => {
+        await page.evaluate(() => {
           const query = `select * where {?x <http://www.opengis.net/ont/geosparql#> ?y}`;
           window.yasqe.setValue(query);
           window.yasqe.focus();
@@ -357,7 +357,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         // Widdle the list down
         await page.keyboard.type("asWK");
         const newResults = await waitForAutocompletionPopup(allInitialResults);
-        expect(newResults).is.lessThan(allInitialResults);
+        expect(newResults).is.lessThan(allInitialResults || 0);
       });
 
       it("Should not append the string we just typed (#1479)", async function() {
@@ -506,7 +506,7 @@ bb
           (window.yasqe.autocompleters["class"] as any).config.autoShow = true;
         });
         await focusOnAutocompletionPos();
-        const hasAutocomplete = await page.waitFor(`.CodeMirror-hints`);
+        await page.waitFor(`.CodeMirror-hints`);
       });
     });
     describe("Async prefix autocompletion", function() {

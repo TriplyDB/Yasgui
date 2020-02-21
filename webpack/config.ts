@@ -1,18 +1,17 @@
 const LiveReloadPlugin = require("webpack-livereload-plugin");
-import * as HtmlWebpackPlugin from "html-webpack-plugin";
+import HtmlWebpackPlugin from "html-webpack-plugin";
 import * as webpack from "webpack";
 import * as path from "path";
 const isProd = process.env.NODE_ENV === "production";
 const isDev = !isProd;
 const bgImage = require("postcss-bgimage");
-import * as autoprefixer from "autoprefixer";
-import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
+import autoprefixer from "autoprefixer";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
 var TerserPlugin = require("terser-webpack-plugin");
-import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
+import OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 export const analyzeBundle = process.env["ANALYZE_BUNDLE"] === "true";
-
 
 const plugins: any[] = [
   new webpack.DefinePlugin({
@@ -97,7 +96,7 @@ if (isDev) {
 } else {
   plugins.push(
     new MiniCssExtractPlugin({
-      moduleFilename: ({ name }: {name:string}) => `${name.toLowerCase()}.min.css`
+      moduleFilename: ({ name }: { name: string }) => `${name.toLowerCase()}.min.css`
     } as any)
   );
 }

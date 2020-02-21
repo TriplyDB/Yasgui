@@ -1,14 +1,12 @@
 import * as NodeStatic from "node-static";
 import * as fs from "fs-extra";
-import * as puppeteer from "puppeteer";
+import puppeteer from "puppeteer";
 import * as http from "http";
 import * as Mocha from "mocha";
-
+import _ from "lodash"; // eslint-disable-line
 const TEST_ON_DEV_BUILD = !!process.env["TEST_ON_DEV_BUILD"];
 const PORT = TEST_ON_DEV_BUILD ? 4000 : 40001;
-
-import * as _ from "lodash"; // eslint-disable-line
-export function setupServer(buildDir: string): Promise<http.Server> {
+export function setupServer(buildDir: string): Promise<http.Server | undefined> {
   if (TEST_ON_DEV_BUILD) return Promise.resolve(undefined);
   let staticFileServer = new NodeStatic.Server(buildDir);
   return new Promise<http.Server>((resolve, reject) => {
@@ -46,7 +44,7 @@ export async function setup(ctx: Mocha.Context, buildDir: string) {
   });
   return { server, browser };
 }
-export async function destroy(browser: puppeteer.Browser, server: http.Server) {
+export async function destroy(browser: puppeteer.Browser, server?: http.Server) {
   if (browser) await browser.close();
   if (server) server.close();
 }
@@ -71,9 +69,11 @@ export async function getPage(browser: puppeteer.Browser, path: string) {
   return page;
 }
 export function makeScreenshot(page: puppeteer.Page, name?: string) {
-  return page.screenshot({ type: "png", path: "./test/screenshots/" + (name ? name : +Date.now()) + ".png" });
+  return page.screenshot({ type: "png", path: "./test/screenshots/" + (name || +Date.now()) + ".png" });
 }
 export async function closePage(suite: Mocha.Suite, page: puppeteer.Page) {
-  await makeScreenshot(page, `${suite.ctx.currentTest.state}-${_.kebabCase(suite.ctx.currentTest.fullTitle())}`);
+  const state = suite.ctx.currentTest?.state || "unknown";
+  const title = suite.ctx.currentTest?.fullTitle() || "unknown";
+  await makeScreenshot(page, `${state}-${_.kebabCase(title)}`);
   if (page) await page.close();
 }

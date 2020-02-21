@@ -3,11 +3,13 @@
   "compilerOptions": {
     "outDir": "./build/test",
     "module": "commonjs",
-    "strict": true,
-    "incremental": true
+    "esModuleInterop": true,
+    "strict": false,
+    "incremental": true,
+    "declaration": false,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "noUnusedLocals": false,
   },
-  "files": ["./test/run.ts"],
-  "include": [
-    "./packages/**/**/__tests__"
-  ]
+  "files": ["./packages/yasgui/typings-custom/main.d.ts", "./test/run.ts"]
 }

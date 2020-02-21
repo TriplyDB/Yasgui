@@ -23,10 +23,9 @@
     "types": ["datatables.net"]
   },
   "files": ["./packages/yasgui/typings-custom/main.d.ts"],
-  "include": ["./packages/*/src/**/**/*", "./webpack/**/*"],
+  "include": ["./packages/*/src/**/**/*", "./webpack/**/*", "./test/*", "./packages/yasqe/grammar/tokenizer.ts"],
   "compileOnSave": false,
   "exclude": [
-    "**/build/**",
-    "test"
+    "**/build/**"
   ]
 }
