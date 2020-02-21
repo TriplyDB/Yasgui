@@ -52,7 +52,7 @@ export class Completer extends EventEmitter {
     // store array as trie
     this.trie = new Trie();
     for (const c of completions) {
-      this.trie.insert(c)
+      this.trie.insert(c);
     }
 
     // store in localstorage as well
@@ -325,7 +325,7 @@ export function postprocessIriCompletion(_yasqe: Yasqe, token: AutocompletionTok
 export const fetchFromLov = (
   yasqe: Yasqe,
   type: "class" | "property",
-  token: AutocompletionToken
+  token?: AutocompletionToken
 ): Promise<string[]> => {
   var reqProtocol = window.location.protocol.indexOf("http") === 0 ? "https://" : "http://";
   const notificationKey = "autocomplete_" + type;
