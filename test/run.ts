@@ -29,6 +29,7 @@ describe("Yasqe", function() {
 
   beforeEach(async () => {
     page = await getPage(browser, "yasqe.html");
+    await page.evaluate(() => localStorage.clear())
   });
 
   afterEach(async () => {
@@ -123,24 +124,27 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         window.yasqe.getDoc().setCursor({ line: window.yasqe.getDoc().lineCount(), ch: 0 });
         return window.yasqe.getDoc().getCursor();
       });
-      await page.keyboard.type("foaf:");
+      await page.keyboard.type("testa:");
       await page.waitForFunction(
         () => {
-          return window.yasqe.getValue().indexOf("PREFIX foaf: <http://xmlns.com/foaf/0.1/>") >= 0;
+          return window.yasqe.getValue().indexOf("PREFIX testa: <https://test.a.com/>") >= 0;
         },
         {
           polling: 10
         }
       );
+      //Note from Laurens: This is an invalid test. We should not expect a popup here (this is the property-autocompleter).
+      //Reason: we didn't configure yasgui to auto-show the lov property completions
+      //Leaving it here as it doesn't warrant a new issue yet.
       await waitForAutocompletionPopup();
     });
     it("path traversal should change the correct segment", async () => {
       await page.evaluate(() => {
         const query =
-          "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?s geo:asWkt/geo:/geo:rcc8po";
+          "PREFIX testa: <https://test.a.com/> select * where { ?s testa:someprop/testa:/testa:someotherprop";
         window.yasqe.setValue(query);
         window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf(":/geo:rcc8po") });
+        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf(":/testa:someotherprop") });
         return window.yasqe.getDoc().getCursor();
       });
       await issueAutocompletionKeyCombination();
@@ -148,7 +152,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.keyboard.press("Enter");
       const newValue = await page.evaluate(() => window.yasqe.getValue());
       expect(newValue).to.equal(
-        "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?s geo:asWkt/geo:defaultGeometry/geo:rcc8po"
+        "PREFIX testa: <https://test.a.com/> select * where { ?s testa:someprop/testa:0/testa:someotherprop"
       );
     });
   });
@@ -168,7 +172,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
     it("Should only trigger get request when needed", async () => {
       // Setting up
       await page.evaluate(() => {
-        const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> select * where {?x rdf:type <htt`;
+        const query = `PREFIX testa: <https://test.a.com/> select * where {?x a <htt`;
         (window as any).showCount = 0;
         (window as any).hideCount = 0;
         window.yasqe.setValue(query);
@@ -190,42 +194,43 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await waitForAutocompletionPopup();
       expect(await getShowCount()).to.equal(1);
       expect(await getHideCount()).to.equal(0);
-      await page.keyboard.type("p://www.");
+      await page.keyboard.type("ps://");
       await wait(200);
-      expect(await getShowCount()).to.be.lessThan(3);
+      expect(await getShowCount()).to.be.lessThan(7);
       expect(await getHideCount()).to.equal(0);
     });
     it("Should show the same results irregardless of where the cursor is", async () => {
       await page.evaluate(() => {
-        const query = `select * where { ?s <http://www.opengis.net/ont/geosparql#as`;
+        const query = `select * where { ?s <https://test.a.com/55`;
         window.yasqe.setValue(query);
         window.yasqe.focus();
         window.yasqe.getDoc().setCursor({ line: 0, ch: query.length });
         return window.yasqe.getDoc().getCursor();
       });
       await issueAutocompletionKeyCombination();
-      const resultCount = await waitForAutocompletionPopup();
+      expect(await waitForAutocompletionPopup()).to.equal(11);
       await page.keyboard.press("Escape");
       await page.evaluate(() => {
-        const query = `select * where { ?s <http://www.opengis.net/ont/geosparql#as`;
-        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("/geos") });
+        const query = `select * where { ?s <https://test.a.com/55`;
+        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("/test.a") });
       });
       await issueAutocompletionKeyCombination();
-      expect(resultCount).to.equal(await waitForAutocompletionPopup());
+      expect(await waitForAutocompletionPopup()).to.equal(11);
       await page.keyboard.press("Escape");
       await page.evaluate(() => {
-        const query = `select * where { ?s <http://www.opengis.net/ont/geosparql#as`;
-        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("engis") });
+        const query = `select * where { ?s <https://test.a.com/55`;
+        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("/55") });
       });
       await issueAutocompletionKeyCombination();
-      expect(resultCount).to.equal(await waitForAutocompletionPopup());
+      expect(await waitForAutocompletionPopup()).to.equal(11);
+
       await page.keyboard.press("Escape");
       await page.evaluate(() => {
-        const query = `select * where { ?s <http://www.opengis.net/ont/geosparql#as`;
+        const query = `select * where { ?s <https://test.a.com/55`;
         window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("http") });
       });
       await issueAutocompletionKeyCombination();
-      expect(resultCount).to.equal(await waitForAutocompletionPopup());
+      expect(await waitForAutocompletionPopup()).to.equal(11);
     });
     it("Should work without trailing whitespace", async () => {
       await page.evaluate(() => {
@@ -245,22 +250,21 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
 
     it("Should scope to only one part of a path expression", async () => {
       const oneLineQuery =
-        "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:a/geo:c/geo:i";
+        "PREFIX testa: <https://test.a.com/> select * where { ?subject testa:/testa:2/testa:3";
 
       await page.evaluate(() => {
-        // Pref 1 = asWkt,asGML, Pref 2 = coordinateDimension, Pref 3 = geo:isEmpty,isSimple
         const oneLineQuery =
-          "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:a/geo:c/geo:i";
+          "PREFIX testa: <https://test.a.com/> select * where { ?subject testa:/testa:2/testa:3";
         window.yasqe.setValue(oneLineQuery);
         window.yasqe.focus();
         window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.length - 1 });
       });
       let token = await getCompleteToken();
-      expect(token.string).to.equal("geo:i");
-      token = await getCompleteTokenAt(oneLineQuery.length - 6);
-      expect(token.string).to.equal("geo:c");
-      token = await getCompleteTokenAt(oneLineQuery.length - 15);
-      expect(token.string).to.equal("geo:a");
+      expect(token.string).to.equal("testa:3");
+      token = await getCompleteTokenAt(oneLineQuery.length - 8);
+      expect(token.string).to.equal("testa:2");
+      token = await getCompleteTokenAt(oneLineQuery.length - 16);
+      expect(token.string).to.equal("testa:");
 
       //token is now in beginning of property path
       await issueAutocompletionKeyCombination();
@@ -269,7 +273,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.keyboard.press("Enter");
       const newValue = await page.evaluate(() => window.yasqe.getValue());
       expect(newValue).to.equal(
-        "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where { ?subject geo:asGML/geo:c/geo:i"
+        "PREFIX testa: <https://test.a.com/> select * where { ?subject testa:0/testa:2/testa:3"
       );
     });
 
@@ -379,7 +383,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         /**
          * Type a string to reduce autocompletion list
          */
-        await page.keyboard.type("rcc");
+        await page.keyboard.type("asW");
 
         /**
          * Wait for the hint div to be updated to only match suggestions starting with `rcc`
@@ -396,8 +400,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
          */
         const newValue = await page.evaluate(() => window.yasqe.getValue());
         expect(
-          newValue.indexOf("PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where {?x geo:rcc8")
-        ).to.equal(0);
+          newValue.trim()
+        ).to.equal(`PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where {?x geo:asWKT ?y}`);
       });
       it("Should only include matching strings", async function() {
         /**
@@ -438,33 +442,11 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
           "PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where {?x geo:defaultGeometry ?y}"
         );
       });
-
-      it("Should not try to previous property, but use current one (#1843)", async function() {
-        await page.evaluate(() => {
-          const query = `SELECT * WHERE {
-?a a ?b.
-?c
-bb
-} LIMIT 10`;
-          window.yasqe.setValue(query);
-          window.yasqe.focus();
-          window.yasqe.getDoc().setCursor({ line: 3, ch: 2 });
-          return window.yasqe.getDoc().getCursor();
-        });
-
-        await issueAutocompletionKeyCombination();
-        await waitForAutocompletionPopup();
-        await page.keyboard.press("Enter");
-        const newValue = await page.evaluate(() => window.yasqe.getValue());
-        //we should autocomplete the string 'bb' (and not the previous property 'a').
-        //This string 'bb' is autocompleted using a property from the bbc vocab, so it should have '.bbc.' in it
-        expect(newValue).to.contain(".bbc.");
-      });
     });
     describe("Async class autocompletion", function() {
       function focusOnAutocompletionPos() {
         return page.evaluate(() => {
-          const query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> select * where {?x rdf:type <htt`;
+          const query = `PREFIX testb: <https://test.b.com/> select * where {?x a <htt`;
           window.yasqe.setValue(query);
           window.yasqe.focus();
           window.yasqe.getDoc().setCursor({ line: 0, ch: query.length - 2 });
@@ -486,7 +468,7 @@ bb
          * Wait for hint div to appear
          */
         const allResults = await waitForAutocompletionPopup();
-        expect(allResults).to.equal(50);
+        expect(allResults).to.equal(1000);
       });
       it("Should not open on its own", async () => {
         await focusOnAutocompletionPos();
@@ -503,7 +485,7 @@ bb
       });
       it("Should auto open when autocompleter is Async and ontype is enabled", async () => {
         await page.evaluate(() => {
-          (window.yasqe.autocompleters["class"] as any).config.autoShow = true;
+          (window.yasqe.autocompleters["class-local"] as any).config.autoShow = true;
         });
         await focusOnAutocompletionPos();
         await page.waitFor(`.CodeMirror-hints`);
@@ -512,8 +494,7 @@ bb
     describe("Async prefix autocompletion", function() {
       function focusOnAutocompletionPos() {
         return page.evaluate(() => {
-          const query = ``;
-          window.yasqe.setValue(query);
+          window.yasqe.setValue('');
           window.yasqe.focus();
           window.yasqe.getDoc().setCursor({ line: 0, ch: 0 });
           return window.yasqe.getDoc().getCursor();
@@ -521,7 +502,6 @@ bb
       }
 
       it("Should autocomplete", async function() {
-        await page.evaluate(() => localStorage.clear());
         // await inspectLive(this)
         /**
          * Set the new query, and focus on location where we want to autocomplete
@@ -530,21 +510,20 @@ bb
         /**
          * Issue autocompletion shortcut
          */
-        await page.keyboard.type("prefix a");
-        await wait(200);
+        await page.keyboard.type("prefix t");
         /**
          * Wait for hint div to appear
          */
-        const firstResults = await waitForAutocompletionPopup();
-        expect(firstResults).to.equal(100, "Expected the hard limit of 100 to be applied");
+        const results = await waitForAutocompletionPopup();
+        expect(results).to.equal(3);
 
         /**
          * Type a string to reduce autocompletion list
          */
-        await page.keyboard.type("a");
+        await page.keyboard.type("esta");
 
         const filteredResults = await waitForAutocompletionPopup();
-        expect(filteredResults).to.equal(3);
+        expect(filteredResults).to.equal(1);
         /**
          * Select the first suggestion
          */
@@ -554,7 +533,7 @@ bb
          * Check whether that suggestion is now correctly included in yasqe
          */
         const newValue = await page.evaluate(() => window.yasqe.getValue());
-        expect(newValue).to.equal("prefix aair: <http://xmlns.notu.be/aair#>");
+        expect(newValue).to.equal("prefix testa: <https://test.a.com/>");
       });
     });
 
@@ -576,26 +555,26 @@ bb
 
       it("Should autocomplete with multiple statements on one line", async function() {
         const query = `SELECT * WHERE {
-          ?a <somwething.something.without.bbc.url> ?b. ?a bbc
+          ?a <somwething.something.without.bbc.url> ?b. ?a <http
         }`;
         const autocompletedQuery = await executeFirstLineAutocompletion(query);
-        expect(autocompletedQuery).to.contain("bbc.co.uk");
+        expect(autocompletedQuery).to.contain("<http://www.opengis.net/ont/geosparql#defaultGeometry>");
       });
 
       it("Should autocomplete with single-line Predicate-Object lists", async function() {
         const query = `SELECT * WHERE {
-          ?a <somwething.something.without.bbc.url> ?b ; bbc
+          ?a <somwething.something.without.bbc.url> ?b ; <http
         }`;
         const autocompletedQuery = await executeFirstLineAutocompletion(query);
-        expect(autocompletedQuery).to.contain("bbc.co.uk");
+        expect(autocompletedQuery).to.contain("<http://www.opengis.net/ont/geosparql#defaultGeometry>");
       });
 
       it("Should autocomplete with single-line Object lists", async function() {
         const query = `SELECT * WHERE {
-          ?a a ?b, bbc
+          ?a a ?b, <http
         }`;
         const autocompletedQuery = await executeFirstLineAutocompletion(query);
-        expect(autocompletedQuery).to.contain("bbc.co.uk");
+        expect(autocompletedQuery).to.contain("<https://test.b.com/0>");
       });
     });
   });

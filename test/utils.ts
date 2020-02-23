@@ -32,7 +32,7 @@ export function wait(time: number) {
 export async function inspectLive(mocha: Mocha.ISuiteCallbackContext) {
   const waitFor = 9999999;
   mocha.timeout(waitFor);
-  console.info(`Go to http://localhost:${PORT}`);
+  console.info(`Go to http://localhost:${PORT}?noExternalServices=true`);
   await wait(waitFor);
 }
 export async function setup(ctx: Mocha.Context, buildDir: string) {
@@ -50,7 +50,7 @@ export async function destroy(browser: puppeteer.Browser, server?: http.Server) 
 }
 export async function getPage(browser: puppeteer.Browser, path: string) {
   const page = await browser.newPage();
-  await page.goto(`http://localhost:${PORT}/${path}`);
+  await page.goto(`http://localhost:${PORT}/${path}?noExternalServices=true`);
 
   await Promise.race([
     new Promise((_resolve, reject) => {

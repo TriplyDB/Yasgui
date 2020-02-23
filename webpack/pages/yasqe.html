@@ -1,66 +1,142 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
+    <style>
+      body {
+        font-family: "Roboto", sans-serif;
+        margin: 0px;
+      }
+      .navItem a {
+        color: #555;
+        text-decoration: none;
+        padding: 5px;
+        padding-right: 15px;
+      }
+      .navItem a:hover {
+        color: #222;
+      }
+      .navItem.active a {
+        color: black;
+        font-size: 110%;
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+    <style></style>
+  </head>
 
-<meta charset="UTF-8">
+  <body>
+    <div style="background:#eee">
+      <nav style="display: flex">
+        <img src="webpack/yasgui.png" style="max-height:50px;padding:5px;margin-left: 10px" alt="Yasgui Logo" />
+        <ul style="display: flex; list-style: none; align-self: center">
+          <% _.forEach(links, function(link) { %>
+          <li class="navItem <%- link.className %>">
+            <a class="nav-link" href="<%- link.href %>"><%- link.text %></a>
+          </li>
+          <% }); %>
+        </ul>
+      </nav>
+    </div>
+		<div style="display:none; background-color: grey; color:yellow" id="noExternalServicesWarning">
+			Running yasqe without references to external services such as LOV and prefix.cc
+			Mainly useful for test-suite purposes
+		</div>
+		<a id="noExternalServicesToggle" style="display:none;" href="/yasqe.html?noExternalServices=1">Run yasqe without references to external services</a>
+    <div id="yasqe"></div>
+    <script>
+      var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
+      if (isIE11) {
+        var polyfills = document.createElement("script");
+        polyfills.setAttribute("src", "//yasgui.triply.cc/yasgui.polyfill.min.js");
+        document.head.appendChild(polyfills);
+      }
+      window.onpageshow = function() {
+				const noExternalServices = document.location.search.indexOf("noExternalServices") >= 0;
+        if (noExternalServices) {
+					document.getElementById('noExternalServicesWarning').style.display = 'block'
+          //avoid references to external services such as lov and prefix.cc
+          //Useful for unit-testing purposes
+          Yasqe.defaults.autocompleters.splice(Yasqe.defaults.autocompleters.indexOf("prefixes"), 1);
+          Yasqe.forkAutocompleter("prefixes", {
+            name: "prefixes-local",
+            get: () => {
+              return new Promise(resolve => {
+                setTimeout(() => {
+                  resolve(
+                    [
+                      "foaf: <http://xmlns.com/foaf/0.1/>",
+                      "geo: <http://www.opengis.net/ont/geosparql#>",
+                      "rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+                      "rdfa: <http://www.w3.org/ns/rdfa#>",
+                      "rdfdata: <http://rdf.data-vocabulary.org/rdf.xml#>",
+                      "rdfdf: <http://www.openlinksw.com/virtrdf-data-formats#>",
+                      "rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/>",
+                      "rdfp: <https://w3id.org/rdfp/>",
+                      "rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+                      "testa: <https://test.a.com/>",
+                      "testb: <https://test.b.com/>",
+                      "testc: <https://test.c.com/>"
+                    ],
+                    20
+                  );
+                });
+              });
+            }
+          });
+          Yasqe.defaults.autocompleters.splice(Yasqe.defaults.autocompleters.indexOf("property"), 1);
+          const propCompletions = [
+            "http://www.opengis.net/ont/geosparql#defaultGeometry",
+            "http://www.opengis.net/ont/geosparql#asWKT",
+            "http://www.opengis.net/ont/geosparql#asGML"
+          ];
+          for (let i = 0; i < 1000; i++) {
+            propCompletions.push("https://test.a.com/" + i);
+          }
 
+          Yasqe.forkAutocompleter("property", {
+            name: "property-local",
+            get: function(yasqe, token) {
+              console.log(
+                propCompletions,
+                propCompletions.filter(iri => token.autocompletionString.indexOf(iri) === 0)
+              );
+              return new Promise(resolve => {
+                setTimeout(() => {
+                  resolve(propCompletions.filter(iri => iri.indexOf(token.autocompletionString) === 0));
+                });
+              });
+            }
+          });
+          const classCompletions = [];
+          for (let i = 0; i < 1000; i++) {
+            classCompletions.push("https://test.b.com/" + i);
+          }
 
-	<style>
-		body {
-			font-family: 'Roboto', sans-serif;
-			margin: 0px;
-		}
-		.navItem a {
-			color: #555;
-			text-decoration: none;
-			padding: 5px;
-			padding-right:15px;
-		}
-		.navItem a:hover {
-			color:#222
-		}
-		.navItem.active a {
-			color: black;
-			font-size:110%;
-		}
-	</style>
-  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
-  <style>
-  </style>
+          Yasqe.defaults.autocompleters.splice(Yasqe.defaults.autocompleters.indexOf("class"), 1);
+          Yasqe.forkAutocompleter("class", {
+            name: "class-local",
+            get: function(yasqe, token) {
+              return new Promise(resolve => {
+                setTimeout(() => {
+                  resolve(classCompletions.filter(iri => iri.indexOf(token.autocompletionString) === 0));
+                });
+              });
+            }
+          });
+        } else {
+					document.getElementById('noExternalServicesToggle').style.display = 'block'
+				}
 
-</head>
-
-<body>
-  <div style="background:#eee">
-    <nav style="display: flex">
-      <img src="webpack/yasgui.png" style="max-height:50px;padding:5px;margin-left: 10px" alt="Yasgui Logo">
-			<ul style="display: flex; list-style: none; align-self: center">
-				<% _.forEach(links, function(link) { %><li class="navItem <%- link.className %>"><a class="nav-link" href="<%- link.href %>"><%- link.text %></a></li><% }); %>
-			</ul>
-    </nav>
-	</div>
-
-  <div id="yasqe"></div>
-  <script>
-    var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
-    if (isIE11) {
-      var polyfills = document.createElement('script')
-      polyfills.setAttribute('src',
-        "//yasgui.triply.cc/yasgui.polyfill.min.js");
-      document.head.appendChild(polyfills)
-    }
-    window.onpageshow = function () {
-      window.yasqe = new Yasqe(document.getElementById('yasqe'));
-      window.yasqe.on('queryResponse', function () {
-        console.log('response event', arguments)
-      })
-      window.yasqe.on('query', function () {
-        console.log('query event', arguments)
-      })
-    }
-  </script>
-
-</body>
-
+        window.yasqe = new Yasqe(document.getElementById("yasqe"));
+        window.yasqe.on("queryResponse", function() {
+          console.log("response event", arguments);
+        });
+        window.yasqe.on("query", function() {
+          console.log("query event", arguments);
+        });
+      };
+    </script>
+  </body>
 </html>

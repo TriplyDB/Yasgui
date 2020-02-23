@@ -877,10 +877,9 @@ export class Yasqe extends CodeMirror {
     enable = true
   ) {
     if (!Yasqe.Autocompleters[fromCompleter]) throw new Error("Autocompleter " + fromCompleter + " does not exist");
-    // Allow overwriting autocompleters
-    // if (Instance.Autocompleters[newCompleter.name])
-    //   throw new Error("Completer " + newCompleter.name + " already exists");
-
+    if (!newCompleter?.name) {
+      throw new Error("Expected a name for newly registered autocompleter")
+    }
     const name = newCompleter.name;
     Yasqe.Autocompleters[name] = { ...Yasqe.Autocompleters[fromCompleter], ...newCompleter };
 
@@ -906,22 +905,6 @@ export interface Hint {
   from?: Position;
   to?: Position;
 }
-// type AutocompleteEventHandler = (
-//   yasqe: Yasqe,
-//   event: {
-//     close: () => void;
-//     data: {
-//       from: Position;
-//       to: Position;
-//       list: Hint[];
-//     };
-//     length: number;
-//     menuSize: () => void;
-//     moveFocus: () => void;
-//     pick: () => void;
-//     setFocus: () => void;
-//   }
-// ) => {};
 
 export type HintFn = { async?: boolean } & (() => Promise<HintList> | HintList);
 export interface HintConfig {
