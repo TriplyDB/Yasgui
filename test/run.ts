@@ -29,7 +29,7 @@ describe("Yasqe", function() {
 
   beforeEach(async () => {
     page = await getPage(browser, "yasqe.html");
-    await page.evaluate(() => localStorage.clear())
+    await page.evaluate(() => localStorage.clear());
   });
 
   afterEach(async () => {
@@ -249,12 +249,10 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
     });
 
     it("Should scope to only one part of a path expression", async () => {
-      const oneLineQuery =
-        "PREFIX testa: <https://test.a.com/> select * where { ?subject testa:/testa:2/testa:3";
+      const oneLineQuery = "PREFIX testa: <https://test.a.com/> select * where { ?subject testa:/testa:2/testa:3";
 
       await page.evaluate(() => {
-        const oneLineQuery =
-          "PREFIX testa: <https://test.a.com/> select * where { ?subject testa:/testa:2/testa:3";
+        const oneLineQuery = "PREFIX testa: <https://test.a.com/> select * where { ?subject testa:/testa:2/testa:3";
         window.yasqe.setValue(oneLineQuery);
         window.yasqe.focus();
         window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.length - 1 });
@@ -399,9 +397,9 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
          * Check whether that suggestion is now correctly included in yasqe
          */
         const newValue = await page.evaluate(() => window.yasqe.getValue());
-        expect(
-          newValue.trim()
-        ).to.equal(`PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where {?x geo:asWKT ?y}`);
+        expect(newValue.trim()).to.equal(
+          `PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where {?x geo:asWKT ?y}`
+        );
       });
       it("Should only include matching strings", async function() {
         /**
@@ -423,7 +421,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
          * Type a string to reduce autocompletion list
          */
         await page.keyboard.type("defau");
-
+        await wait(20);
         /**
          * Wait for the hint div to be updated to only match suggestions starting with `rcc`
          */
@@ -494,7 +492,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
     describe("Async prefix autocompletion", function() {
       function focusOnAutocompletionPos() {
         return page.evaluate(() => {
-          window.yasqe.setValue('');
+          window.yasqe.setValue("");
           window.yasqe.focus();
           window.yasqe.getDoc().setCursor({ line: 0, ch: 0 });
           return window.yasqe.getDoc().getCursor();
