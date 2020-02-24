@@ -147,7 +147,7 @@ export const genericConfig: webpack.Configuration = {
           {
             loader: "ts-loader",
             options: {
-              configFile: `tsconfig.json`
+              configFile: `tsconfig-build.json`
             }
           }
         ]
