@@ -292,8 +292,8 @@ export class Tab extends EventEmitter {
       ...this.yasgui.config.yasqe,
       value: this.persistentJson.yasqe.value,
       editorHeight: this.persistentJson.yasqe.editorHeight ? this.persistentJson.yasqe.editorHeight : undefined,
-      persistenceId: undefined, //yasgui handles persistent storing
-      consumeShareLink: undefined, //not handled by this tab, but by parent yasgui instance
+      persistenceId: null, //yasgui handles persistent storing
+      consumeShareLink: null, //not handled by this tab, but by parent yasgui instance
       createShareableLink: () => this.getShareableLink(),
       requestConfig: () => {
         const processedReqConfig: RequestConfig<Yasgui> = {

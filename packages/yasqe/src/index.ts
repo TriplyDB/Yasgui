@@ -971,7 +971,7 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
    */
   createShareableLink: (yasqe: Yasqe) => string;
   createShortLink: ((yasqe: Yasqe, longLink: string) => Promise<string>) | undefined;
-  consumeShareLink: ((yasqe: Yasqe) => void) | undefined;
+  consumeShareLink: ((yasqe: Yasqe) => void) | undefined | null;
   /**
    * Change persistency settings for the YASQE query value. Setting the values
    * to null, will disable persistancy: nothing is stored between browser
@@ -980,7 +980,7 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
    * By default, the ID is dynamically generated using the closest dom ID, to avoid collissions when using multiple YASQE items on one
    * page
    */
-  persistenceId: ((yasqe: Yasqe) => string) | string | undefined;
+  persistenceId: ((yasqe: Yasqe) => string) | string | undefined | null;
   persistencyExpire: number; //seconds
   showQueryButton: boolean;
   requestConfig: RequestConfig<Yasqe> | ((yasqe: Yasqe) => RequestConfig<Yasqe>);
