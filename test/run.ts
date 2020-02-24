@@ -21,6 +21,15 @@ describe("Yasqe", function() {
   let page: puppeteer.Page;
   let server: http.Server | undefined;
 
+  /**
+   * When issuing page.keyboard.type commands, codemirror might not have processed the command
+   * fully when that promise is resolved.
+   * So, use our own function where we wait for codemirror to have processed all key-downs
+   */
+  async function type(text: string) {
+    await page.keyboard.type(text);
+    await page.waitForFunction(`window.yasqe.getValue().indexOf("${text}") >= 0`, { timeout: 600 });
+  }
   before(async function() {
     const refs = await setup(this, path.resolve("./build"));
     browser = refs.browser;
@@ -104,7 +113,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         window.yasqe.getDoc().setCursor({ line: window.yasqe.getDoc().lineCount(), ch: 0 });
         return window.yasqe.getDoc().getCursor();
       });
-      await page.keyboard.type("foaf:");
+      await type("foaf:");
       await page.waitForFunction(
         () => {
           return window.yasqe.getValue().indexOf("PREFIX foaf: <http://xmlns.com/foaf/0.1/>") >= 0;
@@ -124,7 +133,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         window.yasqe.getDoc().setCursor({ line: window.yasqe.getDoc().lineCount(), ch: 0 });
         return window.yasqe.getDoc().getCursor();
       });
-      await page.keyboard.type("testa:");
+      await type("testa:");
       await page.waitForFunction(
         () => {
           return window.yasqe.getValue().indexOf("PREFIX testa: <https://test.a.com/>") >= 0;
@@ -194,7 +203,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await waitForAutocompletionPopup();
       expect(await getShowCount()).to.equal(1);
       expect(await getHideCount()).to.equal(0);
-      await page.keyboard.type("ps://");
+      await type("ps://");
       await wait(200);
       expect(await getShowCount()).to.be.lessThan(7);
       expect(await getHideCount()).to.equal(0);
@@ -357,7 +366,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         const allInitialResults = await waitForAutocompletionPopup();
 
         // Widdle the list down
-        await page.keyboard.type("asWK");
+        await type("asWK");
         const newResults = await waitForAutocompletionPopup(allInitialResults);
         expect(newResults).is.lessThan(allInitialResults || 0);
       });
@@ -381,7 +390,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         /**
          * Type a string to reduce autocompletion list
          */
-        await page.keyboard.type("asW");
+        await type("asW");
 
         /**
          * Wait for the hint div to be updated to only match suggestions starting with `rcc`
@@ -420,8 +429,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         /**
          * Type a string to reduce autocompletion list
          */
-        await page.keyboard.type("defau");
-        await wait(20);
+        await type("defau");
         /**
          * Wait for the hint div to be updated to only match suggestions starting with `rcc`
          */
@@ -508,7 +516,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         /**
          * Issue autocompletion shortcut
          */
-        await page.keyboard.type("prefix t");
+        await type("prefix t");
         /**
          * Wait for hint div to appear
          */
@@ -518,7 +526,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         /**
          * Type a string to reduce autocompletion list
          */
-        await page.keyboard.type("esta");
+        await type("esta");
 
         const filteredResults = await waitForAutocompletionPopup();
         expect(filteredResults).to.equal(1);
