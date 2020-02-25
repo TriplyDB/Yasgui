@@ -536,7 +536,7 @@ export interface PluginConfig {
   enabled?: boolean;
 }
 export interface Config {
-  persistenceId: ((yasr: Yasr) => string) | string;
+  persistenceId: ((yasr: Yasr) => string) | string | null;
   persistenceLabelResponse: string;
   persistenceLabelConfig: string;
   maxPersistentResponseSize: number;

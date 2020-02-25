@@ -388,7 +388,7 @@ export class Tab extends EventEmitter {
   private initYasr() {
     if (!this.yasrWrapperEl) throw new Error('Wrapper for yasr does not exist')
     const yasrConf: Partial<YasrConfig> = {
-      persistenceId: undefined, //yasgui handles persistent storing
+      persistenceId: null, //yasgui handles persistent storing
       prefixes: () => this.yasqe?.getPrefixesFromQuery() || {},
       defaultPlugin: this.persistentJson.yasr.settings.selectedPlugin,
       getPlainQueryLinkToEndpoint: () => {
