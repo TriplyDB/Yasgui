@@ -32,7 +32,7 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   //The function allows us to modify the config before we pass it on to a tab
   populateFromUrl: boolean | ((configFromUrl: PersistedTabJson) => PersistedTabJson);
   autoAddOnInit: boolean;
-  persistenceId: ((yasr: Yasgui) => string) | string;
+  persistenceId: ((yasr: Yasgui) => string) | string | null;
   persistenceLabelConfig: string;
   persistenceLabelResponse: string;
   persistencyExpire: number;

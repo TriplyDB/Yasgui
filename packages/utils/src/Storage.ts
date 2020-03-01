@@ -12,7 +12,6 @@ export default class Storage {
   }
   public set<V = {}>(key: string | undefined, val: any, expInSeconds: number, onQuotaExceeded: (e: any) => void) {
     if (!store.enabled) return; //this is probably in private mode. Don't run, as we might get Js errors
-    if (!key) throw new Error("Key is not set. Cannot persist to localstorage")
     this.removeExpiredKeys();
     if (key && val !== undefined) {
       //try to store string for dom objects (e.g. XML result). Otherwise, we might get a circular reference error when stringifying this
