@@ -256,33 +256,9 @@ export class Completer extends EventEmitter {
  * Stores additional info such as the used namespace and prefix in the token object
  */
 export function preprocessIriForCompletion(yasqe: Yasqe, token: AutocompletionToken) {
-  var queryPrefixes = yasqe.getPrefixesFromQuery();
-  var stringToPreprocess = token.string;
-  //we might be in a property path... Make sure that whenever you change this, test for property paths as well
-  if (
-    //Only apply the property path magic, when we're actually in a property
-    token.state.possibleCurrent.indexOf("a") >= 0 &&
-    token.state.lastProperty &&
-    token.state.lastProperty.length
-  ) {
-    const currentLine = yasqe.getDoc().getLine(yasqe.getDoc().getCursor().line);
+  const queryPrefixes = yasqe.getPrefixesFromQuery();
+  const stringToPreprocess = token.string;
 
-    //We're not supporting property paths with line breaks in them. That way, we can more easily avoid issues
-    //where we're in a property position, but are actually autocompletion the property of a triple-pattern above
-    if (currentLine.indexOf(token.state.lastProperty) >= 0) {
-      //The lastProperty is not neccesarily the full property (getHint messes things up).
-      //Instead, it can be something like `rdf:`, where it actually should be `rdf:t`
-      //So, try to reconstruct the string
-      const remainingPath = currentLine.substr(token.state.lastPropertyIndex + token.state.lastProperty.length);
-      const remainingProp = remainingPath.match(/^[\w\d]*/);
-      stringToPreprocess = token.state.lastProperty + (remainingProp ? remainingProp[0] : "");
-      token.from = {
-        ch: token.state.lastPropertyIndex
-      };
-      // This might not be the last item in the path-chain so we need to make sure we are
-      token.to = { ch: token.state.lastPropertyIndex + token.state.lastProperty.length };
-    }
-  }
   if (stringToPreprocess.indexOf("<") < 0) {
     token.tokenPrefix = stringToPreprocess.substring(0, stringToPreprocess.indexOf(":") + 1);
 

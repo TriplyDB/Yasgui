@@ -164,6 +164,26 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         "PREFIX testa: <https://test.a.com/> select * where { ?s testa:someprop/testa:0/testa:someotherprop"
       );
     });
+    it("path traversal should search with the correct path segment", async () => {
+      await page.evaluate(() => {
+        const query =
+          "PREFIX testa: <https://test.a.com/> select * where { ?s testa:someprop/testa:someotherprop/testa;";
+        window.yasqe.setValue(query);
+        window.yasqe.focus();
+        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf(";") });
+        return window.yasqe.getDoc().getCursor();
+      });
+      await issueAutocompletionKeyCombination();
+      try {
+        const hasAutocomplete = await waitForAutocompletionPopup();
+        expect(hasAutocomplete).to.be.undefined("", "Expected codemirror hint to not be there");
+      } catch (e) {
+        // We expect the timeout to trigger here
+        if (e.name !== "TimeoutError") {
+          throw e;
+        }
+      }
+    });
   });
   describe("Autocompleting", function() {
     const getCompleteToken = () => {

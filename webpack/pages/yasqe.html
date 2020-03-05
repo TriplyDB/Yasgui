@@ -61,6 +61,7 @@
           Yasqe.defaults.autocompleters.splice(Yasqe.defaults.autocompleters.indexOf("prefixes"), 1);
           Yasqe.forkAutocompleter("prefixes", {
             name: "prefixes-local",
+            persistenceId: null,
             get: () => {
               return new Promise(resolve => {
                 setTimeout(() => {
