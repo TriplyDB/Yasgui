@@ -1,4 +1,4 @@
-import type CodeMirror from "codemirror";
+import CodeMirror from "codemirror";
 export interface State {
   tokenize: (stream: CodeMirror.StringStream, state: State) => string;
   inLiteral: "SINGLE" | "DOUBLE" | undefined;
@@ -18,7 +18,7 @@ export interface State {
     | "COPY"
     | "MOVE"
     | "ADD"
-    | undefined
+    | undefined;
   inPrefixDecl: boolean;
   allowVars: boolean;
   allowBnodes: boolean;
@@ -659,7 +659,11 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
   function indent(state: State, textAfter: string) {
     //just avoid we don't indent multi-line  literals
     if (state.inLiteral) return 0;
-    if (state.lastPredicateOffset !== undefined && state.stack.length && state.stack[state.stack.length - 1] == "?[or([verbPath,verbSimple]),objectListPath]") {
+    if (
+      state.lastPredicateOffset !== undefined &&
+      state.stack.length &&
+      state.stack[state.stack.length - 1] == "?[or([verbPath,verbSimple]),objectListPath]"
+    ) {
       //we are after a semi-colon. I.e., nicely align this line with predicate position of previous line
       return state.lastPredicateOffset;
     } else {

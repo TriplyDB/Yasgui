@@ -1,4 +1,4 @@
-import type { default as Yasqe, Position } from "./";
+import { default as Yasqe, Position } from "./";
 import CodeMirror from "codemirror";
 import * as TokenUtils from "./tokenUtils";
 const PREFIX_KEYWORD = "PREFIX ";
@@ -6,7 +6,7 @@ const PREFIX_KEYWORD = "PREFIX ";
 export function findFirstPrefixLine(yasqe: Yasqe) {
   var lastLine = yasqe.getDoc().lastLine();
   for (var i = 0; i <= lastLine; ++i) {
-    const firstPrefix = findFirstPrefix(yasqe, i)
+    const firstPrefix = findFirstPrefix(yasqe, i);
     if (firstPrefix && firstPrefix >= 0) {
       return i;
     }

@@ -1,4 +1,4 @@
-import type * as Autocompleter from "./";
+import * as Autocompleter from "./";
 import { sortBy } from "lodash-es";
 var tokenTypes: { [id: string]: "prefixed" | "var" } = {
   "string-2": "prefixed",

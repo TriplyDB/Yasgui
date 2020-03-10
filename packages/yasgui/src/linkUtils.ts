@@ -2,7 +2,7 @@ const JsUri = require("jsuri");
 
 import { default as Tab, PersistedJson } from "./Tab";
 import Yasr from "@triply/yasr";
-import type { PlainRequestConfig } from "@triply/yasqe";
+import { PlainRequestConfig } from "@triply/yasqe";
 import { getAsValue } from "@triply/yasgui-utils";
 var getUrlParams = function(_url?: string) {
   var urlFromWindow = false;
@@ -102,9 +102,10 @@ export function createShareConfig(tab: Tab): ShareConfigObject {
     namedGraphs: getAsValue(requestConfig.namedGraphs, yasgui),
     defaultGraphs: getAsValue(requestConfig.defaultGraphs, yasgui),
     outputFormat: yasrPersistentSetting.selectedPlugin,
-    outputSettings: yasrPersistentSetting.pluginsConfig && yasrPersistentSetting.selectedPlugin
-      ? yasrPersistentSetting.pluginsConfig[yasrPersistentSetting.selectedPlugin]
-      : undefined
+    outputSettings:
+      yasrPersistentSetting.pluginsConfig && yasrPersistentSetting.selectedPlugin
+        ? yasrPersistentSetting.pluginsConfig[yasrPersistentSetting.selectedPlugin]
+        : undefined
   };
 }
 

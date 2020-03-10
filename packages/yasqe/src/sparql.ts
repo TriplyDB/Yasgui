@@ -1,4 +1,4 @@
-import type { default as Yasqe, Config, RequestConfig } from "./";
+import { default as Yasqe, Config, RequestConfig } from "./";
 import * as superagent from "superagent";
 import { merge, isFunction } from "lodash-es";
 import * as queryString from "query-string";
@@ -15,7 +15,10 @@ function getRequestConfigSettings(yasqe: Yasqe, conf?: Partial<Config["requestCo
   return isFunction(conf) ? conf(yasqe) : conf;
 }
 // type callback = AjaxConfig.callbacks['complete'];
-export function getAjaxConfig(yasqe: Yasqe, _config: Partial<Config["requestConfig"]> = {}): PopulatedAjaxConfig | undefined {
+export function getAjaxConfig(
+  yasqe: Yasqe,
+  _config: Partial<Config["requestConfig"]> = {}
+): PopulatedAjaxConfig | undefined {
   const config: RequestConfig<Yasqe> = merge(
     {},
     getRequestConfigSettings(yasqe, yasqe.config.requestConfig),
@@ -50,7 +53,7 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
   const populatedConfig = getAjaxConfig(yasqe, config);
   if (!populatedConfig) {
     //nothing to query
-    return
+    return;
   }
   var queryStart = Date.now();
 
@@ -95,7 +98,7 @@ export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]):
   /**
    * add named graphs to ajax config
    */
-   const namedGraphs = isFunction(config.namedGraphs) ? config.namedGraphs(yasqe) : config.namedGraphs;
+  const namedGraphs = isFunction(config.namedGraphs) ? config.namedGraphs(yasqe) : config.namedGraphs;
   if (namedGraphs && namedGraphs.length > 0) {
     let argName = queryMode === "query" ? "named-graph-uri" : "using-named-graph-uri ";
     data[argName] = namedGraphs;
@@ -103,7 +106,7 @@ export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]):
   /**
    * add default graphs to ajax config
    */
-   const defaultGraphs = isFunction(config.defaultGraphs) ? config.defaultGraphs(yasqe) : config.defaultGraphs;
+  const defaultGraphs = isFunction(config.defaultGraphs) ? config.defaultGraphs(yasqe) : config.defaultGraphs;
   if (defaultGraphs && defaultGraphs.length > 0) {
     let argName = queryMode == "query" ? "default-graph-uri" : "using-graph-uri ";
     data[argName] = namedGraphs;
@@ -143,7 +146,7 @@ export function getAcceptHeader(yasqe: Yasqe, _config: Config["requestConfig"]) 
 }
 export function getAsCurlString(yasqe: Yasqe, _config?: Config["requestConfig"]) {
   let ajaxConfig = getAjaxConfig(yasqe, getRequestConfigSettings(yasqe, _config));
-  if (!ajaxConfig) return ''
+  if (!ajaxConfig) return "";
   var url = ajaxConfig.url;
   if (ajaxConfig.url.indexOf("http") !== 0) {
     //this is either a relative or absolute url, which is not supported by CURL.

@@ -4,7 +4,7 @@ import initializeDefaults from "./defaults";
 import PersistentConfig from "./PersistentConfig";
 import { default as Tab, PersistedJson as PersistedTabJson } from "./Tab";
 
-import type { EndpointSelectConfig, CatalogueItem } from "./endpointSelect";
+import { EndpointSelectConfig, CatalogueItem } from "./endpointSelect";
 import * as shareLink from "./linkUtils";
 import TabElements from "./TabElements";
 import { default as Yasqe, Config as YasqeConfig, RequestConfig } from "@triply/yasqe";
@@ -43,7 +43,7 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   nonSslDomain?: string;
 }
 export type PartialConfig = {
-  [P in keyof Config]?: Config[P] extends object? Partial<Config[P]>:Config[P]
+  [P in keyof Config]?: Config[P] extends object ? Partial<Config[P]> : Config[P];
 };
 
 export type TabJson = PersistedTabJson;
@@ -94,7 +94,6 @@ export class Yasgui extends EventEmitter {
 
     this.config = merge({}, Yasgui.defaults, config);
     this.persistentConfig = new PersistentConfig(this);
-
 
     this.tabElements = new TabElements(this);
     this.tabPanelsEl = document.createElement("div");
@@ -150,9 +149,7 @@ export class Yasgui extends EventEmitter {
       if (activeTabId) {
         this.markTabSelected(activeTabId);
         if (executeIdAfterInit && executeIdAfterInit === activeTabId) {
-          (this.getTab(activeTabId) as Tab)
-            .query()
-            .catch(() => {});
+          (this.getTab(activeTabId) as Tab).query().catch(() => {});
         }
         // }
       }
@@ -186,10 +183,8 @@ export class Yasgui extends EventEmitter {
     if (tabId) {
       return this._tabs[tabId];
     }
-    const currentTabId = this.persistentConfig.currentId()
-    if (currentTabId) return this._tabs[currentTabId]
-
-
+    const currentTabId = this.persistentConfig.currentId();
+    if (currentTabId) return this._tabs[currentTabId];
   }
 
   //only handle UI interaction, don't emit or store anything
@@ -236,7 +231,7 @@ export class Yasgui extends EventEmitter {
     /**
      * Check request config
      */
-    let key:keyof RequestConfig<Yasgui>
+    let key: keyof RequestConfig<Yasgui>;
     for (key in tab1.requestConfig) {
       if (!tab1.requestConfig[key]) continue;
       if (!isEqual(tab2.requestConfig[key], tab1.requestConfig[key])) {
@@ -259,8 +254,8 @@ export class Yasgui extends EventEmitter {
       sameRequest =
         tab1.yasr.settings.selectedPlugin === tab2.yasr.settings.selectedPlugin &&
         isEqual(
-          tab1.yasr.settings.pluginsConfig?.[tab1.yasr.settings?.selectedPlugin || ''],
-          tab2.yasr.settings.pluginsConfig?.[tab2.yasr.settings?.selectedPlugin || '']
+          tab1.yasr.settings.pluginsConfig?.[tab1.yasr.settings?.selectedPlugin || ""],
+          tab2.yasr.settings.pluginsConfig?.[tab2.yasr.settings?.selectedPlugin || ""]
         );
     }
 
@@ -272,7 +267,6 @@ export class Yasgui extends EventEmitter {
       return this.tabConfigEquals(tab, tabConfig);
     });
   }
-
 
   private _registerTabListeners(tab: Tab) {
     tab.on("change", tab => this.emit("tabChange", this, tab));
@@ -288,7 +282,7 @@ export class Yasgui extends EventEmitter {
     }
     this.tabPanelsEl.appendChild(panel);
   }
-  public _removePanel(panel : HTMLDivElement | undefined) {
+  public _removePanel(panel: HTMLDivElement | undefined) {
     if (panel) this.tabPanelsEl.removeChild(panel);
   }
   /**

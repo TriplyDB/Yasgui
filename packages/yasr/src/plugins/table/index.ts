@@ -8,8 +8,8 @@ require("datatables.net");
 import $ from "jquery";
 import Parser from "../../parsers";
 import { escape } from "lodash-es";
-import type { Plugin, DownloadInfo } from "../";
-import  type Yasr from "../../";
+import { Plugin, DownloadInfo } from "../";
+import Yasr from "../../";
 import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg } from "@triply/yasgui-utils";
 import * as faTableIcon from "@fortawesome/free-solid-svg-icons/faTable";
 
@@ -48,7 +48,7 @@ export default class Table implements Plugin<PluginConfig> {
 
     if (!this.yasr.results) return [];
     const bindings = this.yasr.results.getBindings();
-    if (!bindings) return rows
+    if (!bindings) return rows;
     const vars = this.yasr.results.getVariables();
     const prefixes = this.yasr.getPrefixes();
     for (let rowId = 0; rowId < bindings.length; rowId++) {
@@ -105,7 +105,7 @@ export default class Table implements Plugin<PluginConfig> {
     return stringRepresentation;
   }
   private getColumns() {
-    if (!this.yasr.results) return []
+    if (!this.yasr.results) return [];
     return [
       { name: "", searchable: false, width: this.getSizeFirstColumn(), sortable: false }, //prepend with row numbers column
       ...this.yasr.results?.getVariables().map(name => {
@@ -205,9 +205,9 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableControls.appendChild(pageSizerWrapper);
     this.yasr.pluginControls.appendChild(this.tableControls);
   }
-  download()  {
+  download() {
     return {
-      getData: () => this.yasr.results?.asCsv() || '',
+      getData: () => this.yasr.results?.asCsv() || "",
       contentType: "text/csv",
       title: "Download result",
       filename: "queryResults.csv"

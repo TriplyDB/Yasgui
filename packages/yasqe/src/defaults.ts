@@ -4,12 +4,12 @@
  * keys). Either change the default options by setting Yasqe.defaults, or by
  * passing your own options as second argument to the YASQE constructor
  */
-import type { default as Yasqe, Config, PlainRequestConfig } from "./";
+import { default as Yasqe, Config, PlainRequestConfig } from "./";
 import * as queryString from "query-string";
 //need to pass Yasqe object as argument, as the imported version might not have inherited all (e.g. `fold`) props of Codemirror yet
 export default function get() {
   const CodeMirror = require("codemirror");
-  const config:Omit<Config, 'requestConfig'> ={
+  const config: Omit<Config, "requestConfig"> = {
     mode: "sparql11",
     value: `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -106,7 +106,7 @@ SELECT * WHERE {
       //Traverse parents untl we've got an id
       // Get matching parent elements
       let id = "";
-      let elem:any = yasqe.rootEl;
+      let elem: any = yasqe.rootEl;
       if ((<any>elem).id) id = (<any>elem).id;
       for (; elem && elem !== <any>document; elem = elem.parentNode) {
         if (elem) {
@@ -120,13 +120,12 @@ SELECT * WHERE {
 
     showQueryButton: true,
 
-
     hintConfig: {},
     resizeable: true,
     editorHeight: "300px",
     queryingDisabled: undefined
   };
-  const requestConfig:PlainRequestConfig =  {
+  const requestConfig: PlainRequestConfig = {
     queryArgument: undefined, //undefined means: get query argument based on query mode
     endpoint: "https://dbpedia.org/sparql",
     method: "POST",
@@ -139,6 +138,6 @@ SELECT * WHERE {
     headers: {},
     withCredentials: false,
     adjustQueryBeforeRequest: false
-  }
-  return {...config, requestConfig}
+  };
+  return { ...config, requestConfig };
 }

@@ -1,12 +1,12 @@
 /**
  * Make sure not to include any deps from our main index file. That way, we can easily publish the publin as standalone build
  */
-import type { Plugin } from "../";
-import type Yasr from "../../";
+import { Plugin } from "../";
+import Yasr from "../../";
 import Parser from "../../parsers";
 require("./index.scss");
 export interface PluginConfig {
-  renderError?: (error: Parser.ErrorSummary ) => HTMLElement;
+  renderError?: (error: Parser.ErrorSummary) => HTMLElement;
 }
 
 export default class Error implements Plugin<PluginConfig> {
@@ -69,7 +69,7 @@ export default class Error implements Plugin<PluginConfig> {
     const header = document.createElement("div");
     header.className = "errorHeader";
     el.appendChild(header);
-    const renderError = this.options.renderError
+    const renderError = this.options.renderError;
     if (renderError) {
       const newMessage = renderError(error);
       if (newMessage) {
@@ -94,7 +94,7 @@ export default class Error implements Plugin<PluginConfig> {
 
       header.appendChild(statusTextEl);
       if (this.yasr.config.getPlainQueryLinkToEndpoint) {
-        const link  = this.yasr.config.getPlainQueryLinkToEndpoint()
+        const link = this.yasr.config.getPlainQueryLinkToEndpoint();
         if (link) header.appendChild(this.getTryBtn(link));
       }
 
@@ -105,7 +105,7 @@ export default class Error implements Plugin<PluginConfig> {
       }
     } else {
       if (this.yasr.config.getPlainQueryLinkToEndpoint) {
-        const link  = this.yasr.config.getPlainQueryLinkToEndpoint()
+        const link = this.yasr.config.getPlainQueryLinkToEndpoint();
         if (link) header.appendChild(this.getTryBtn(link));
       }
       el.appendChild(this.getCorsMessage());

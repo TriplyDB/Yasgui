@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import { merge, filter, mapValues } from "lodash-es";
 import getDefaults from "./defaults";
-import type { Plugin } from "./plugins";
+import { Plugin } from "./plugins";
 import {
   Storage as YStorage,
   drawFontAwesomeIconAsSvg,
@@ -91,7 +91,7 @@ export class Yasr extends EventEmitter {
   }
   public getStorageId(label: string, getter?: Config["persistenceId"]): string | undefined {
     const persistenceId = getter || this.config.persistenceId;
-    if (!persistenceId) return ;
+    if (!persistenceId) return;
     if (typeof persistenceId === "string") return persistenceId + "_" + label;
     return persistenceId(this) + "_" + label;
   }
@@ -185,12 +185,11 @@ export class Yasr extends EventEmitter {
       this.drawnPlugin = pluginToDraw;
 
       this.emit("draw", this, this.plugins[pluginToDraw]);
-      const plugin = this.plugins[pluginToDraw]
-      let initPromise = plugin.initialize ? plugin.initialize() :Promise.resolve();
+      const plugin = this.plugins[pluginToDraw];
+      let initPromise = plugin.initialize ? plugin.initialize() : Promise.resolve();
       initPromise.then(
         () => {
           if (pluginToDraw) {
-
             //make sure to clear the innerhtml _here_
             //otherwise we run into race conditions when draw is executed shortly after each other, and the plugin uses an initialize function
             //as a result, things can be rendered _twice_
@@ -284,9 +283,9 @@ export class Yasr extends EventEmitter {
   }
   private fillFallbackBox(fallbackElement?: string) {
     this.emptyFallbackElement();
-    const selectedPlugin = this.getSelectedPlugin()
+    const selectedPlugin = this.getSelectedPlugin();
     const fallbackPluginLabel =
-      this.plugins[(fallbackElement || this.drawnPlugin) || '']?.label || fallbackElement || this.drawnPlugin;
+      this.plugins[fallbackElement || this.drawnPlugin || ""]?.label || fallbackElement || this.drawnPlugin;
     const selectedPluginLabel = selectedPlugin?.label || this.getSelectedPluginName;
 
     const textElement = document.createElement("p");
@@ -323,7 +322,7 @@ export class Yasr extends EventEmitter {
     this.drawDownloadIcon();
     this.drawDocumentationButton();
   }
-  private stringToBlob(string: string, contentType: string): string | undefined{
+  private stringToBlob(string: string, contentType: string): string | undefined {
     if (this.stringToBlobSupported()) {
       var blob = new Blob([string], { type: contentType });
       return window.URL.createObjectURL(blob);
@@ -356,11 +355,11 @@ export class Yasr extends EventEmitter {
     var innerText = "";
     if (this.results) {
       removeClass(this.dataElement, "empty");
-      const bindings = this.results.getBindings()
+      const bindings = this.results.getBindings();
       if (bindings) {
         innerText += `${bindings.length} result${bindings.length === 1 ? "" : "s"}`; // Set amount of results
       }
-      const responseTime = this.results.getResponseTime()
+      const responseTime = this.results.getResponseTime();
       if (responseTime) {
         if (!innerText) innerText = "Response";
         const time = responseTime / 1000;
@@ -372,11 +371,10 @@ export class Yasr extends EventEmitter {
     this.dataElement.innerText = innerText;
   }
   private updateHelpButton() {
-    const selectedPlugin = this.getSelectedPlugin()
+    const selectedPlugin = this.getSelectedPlugin();
     if (selectedPlugin?.helpReference) {
       this.documentationButton.href = selectedPlugin.helpReference;
-      this.documentationButton.title = `View documentation of ${selectedPlugin.label ||
-        this.getSelectedPluginName()}`;
+      this.documentationButton.title = `View documentation of ${selectedPlugin.label || this.getSelectedPluginName()}`;
       removeClass(this.documentationButton, "disabled");
     } else {
       addClass(this.documentationButton, "disabled");
@@ -386,20 +384,19 @@ export class Yasr extends EventEmitter {
   }
   updateExportHeaders() {
     if (this.downloadBtn && this.drawnPlugin) {
-
-    this.downloadBtn.title = "";
-    const plugin = this.plugins[this.drawnPlugin];
-    if (plugin && plugin.download) {
-      const downloadInfo = plugin.download();
-      removeClass(this.downloadBtn, "disabled");
-      if (downloadInfo) {
-        if (downloadInfo.title) this.downloadBtn.title = downloadInfo.title;
-        return;
+      this.downloadBtn.title = "";
+      const plugin = this.plugins[this.drawnPlugin];
+      if (plugin && plugin.download) {
+        const downloadInfo = plugin.download();
+        removeClass(this.downloadBtn, "disabled");
+        if (downloadInfo) {
+          if (downloadInfo.title) this.downloadBtn.title = downloadInfo.title;
+          return;
+        }
       }
+      this.downloadBtn.title = "Download not supported";
+      addClass(this.downloadBtn, "disabled");
     }
-    this.downloadBtn.title = "Download not supported";
-    addClass(this.downloadBtn, "disabled");
-  }
   }
 
   private documentationButton!: HTMLAnchorElement;
@@ -413,7 +410,7 @@ export class Yasr extends EventEmitter {
     this.headerEl.appendChild(this.documentationButton); // We can do this as long as the help-element is the last item in the row
   }
   download() {
-    if (!this.drawnPlugin) return
+    if (!this.drawnPlugin) return;
     const currentPlugin = this.plugins[this.drawnPlugin];
     if (currentPlugin && currentPlugin.download) {
       const downloadInfo = currentPlugin.download();
@@ -437,7 +434,6 @@ export class Yasr extends EventEmitter {
           mockLink.click();
         }
       }
-
     }
   }
 

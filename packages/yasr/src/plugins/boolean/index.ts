@@ -1,8 +1,8 @@
 /**
  * Make sure not to include any deps from our main index file. That way, we can easily publish the publin as standalone build
  */
-import type Yasr from "../../";
-import type { Plugin } from "../";
+import Yasr from "../../";
+import { Plugin } from "../";
 require("./index.scss");
 export interface PluginConfig {}
 import { drawSvgStringAsElement } from "@triply/yasgui-utils";

@@ -4,7 +4,7 @@ import * as superagent from "superagent";
 import { findFirstPrefixLine } from "./prefixFold";
 import { getPrefixesFromQuery, addPrefixes, removePrefixes, Prefixes } from "./prefixUtils";
 import { getPreviousNonWsToken, getNextNonWsToken, getCompleteToken } from "./tokenUtils";
-import type * as sparql11Mode from "../grammar/tokenizer";
+import * as sparql11Mode from "../grammar/tokenizer";
 import { Storage as YStorage } from "@triply/yasgui-utils";
 import * as queryString from "query-string";
 import tooltip from "./tooltip";
@@ -50,7 +50,7 @@ export interface Yasqe {
 // bla.focu
 export class Yasqe extends CodeMirror {
   private static storageNamespace = "triply";
-  public autocompleters: { [name: string]: Autocompleter.Completer | undefined} = {};
+  public autocompleters: { [name: string]: Autocompleter.Completer | undefined } = {};
   private prevQueryValid = false;
   public queryValid = true;
   public lastQueryDuration: number | undefined;
@@ -192,7 +192,7 @@ export class Yasqe extends CodeMirror {
       buttons.appendChild(svgShare);
       svgShare.onclick = (event: MouseEvent) => {
         event.stopPropagation();
-        let popup:HTMLDivElement | undefined = document.createElement("div");
+        let popup: HTMLDivElement | undefined = document.createElement("div");
         popup.className = "yasqe_sharePopup";
         buttons.appendChild(popup);
         document.body.addEventListener(
@@ -228,7 +228,7 @@ export class Yasqe extends CodeMirror {
 
         // We need to track which buttons are drawn here since the two implementations don't play nice together
         const popupInputButtons: HTMLButtonElement[] = [];
-        const createShortLink = this.config.createShortLink
+        const createShortLink = this.config.createShortLink;
         if (createShortLink) {
           popup.className = popup.className += " enableShort";
           const shortBtn = document.createElement("button");
@@ -237,7 +237,6 @@ export class Yasqe extends CodeMirror {
           shortBtn.className = "yasqe_btn yasqe_btn-sm shorten";
           popup.appendChild(shortBtn);
           shortBtn.onclick = () => {
-
             popupInputButtons.forEach(button => (button.disabled = true));
             createShortLink(this, input.value).then(
               value => {
@@ -397,15 +396,10 @@ export class Yasqe extends CodeMirror {
   }
 
   public saveQuery() {
-    const storageId = this.getStorageId()
+    const storageId = this.getStorageId();
     if (!storageId || !this.persistentConfig) return;
     this.persistentConfig.query = this.getValue();
-    this.storage.set(
-      storageId,
-      this.persistentConfig,
-      this.config.persistencyExpire,
-      this.handleLocalStorageQuotaFull
-    );
+    this.storage.set(storageId, this.persistentConfig, this.config.persistencyExpire, this.handleLocalStorageQuotaFull);
   }
 
   /**
@@ -761,7 +755,7 @@ export class Yasqe extends CodeMirror {
     if (!Yasqe.Autocompleters[name])
       return Promise.reject(new Error("Autocompleter " + name + " is not a registered autocompleter"));
     if (this.config.autocompleters.indexOf(name) < 0) this.config.autocompleters.push(name);
-    const autocompleter = this.autocompleters[name] = new Autocompleter.Completer(this, Yasqe.Autocompleters[name]);
+    const autocompleter = (this.autocompleters[name] = new Autocompleter.Completer(this, Yasqe.Autocompleters[name]));
     return autocompleter.initialize();
   }
   public disableCompleter(name: string) {
@@ -772,9 +766,8 @@ export class Yasqe extends CodeMirror {
     if (this.getDoc().somethingSelected()) return;
 
     for (let i in this.config.autocompleters) {
-      const autocompleter = this.autocompleters[this.config.autocompleters[i]]
-      if (!autocompleter|| !autocompleter.autocomplete(fromAutoShow))
-        continue;
+      const autocompleter = this.autocompleters[this.config.autocompleters[i]];
+      if (!autocompleter || !autocompleter.autocomplete(fromAutoShow)) continue;
     }
   }
 
@@ -878,7 +871,7 @@ export class Yasqe extends CodeMirror {
   ) {
     if (!Yasqe.Autocompleters[fromCompleter]) throw new Error("Autocompleter " + fromCompleter + " does not exist");
     if (!newCompleter?.name) {
-      throw new Error("Expected a name for newly registered autocompleter")
+      throw new Error("Expected a name for newly registered autocompleter");
     }
     const name = newCompleter.name;
     Yasqe.Autocompleters[name] = { ...Yasqe.Autocompleters[fromCompleter], ...newCompleter };
@@ -984,7 +977,7 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   persistencyExpire: number; //seconds
   showQueryButton: boolean;
   requestConfig: RequestConfig<Yasqe> | ((yasqe: Yasqe) => RequestConfig<Yasqe>);
-  pluginButtons: (() => HTMLElement[] | HTMLElement )| undefined;
+  pluginButtons: (() => HTMLElement[] | HTMLElement) | undefined;
   //Addon specific addon ts defs, or missing props from codemirror conf
   highlightSelectionMatches: { showToken?: RegExp; annotateScrollbar?: boolean };
   tabMode: string;
@@ -994,7 +987,7 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   autocompleters: string[];
   hintConfig: Partial<HintConfig>;
   resizeable: boolean;
-  editorHeight: string ;
+  editorHeight: string;
   queryingDisabled: string | undefined; // The string will be the message displayed when hovered
 }
 export interface PersistentConfig {

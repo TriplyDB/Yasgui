@@ -1,8 +1,8 @@
 import { addClass, drawSvgStringAsElement, removeClass } from "@triply/yasgui-utils";
 import "./TabPanel.scss";
-import type Tab from "./Tab";
-import type { RequestConfig } from "@triply/yasqe";
-import { toPairs,fromPairs } from "lodash-es";
+import Tab from "./Tab";
+import { RequestConfig } from "@triply/yasqe";
+import { toPairs, fromPairs } from "lodash-es";
 const AcceptOptionsMap: { key: string; value: string }[] = [
   { key: "JSON", value: "application/sparql-results+json" },
   { key: "XML", value: "application/sparql-results+xml" },
@@ -19,7 +19,7 @@ const AcceptHeaderGraphMap: { key: string; value: string }[] = [
   { key: "CSV", value: "text/csv" },
   { key: "TSV", value: "text/tab-separated-values" }
 ];
-type TextInputPair = { name: string; value: string }
+type TextInputPair = { name: string; value: string };
 export default class TabPanel {
   menuElement!: HTMLElement;
   settingsButton!: HTMLElement;
@@ -69,7 +69,7 @@ export default class TabPanel {
   }
   private updateBody() {
     const reqConfig = this.tab.getRequestConfig();
-    if (typeof reqConfig.method !== 'function') {
+    if (typeof reqConfig.method !== "function") {
       this.setRequestMethod(reqConfig.method);
     }
 
@@ -84,12 +84,10 @@ export default class TabPanel {
     if (typeof reqConfig.headers !== "function") {
       this.setHeaders(toPairs(reqConfig.headers).map(([name, value]) => ({ name, value })));
     }
-    if (typeof reqConfig.defaultGraphs !== 'function') {
-
+    if (typeof reqConfig.defaultGraphs !== "function") {
       this.setDefaultGraphs([...reqConfig.defaultGraphs] || []);
     }
-    if (typeof reqConfig.namedGraphs !== 'function') {
-
+    if (typeof reqConfig.namedGraphs !== "function") {
       this.setNamedGraphs([...reqConfig.namedGraphs] || []);
     }
   }
@@ -178,7 +176,6 @@ export default class TabPanel {
       acceptWrapper
     );
 
-
     this.setAcceptHeader_graph = createSelector(
       AcceptHeaderGraphMap,
       ev => {
@@ -188,22 +185,21 @@ export default class TabPanel {
       acceptWrapper
     );
 
-
     this.menuElement.appendChild(acceptWrapper);
   }
 
   private setArguments!: (args: TextInputPair[]) => void;
   private drawArgumentsInput() {
     const onBlur = () => {
-      const args:Exclude<RequestConfig<any>['args'], Function> = []
-      argumentsWrapper.querySelectorAll('.textRow').forEach((row) => {
-        const [name,value] = row.children
+      const args: Exclude<RequestConfig<any>["args"], Function> = [];
+      argumentsWrapper.querySelectorAll(".textRow").forEach(row => {
+        const [name, value] = row.children;
         if (name instanceof HTMLInputElement && value instanceof HTMLInputElement && name.value.length) {
-          args.push({name:name.value, value:value.value})
+          args.push({ name: name.value, value: value.value });
         }
-      })
-      this.tab.setRequestConfig({args:args})
-    }
+      });
+      this.tab.setRequestConfig({ args: args });
+    };
     const argumentsWrapper = document.createElement("div");
     addClass(argumentsWrapper, "requestConfigWrapper", "textSetting");
 
@@ -219,8 +215,8 @@ export default class TabPanel {
       for (let argIndex = 0; argIndex < args.length; argIndex++) {
         const argRow = drawDoubleInputWhenEmpty(argumentsWrapper, argIndex, args, onBlur);
         getRemoveButton(() => {
-          args.splice(argIndex,1);
-          this.tab.setRequestConfig({args:args})
+          args.splice(argIndex, 1);
+          this.tab.setRequestConfig({ args: args });
           this.setArguments(args);
         }, argRow);
       }
@@ -231,15 +227,15 @@ export default class TabPanel {
   private setHeaders!: (headers: TextInputPair[]) => void;
   private drawHeaderInput() {
     const onBlur = () => {
-      const headers:Exclude<RequestConfig<any>['headers'], Function> = {}
-      headerWrapper.querySelectorAll('.textRow').forEach((row) => {
-        const [name,value] = row.children
+      const headers: Exclude<RequestConfig<any>["headers"], Function> = {};
+      headerWrapper.querySelectorAll(".textRow").forEach(row => {
+        const [name, value] = row.children;
         if (name instanceof HTMLInputElement && value instanceof HTMLInputElement && name.value.length) {
-          headers[name.value]=value.value
+          headers[name.value] = value.value;
         }
-      })
-      this.tab.setRequestConfig({headers:headers})
-    }
+      });
+      this.tab.setRequestConfig({ headers: headers });
+    };
     const headerWrapper = document.createElement("div");
     addClass(headerWrapper, "requestConfigWrapper", "textSetting");
 
@@ -254,16 +250,15 @@ export default class TabPanel {
       });
       // Draw the headers;
       for (let headerIndex = 0; headerIndex < headers.length; headerIndex++) {
-        const headerRow = drawDoubleInputWhenEmpty(headerWrapper, headerIndex, headers,onBlur);
+        const headerRow = drawDoubleInputWhenEmpty(headerWrapper, headerIndex, headers, onBlur);
         // getRemoveButton(() => (headers[headerIndex] = undefined), headerRow);
         getRemoveButton(() => {
-          headers.splice(headerIndex,1);
-          this.tab.setRequestConfig({headers:fromPairs(headers.map(h => [h.name, h.value]))})
+          headers.splice(headerIndex, 1);
+          this.tab.setRequestConfig({ headers: fromPairs(headers.map(h => [h.name, h.value])) });
           this.setHeaders(headers);
-
-        },headerRow);
+        }, headerRow);
       }
-      drawDoubleInput(headerWrapper, headers,onBlur);
+      drawDoubleInput(headerWrapper, headers, onBlur);
     };
   }
 
@@ -278,15 +273,15 @@ export default class TabPanel {
     this.menuElement.appendChild(defaultGraphWrapper);
 
     const onBlur = () => {
-      const graphs:Exclude<RequestConfig<any>['defaultGraphs'], Function> = []
-      defaultGraphWrapper.querySelectorAll('.graphInput').forEach((row) => {
-        const [el] = row.children
+      const graphs: Exclude<RequestConfig<any>["defaultGraphs"], Function> = [];
+      defaultGraphWrapper.querySelectorAll(".graphInput").forEach(row => {
+        const [el] = row.children;
         if (el instanceof HTMLInputElement && el.value.length) {
-          graphs.push(el.value)
+          graphs.push(el.value);
         }
-      })
-      this.tab.setRequestConfig({defaultGraphs:graphs})
-    }
+      });
+      this.tab.setRequestConfig({ defaultGraphs: graphs });
+    };
     this.setDefaultGraphs = defaultGraphs => {
       defaultGraphWrapper.querySelectorAll(".graphInput").forEach(child => {
         defaultGraphWrapper.removeChild(child);
@@ -295,11 +290,11 @@ export default class TabPanel {
         const graphDiv = drawSingleInputWhenEmpty(defaultGraphWrapper, graphIndex, defaultGraphs, onBlur);
         getRemoveButton(() => (defaultGraphs[graphIndex] = undefined), graphDiv);
       }
-      drawSingleInput(defaultGraphWrapper, defaultGraphs,onBlur);
+      drawSingleInput(defaultGraphWrapper, defaultGraphs, onBlur);
     };
   }
 
-  private setNamedGraphs!: (defaultGraphs: Array<string|undefined>) => void;
+  private setNamedGraphs!: (defaultGraphs: Array<string | undefined>) => void;
   private drawNamedGraphInput() {
     const namedGraphWrapper = document.createElement("div");
     addClass(namedGraphWrapper, "requestConfigWrapper", "textSetting");
@@ -309,15 +304,15 @@ export default class TabPanel {
     this.menuElement.appendChild(namedGraphWrapper);
 
     const onBlur = () => {
-      const graphs:Exclude<RequestConfig<any>['namedGraphs'], Function> = []
-      namedGraphWrapper.querySelectorAll('.graphInput').forEach((row) => {
-        const [el] = row.children
+      const graphs: Exclude<RequestConfig<any>["namedGraphs"], Function> = [];
+      namedGraphWrapper.querySelectorAll(".graphInput").forEach(row => {
+        const [el] = row.children;
         if (el instanceof HTMLInputElement && el.value.length) {
-          graphs.push(el.value)
+          graphs.push(el.value);
         }
-      })
-      this.tab.setRequestConfig({namedGraphs:graphs})
-    }
+      });
+      this.tab.setRequestConfig({ namedGraphs: graphs });
+    };
 
     this.setNamedGraphs = namedGraphs => {
       namedGraphWrapper.querySelectorAll(".graphInput").forEach(child => {
@@ -325,10 +320,10 @@ export default class TabPanel {
       });
       // Draw default graphs
       for (let graphIndex = 0; graphIndex < namedGraphs.length; graphIndex++) {
-        const graphDiv = drawSingleInputWhenEmpty(namedGraphWrapper, graphIndex, namedGraphs,onBlur);
+        const graphDiv = drawSingleInputWhenEmpty(namedGraphWrapper, graphIndex, namedGraphs, onBlur);
         getRemoveButton(() => (namedGraphs[graphIndex] = undefined), graphDiv);
       }
-      drawSingleInput(namedGraphWrapper, namedGraphs,onBlur);
+      drawSingleInput(namedGraphWrapper, namedGraphs, onBlur);
     };
   }
 
@@ -428,29 +423,33 @@ function drawSingleInput(root: HTMLElement, content: Array<string | undefined>, 
   const lastRow: HTMLDivElement | null = root.querySelector(".graphInput:last-of-type");
   if (!lastRow || getInputValues(lastRow)[0] !== "" || lastRow.getElementsByTagName("button").length !== 0) {
     const index = content.length;
-    drawSingleInputWhenEmpty(root, index, content,onBlur);
+    drawSingleInputWhenEmpty(root, index, content, onBlur);
     if (lastRow && lastRow.getElementsByTagName("button").length === 0) {
       getRemoveButton(() => (content[index - 1] = undefined), lastRow);
     }
   }
 }
-function drawSingleInputWhenEmpty(root: HTMLElement, index: number, content: Array<string | undefined>,onBlur: () => void) {
+function drawSingleInputWhenEmpty(
+  root: HTMLElement,
+  index: number,
+  content: Array<string | undefined>,
+  onBlur: () => void
+) {
   const namedGraphItem = document.createElement("div");
   addClass(namedGraphItem, "graphInput");
   const namedGraphInput = createInput(content[index] || "", namedGraphItem);
   namedGraphInput.onkeyup = ev => {
     const target = <HTMLInputElement>ev.target;
     content[index] ? (content[index] = target.value) : content.push(target.value);
-    drawSingleInput(root, content,onBlur);
+    drawSingleInput(root, content, onBlur);
   };
-  namedGraphItem.onblur = onBlur
+  namedGraphItem.onblur = onBlur;
   root.appendChild(namedGraphItem);
   return namedGraphItem;
 }
 
-
-function drawDoubleInput(root: HTMLElement, content: Array<TextInputPair|undefined>, onBlur: () => void) {
-  const lastRow: HTMLDivElement|null = root.querySelector(".textRow:last-of-type");
+function drawDoubleInput(root: HTMLElement, content: Array<TextInputPair | undefined>, onBlur: () => void) {
+  const lastRow: HTMLDivElement | null = root.querySelector(".textRow:last-of-type");
   // When there are no row's or the last row has values,
   if (!lastRow || getInputValues(lastRow).filter(value => value).length !== 0) {
     const index = content.length;
@@ -461,28 +460,33 @@ function drawDoubleInput(root: HTMLElement, content: Array<TextInputPair|undefin
     }
   }
 }
-function drawDoubleInputWhenEmpty(root: HTMLElement, index: number, content: Array<TextInputPair|undefined>, onBlur:() => void) {
+function drawDoubleInputWhenEmpty(
+  root: HTMLElement,
+  index: number,
+  content: Array<TextInputPair | undefined>,
+  onBlur: () => void
+) {
   const kvInput = document.createElement("div");
   addClass(kvInput, "textRow");
   const value = content[index];
   const nameField = createInput(value ? value.name : "", kvInput);
   const valueField = createInput(value ? value.value : "", kvInput);
   nameField.onkeyup = ev => {
-    const val = content[index]
+    const val = content[index];
     val
       ? (val.name = (<HTMLInputElement>ev.target).value)
       : content.push({ name: (<HTMLInputElement>ev.target).value, value: "" });
-    drawDoubleInput(root, content,onBlur);
+    drawDoubleInput(root, content, onBlur);
   };
-  nameField.onblur = onBlur
+  nameField.onblur = onBlur;
   valueField.onkeyup = ev => {
     const val = content[index];
     val
       ? (val.value = (<HTMLInputElement>ev.target).value)
       : content.push({ value: (<HTMLInputElement>ev.target).value, name: "" });
-    drawDoubleInput(root, content,onBlur);
+    drawDoubleInput(root, content, onBlur);
   };
-  valueField.onblur = onBlur
+  valueField.onblur = onBlur;
   root.appendChild(kvInput);
   return kvInput;
 }

@@ -1,7 +1,7 @@
 import { addClass } from "@triply/yasgui-utils";
 import { default as Yasgui, getRandomId } from "./";
-import type Tab from './Tab'
-import type { TabListEl } from "./TabElements";
+import Tab from "./Tab";
+import { TabListEl } from "./TabElements";
 import { cloneDeep } from "lodash-es";
 require("./TabContextMenu.scss");
 export interface TabContextConfig {
@@ -79,7 +79,7 @@ export default class TabContextMenu {
     rootEl.appendChild(this.contextEl);
   }
   public redraw() {
-    if (this.contextEl  && this.tabRef?.tabEl) {
+    if (this.contextEl && this.tabRef?.tabEl) {
       const bounding = this.tabRef.tabEl.getBoundingClientRect();
       this.contextEl.style.top = `${window.pageYOffset + bounding.bottom}px`;
     }
@@ -100,7 +100,7 @@ export default class TabContextMenu {
 
     // Copy tab functionality`
     this.copyTabEl.onclick = () => {
-      if (!tab) return
+      if (!tab) return;
       const config = cloneDeep(tab.getPersistedJson());
       config.id = getRandomId();
       this.yasgui.addTab(true, config);

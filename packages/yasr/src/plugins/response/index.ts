@@ -1,8 +1,8 @@
 /**
  * Make sure not to include any deps from our main index file. That way, we can easily publish the publin as standalone build
  */
-import type { Plugin } from "../";
-import type Yasr from "../../";
+import { Plugin } from "../";
+import Yasr from "../../";
 require("./index.scss");
 const CodeMirror = require("codemirror");
 require("codemirror/addon/fold/foldcode.js");
@@ -57,7 +57,7 @@ export default class Response implements Plugin<PluginConfig> {
     const type = this.yasr.results.getType();
     return {
       getData: () => {
-        return this.yasr.results?.getOriginalResponseAsString() || '';
+        return this.yasr.results?.getOriginalResponseAsString() || "";
       },
       filename: "queryResults" + (type ? "." + type : ""),
       contentType: contentType ? contentType : "text/plain",
@@ -88,9 +88,8 @@ export default class Response implements Plugin<PluginConfig> {
     this.cm = CodeMirror(this.yasr.resultsEl, codemirrorOpts);
     // Don't show less originally we've already set the value in the codemirrorOpts
     if (lines.length > this.config.maxLines) this.showLess(false);
-
   }
-  private limitData(value:string) {
+  private limitData(value: string) {
     const lines = value.split("\n");
     if (lines.length > this.config.maxLines) {
       value = lines.slice(0, this.config.maxLines).join("\n");
@@ -140,15 +139,15 @@ export default class Response implements Plugin<PluginConfig> {
     overlayContent.appendChild(downloadButton);
     this.overLay.appendChild(overlayContent);
     this.cm.getWrapperElement().appendChild(this.overLay);
-    if (setValue ) {
-      this.cm.setValue(this.limitData(this.yasr.results?.getOriginalResponseAsString() || ''));
+    if (setValue) {
+      this.cm.setValue(this.limitData(this.yasr.results?.getOriginalResponseAsString() || ""));
     }
   }
   /**
    * Render the raw response full length
    */
   showMore() {
-    if (!this.cm) return
+    if (!this.cm) return;
     removeClass(this.cm.getWrapperElement(), "overflow");
     this.overLay?.remove();
     this.overLay = undefined;

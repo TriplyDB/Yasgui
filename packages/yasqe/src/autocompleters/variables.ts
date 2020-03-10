@@ -1,4 +1,4 @@
-import type * as autocompleter from "./";
+import * as autocompleter from "./";
 
 var conf: autocompleter.CompleterConfig = {
   name: "variables",

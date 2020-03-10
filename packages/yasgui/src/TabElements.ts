@@ -1,4 +1,4 @@
-import type Yasgui from "./";
+import Yasgui from "./";
 import TabContextMenu from "./TabContextMenu";
 import { hasClass, addClass, removeClass } from "@triply/yasgui-utils";
 const sortablejs = require("sortablejs");
@@ -24,9 +24,8 @@ export class TabListEl {
   }
   public startRename() {
     if (this.renameEl) {
-      const tab = this.yasgui.getTab(this.tabId)
+      const tab = this.yasgui.getTab(this.tabId);
       if (tab) {
-
         this.renameEl.value = tab.name();
         addClass(this.tabEl, "renaming");
         this.renameEl.focus();
@@ -87,7 +86,7 @@ export class TabListEl {
     };
     tabLinkEl.appendChild(closeBtn);
 
-    const renameEl = this.renameEl = document.createElement("input");
+    const renameEl = (this.renameEl = document.createElement("input"));
     renameEl.type = "text";
     renameEl.value = name;
     renameEl.onkeyup = event => {
@@ -213,7 +212,6 @@ export class TabList {
   public deriveTabOrderFromEls() {
     const tabs: string[] = [];
     if (this._tabsListEl) {
-
       for (let i = 0; i < this._tabsListEl.children.length; i++) {
         const child = this._tabsListEl.children[i]; //this is the tab div
         const anchorTag = child.children[0]; //this one has an href
