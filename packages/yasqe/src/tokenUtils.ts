@@ -23,6 +23,10 @@ function expandTokenToStart(yasqe: Yasqe, token: Token, cur: Position): Token {
     ch: token.start
   });
 
+  if ((token.type === "punc" || token.type === "error") && !token.state.possibleFullIri && !token.state.inPrefixDecl) {
+    token.state.possibleCurrent = token.state.possibleNext;
+    return token;
+  }
   if (prevToken.type === "punc" && !prevToken.state.possibleFullIri && !prevToken.state.inPrefixDecl) {
     //assuming this is a path expression. Should not expand the token anymore
     //Also checking whether current token isnt an error, to avoid stopping on iri path delimiters
@@ -101,7 +105,7 @@ export function getPreviousNonWsToken(yasqe: Yasqe, line: number, token: Token):
   }
   return previousToken;
 }
-export function getNextNonWsToken(yasqe: Yasqe, lineNumber: number, charNumber?: number): Token | undefined{
+export function getNextNonWsToken(yasqe: Yasqe, lineNumber: number, charNumber?: number): Token | undefined {
   if (charNumber == undefined) charNumber = 1;
   var token = yasqe.getTokenAt({
     line: lineNumber,
