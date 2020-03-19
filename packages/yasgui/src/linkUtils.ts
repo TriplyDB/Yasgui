@@ -217,7 +217,7 @@ export interface QueryCatalogConfig {
   service: string;
   name: string;
   description: string;
-  requestConfig: {
+  requestConfig?: {
     payload: {
       query: string;
       "default-graph-uri"?: string | string[];
