@@ -37,7 +37,11 @@ var conf: Autocompleter.CompleterConfig = {
             (previousToken.type == "ws" ||
               previousToken.type == null ||
               (previousToken.type === "punc" &&
-                (previousToken.string === "|" || previousToken.string === "/" || previousToken.string == "^^")))
+                (previousToken.string === "|" ||
+                  previousToken.string === "/" ||
+                  previousToken.string == "^^" ||
+                  previousToken.string == "{" ||
+                  previousToken.string === "(")))
           ) {
             // check whether it isn't defined already (saves us from looping
             // through the array)

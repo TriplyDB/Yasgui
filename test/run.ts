@@ -356,6 +356,46 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         const token = await getCompleteToken();
         expect(token.string).to.equal("<http://www.opengis.net/ont/geosparql#");
       });
+
+      it("Autocompleter should show suggestion directly after function #156", async () => {
+        await page.evaluate(() => {
+          const oneLineQuery = "select * where { bind(";
+          window.yasqe.setValue(oneLineQuery);
+          window.yasqe.focus();
+          window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("(") + 1 });
+        });
+        const token = await getCompleteToken();
+        expect(token.state.possibleCurrent).contains(
+          "IRI_REF",
+          `IRI_REF not found in list: "${token.state.possibleCurrent.join('", "')}"`
+        );
+      });
+      it("Autocompleter should show literal suggestion directly after function #156", async () => {
+        await page.evaluate(() => {
+          const oneLineQuery = 'select * where { bind("';
+          window.yasqe.setValue(oneLineQuery);
+          window.yasqe.focus();
+          window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf('"') + 1 });
+        });
+        const token = await getCompleteToken();
+        expect(token.state.possibleCurrent).contains(
+          "IRI_REF",
+          `IRI_REF not found in list: "${token.state.possibleCurrent.join('", "')}"`
+        );
+      });
+      it("Autocompleter should show correct results after closing bracket", async () => {
+        await page.evaluate(() => {
+          const oneLineQuery = "select * where { ?s ?p ?o }";
+          window.yasqe.setValue(oneLineQuery);
+          window.yasqe.focus();
+          window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("}") + 1 });
+        });
+        const token = await getCompleteToken();
+        expect(token.state.possibleCurrent).contains(
+          "LIMIT",
+          `LIMIT not found in list: "${token.state.possibleCurrent.join('", "')}"`
+        );
+      });
     });
     /**
      * This test is tricky, as it uses the LOV API in our test. I.e, if this test fails, first check whether LOV is actually up
