@@ -152,6 +152,7 @@ export default class Response implements Plugin<PluginConfig> {
     this.overLay?.remove();
     this.overLay = undefined;
     this.cm.setValue(this.yasr.results?.getOriginalResponseAsString() || "");
+    this.cm.refresh();
   }
   public static defaults: PluginConfig = {
     maxLines: 30
