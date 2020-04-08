@@ -283,10 +283,16 @@ export class Yasr extends EventEmitter {
   }
   private fillFallbackBox(fallbackElement?: string) {
     this.emptyFallbackElement();
+    console.log("Fallback element: ", fallbackElement);
+    console.log("Drawn plugin: ", this.drawnPlugin);
+    console.log("Plugins: ", this.plugins);
+    // Do not show fallback render warnings for plugins without a selector.
+    if (this.plugins[fallbackElement || this.drawnPlugin || ""]?.hideFromSelection) return;
+
     const selectedPlugin = this.getSelectedPlugin();
     const fallbackPluginLabel =
       this.plugins[fallbackElement || this.drawnPlugin || ""]?.label || fallbackElement || this.drawnPlugin;
-    const selectedPluginLabel = selectedPlugin?.label || this.getSelectedPluginName;
+    const selectedPluginLabel = selectedPlugin?.label || this.getSelectedPluginName();
 
     const textElement = document.createElement("p");
     textElement.innerText = `Could not render results with the ${selectedPluginLabel} plugin, the results currently are rendered with the ${fallbackPluginLabel} plugin. ${
