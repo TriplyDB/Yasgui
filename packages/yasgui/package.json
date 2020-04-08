@@ -1,7 +1,7 @@
 {
   "name": "@triply/yasgui",
   "description": "Yet Another SPARQL GUI",
-  "version": "4.0.112",
+  "version": "4.0.113",
   "main": "build/yasgui.min.js",
   "types": "build/ts/src/index.d.ts",
   "license": "MIT",
@@ -36,7 +36,7 @@
     "@tarekraafat/autocomplete.js": "^7.2.0",
     "@triply/yasgui-utils": "^4.0.107",
     "@triply/yasqe": "^4.0.111",
-    "@triply/yasr": "^4.0.112",
+    "@triply/yasr": "^4.0.113",
     "@types/lodash-es": "^4.17.3",
     "autosuggest-highlight": "^3.1.1",
     "blueimp-md5": "^2.12.0",
