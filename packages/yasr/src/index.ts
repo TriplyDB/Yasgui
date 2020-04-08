@@ -283,9 +283,7 @@ export class Yasr extends EventEmitter {
   }
   private fillFallbackBox(fallbackElement?: string) {
     this.emptyFallbackElement();
-    console.log("Fallback element: ", fallbackElement);
-    console.log("Drawn plugin: ", this.drawnPlugin);
-    console.log("Plugins: ", this.plugins);
+
     // Do not show fallback render warnings for plugins without a selector.
     if (this.plugins[fallbackElement || this.drawnPlugin || ""]?.hideFromSelection) return;
 
