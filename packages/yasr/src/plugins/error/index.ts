@@ -9,6 +9,7 @@ export interface PluginConfig {
   renderError?: (error: Parser.ErrorSummary) => HTMLElement;
 }
 
+
 export default class Error implements Plugin<PluginConfig> {
   private yasr: Yasr;
   public options: PluginConfig;
