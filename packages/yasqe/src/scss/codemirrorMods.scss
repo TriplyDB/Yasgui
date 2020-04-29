@@ -20,4 +20,16 @@
   .cm-matchhighlight {
     background-color: #dbdeed;
   }
+  .CodeMirror-hints.default {
+    max-width: 1000px;
+  }
+  .CodeMirror-hints.default li {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  @media only screen and (max-width: 1000px) {
+    .CodeMirror-hints.default {
+      max-width: 800px;
+    }
+  }
 }
