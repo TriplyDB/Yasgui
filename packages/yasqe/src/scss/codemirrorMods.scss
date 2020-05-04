@@ -20,16 +20,17 @@
   .cm-matchhighlight {
     background-color: #dbdeed;
   }
+}
+// Put these outside of yasqe as the root element can be changed
+.CodeMirror-hints.default {
+  max-width: 1000px;
+}
+.CodeMirror-hints.default li {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+@media only screen and (max-width: 1000px) {
   .CodeMirror-hints.default {
-    max-width: 1000px;
-  }
-  .CodeMirror-hints.default li {
-    text-overflow: ellipsis;
-    overflow: hidden;
-  }
-  @media only screen and (max-width: 1000px) {
-    .CodeMirror-hints.default {
-      max-width: 800px;
-    }
+    max-width: 800px;
   }
 }
