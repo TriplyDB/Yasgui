@@ -2,11 +2,10 @@ declare module "@tarekraafat/autocomplete.js" {
   export default class Autocomplete<T> {
     constructor(options: AutocompleteConfig<T>);
   }
-
   interface AutocompleteConfig<T> {
     data: {
       src: () => Promise<T[]>;
-      key: (keyof T)[]; // For now we will only search on "all" which is a concatenation of all fields
+      key?: (keyof T)[]; // For now we will only search on "all" which is a concatenation of all fields
       cache: boolean;
     };
     query?: {
