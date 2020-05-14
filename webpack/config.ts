@@ -187,7 +187,9 @@ export const genericConfig: webpack.Configuration = {
         test: /\.js$/,
         exclude: [
           //Exclude source maps for this package. They are incorrect
-          /node_modules\/column-resizer/g
+          /node_modules\/column-resizer/g,
+          //rdf-string is missing source maps. Exclude to avoid warnings
+          /\/rdf-string\//g
         ],
         use: ["source-map-loader"],
         enforce: "pre"
