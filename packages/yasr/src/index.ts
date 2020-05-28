@@ -190,10 +190,10 @@ export class Yasr extends EventEmitter {
       initPromise.then(
         () => {
           if (pluginToDraw) {
-            //make sure to clear the innerhtml _here_
+            //make sure to clear the object _here_
             //otherwise we run into race conditions when draw is executed shortly after each other, and the plugin uses an initialize function
             //as a result, things can be rendered _twice_
-            this.resultsEl.innerHTML = "";
+            while (this.resultsEl.firstChild) this.resultsEl.firstChild.remove();
             this.plugins[pluginToDraw].draw(this.config.plugins[pluginToDraw].dynamicConfig);
             this.emit("drawn", this, this.plugins[pluginToDraw]);
             this.updateExportHeaders();

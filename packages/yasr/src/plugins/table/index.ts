@@ -29,6 +29,8 @@ export default class Table implements Plugin<PluginConfig> {
   private yasr: Yasr;
   private tableControls: Element | undefined;
   private dataTable: DataTables.Api | undefined;
+  private tableFilterField: HTMLInputElement | undefined;
+  private tableSizeField: HTMLSelectElement | undefined;
   public helpReference = "https://triply.cc/docs/yasgui#table";
   public label = "Table";
   public priority = 10;
@@ -104,6 +106,7 @@ export default class Table implements Plugin<PluginConfig> {
     }
     return stringRepresentation;
   }
+
   private getColumns() {
     if (!this.yasr.results) return [];
     return [
@@ -127,6 +130,7 @@ export default class Table implements Plugin<PluginConfig> {
     const table = document.createElement("table");
     if (this.dataTable) {
       this.dataTable.destroy(true);
+      this.dataTable = undefined;
     }
     this.yasr.resultsEl.appendChild(table);
     const dtConfig: DataTables.Settings = {
@@ -150,23 +154,32 @@ export default class Table implements Plugin<PluginConfig> {
     this.dataTable = $(table).DataTable(dtConfig);
     // .api();
     new ColumnResizer.default(table, { widths: [], partialRefresh: true });
-    this.drawControls(this.dataTable);
+    this.drawControls();
   }
 
-  drawControls(dataTable: DataTables.Api) {
+  private handleTableSearch(event: KeyboardEvent) {
+    this.dataTable?.search((event.target as HTMLInputElement).value).draw();
+  }
+  private handleTableSizeSelect(event: Event) {
+    const pageLength = parseInt((event.target as HTMLSelectElement).value);
+    // Set page length
+    this.dataTable?.page.len(pageLength).draw();
+    // Store in persistentConfig
+    this.persistentConfig.pageSize = pageLength;
+    this.yasr.storePluginConfig("table", this.persistentConfig);
+  }
+
+  drawControls() {
     // Remove old header
-    if (this.tableControls) this.tableControls.remove();
+    this.removeControls();
     this.tableControls = document.createElement("div");
     this.tableControls.className = "tableControls";
-
     // Create table filter
-    const filter = document.createElement("input");
-    filter.className = "tableFilter";
-    filter.placeholder = "Filter query results";
-    this.tableControls.appendChild(filter);
-    filter.onkeyup = (event: KeyboardEvent) => {
-      dataTable.search((event.target as HTMLInputElement).value).draw();
-    };
+    this.tableFilterField = document.createElement("input");
+    this.tableFilterField.className = "tableFilter";
+    this.tableFilterField.placeholder = "Filter query results";
+    this.tableControls.appendChild(this.tableFilterField);
+    this.tableFilterField.addEventListener("keyup", this.handleTableSearch);
 
     // Create page wrapper
     const pageSizerWrapper = document.createElement("div");
@@ -179,8 +192,8 @@ export default class Table implements Plugin<PluginConfig> {
     pageSizerWrapper.appendChild(pageSizerLabel);
 
     // Create page size element
-    const pageSizer = document.createElement("select");
-    pageSizer.className = "tableSizer";
+    this.tableSizeField = document.createElement("select");
+    this.tableSizeField.className = "tableSizer";
 
     // Create options for page sizer
     const options = [10, 50, 100, 1000, -1];
@@ -190,18 +203,11 @@ export default class Table implements Plugin<PluginConfig> {
       // -1 selects everything so we should call it All
       element.innerText = option > 0 ? option + "" : "All";
       // Set initial one as selected
-      if (dataTable.page.len() === option) element.selected = true;
-      pageSizer.appendChild(element);
+      if (this.dataTable?.page.len() === option) element.selected = true;
+      this.tableSizeField.appendChild(element);
     }
-    pageSizerWrapper.appendChild(pageSizer);
-    pageSizer.onchange = event => {
-      const pageLength = parseInt((event.target as HTMLSelectElement).value);
-      // Set page length
-      dataTable.page.len(pageLength).draw();
-      // Store in persistentConfig
-      this.persistentConfig.pageSize = pageLength;
-      this.yasr.storePluginConfig("table", this.persistentConfig);
-    };
+    pageSizerWrapper.appendChild(this.tableSizeField);
+    this.tableSizeField.addEventListener("change", this.handleTableSizeSelect);
     this.tableControls.appendChild(pageSizerWrapper);
     this.yasr.pluginControls.appendChild(this.tableControls);
   }
@@ -216,5 +222,21 @@ export default class Table implements Plugin<PluginConfig> {
 
   public canHandleResults() {
     return !!this.yasr.results && this.yasr.results.getVariables() && this.yasr.results.getVariables().length > 0;
+  }
+  private removeControls() {
+    // Unregister listeners and remove references to old fields
+    this.tableFilterField?.removeEventListener("keyup", this.handleTableSearch);
+    this.tableFilterField = undefined;
+    this.tableSizeField?.removeEventListener("change", this.handleTableSizeSelect);
+    this.tableSizeField = undefined;
+
+    // Empty controls
+    while (this.tableControls?.firstChild) this.tableControls.firstChild.remove();
+    this.tableControls = undefined;
+  }
+  destroy() {
+    this.removeControls();
+    this.dataTable?.destroy(true);
+    this.dataTable = undefined;
   }
 }
