@@ -56,6 +56,7 @@ export class Tab extends EventEmitter {
   private yasqeWrapperEl: HTMLDivElement | undefined;
   private yasrWrapperEl: HTMLDivElement | undefined;
   private endpointSelect: EndpointSelect | undefined;
+  private tabPanel?: TabPanel;
   constructor(yasgui: Yasgui, conf: PersistedJson) {
     super();
     if (!conf || conf.id === undefined) throw new Error("Expected a valid configuration to initialize tab with");
@@ -167,21 +168,21 @@ export class Tab extends EventEmitter {
   private initTabSettingsMenu() {
     if (!this.rootEl || !this.controlBarEl)
       throw new Error("Need to initialize wrapper elements before drawing tab pabel");
-    new TabPanel(this, this.rootEl, this.controlBarEl);
+    this.tabPanel = new TabPanel(this, this.rootEl, this.controlBarEl);
   }
 
   private initEndpointSelectField() {
     if (!this.controlBarEl) throw new Error("Need to initialize wrapper elements before drawing endpoint field");
-    const endpointSelect = (this.endpointSelect = new EndpointSelect(
+    this.endpointSelect = new EndpointSelect(
       this.getEndpoint(),
       this.controlBarEl,
       this.yasgui.config.endpointCatalogueOptions,
       this.yasgui.persistentConfig.getEndpointHistory()
-    ));
-    endpointSelect.on("select", (endpoint, endpointHistory) => {
+    );
+    this.endpointSelect.on("select", (endpoint, endpointHistory) => {
       this.setEndpoint(endpoint, endpointHistory);
     });
-    endpointSelect.on("remove", (endpoint, endpointHistory) => {
+    this.endpointSelect.on("remove", (endpoint, endpointHistory) => {
       this.setEndpoint(endpoint, endpointHistory);
     });
   }
@@ -334,56 +335,68 @@ export class Tab extends EventEmitter {
     }
     this.yasqe = new Yasqe(this.yasqeWrapperEl, yasqeConf);
 
-    this.yasqe.on("blur", yasqe => {
+    this.yasqe.on("blur", this.handleYasqeBlur);
+    this.yasqe.on("query", this.handleYasqeQuery);
+    this.yasqe.on("queryAbort", this.handleYasqeQueryAbort);
+    this.yasqe.on("resize", this.handleYasqeResize);
+
+    this.yasqe.on("autocompletionShown", this.handleAutocompletionShown);
+    this.yasqe.on("autocompletionClose", this.handleAutocompletionClose);
+
+    this.yasqe.on("queryResponse", this.handleQueryResponse);
+  }
+  private destroyYasqe() {
+    // As Yasqe extends of CM instead of eventEmitter, it doesn't expose the removeAllListeners function, so we should unregister all events manually
+    this.yasqe?.off("blur", this.handleYasqeBlur);
+    this.yasqe?.off("query", this.handleYasqeQuery);
+    this.yasqe?.off("queryAbort", this.handleYasqeQueryAbort);
+    this.yasqe?.off("resize", this.handleYasqeResize);
+    this.yasqe?.off("autocompletionShown", this.handleAutocompletionShown);
+    this.yasqe?.off("autocompletionClose", this.handleAutocompletionClose);
+    this.yasqe?.off("queryResponse", this.handleQueryResponse);
+    this.yasqe?.destroy();
+    this.yasqe = undefined;
+  }
+  handleYasqeBlur = (yasqe: Yasqe) => {
+    this.persistentJson.yasqe.value = yasqe.getValue();
+    this.emit("change", this, this.persistentJson);
+  };
+  handleYasqeQuery = (yasqe: Yasqe) => {
+    //the blur event might not have fired (e.g. when pressing ctrl-enter). So, we'd like to persist the query as well if needed
+    if (yasqe.getValue() !== this.persistentJson.yasqe.value) {
       this.persistentJson.yasqe.value = yasqe.getValue();
       this.emit("change", this, this.persistentJson);
-    });
-    this.yasqe.on("query", yasqe => {
-      //the blur event might not have fired (e.g. when pressing ctrl-enter). So, we'd like to persist the query as well if needed
-      if (yasqe.getValue() !== this.persistentJson.yasqe.value) {
-        this.persistentJson.yasqe.value = yasqe.getValue();
-        this.emit("change", this, this.persistentJson);
-      }
-      this.emit("query", this);
-    });
-    this.yasqe.on("queryAbort", () => {
-      this.emit("queryAbort", this);
-    });
-    this.yasqe.on("resize", (_yasqe, newSize) => {
-      this.persistentJson.yasqe.editorHeight = newSize;
-      this.emit("change", this, this.persistentJson);
-    });
-
-    this.yasqe.on("autocompletionShown", (_yasqe, widget) => {
-      this.emit("autocompletionShown", this, widget);
-    });
-    this.yasqe.on("autocompletionClose", _yasqe => {
-      this.emit("autocompletionClose", this);
-    });
-
-    this.yasqe.on("queryResponse", (_yasqe: Yasqe, response: any, duration: number) => {
-      this.emit("queryResponse", this);
-      if (!this.yasr) throw new Error("Resultset visualizer not initialized. Cannot draw results");
-      this.yasr.setResponse(response, duration);
-      if (!this.yasr.results) return;
-      if (!this.yasr.results.hasError()) {
-        this.persistentJson.yasr.response = this.yasr.results.getAsStoreObject(
-          this.yasgui.config.yasr.maxPersistentResponseSize
-        );
-      } else {
-        // Don't persist if there is an error and remove the previous result
-        this.persistentJson.yasr.response = undefined;
-      }
-      this.emit("change", this, this.persistentJson);
-    });
-
-    this.yasqe.on("fullscreen-enter", () => {
-      this.yasgui.hasFullscreen(true);
-    });
-    this.yasqe.on("fullscreen-leave", () => {
-      this.yasgui.hasFullscreen(false);
-    });
-  }
+    }
+    this.emit("query", this);
+  };
+  handleYasqeQueryAbort = () => {
+    this.emit("queryAbort", this);
+  };
+  handleYasqeResize = (_yasqe: Yasqe, newSize: string) => {
+    this.persistentJson.yasqe.editorHeight = newSize;
+    this.emit("change", this, this.persistentJson);
+  };
+  handleAutocompletionShown = (_yasqe: Yasqe, widget: string) => {
+    this.emit("autocompletionShown", this, widget);
+  };
+  handleAutocompletionClose = (_yasqe: Yasqe) => {
+    this.emit("autocompletionClose", this);
+  };
+  handleQueryResponse = (_yasqe: Yasqe, response: any, duration: number) => {
+    this.emit("queryResponse", this);
+    if (!this.yasr) throw new Error("Resultset visualizer not initialized. Cannot draw results");
+    this.yasr.setResponse(response, duration);
+    if (!this.yasr.results) return;
+    if (!this.yasr.results.hasError()) {
+      this.persistentJson.yasr.response = this.yasr.results.getAsStoreObject(
+        this.yasgui.config.yasr.maxPersistentResponseSize
+      );
+    } else {
+      // Don't persist if there is an error and remove the previous result
+      this.persistentJson.yasr.response = undefined;
+    }
+    this.emit("change", this, this.persistentJson);
+  };
   private initYasr() {
     if (!this.yasrWrapperEl) throw new Error("Wrapper for yasr does not exist");
     const yasrConf: Partial<YasrConfig> = {
@@ -439,6 +452,15 @@ export class Tab extends EventEmitter {
 
       this.emit("change", this, this.persistentJson);
     });
+  }
+  destroy() {
+    this.removeAllListeners();
+    this.tabPanel?.destroy();
+    this.endpointSelect?.destroy();
+    this.endpointSelect = undefined;
+    this.yasr?.destroy();
+    this.yasr = undefined;
+    this.destroyYasqe();
   }
   public static getDefaults(yasgui?: Yasgui): PersistedJson {
     return {

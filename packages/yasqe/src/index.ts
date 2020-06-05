@@ -16,7 +16,6 @@ import { merge, escape } from "lodash-es";
 
 import getDefaults from "./defaults";
 import CodeMirror from "./CodeMirror";
-// export { Token } from "./CodeMirror";
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: superagent.SuperAgentRequest) => void): void;
@@ -46,8 +45,7 @@ export interface Yasqe {
   off(eventName: "resize", handler: (instance: Yasqe, newSize: string) => void): void;
   on(eventName: string, handler: () => void): void;
 }
-// let bla: CodeMirror;
-// bla.focu
+
 export class Yasqe extends CodeMirror {
   private static storageNamespace = "triply";
   public autocompleters: { [name: string]: Autocompleter.Completer | undefined } = {};
@@ -57,6 +55,7 @@ export class Yasqe extends CodeMirror {
   private req: superagent.SuperAgentRequest | undefined;
   private queryStatus: "valid" | "error" | undefined;
   private queryBtn: HTMLDivElement | undefined;
+  private resizeWrapper?: HTMLDivElement;
   public rootEl: HTMLDivElement;
   public storage: YStorage;
   public config: Config;
@@ -96,13 +95,10 @@ export class Yasqe extends CodeMirror {
       if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
     }
     this.config.autocompleters.forEach(c => this.enableCompleter(c).then(() => {}, console.warn));
-
     if (this.config.consumeShareLink) {
       this.config.consumeShareLink(this);
       //and: add a hash listener!
-      window.addEventListener("hashchange", () => {
-        this.config.consumeShareLink?.(this);
-      });
+      window.addEventListener("hashchange", this.handleHashChange);
     }
     this.checkSyntax();
     // Size codemirror to the
@@ -115,43 +111,62 @@ export class Yasqe extends CodeMirror {
     if (this.config.resizeable) this.drawResizer();
     this.registerEventListeners();
   }
+  private handleHashChange = () => {
+    this.config.consumeShareLink?.(this);
+  };
+  private handleChange() {
+    this.checkSyntax();
+    this.updateQueryButton();
+  }
+  private handleBlur() {
+    this.saveQuery();
+  }
+  private handleChanges() {
+    // e.g. handle blur
+    this.checkSyntax();
+    this.updateQueryButton();
+  }
+  private handleCursorActivity() {
+    this.autocomplete(true);
+  }
+  private handleQuery(_yasqe: Yasqe, req: superagent.SuperAgentRequest) {
+    this.req = req;
+    this.updateQueryButton();
+  }
+  private handleQueryResponse(_yasqe: Yasqe, _response: superagent.SuperAgentRequest, duration: number) {
+    this.lastQueryDuration = duration;
+    this.req = undefined;
+    this.updateQueryButton();
+  }
+  private handleQueryAbort(_yasqe: Yasqe, _req: superagent.SuperAgentRequest) {
+    this.req = undefined;
+    this.updateQueryButton();
+  }
+
   private registerEventListeners() {
     /**
      * Register listeners
      */
-    this.on("change", () => {
-      this.checkSyntax();
-      this.updateQueryButton();
-      // root.positionButtons(yasqe);
-    });
-    this.on("blur", () => {
-      this.saveQuery();
-    });
-    this.on("changes", () => {
-      //e.g. on paste
-      this.checkSyntax();
-      this.updateQueryButton();
-      // root.positionButtons(yasqe);
-    });
-    this.on("cursorActivity", () => {
-      this.autocomplete(true);
-    });
+    this.on("change", this.handleChange);
+    this.on("blur", this.handleBlur);
+    this.on("changes", this.handleChanges);
+    this.on("cursorActivity", this.handleCursorActivity);
 
-    this.on("query", (_yasqe, req) => {
-      this.req = req;
-      this.updateQueryButton();
-    });
-    this.on("queryResponse", (_yasqe, _response, duration) => {
-      this.lastQueryDuration = duration;
-      this.req = undefined;
-      this.updateQueryButton();
-    });
-    this.on("queryAbort", (_yasqe, _req) => {
-      this.req = undefined;
-      this.updateQueryButton();
-    });
+    this.on("query", this.handleQuery);
+    this.on("queryResponse", this.handleQueryResponse);
+    this.on("queryAbort", this.handleQueryAbort);
   }
 
+  private unregisterEventListeners() {
+    this.off("change" as any, this.handleChange);
+    this.off("blur", this.handleBlur);
+    this.off("changes" as any, this.handleChanges);
+    this.off("cursorActivity" as any, this.handleCursorActivity);
+
+    this.off("query", this.handleQuery);
+    this.off("queryResponse", this.handleQueryResponse);
+    this.off("queryAbort", this.handleQueryAbort);
+  }
   /**
    * Generic IDE functions
    */
@@ -312,13 +327,14 @@ export class Yasqe extends CodeMirror {
     }
   }
   private drawResizer() {
-    const resizeWrapper = document.createElement("div");
-    addClass(resizeWrapper, "resizeWrapper");
+    if (this.resizeWrapper) return;
+    this.resizeWrapper = document.createElement("div");
+    addClass(this.resizeWrapper, "resizeWrapper");
     const chip = document.createElement("div");
     addClass(chip, "resizeChip");
-    resizeWrapper.appendChild(chip);
-    resizeWrapper.addEventListener("mousedown", this.initDrag, false);
-    this.rootEl.appendChild(resizeWrapper);
+    this.resizeWrapper.appendChild(chip);
+    this.resizeWrapper.addEventListener("mousedown", this.initDrag, false);
+    this.rootEl.appendChild(this.resizeWrapper);
   }
   private initDrag() {
     document.documentElement.addEventListener("mousemove", this.doDrag, false);
@@ -845,6 +861,18 @@ export class Yasqe extends CodeMirror {
       this.req.abort();
       this.emit("queryAbort", this, this.req);
     }
+  }
+
+  public destroy() {
+    //  Abort running query;
+    this.abortQuery();
+    this.unregisterEventListeners();
+    this.resizeWrapper?.removeEventListener("mousedown", this.initDrag, false);
+    for (const autocompleter in this.autocompleters) {
+      this.disableCompleter(autocompleter);
+    }
+    window.removeEventListener("hashchange", this.handleHashChange);
+    this.rootEl.remove();
   }
 
   /**

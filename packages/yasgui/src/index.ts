@@ -336,6 +336,17 @@ export class Yasgui extends EventEmitter {
       this.addTab(true, config.tab, { atIndex: config.index });
     }
   }
+  public destroy() {
+    this.removeAllListeners();
+    this.tabElements.destroy();
+    for (const tabId in this._tabs) {
+      const tab = this._tabs[tabId];
+      tab.destroy();
+    }
+    this._tabs = {};
+
+    while (this.rootEl.firstChild) this.rootEl.firstChild.remove();
+  }
   public static linkUtils = shareLink;
   public static Yasr = Yasr;
   public static Yasqe = Yasqe;

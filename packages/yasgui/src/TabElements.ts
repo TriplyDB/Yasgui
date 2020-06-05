@@ -187,10 +187,7 @@ export class TabList {
     addTabLink.className = "addTab";
     addTabLink.textContent = "+";
     addTabLink.title = "Add tab";
-    addTabLink.onclick = e => {
-      e.preventDefault();
-      this.yasgui.addTab(true);
-    };
+    addTabLink.addEventListener("click", this.handleAddNewTab);
     this.addTabEl.appendChild(addTabLink);
     this._tabsListEl.appendChild(this.addTabEl);
     this.tabContextMenu = TabContextMenu.get(
@@ -199,6 +196,10 @@ export class TabList {
     );
     return this._tabsListEl;
   }
+  handleAddNewTab = (event: Event) => {
+    event.preventDefault();
+    this.yasgui.addTab(true);
+  };
   // drawPanels() {
   //   this.tabPanelsEl = document.createElement("div");
   //   return this.tabsListEl;
@@ -244,6 +245,14 @@ export class TabList {
     } else {
       this._tabsListEl?.insertBefore(this._tabs[tabId].draw(tabConf.name), this.addTabEl || null);
     }
+  }
+  public destroy() {
+    for (const tabId in this._tabs) {
+      const tab = this._tabs[tabId];
+      tab.delete();
+    }
+    this._tabs = {};
+    this.tabContextMenu?.destroy();
   }
 }
 

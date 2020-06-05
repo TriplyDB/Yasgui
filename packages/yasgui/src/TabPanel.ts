@@ -346,6 +346,13 @@ export default class TabPanel {
     // Named graphs
     this.drawNamedGraphInput();
   }
+
+  public destroy() {
+    this.settingsButton.onclick = null;
+    this.menuElement.onclick = null;
+    while (this.menuElement.firstChild) this.menuElement.firstChild.remove();
+    this.menuElement.remove();
+  }
 }
 
 /**

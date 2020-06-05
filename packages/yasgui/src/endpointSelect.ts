@@ -166,7 +166,6 @@ export class EndpointSelect extends EventEmitter {
               if (val) {
                 matches.matches[key] = parse(val, createHighlights(val, this.inputField.value));
               }
-
             }
             this.options.renderItem({ ...data, ...matches }, source);
           }
@@ -186,7 +185,6 @@ export class EndpointSelect extends EventEmitter {
       noResults: () => {
         const container = this.container.querySelector(".autocompleteList");
         if (container) {
-
           const noResults = document.createElement("div");
           addClass(noResults, "noResults");
           noResults.innerText = 'Press "enter" to add this endpoint';
@@ -278,7 +276,7 @@ export class EndpointSelect extends EventEmitter {
     });
   }
   private clearListSuggestionList = () => {
-    const autocompleteList = this.container.querySelector(".autocompleteList")
+    const autocompleteList = this.container.querySelector(".autocompleteList");
     if (autocompleteList) autocompleteList.innerHTML = "";
   };
 
@@ -296,6 +294,10 @@ export class EndpointSelect extends EventEmitter {
       // Only set when the user is not using the widget at this time
       this.inputField.value = endpoint;
     }
+  }
+  public destroy() {
+    this.removeAllListeners();
+    this.inputField.remove();
   }
 }
 

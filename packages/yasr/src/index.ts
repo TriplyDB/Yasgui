@@ -212,6 +212,12 @@ export class Yasr extends EventEmitter {
   public refresh() {
     this.draw();
   }
+  public destroy() {
+    if (this.drawnPlugin) this.plugins[this.drawnPlugin]?.destroy?.();
+    this.removeAllListeners();
+    this.rootEl.remove();
+  }
+
   getPrefixes(): Prefixes {
     if (this.config.prefixes) {
       if (typeof this.config.prefixes === "function") {

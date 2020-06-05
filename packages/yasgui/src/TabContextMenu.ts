@@ -23,18 +23,8 @@ export default class TabContextMenu {
   constructor(yasgui: Yasgui, rootEl: HTMLElement) {
     this.yasgui = yasgui;
     this.rootEl = rootEl;
-    document.addEventListener("click", event => {
-      if (event.button !== 2) this.closeConfigMenu();
-    });
-    document.addEventListener("keyup", () => this.closeConfigMenu());
-    document.addEventListener("contextmenu", event => {
-      // Make sure hitting 'rmb' multiple times doesn't close the menu
-      if (event.target !== this.contextEl) {
-        this.closeConfigMenu();
-      } else {
-        event.stopImmediatePropagation();
-      }
-    });
+    document.addEventListener("click", this.handleContextClick);
+    document.addEventListener("keyup", this.closeConfigMenu);
   }
   private getMenuItemEl(text?: string) {
     const item = document.createElement("li");
@@ -84,6 +74,15 @@ export default class TabContextMenu {
       this.contextEl.style.top = `${window.pageYOffset + bounding.bottom}px`;
     }
   }
+  handleContextClick = (event: MouseEvent) => {
+    if (event.button !== 2) {
+      this.closeConfigMenu();
+    } else if (event.target !== this.contextEl) {
+      this.closeConfigMenu();
+    } else {
+      event.stopImmediatePropagation();
+    }
+  };
 
   public openConfigMenu(currentTabId: string, currentTabEl: TabListEl, event: MouseEvent) {
     if (!currentTabEl.tabEl) return;
@@ -125,13 +124,21 @@ export default class TabContextMenu {
       addClass(this.reOpenOldTab, "disabled");
     }
   }
-  public closeConfigMenu() {
+  public closeConfigMenu = () => {
     this.tabRef = undefined;
     if (this.contextEl) this.contextEl.remove();
-  }
+  };
 
   public static get(yasgui: Yasgui, rootEl: HTMLElement) {
     const instance = new TabContextMenu(yasgui, rootEl);
     return instance;
+  }
+  public unregisterEventListeners() {
+    document.removeEventListener("click", this.handleContextClick);
+    document.removeEventListener("keyup", this.closeConfigMenu);
+  }
+  public destroy() {
+    this.unregisterEventListeners();
+    this.rootEl.remove();
   }
 }
