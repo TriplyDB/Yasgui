@@ -157,17 +157,17 @@ export default class Table implements Plugin<PluginConfig> {
     this.drawControls();
   }
 
-  private handleTableSearch(event: KeyboardEvent) {
+  private handleTableSearch = (event: KeyboardEvent) => {
     this.dataTable?.search((event.target as HTMLInputElement).value).draw();
-  }
-  private handleTableSizeSelect(event: Event) {
+  };
+  private handleTableSizeSelect = (event: Event) => {
     const pageLength = parseInt((event.target as HTMLSelectElement).value);
     // Set page length
     this.dataTable?.page.len(pageLength).draw();
     // Store in persistentConfig
     this.persistentConfig.pageSize = pageLength;
     this.yasr.storePluginConfig("table", this.persistentConfig);
-  }
+  };
 
   drawControls() {
     // Remove old header
