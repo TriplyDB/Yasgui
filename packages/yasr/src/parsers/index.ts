@@ -103,7 +103,7 @@ class Parser {
           // message: this.res.error.message,
           text: this.res.text,
           status: this.res.status,
-          statusText: this.res.error.text
+          statusText: this.res.error ? this.res.error.text : ""
         };
       }
       if (this.summary && this.summary.error) {
@@ -207,8 +207,8 @@ class Parser {
 
   public getVariables(): string[] {
     var json = this.getAsJson();
-    if (json && json.head) return json.head.vars
-    return []
+    if (json && json.head) return json.head.vars;
+    return [];
   }
 
   public getBoolean(): boolean | undefined {
@@ -244,7 +244,7 @@ class Parser {
     if (!this.type) this.getAsJson(); //detects type as well
     return this.type;
   }
-  getStatus(): number  | undefined{
+  getStatus(): number | undefined {
     if (this.res) return this.res.status;
     if (this.summary) return this.summary.status;
   }
