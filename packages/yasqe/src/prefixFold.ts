@@ -7,7 +7,7 @@ export function findFirstPrefixLine(yasqe: Yasqe) {
   var lastLine = yasqe.getDoc().lastLine();
   for (var i = 0; i <= lastLine; ++i) {
     const firstPrefix = findFirstPrefix(yasqe, i);
-    if (firstPrefix && firstPrefix >= 0) {
+    if (firstPrefix != null && firstPrefix >= 0) {
       return i;
     }
   }
