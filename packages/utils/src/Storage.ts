@@ -55,16 +55,16 @@ export default class Storage {
   }
   get<V>(key?: string): V | undefined {
     if (!store.enabled) return; //this is probably in private mode. Don't run, as we might get Js errors
-    if (!key) return
+    if (!key) return;
     this.removeExpiredKeys();
     if (key) {
       var info: ItemWrapper<V> = store.get(key);
       if (!info) {
-        return ;
+        return;
       }
       return info.val;
     } else {
-      return ;
+      return;
     }
   }
 }

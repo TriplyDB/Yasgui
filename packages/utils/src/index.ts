@@ -12,7 +12,7 @@ export function drawSvgStringAsElement(svgString: string) {
     svgContainer.appendChild(svg);
     return svgContainer;
   }
-  throw new Error("No svg string given. Cannot draw")
+  throw new Error("No svg string given. Cannot draw");
 }
 export interface FaIcon {
   width: number;
@@ -35,7 +35,7 @@ export function hasClass(el: Element | undefined, className: string) {
   else return !!el.className.match(new RegExp("(\\s|^)" + className + "(\\s|$)"));
 }
 
-export function addClass(el: Element |  undefined | null, ...classNames: string[]) {
+export function addClass(el: Element | undefined | null, ...classNames: string[]) {
   if (!el) return;
   for (const className of classNames) {
     if (el.classList) el.classList.add(className);
@@ -52,7 +52,7 @@ export function removeClass(el: Element | undefined | null, className: string) {
   }
 }
 
-export function getAsValue<E, A>(valueOrFn: E | ((arg:A) => E), arg:A): E {
-  if (typeof valueOrFn === 'function') return (valueOrFn as any)(arg)
-  return valueOrFn
+export function getAsValue<E, A>(valueOrFn: E | ((arg: A) => E), arg: A): E {
+  if (typeof valueOrFn === "function") return (valueOrFn as any)(arg);
+  return valueOrFn;
 }

@@ -55,7 +55,10 @@ function parseResults(node: ChildNode, postProcessBinding: Parser.PostProcessBin
 function parseBoolean(node: Element) {
   return node.innerHTML === "true";
 }
-export default function(xmlString: string, postProcessBinding: Parser.PostProcessBinding): Parser.SparqlResults | undefined {
+export default function(
+  xmlString: string,
+  postProcessBinding: Parser.PostProcessBinding
+): Parser.SparqlResults | undefined {
   if (typeof xmlString !== "string") return;
   const domParser = new DOMParser();
   let mainXml = domParser.parseFromString(xmlString, "text/xml");

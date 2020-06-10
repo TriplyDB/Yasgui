@@ -20,7 +20,7 @@ function getDefaults(): PersistedJson {
 }
 
 export default class PersistentConfig {
-  private persistedJson!: PersistedJson ;
+  private persistedJson!: PersistedJson;
   private storageId: string | undefined;
   private yasgui: Yasgui;
   private storage: YStorage;
@@ -88,7 +88,6 @@ export default class PersistentConfig {
   }
 
   private toStorage() {
-
     this.storage.set(
       this.storageId,
       this.persistedJson,

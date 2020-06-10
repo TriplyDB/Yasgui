@@ -9,8 +9,10 @@ export default function(result: Parser.SparqlResults) {
   const json2csvParser = new json2csv.Parser({ fields: variables });
 
   return json2csvParser.parse(
-    querySolutions? querySolutions.map(s => {
-      return mapValues(s, binding => binding.value);
-    }) : []
+    querySolutions
+      ? querySolutions.map(s => {
+          return mapValues(s, binding => binding.value);
+        })
+      : []
   );
 }
