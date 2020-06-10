@@ -103,7 +103,7 @@ class Parser {
           // message: this.res.error.message,
           text: this.res.text,
           status: this.res.status,
-          statusText: this.res.error ? this.res.error.text : ""
+          statusText: this.res.error ? this.res.error.text : undefined
         };
       }
       if (this.summary && this.summary.error) {
