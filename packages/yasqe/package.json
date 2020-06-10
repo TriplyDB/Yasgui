@@ -1,7 +1,7 @@
 {
   "name": "@triply/yasqe",
   "description": "Yet Another SPARQL Query Editor",
-  "version": "4.0.116",
+  "version": "4.0.119",
   "main": "build/yasqe.min.js",
   "types": "build/ts/src/index.d.ts",
   "license": "MIT",

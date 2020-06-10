@@ -232,7 +232,7 @@ export default class Table implements Plugin<PluginConfig> {
 
     // Empty controls
     while (this.tableControls?.firstChild) this.tableControls.firstChild.remove();
-    this.tableControls = undefined;
+    this.tableControls?.remove();
   }
   destroy() {
     this.removeControls();

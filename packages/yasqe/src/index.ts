@@ -109,6 +109,7 @@ export class Yasqe extends CodeMirror {
     }
 
     if (this.config.resizeable) this.drawResizer();
+    if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
     this.registerEventListeners();
   }
   private handleHashChange = () => {
