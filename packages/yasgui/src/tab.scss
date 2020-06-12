@@ -11,10 +11,6 @@
   }
 
   .tabContextButton {
-    width: 15px;
-    height: 15px;
-    max-width: 15px;
-    max-height: 15px;
     align-self: center;
     padding-left: 10px;
     cursor: pointer;
@@ -22,8 +18,9 @@
     fill: #505050;
 
     .svgImg {
-      width: inherit;
-      height: inherit;
+      width: 15px;
+      height: 15px;
+      font-family: initial; //font families can slightly misalign svgs with the .svgimg div
     }
     // IE11 Needs this specified otherwise it will not resize the svg
     svg {
