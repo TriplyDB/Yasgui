@@ -50,40 +50,45 @@ export function getAjaxConfig(
 }
 
 export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Promise<any> {
-  const populatedConfig = getAjaxConfig(yasqe, config);
-  if (!populatedConfig) {
-    //nothing to query
-    return;
-  }
-  var queryStart = Date.now();
-
   var req: superagent.SuperAgentRequest;
-  if (populatedConfig.reqMethod === "POST") {
-    req = superagent
-      .post(populatedConfig.url)
-      .type("form")
-      .send(populatedConfig.args);
-  } else {
-    req = superagent.get(populatedConfig.url).query(populatedConfig.args);
-  }
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  req.accept(populatedConfig.accept).set(populatedConfig.headers || {});
-
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  if (populatedConfig.withCredentials) req.withCredentials();
-  yasqe.emit("query", req, populatedConfig);
-  return req.then(
-    result => {
-      yasqe.emit("queryResponse", result, Date.now() - queryStart);
-      yasqe.emit("queryResults", result.body, Date.now() - queryStart);
-      return result.body;
-    },
-    e => {
-      yasqe.emit("queryResponse", e, Date.now() - queryStart);
-      yasqe.emit("error", e);
-      throw e;
+  try {
+    getAjaxConfig(yasqe, config);
+    const populatedConfig = getAjaxConfig(yasqe, config);
+    if (!populatedConfig) {
+      //nothing to query
+      return;
     }
-  );
+    var queryStart = Date.now();
+
+    if (populatedConfig.reqMethod === "POST") {
+      req = superagent
+        .post(populatedConfig.url)
+        .type("form")
+        .send(populatedConfig.args);
+    } else {
+      req = superagent.get(populatedConfig.url).query(populatedConfig.args);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    req.accept(populatedConfig.accept).set(populatedConfig.headers || {});
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    if (populatedConfig.withCredentials) req.withCredentials();
+    yasqe.emit("query", req, populatedConfig);
+    return req.then(
+      result => {
+        yasqe.emit("queryResponse", result, Date.now() - queryStart);
+        yasqe.emit("queryResults", result.body, Date.now() - queryStart);
+        return result.body;
+      },
+      e => {
+        yasqe.emit("queryResponse", e, Date.now() - queryStart);
+        yasqe.emit("error", e);
+        throw e;
+      }
+    );
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 export type RequestArgs = { [argName: string]: string | string[] };
