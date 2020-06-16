@@ -7,7 +7,7 @@ import { default as Tab, PersistedJson as PersistedTabJson } from "./Tab";
 import { EndpointSelectConfig, CatalogueItem } from "./endpointSelect";
 import * as shareLink from "./linkUtils";
 import TabElements from "./TabElements";
-import { default as Yasqe, Config as YasqeConfig, RequestConfig } from "@triply/yasqe";
+import { default as Yasqe, PartialConfig as YasqeConfig, RequestConfig } from "@triply/yasqe";
 import { default as Yasr, Config as YasrConfig } from "@triply/yasr";
 import { addClass, removeClass } from "@triply/yasgui-utils";
 require("./index.scss");
