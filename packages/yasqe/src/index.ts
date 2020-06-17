@@ -978,7 +978,9 @@ export interface RequestConfig<Y> {
   withCredentials: boolean | ((yasqe: Y) => boolean);
   adjustQueryBeforeRequest: ((yasqe: Y) => string) | false;
 }
-export type PlainRequestConfig = { [K in keyof RequestConfig<any>]: Exclude<RequestConfig<any>[K], Function> };
+export type PlainRequestConfig = {
+  [K in keyof RequestConfig<any>]: Exclude<RequestConfig<any>[K], Function>;
+};
 export type PartialConfig = {
   [P in keyof Config]?: Config[P] extends object ? Partial<Config[P]> : Config[P];
 };

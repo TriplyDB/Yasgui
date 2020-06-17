@@ -9,7 +9,7 @@ import * as shareLink from "./linkUtils";
 import EndpointSelect from "./endpointSelect";
 import * as superagent from "superagent";
 require("./tab.scss");
-import { getRandomId, default as Yasgui } from "./";
+import { getRandomId, default as Yasgui, YasguiRequestConfig } from "./";
 export interface PersistedJsonYasr extends YasrPersistentConfig {
   responseSummary: Parser.ResponseSummary;
 }
@@ -24,7 +24,7 @@ export interface PersistedJson {
     settings: YasrPersistentConfig;
     response: Parser.ResponseSummary | undefined;
   };
-  requestConfig: RequestConfig<Yasgui>;
+  requestConfig: YasguiRequestConfig;
 }
 export interface Tab {
   on(event: string | symbol, listener: (...args: any[]) => void): this;
@@ -257,7 +257,7 @@ export class Tab extends EventEmitter {
     if (!this.yasqe) return Promise.reject(new Error("No yasqe editor initialized"));
     return this.yasqe.query();
   }
-  public setRequestConfig(requestConfig: Partial<RequestConfig<Yasgui>>) {
+  public setRequestConfig(requestConfig: Partial<YasguiRequestConfig>) {
     this.persistentJson.requestConfig = {
       ...this.persistentJson.requestConfig,
       ...requestConfig
@@ -274,11 +274,16 @@ export class Tab extends EventEmitter {
    * The getter functions are not. This function is about fetching this part of the
    * request configuration, so we can merge this with the configuration from the
    * persistent config and tab pane.
+   *
+   * Considering some values will never be persisted (things that should always be a function),
+   * we provide that as part of a whitelist called `keepDynamic`
    */
   private getStaticRequestConfig() {
     const config: Partial<PlainRequestConfig> = {};
-    let key: keyof RequestConfig<Yasgui>;
+    let key: keyof YasguiRequestConfig;
     for (key in this.yasgui.config.requestConfig) {
+      //This config option should never be static or persisted anyway
+      if (key === "adjustQueryBeforeRequest") continue;
       const val = this.yasgui.config.requestConfig[key];
       if (typeof val === "function") {
         (config[key] as any) = val(this.yasgui);
@@ -296,7 +301,7 @@ export class Tab extends EventEmitter {
       consumeShareLink: null, //not handled by this tab, but by parent yasgui instance
       createShareableLink: () => this.getShareableLink(),
       requestConfig: () => {
-        const processedReqConfig: RequestConfig<Yasgui> = {
+        const processedReqConfig: YasguiRequestConfig = {
           //setting defaults
           acceptHeaderGraph: "text/turtle",
           acceptHeaderSelect: "application/sparql-results+json",

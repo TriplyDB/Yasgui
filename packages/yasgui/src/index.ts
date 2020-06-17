@@ -19,6 +19,9 @@ if (window) {
   if (Yasqe) (window as any).Yasqe = Yasqe;
   if (Yasr) (window as any).Yasr = Yasr;
 }
+export type YasguiRequestConfig = Omit<RequestConfig<Yasgui>, "adjustQueryBeforeRequest"> & {
+  adjustQueryBeforeRequest: RequestConfig<Yasqe>["adjustQueryBeforeRequest"];
+};
 export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   /**
    * Autofocus yasqe on load or tab switch
@@ -38,7 +41,7 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   persistencyExpire: number;
   yasqe: Partial<YasqeConfig>;
   yasr: YasrConfig;
-  requestConfig: RequestConfig<Yasgui>;
+  requestConfig: YasguiRequestConfig;
   contextMenuContainer: HTMLElement | undefined;
   nonSslDomain?: string;
 }
