@@ -253,6 +253,8 @@ export class TabList {
     }
     this._tabs = {};
     this.tabContextMenu?.destroy();
+    this._tabsListEl?.remove();
+    this._tabsListEl = undefined;
   }
 }
 

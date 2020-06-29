@@ -139,6 +139,5 @@ export default class TabContextMenu {
   }
   public destroy() {
     this.unregisterEventListeners();
-    this.rootEl.remove();
   }
 }
