@@ -558,8 +558,7 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
               const colonIndex = tokenOb.string.indexOf(":");
               if (colonIndex >= 0) {
                 const prefNs = tokenOb.string.slice(0, colonIndex);
-                //avoid warnings for missing bif prefixes (yuck, virtuoso-specific)
-                if (state.prefixes[prefNs] === undefined && ["bif", "xsd", "sql"].indexOf(prefNs) < 0) {
+                if (state.prefixes[prefNs] === undefined) {
                   state.OK = false;
                   recordFailurePos();
                   state.errorMsg = "Prefix '" + prefNs + "' is not defined";

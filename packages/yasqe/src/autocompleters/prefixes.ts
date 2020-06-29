@@ -96,7 +96,6 @@ var conf: Autocompleter.CompleterConfig = {
     return superagent.get(prefixCcApi).then(resp => {
       var prefixArray: string[] = [];
       for (var prefix in resp.body) {
-        if (prefix == "bif") continue; // skip this one! see #231
         var completeString = prefix + ": <" + resp.body[prefix] + ">";
         prefixArray.push(completeString); // the array we want to store in localstorage
       }
