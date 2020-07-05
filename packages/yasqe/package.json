@@ -44,7 +44,7 @@
     "@triply/yasgui": "4.x"
   },
   "devDependencies": {
-    "@types/codemirror": "0.0.84",
+    "@types/codemirror": "0.0.96",
     "@types/node": "13.5.0",
     "@types/superagent": "^4.1.4",
     "npm-check": "^5.9.0"
