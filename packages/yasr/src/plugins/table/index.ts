@@ -10,13 +10,15 @@ import Parser from "../../parsers";
 import { escape } from "lodash-es";
 import { Plugin, DownloadInfo } from "../";
 import Yasr from "../../";
-import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg } from "@triply/yasgui-utils";
+import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg, addClass, removeClass } from "@triply/yasgui-utils";
 import * as faTableIcon from "@fortawesome/free-solid-svg-icons/faTable";
 
 const ColumnResizer = require("column-resizer");
+const DEFAULT_PAGE_SIZE = 50;
 
 export interface PluginConfig {
   openIriInNewWindow: boolean;
+  tableConfig: DataTables.Settings;
 }
 
 export interface PersistentConfig {
@@ -43,7 +45,25 @@ export default class Table implements Plugin<PluginConfig> {
     this.config = Table.defaults;
   }
   public static defaults: PluginConfig = {
-    openIriInNewWindow: true
+    openIriInNewWindow: true,
+    tableConfig: {
+      dom: "tip", //  tip: Table, Page Information and Pager, change to ipt for showing pagination on top
+      pageLength: DEFAULT_PAGE_SIZE, //default page length
+      lengthChange: true, //allow changing page length
+      data: [],
+      columns: [],
+      order: [],
+      deferRender: true,
+      orderClasses: false,
+      language: {
+        paginate: {
+          first: "&lt;&lt;", // Have to specify these two due to TS defs, <<
+          last: "&gt;&gt;", // Have to specify these two due to TS defs, >>
+          next: "&gt;", // >
+          previous: "&lt;" // <
+        }
+      }
+    }
   };
   private getRows(): string[][] {
     const rows: string[][] = [];
@@ -128,29 +148,29 @@ export default class Table implements Plugin<PluginConfig> {
 
   public draw(persistentConfig: PersistentConfig) {
     const table = document.createElement("table");
+    const rows = this.getRows();
+    const columns = this.getColumns();
+
+    if (rows.length <= (persistentConfig?.pageSize || DEFAULT_PAGE_SIZE)) {
+      this.yasr.pluginControls;
+      addClass(this.yasr.rootEl, "isSinglePage");
+    } else {
+      removeClass(this.yasr.rootEl, "isSinglePage");
+    }
+
     if (this.dataTable) {
       this.dataTable.destroy(true);
       this.dataTable = undefined;
     }
     this.yasr.resultsEl.appendChild(table);
-    const dtConfig: DataTables.Settings = {
-      dom: "tip", // Table, Page Information and Pager
-      pageLength: persistentConfig && persistentConfig.pageSize ? persistentConfig.pageSize : 50, //default page length
-      lengthChange: true, //allow changing page length
-      data: this.getRows(),
-      columns: this.getColumns(),
-      order: [],
-      deferRender: true,
-      orderClasses: false,
-      language: {
-        paginate: {
-          first: "&lt;&lt;", // Have to specify these two due to TS defs, <<
-          last: "&gt;&gt;", // Have to specify these two due to TS defs, >>
-          next: "&gt;", // >
-          previous: "&lt;" // <
-        }
-      }
-    };
+
+    // reset some default config properties as they couldn't be initialized beforehand
+    this.config.tableConfig.pageLength =
+      persistentConfig && persistentConfig.pageSize ? persistentConfig.pageSize : DEFAULT_PAGE_SIZE;
+    this.config.tableConfig.data = rows;
+    this.config.tableConfig.columns = columns;
+
+    const dtConfig: DataTables.Settings = { ...this.config.tableConfig };
     this.dataTable = $(table).DataTable(dtConfig);
     // .api();
     new ColumnResizer.default(table, { widths: [], partialRefresh: true });
@@ -238,5 +258,6 @@ export default class Table implements Plugin<PluginConfig> {
     this.removeControls();
     this.dataTable?.destroy(true);
     this.dataTable = undefined;
+    removeClass(this.yasr.rootEl, "isSinglePage");
   }
 }
