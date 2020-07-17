@@ -130,7 +130,7 @@
     {
       "compression": "none",
       "path": "build/yasqe.min.js",
-      "maxSize": "490 kB"
+      "maxSize": "495 kB"
     }
   ]
 }
