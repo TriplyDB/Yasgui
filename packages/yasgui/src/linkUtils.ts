@@ -4,7 +4,7 @@ import { default as Tab, PersistedJson } from "./Tab";
 import Yasr from "@triply/yasr";
 import { PlainRequestConfig } from "@triply/yasqe";
 import { getAsValue } from "@triply/yasgui-utils";
-var getUrlParams = function(_url?: string) {
+var getUrlParams = function (_url?: string) {
   var urlFromWindow = false;
   if (!_url) {
     _url = window.location.href;
@@ -43,12 +43,12 @@ export function createShareLink(forUrl: string, tab: Tab) {
   for (key in configObject) {
     if (!configObject.hasOwnProperty(key)) continue;
     if (key === "namedGraphs") {
-      configObject.namedGraphs.forEach(ng => tmpUrl.addQueryParam("namedGraph", ng));
+      configObject.namedGraphs.forEach((ng) => tmpUrl.addQueryParam("namedGraph", ng));
     } else if (key === "defaultGraphs") {
-      configObject.defaultGraphs.forEach(dg => tmpUrl.addQueryParam("defaultGraph", dg));
+      configObject.defaultGraphs.forEach((dg) => tmpUrl.addQueryParam("defaultGraph", dg));
     } else if (key === "args") {
       const args = getAsValue(configObject.args, tab.yasgui);
-      args.forEach(arg => tmpUrl.addQueryParam(arg.name, arg.value));
+      args.forEach((arg) => tmpUrl.addQueryParam(arg.name, arg.value));
     } else if (typeof configObject[key] === "object") {
       if (configObject[key]) tmpUrl.addQueryParam(key, JSON.stringify(configObject[key]));
     } else {
@@ -60,7 +60,7 @@ export function createShareLink(forUrl: string, tab: Tab) {
   // if (window.location.hash.length > 1) {
   const currentUrlParams = getUrlParams(forUrl);
   const currentParams: [string, string][] = (<any>currentUrlParams).queryPairs;
-  currentParams.forEach(function(paramPair) {
+  currentParams.forEach(function (paramPair) {
     if (!tmpUrl.hasQueryParam(paramPair[0])) {
       tmpUrl.addQueryParam(paramPair[0], paramPair[1]);
     }
@@ -105,7 +105,7 @@ export function createShareConfig(tab: Tab): ShareConfigObject {
     outputSettings:
       yasrPersistentSetting.pluginsConfig && yasrPersistentSetting.selectedPlugin
         ? yasrPersistentSetting.pluginsConfig[yasrPersistentSetting.selectedPlugin]
-        : undefined
+        : undefined,
   };
 }
 
@@ -116,7 +116,7 @@ export function getConfigFromUrl(defaults: PersistedJson, _url?: string): Persis
   var hasQuery = false;
   const currentParams: [string, string][] = (<any>url).queryPairs;
   var pluginsConfig: any;
-  currentParams.forEach(function([key, value]) {
+  currentParams.forEach(function ([key, value]) {
     if (key === "query") {
       hasQuery = true;
       options.yasqe.value = value;

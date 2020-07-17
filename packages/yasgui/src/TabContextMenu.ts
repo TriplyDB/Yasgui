@@ -30,7 +30,7 @@ export default class TabContextMenu {
     const item = document.createElement("li");
     addClass(item, "context-menu-item");
     // Make sure hitting 'rmb' multiple times doesn't close the menu
-    item.addEventListener("contextmenu", event => {
+    item.addEventListener("contextmenu", (event) => {
       event.stopPropagation();
     });
     if (text !== undefined) item.innerText = text;

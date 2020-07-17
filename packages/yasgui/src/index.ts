@@ -116,7 +116,7 @@ export class Yasgui extends EventEmitter {
             // Override the settings
             settings: optionsFromUrl.yasr.settings,
             // Keep the old response to save data/time
-            response: persistentYasr.response
+            response: persistentYasr.response,
           };
           this.persistentConfig.setActive(tabId);
           if (!persistentYasr.response) {
@@ -180,7 +180,7 @@ export class Yasgui extends EventEmitter {
     return fullName;
   }
   public tabNameTaken(name: string) {
-    return find(this._tabs, tab => tab.getName() === name);
+    return find(this._tabs, (tab) => tab.getName() === name);
   }
   public getTab(tabId?: string): Tab | undefined {
     if (tabId) {
@@ -246,7 +246,7 @@ export class Yasgui extends EventEmitter {
      */
     if (sameRequest) {
       sameRequest = (<Array<keyof PersistedTabJson["yasqe"]>>["endpoint", "value"]).every(
-        key => tab1.yasqe[key] === tab2.yasqe[key]
+        (key) => tab1.yasqe[key] === tab2.yasqe[key]
       );
     }
 
@@ -265,19 +265,19 @@ export class Yasgui extends EventEmitter {
     return sameRequest && tab1.name === tab2.name;
   }
   private findTabIdForConfig(tabConfig: PersistedTabJson) {
-    return this.persistentConfig.getTabs().find(tabId => {
+    return this.persistentConfig.getTabs().find((tabId) => {
       const tab = this.persistentConfig.getTab(tabId);
       return this.tabConfigEquals(tab, tabConfig);
     });
   }
 
   private _registerTabListeners(tab: Tab) {
-    tab.on("change", tab => this.emit("tabChange", this, tab));
-    tab.on("query", tab => this.emit("query", this, tab));
-    tab.on("queryAbort", tab => this.emit("queryAbort", this, tab));
-    tab.on("queryResponse", tab => this.emit("queryResponse", this, tab));
+    tab.on("change", (tab) => this.emit("tabChange", this, tab));
+    tab.on("query", (tab) => this.emit("query", this, tab));
+    tab.on("queryAbort", (tab) => this.emit("queryAbort", this, tab));
+    tab.on("queryResponse", (tab) => this.emit("queryResponse", this, tab));
     tab.on("autocompletionShown", (tab, widget) => this.emit("autocompletionShown", this, tab, widget));
-    tab.on("autocompletionClose", tab => this.emit("autocompletionClose", this, tab));
+    tab.on("autocompletionClose", (tab) => this.emit("autocompletionClose", this, tab));
   }
   public _setPanel(panelId: string, panel: HTMLDivElement) {
     for (const id in this._tabs) {
@@ -358,9 +358,7 @@ export class Yasgui extends EventEmitter {
 }
 
 export function getRandomId() {
-  return Math.random()
-    .toString(36)
-    .substring(7);
+  return Math.random().toString(36).substring(7);
 }
 
 export default Yasgui;

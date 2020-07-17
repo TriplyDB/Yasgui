@@ -24,7 +24,7 @@ export function findFirstPrefix(yasqe: Yasqe, line: number, startFromCharIndex =
     }
   }
 }
-export default function(yasqe: Yasqe, start: Position) {
+export default function (yasqe: Yasqe, start: Position) {
   var line = start.line,
     lineText = yasqe.getDoc().getLine(line);
 
@@ -33,13 +33,7 @@ export default function(yasqe: Yasqe, start: Position) {
   function hasPreviousPrefix() {
     var hasPreviousPrefix = false;
     for (var i = line - 1; i >= 0; i--) {
-      if (
-        yasqe
-          .getDoc()
-          .getLine(i)
-          .toUpperCase()
-          .indexOf(PREFIX_KEYWORD) >= 0
-      ) {
+      if (yasqe.getDoc().getLine(i).toUpperCase().indexOf(PREFIX_KEYWORD) >= 0) {
         hasPreviousPrefix = true;
         break;
       }
@@ -47,7 +41,7 @@ export default function(yasqe: Yasqe, start: Position) {
     return hasPreviousPrefix;
   }
 
-  var getLastPrefixPos = function(line: number, ch: number) {
+  var getLastPrefixPos = function (line: number, ch: number) {
     var prefixKeywordToken = yasqe.getTokenAt(CodeMirror.Pos(line, ch + 1));
     if (!prefixKeywordToken || prefixKeywordToken.type != "keyword") return -1;
     var prefixShortname = TokenUtils.getNextNonWsToken(yasqe, line, prefixKeywordToken.end + 1);
@@ -94,6 +88,6 @@ export default function(yasqe: Yasqe, start: Position) {
   }
   return {
     from: CodeMirror.Pos(line, prefixStart + PREFIX_KEYWORD.length),
-    to: CodeMirror.Pos(prefixEndLine, prefixEndChar)
+    to: CodeMirror.Pos(prefixEndLine, prefixEndChar),
   };
 }

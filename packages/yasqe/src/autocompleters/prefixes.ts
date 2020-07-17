@@ -2,17 +2,17 @@ import * as Autocompleter from "./";
 import { sortBy } from "lodash-es";
 var tokenTypes: { [id: string]: "prefixed" | "var" } = {
   "string-2": "prefixed",
-  atom: "var"
+  atom: "var",
 };
 const prefixCcApi =
   (window.location.protocol.indexOf("http") === 0 ? "//" : "http://") + "prefix.cc/popular/all.file.json";
 import * as superagent from "superagent";
 
 var conf: Autocompleter.CompleterConfig = {
-  postprocessHints: function(_yasqe, hints) {
-    return sortBy(hints, hint => hint.text.split(":")[0]);
+  postprocessHints: function (_yasqe, hints) {
+    return sortBy(hints, (hint) => hint.text.split(":")[0]);
   },
-  onInitialize: function(yasqe) {
+  onInitialize: function (yasqe) {
     /**
      * This event listener makes sure we auto-add prefixes whenever we use them
      */
@@ -29,7 +29,7 @@ var conf: Autocompleter.CompleterConfig = {
           var lastNonWsTokenString = yasqe.getPreviousNonWsToken(cur.line, token).string.toUpperCase();
           var previousToken = yasqe.getTokenAt({
             line: cur.line,
-            ch: token.start
+            ch: token.start,
           }); // needs to be null (beginning of line), or whitespace
 
           if (
@@ -52,7 +52,7 @@ var conf: Autocompleter.CompleterConfig = {
               // ok, so it isn't added yet!
               // var completions = yasqe.autocompleters.getTrie(completerName).autoComplete(currentPrefix);
               token.autocompletionString = currentPrefix;
-              yasqe.autocompleters[this.name]?.getCompletions(token).then(suggestions => {
+              yasqe.autocompleters[this.name]?.getCompletions(token).then((suggestions) => {
                 if (suggestions.length) {
                   yasqe.addPrefixes(suggestions[0]);
                   // Re-activate auto-completer after adding prefixes, so another auto-completer can kick in
@@ -65,7 +65,7 @@ var conf: Autocompleter.CompleterConfig = {
       }
     });
   },
-  isValidCompletionPosition: function(yasqe) {
+  isValidCompletionPosition: function (yasqe) {
     var cur = yasqe.getDoc().getCursor(),
       token = yasqe.getTokenAt(cur);
 
@@ -92,8 +92,8 @@ var conf: Autocompleter.CompleterConfig = {
     if (!previousToken || previousToken.string.toUpperCase() != "PREFIX") return false;
     return true;
   },
-  get: function(_token) {
-    return superagent.get(prefixCcApi).then(resp => {
+  get: function (_token) {
+    return superagent.get(prefixCcApi).then((resp) => {
       var prefixArray: string[] = [];
       for (var prefix in resp.body) {
         var completeString = prefix + ": <" + resp.body[prefix] + ">";
@@ -102,7 +102,7 @@ var conf: Autocompleter.CompleterConfig = {
       return prefixArray.sort();
     });
   },
-  preProcessToken: function(yasqe, token) {
+  preProcessToken: function (yasqe, token) {
     var previousToken = yasqe.getPreviousNonWsToken(yasqe.getDoc().getCursor().line, token);
     if (previousToken && previousToken.string && previousToken.string.slice(-1) == ":") {
       //combine both tokens! In this case we have the cursor at the end of line "PREFIX bla: <".
@@ -112,7 +112,7 @@ var conf: Autocompleter.CompleterConfig = {
         end: token.end,
         string: previousToken.string + " " + token.string,
         state: token.state,
-        type: token.type
+        type: token.type,
       };
     }
     return token;
@@ -120,7 +120,7 @@ var conf: Autocompleter.CompleterConfig = {
   bulk: true,
   autoShow: true,
   persistenceId: "prefixes",
-  name: "prefixes"
+  name: "prefixes",
 };
 
 export default conf;

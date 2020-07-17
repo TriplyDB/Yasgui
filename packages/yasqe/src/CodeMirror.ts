@@ -5,7 +5,7 @@ import {
   Doc as CmDoc,
   Token as CmToken,
   Position as CmPosition,
-  EditorConfiguration as CmEditorConfiguration
+  EditorConfiguration as CmEditorConfiguration,
 } from "codemirror";
 
 const _CodeMirror = require("codemirror");

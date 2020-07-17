@@ -196,7 +196,7 @@ export class Tab extends EventEmitter {
           () => {
             Yasgui.corsEnabled[endpoint] = true;
           },
-          e => {
+          (e) => {
             //When we dont get a response at all (and no status code), that means
             //the browser blocked this request. Likely a cors error
             Yasgui.corsEnabled[endpoint] = e.status > 0;
@@ -260,7 +260,7 @@ export class Tab extends EventEmitter {
   public setRequestConfig(requestConfig: Partial<YasguiRequestConfig>) {
     this.persistentJson.requestConfig = {
       ...this.persistentJson.requestConfig,
-      ...requestConfig
+      ...requestConfig,
     };
 
     this.emit("change", this, this.persistentJson);
@@ -303,7 +303,9 @@ export class Tab extends EventEmitter {
       requestConfig: () => {
         const processedReqConfig: YasguiRequestConfig = {
           //setting defaults
+          //@ts-ignore
           acceptHeaderGraph: "text/turtle",
+          //@ts-ignore
           acceptHeaderSelect: "application/sparql-results+json",
           ...mergeWith({}, this.persistentJson.requestConfig, this.getStaticRequestConfig(), function customizer(
             objValue,
@@ -315,7 +317,7 @@ export class Tab extends EventEmitter {
           }),
           //Passing this manually. Dont want to use our own persistentJson, as that's flattened exclude functions
           //The adjustQueryBeforeRequest is meant to be a function though, so let's copy that as is
-          adjustQueryBeforeRequest: this.yasgui.config.requestConfig.adjustQueryBeforeRequest
+          adjustQueryBeforeRequest: this.yasgui.config.requestConfig.adjustQueryBeforeRequest,
         };
         if (this.yasgui.config.corsProxy && !Yasgui.corsEnabled[this.getEndpoint()]) {
           return {
@@ -323,14 +325,14 @@ export class Tab extends EventEmitter {
             args: [
               ...(Array.isArray(processedReqConfig.args) ? processedReqConfig.args : []),
               { name: "endpoint", value: this.getEndpoint() },
-              { name: "method", value: this.persistentJson.requestConfig.method }
+              { name: "method", value: this.persistentJson.requestConfig.method },
             ],
             method: "POST",
-            endpoint: this.yasgui.config.corsProxy
+            endpoint: this.yasgui.config.corsProxy,
           } as PlainRequestConfig;
         }
         return processedReqConfig as PlainRequestConfig;
-      }
+      },
     };
     if (!yasqeConf.hintConfig) {
       yasqeConf.hintConfig = {};
@@ -419,9 +421,9 @@ export class Tab extends EventEmitter {
           );
         }
       },
-      plugins: mapValues(this.persistentJson.yasr.settings.pluginsConfig, conf => ({
-        dynamicConfig: conf
-      }))
+      plugins: mapValues(this.persistentJson.yasr.settings.pluginsConfig, (conf) => ({
+        dynamicConfig: conf,
+      })),
     };
 
     this.yasr = new Yasr(this.yasrWrapperEl, yasrConf, this.persistentJson.yasr.response);
@@ -473,18 +475,18 @@ export class Tab extends EventEmitter {
   public static getDefaults(yasgui?: Yasgui): PersistedJson {
     return {
       yasqe: {
-        value: yasgui ? yasgui.config.yasqe.value : Yasgui.defaults.yasqe.value
+        value: yasgui ? yasgui.config.yasqe.value : Yasgui.defaults.yasqe.value,
       },
       yasr: {
         response: undefined,
         settings: {
           selectedPlugin: yasgui ? yasgui.config.yasr.defaultPlugin : "table",
-          pluginsConfig: {}
-        }
+          pluginsConfig: {},
+        },
       },
       requestConfig: yasgui ? yasgui.config.requestConfig : { ...Yasgui.defaults.requestConfig },
       id: getRandomId(),
-      name: yasgui ? yasgui.createTabName() : Yasgui.defaults.tabName
+      name: yasgui ? yasgui.createTabName() : Yasgui.defaults.tabName,
     };
   }
 }

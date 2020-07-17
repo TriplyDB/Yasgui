@@ -71,7 +71,7 @@ export class Completer extends EventEmitter {
     if (!token) {
       if (this.config.get instanceof Array) return Promise.resolve(this.config.get);
       //wrapping call in a promise.resolve, so this when a `get` is both async or sync
-      return Promise.resolve(this.config.get(this.yasqe)).then(suggestions => {
+      return Promise.resolve(this.config.get(this.yasqe)).then((suggestions) => {
         if (suggestions instanceof Array) return suggestions;
         return [];
       });
@@ -82,10 +82,10 @@ export class Completer extends EventEmitter {
     if (this.trie) return Promise.resolve(take(this.trie.autoComplete(stringToAutocomplete), SUGGESTIONS_LIMIT));
     if (this.config.get instanceof Array)
       return Promise.resolve(
-        this.config.get.filter(possibleMatch => possibleMatch.indexOf(stringToAutocomplete) === 0)
+        this.config.get.filter((possibleMatch) => possibleMatch.indexOf(stringToAutocomplete) === 0)
       );
     //assuming it's a function
-    return Promise.resolve(this.config.get(this.yasqe, token)).then(r => {
+    return Promise.resolve(this.config.get(this.yasqe, token)).then((r) => {
       if (r instanceof Array) return r;
       return [];
     });
@@ -112,7 +112,7 @@ export class Completer extends EventEmitter {
           this.storeBulkCompletions(completionsFromStorage);
           return Promise.resolve();
         } else {
-          return this.getCompletions().then(c => this.storeBulkCompletions(c));
+          return this.getCompletions().then((c) => this.storeBulkCompletions(c));
         }
       }
     }
@@ -156,7 +156,7 @@ export class Completer extends EventEmitter {
       text: suggestedString,
       displayText: suggestedString,
       from: from,
-      to: to
+      to: to,
     };
   }
 
@@ -167,8 +167,8 @@ export class Completer extends EventEmitter {
 
     if (token)
       return this.getCompletions(token)
-        .then(suggestions => suggestions.map(s => this.getHint(token, s)))
-        .then(hints => {
+        .then((suggestions) => suggestions.map((s) => this.getHint(token, s)))
+        .then((hints) => {
           if (this.config.postprocessHints) return this.config.postprocessHints(this.yasqe, hints);
           return hints;
         });
@@ -203,19 +203,19 @@ export class Completer extends EventEmitter {
     }
 
     const getHints: HintFn = () => {
-      return this.getHints(this.yasqe.getCompleteToken()).then(list => {
+      return this.getHints(this.yasqe.getCompleteToken()).then((list) => {
         const cur = this.yasqe.getDoc().getCursor();
         const token: AutocompletionToken = this.yasqe.getCompleteToken();
         const hintResult = {
           list: list,
           from: <Position>{
             line: cur.line,
-            ch: token.start
+            ch: token.start,
           },
           to: <Position>{
             line: cur.line,
-            ch: token.end
-          }
+            ch: token.end,
+          },
         };
         CodeMirror.on(hintResult, "shown", () => {
           this.yasqe.emit("autocompletionShown", (this.yasqe as any).state.completionActive.widget);
@@ -242,9 +242,9 @@ export class Completer extends EventEmitter {
         },
         End: (yasqe, event) => {
           yasqe.getDoc().setCursor({ ch: yasqe.getLine(event.data.to.line).length, line: event.data.to.line });
-        }
+        },
       },
-      ...this.yasqe.config.hintConfig
+      ...this.yasqe.config.hintConfig,
     };
     this.yasqe.showHint(hintConfig);
     return true;
@@ -321,16 +321,16 @@ export const fetchFromLov = (
     .query({
       q: token.autocompletionString,
       page_size: 50,
-      type: type
+      type: type,
     })
     .then(
-      result => {
+      (result) => {
         if (result.body.results) {
           return result.body.results.map((r: any) => r.uri[0]);
         }
         return [];
       },
-      _e => {
+      (_e) => {
         yasqe.showNotification(notificationKey, "Failed fetching suggestions");
       }
     );

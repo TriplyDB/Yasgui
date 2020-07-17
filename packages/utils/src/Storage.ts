@@ -21,7 +21,7 @@ export default class Storage {
           namespace: this.namespace,
           val: val,
           exp: expInSeconds,
-          time: new Date().getTime() / 1000
+          time: new Date().getTime() / 1000,
         });
       } catch (e) {
         e.quotaExceeded = isQuotaExceeded(e);

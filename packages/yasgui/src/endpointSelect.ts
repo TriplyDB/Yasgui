@@ -67,7 +67,7 @@ export class EndpointSelect extends EventEmitter {
     this.container = container;
     this.options = options;
     this.value = initialValue;
-    this.history = history.map(endpoint => {
+    this.history = history.map((endpoint) => {
       return { endpoint, type: "history" };
     });
     // Add endpoint if not defined
@@ -95,7 +95,7 @@ export class EndpointSelect extends EventEmitter {
         event: ["input", "focusin"],
         //we always want to show the autocomplete, even if no query is set
         //in that case, we'd just show the full list
-        condition: () => true
+        condition: () => true,
       },
       // threshold: -1,
       searchEngine: (query, record) => {
@@ -103,28 +103,28 @@ export class EndpointSelect extends EventEmitter {
           //show everything when we've got an empty search string
           return true;
         }
-        return splitSearchString(query).every(m => record.indexOf(m) >= 0);
+        return splitSearchString(query).every((m) => record.indexOf(m) >= 0);
       },
       data: {
         src: async () => {
-          return [...this.history, ...this.options.getData()].map(item => ({
+          return [...this.history, ...this.options.getData()].map((item) => ({
             ...item,
-            all: Object.values(pick(item, ["endpoint", ...this.options.keys])).join(" ")
+            all: Object.values(pick(item, ["endpoint", ...this.options.keys])).join(" "),
           }));
         },
         key: ["all" as any], // All is something we add as a workaround for getting multiple results of the library
-        cache: false
+        cache: false,
       },
       // Use a selector coming from the container, this is to make sure we grab our own autocomplete element
       selector: () => this.inputField,
       resultsList: {
         render: true,
         destination: this.inputField,
-        container: element => {
+        container: (element) => {
           // Remove id, there can be multiple yasgui's active on one page, we can't delete since the library will then add the default
           element.id = "";
           addClass(element, "autocompleteList");
-        }
+        },
       },
       resultItem: {
         content: (data, source) => {
@@ -146,12 +146,12 @@ export class EndpointSelect extends EventEmitter {
             const removeBtn = document.createElement("button");
             removeBtn.textContent = "✖";
             addClass(removeBtn, "removeItem");
-            removeBtn.addEventListener("mousedown", event => {
-              this.history = this.history.filter(item => item.endpoint !== data.value.endpoint);
+            removeBtn.addEventListener("mousedown", (event) => {
+              this.history = this.history.filter((item) => item.endpoint !== data.value.endpoint);
               this.emit(
                 "remove",
                 this.value,
-                this.history.map(value => value.endpoint)
+                this.history.map((value) => value.endpoint)
               );
               source.remove();
               event.stopPropagation();
@@ -170,16 +170,16 @@ export class EndpointSelect extends EventEmitter {
             this.options.renderItem({ ...data, ...matches }, source);
           }
         },
-        element: "li"
+        element: "li",
       },
-      onSelection: feedback => {
+      onSelection: (feedback) => {
         const item = feedback.selection.value;
         this.value = item.endpoint;
         this.inputField.value = this.value;
         this.emit(
           "select",
           this.value,
-          this.history.map(value => value.endpoint)
+          this.history.map((value) => value.endpoint)
         );
       },
       noResults: () => {
@@ -190,10 +190,10 @@ export class EndpointSelect extends EventEmitter {
           noResults.innerText = 'Press "enter" to add this endpoint';
           container.appendChild(noResults);
         }
-      }
+      },
     });
     // New data handler
-    this.inputField.addEventListener("keyup", event => {
+    this.inputField.addEventListener("keyup", (event) => {
       const target = <HTMLInputElement>event.target;
       // Enter
       if (event.keyCode === 13) {
@@ -210,8 +210,8 @@ export class EndpointSelect extends EventEmitter {
           return;
         }
         if (
-          this.options.getData().find(i => i.endpoint === this.inputField.value) ||
-          this.history.find(item => item.endpoint === this.inputField.value)
+          this.options.getData().find((i) => i.endpoint === this.inputField.value) ||
+          this.history.find((item) => item.endpoint === this.inputField.value)
         ) {
           //the value you typed is already in our catalogue or in our history
           this.value = target.value;
@@ -219,7 +219,7 @@ export class EndpointSelect extends EventEmitter {
           this.emit(
             "select",
             this.value,
-            this.history.map(h => h.endpoint)
+            this.history.map((h) => h.endpoint)
           );
           this.inputField.blur();
           return;
@@ -229,7 +229,7 @@ export class EndpointSelect extends EventEmitter {
         this.emit(
           "select",
           this.value,
-          this.history.map(value => value.endpoint)
+          this.history.map((value) => value.endpoint)
         );
         this.clearListSuggestionList();
         this.inputField.blur();
@@ -252,7 +252,7 @@ export class EndpointSelect extends EventEmitter {
         }
       }
     });
-    this.inputField.addEventListener("blur", event => {
+    this.inputField.addEventListener("blur", (event) => {
       const target = <HTMLInputElement>event.target;
       // Tabbing blur event
       if (target.className === this.inputField.className && event.relatedTarget) {
@@ -261,7 +261,7 @@ export class EndpointSelect extends EventEmitter {
       }
     });
     // Improvised clickAway handler, Blur will fire before select or click events, causing interactive suggestion to no longer work
-    document.addEventListener("mousedown", event => {
+    document.addEventListener("mousedown", (event) => {
       if (event.button !== 2) {
         const target = <HTMLElement>event.target;
         if (
@@ -283,7 +283,7 @@ export class EndpointSelect extends EventEmitter {
   public setEndpoint(endpoint: string, endpointHistory?: string[]) {
     this.value = endpoint;
     if (endpointHistory) {
-      this.history = endpointHistory.map(endpoint => {
+      this.history = endpointHistory.map((endpoint) => {
         return { endpoint, type: "history" };
       });
     }

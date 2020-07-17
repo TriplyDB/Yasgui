@@ -94,7 +94,7 @@ export class Yasqe extends CodeMirror {
         this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight };
       if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
     }
-    this.config.autocompleters.forEach(c => this.enableCompleter(c).then(() => {}, console.warn));
+    this.config.autocompleters.forEach((c) => this.enableCompleter(c).then(() => {}, console.warn));
     if (this.config.consumeShareLink) {
       this.config.consumeShareLink(this);
       //and: add a hash listener!
@@ -213,7 +213,7 @@ export class Yasqe extends CodeMirror {
         buttons.appendChild(popup);
         document.body.addEventListener(
           "click",
-          event => {
+          (event) => {
             if (popup && event.target !== popup && !popup.contains(<any>event.target)) {
               popup.remove();
               popup = undefined;
@@ -225,11 +225,11 @@ export class Yasqe extends CodeMirror {
         input.type = "text";
         input.value = this.config.createShareableLink(this);
 
-        input.onfocus = function() {
+        input.onfocus = function () {
           input.select();
         };
         // Work around Chrome's little problem
-        input.onmouseup = function() {
+        input.onmouseup = function () {
           // $this.unbind("mouseup");
           return false;
         };
@@ -253,13 +253,13 @@ export class Yasqe extends CodeMirror {
           shortBtn.className = "yasqe_btn yasqe_btn-sm shorten";
           popup.appendChild(shortBtn);
           shortBtn.onclick = () => {
-            popupInputButtons.forEach(button => (button.disabled = true));
+            popupInputButtons.forEach((button) => (button.disabled = true));
             createShortLink(this, input.value).then(
-              value => {
+              (value) => {
                 input.value = value;
                 input.focus();
               },
-              err => {
+              (err) => {
                 const errSpan = document.createElement("span");
                 errSpan.className = "shortlinkErr";
                 // Throwing a string or an object should work
@@ -282,7 +282,7 @@ export class Yasqe extends CodeMirror {
         curlBtn.className = "yasqe_btn yasqe_btn-sm curl";
         popup.appendChild(curlBtn);
         curlBtn.onclick = () => {
-          popupInputButtons.forEach(button => (button.disabled = true));
+          popupInputButtons.forEach((button) => (button.disabled = true));
           input.value = this.getAsCurlString();
           input.focus();
           popup?.appendChild(curlBtn);
@@ -468,12 +468,12 @@ export class Yasqe extends CodeMirror {
   public static autoformatString(text: string): string {
     var breakAfterArray = [
       ["keyword", "ws", "string-2", "ws", "variable-3"], // i.e. prefix declaration
-      ["keyword", "ws", "variable-3"] // i.e. base
+      ["keyword", "ws", "variable-3"], // i.e. base
     ];
 
     var breakBeforeCharacters = ["}"];
 
-    var getBreakType = function(stringVal: string) {
+    var getBreakType = function (stringVal: string) {
       //first check the characters to break after
       if (stringVal === "{") return 1;
       if (stringVal === ".") return 1;
@@ -502,7 +502,7 @@ export class Yasqe extends CodeMirror {
     var formattedQuery = "";
     var currentLine = "";
     var stackTrace: string[] = [];
-    (<any>Yasqe).runMode(text, "sparql11", function(stringVal: string, type: string) {
+    (<any>Yasqe).runMode(text, "sparql11", function (stringVal: string, type: string) {
       stackTrace.push(type);
       var breakType = getBreakType(stringVal);
       if (breakType != 0) {
@@ -546,18 +546,18 @@ export class Yasqe extends CodeMirror {
           "",
           {
             line: i,
-            ch: 0
+            ch: 0,
           },
           {
             line: i,
-            ch: 1
+            ch: 1,
           }
         );
       } else {
         // Not all lines are commented, so add comments
         this.getDoc().replaceRange("#", {
           line: i,
-          ch: 0
+          ch: 0,
         });
       }
     }
@@ -569,7 +569,7 @@ export class Yasqe extends CodeMirror {
 
     var to: Position = {
       line: this.getDoc().getCursor("end").line,
-      ch: this.getDoc().getSelection().length
+      ch: this.getDoc().getSelection().length,
     };
     var absStart = this.getDoc().indexFromPos(from);
     var absEnd = this.getDoc().indexFromPos(to);
@@ -597,7 +597,7 @@ export class Yasqe extends CodeMirror {
     } else {
       //start building inject string
       if (!(values instanceof Array)) values = [values];
-      var variables = values.reduce(function(vars, valueObj) {
+      var variables = values.reduce(function (vars, valueObj) {
         for (var v in valueObj) {
           vars[v] = v;
         }
@@ -611,9 +611,9 @@ export class Yasqe extends CodeMirror {
       if (!varArray.length) return this.getValue();
       //ok, we've got enough info to start building the string now
       injectString = "VALUES (" + varArray.join(" ") + ") {\n";
-      values.forEach(function(valueObj) {
+      values.forEach(function (valueObj) {
         injectString += "( ";
-        varArray.forEach(function(variable) {
+        varArray.forEach(function (variable) {
           injectString += valueObj[variable] || "UNDEF";
         });
         injectString += " )\n";
@@ -625,7 +625,7 @@ export class Yasqe extends CodeMirror {
     var newQuery = "";
     var injected = false;
     var gotSelect = false;
-    (<any>Yasqe).runMode(this.getValue(), "sparql11", function(
+    (<any>Yasqe).runMode(this.getValue(), "sparql11", function (
       stringVal: string,
       className: string,
       _row: number,
@@ -645,7 +645,7 @@ export class Yasqe extends CodeMirror {
 
   public getValueWithoutComments() {
     var cleanedQuery = "";
-    (<any>Yasqe).runMode(this.getValue(), "sparql11", function(stringVal: string, className: string) {
+    (<any>Yasqe).runMode(this.getValue(), "sparql11", function (stringVal: string, className: string) {
       if (className != "comment") {
         cleanedQuery += stringVal;
       }
@@ -675,7 +675,7 @@ export class Yasqe extends CodeMirror {
       var token: Token = this.getTokenAt(
         {
           line: l,
-          ch: this.getDoc().getLine(l).length
+          ch: this.getDoc().getLine(l).length,
         },
         precise
       );
@@ -697,7 +697,7 @@ export class Yasqe extends CodeMirror {
           tooltip(this, warningEl, escape(token.state.errorMsg));
         } else if (state.possibleCurrent && state.possibleCurrent.length > 0) {
           var expectedEncoded: string[] = [];
-          state.possibleCurrent.forEach(function(expected) {
+          state.possibleCurrent.forEach(function (expected) {
             expectedEncoded.push("<strong style='text-decoration:underline'>" + escape(expected) + "</strong>");
           });
           tooltip(this, warningEl, "This line is invalid. Expected: " + expectedEncoded.join(", "));
@@ -776,7 +776,7 @@ export class Yasqe extends CodeMirror {
     return autocompleter.initialize();
   }
   public disableCompleter(name: string) {
-    this.config.autocompleters = this.config.autocompleters.filter(a => a !== name);
+    this.config.autocompleters = this.config.autocompleters.filter((a) => a !== name);
     this.autocompleters[name] = undefined;
   }
   public autocomplete(fromAutoShow = false) {
@@ -1032,7 +1032,7 @@ export interface PersistentConfig {
 
 //Need to assign our prototype to codemirror's, as some of the callbacks (e.g. the keymap opts)
 //give us a cm doc, instead of a yasqe + cm doc
-Autocompleter.completers.forEach(c => {
+Autocompleter.completers.forEach((c) => {
   Yasqe.registerAutocompleter(c);
 });
 

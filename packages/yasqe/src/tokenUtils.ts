@@ -20,7 +20,7 @@ export function getCompleteToken(yasqe: Yasqe, token?: Token, cur?: Position): T
 function expandTokenToStart(yasqe: Yasqe, token: Token, cur: Position): Token {
   var prevToken: Token = yasqe.getTokenAt({
     line: cur.line,
-    ch: token.start
+    ch: token.start,
   });
 
   if ((token.type === "punc" || token.type === "error") && !token.state.possibleFullIri && !token.state.inPrefixDecl) {
@@ -38,7 +38,7 @@ function expandTokenToStart(yasqe: Yasqe, token: Token, cur: Position): Token {
     token.string = prevToken.string + token.string;
     return expandTokenToStart(yasqe, token, {
       line: cur.line,
-      ch: prevToken.start
+      ch: prevToken.start,
     }); // recursively, might have multiple tokens which it should include
   } else if (token.type != null && token.type == "ws") {
     //always keep 1 char of whitespace between tokens. Otherwise, autocompletions might end up next to the previous node, without whitespace between them
@@ -66,7 +66,7 @@ function expandTokenToEnd(yasqe: Yasqe, token: Token, cur: Position): Token {
 
   var nextToken: Token = yasqe.getTokenAt({
     line: cur.line,
-    ch: token.end + 1
+    ch: token.end + 1,
   });
 
   if (
@@ -84,7 +84,7 @@ function expandTokenToEnd(yasqe: Yasqe, token: Token, cur: Position): Token {
     token.string = token.string + nextToken.string;
     return expandTokenToEnd(yasqe, token, {
       line: cur.line,
-      ch: nextToken.end
+      ch: nextToken.end,
     }); // recursively, might have multiple tokens which it should include
   } else if (token.type === "ws") {
     //always keep 1 char of whitespace between tokens. Otherwise, autocompletions might end up next to the previous node, without whitespace between them
@@ -98,7 +98,7 @@ function expandTokenToEnd(yasqe: Yasqe, token: Token, cur: Position): Token {
 export function getPreviousNonWsToken(yasqe: Yasqe, line: number, token: Token): Token {
   var previousToken = yasqe.getTokenAt({
     line: line,
-    ch: token.start
+    ch: token.start,
   });
   if (previousToken != null && previousToken.type == "ws") {
     previousToken = getPreviousNonWsToken(yasqe, line, previousToken);
@@ -109,7 +109,7 @@ export function getNextNonWsToken(yasqe: Yasqe, lineNumber: number, charNumber?:
   if (charNumber == undefined) charNumber = 1;
   var token = yasqe.getTokenAt({
     line: lineNumber,
-    ch: charNumber
+    ch: charNumber,
   });
   if (token == null || token == undefined || token.end < charNumber) {
     return undefined;

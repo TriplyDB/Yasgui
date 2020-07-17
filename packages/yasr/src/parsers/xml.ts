@@ -2,7 +2,7 @@ import Parser from "./";
 import { unescape, isEmpty } from "lodash-es";
 function parseHead(node: ChildNode): Parser.SparqlResults["head"] {
   const head: Parser.SparqlResults["head"] = {
-    vars: []
+    vars: [],
   };
   for (let headNodeIt = 0; headNodeIt < node.childNodes.length; headNodeIt++) {
     const headNode = node.childNodes[headNodeIt] as Element;
@@ -17,7 +17,7 @@ function parseHead(node: ChildNode): Parser.SparqlResults["head"] {
 const allowedBindingValueTypes: Array<Parser.BindingValue["type"]> = ["uri", "literal", "bnode", "typed-literal"];
 function parseResults(node: ChildNode, postProcessBinding: Parser.PostProcessBinding): Parser.SparqlResults["results"] {
   const results: Parser.SparqlResults["results"] = {
-    bindings: []
+    bindings: [],
   };
 
   for (let resultIt = 0; resultIt < node.childNodes.length; resultIt++) {
@@ -35,7 +35,7 @@ function parseResults(node: ChildNode, postProcessBinding: Parser.PostProcessBin
             if (allowedBindingValueTypes.indexOf(bindingInf.nodeName as any) < 0) continue;
             const bindingValue: Parser.BindingValue = {
               type: bindingInf.nodeName as Parser.BindingValue["type"],
-              value: unescape(bindingInf.innerHTML)
+              value: unescape(bindingInf.innerHTML),
             };
             const dataType = bindingInf.getAttribute("datatype");
             if (dataType) bindingValue.datatype = dataType;
@@ -55,7 +55,7 @@ function parseResults(node: ChildNode, postProcessBinding: Parser.PostProcessBin
 function parseBoolean(node: Element) {
   return node.innerHTML === "true";
 }
-export default function(
+export default function (
   xmlString: string,
   postProcessBinding: Parser.PostProcessBinding
 ): Parser.SparqlResults | undefined {

@@ -16,13 +16,13 @@ export function addPrefixes(yasqe: Yasqe, prefixes: string | Prefixes) {
 export function addPrefixAsString(yasqe: Yasqe, prefixString: string) {
   yasqe.getDoc().replaceRange("PREFIX " + prefixString + "\n", {
     line: 0,
-    ch: 0
+    ch: 0,
   });
 
   yasqe.collapsePrefixes(false);
 }
 export function removePrefixes(yasqe: Yasqe, prefixes: Prefixes) {
-  var escapeRegex = function(string: string) {
+  var escapeRegex = function (string: string) {
     //taken from http://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript/3561711#3561711
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
   };
@@ -55,7 +55,7 @@ export function getPrefixesFromQuery(yasqe: Yasqe): Token["state"]["prefixes"] {
 export function getIndentFromLine(yasqe: Yasqe, line: number, charNumber: number = 1): string {
   var token = yasqe.getTokenAt({
     line: line,
-    ch: charNumber
+    ch: charNumber,
   });
   if (token == null || token == undefined || token.type != "ws") {
     return "";

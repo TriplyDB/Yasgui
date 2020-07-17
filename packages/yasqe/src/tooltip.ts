@@ -8,7 +8,7 @@ import Yasqe from "./";
 
 export default function tooltip(_yasqe: Yasqe, parent: HTMLDivElement, html: string) {
   var tooltip: HTMLDivElement;
-  parent.onmouseover = function() {
+  parent.onmouseover = function () {
     if (!tooltip) {
       tooltip = document.createElement("div");
       tooltip.className = "yasqe_tooltip";
@@ -22,7 +22,7 @@ export default function tooltip(_yasqe: Yasqe, parent: HTMLDivElement, html: str
     tooltip.innerHTML = html;
     parent.appendChild(tooltip);
   };
-  parent.onmouseout = function() {
+  parent.onmouseout = function () {
     if (tooltip) {
       tooltip.style.display = "none";
     }

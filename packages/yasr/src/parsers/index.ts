@@ -44,7 +44,7 @@ namespace Parser {
 const applyMustacheToLiterals: Parser.PostProcessBinding = (binding: Parser.Binding) => {
   for (const lit in binding) {
     if (binding[lit].type === "uri") continue;
-    binding[lit].value = binding[lit].value.replace(/{{(.*?)}}/g, variable => {
+    binding[lit].value = binding[lit].value.replace(/{{(.*?)}}/g, (variable) => {
       variable = variable.substr(2, variable.length - 4).trim();
       if (binding[variable]) {
         return binding[variable].value;
@@ -82,7 +82,7 @@ class Parser {
     if (!summary.data && !summary.error) {
       //This isnt a summary object, just try to recreate a summary object ourselves (assuming we're just passed a sparql-result object directly)
       this.summary = {
-        data: summary
+        data: summary,
       };
     } else {
       this.summary = summary;
@@ -103,7 +103,7 @@ class Parser {
           // message: this.res.error.message,
           text: this.res.text,
           status: this.res.status,
-          statusText: this.res.error ? this.res.error.text : undefined
+          statusText: this.res.error ? this.res.error.text : undefined,
         };
       }
       if (this.summary && this.summary.error) {
@@ -114,11 +114,11 @@ class Parser {
           this.errorSummary = {
             text: this.error.response.text,
             status: this.error.response.status,
-            statusText: this.error.response.statusText
+            statusText: this.error.response.statusText,
           };
         } else {
           this.errorSummary = {
-            text: this.error.message
+            text: this.error.message,
           };
         }
       }
@@ -260,7 +260,7 @@ class Parser {
         data: this.getOriginalResponseAsString(),
         error: this.getError(),
         status: this.getStatus(),
-        executionTime: this.getResponseTime()
+        executionTime: this.getResponseTime(),
       };
     }
     if (summary) {
@@ -273,7 +273,7 @@ class Parser {
     if (this.error) {
       return {
         error: this.getError(),
-        executionTime: this.getResponseTime()
+        executionTime: this.getResponseTime(),
       };
     }
   }

@@ -65,7 +65,7 @@ export class TabListEl {
     // if (this.yasgui.persistentConfig.tabIsActive(this.tabId)) {
     //   this.yasgui.store.dispatch(selectTab(this.tabId))
     // }
-    tabLinkEl.onclick = e => {
+    tabLinkEl.onclick = (e) => {
       e.preventDefault();
       this.yasgui.selectTabId(this.tabId);
     };
@@ -80,7 +80,7 @@ export class TabListEl {
     closeBtn.innerHTML = "&#x2716;";
     closeBtn.title = "Close tab";
     addClass(closeBtn, "closeTab");
-    closeBtn.onclick = e => {
+    closeBtn.onclick = (e) => {
       e.preventDefault();
       this.yasgui.getTab(this.tabId)?.close();
     };
@@ -89,7 +89,7 @@ export class TabListEl {
     const renameEl = (this.renameEl = document.createElement("input"));
     renameEl.type = "text";
     renameEl.value = name;
-    renameEl.onkeyup = event => {
+    renameEl.onkeyup = (event) => {
       if (event.key === "Enter") {
         this.yasgui.getTab(this.tabId)?.setName(renameEl.value);
         removeClass(this.tabEl, "renaming");
@@ -177,7 +177,7 @@ export class TabList {
       filter: ".addTab",
       onMove: (ev: any, _origEv: any) => {
         return hasClass(ev.related, "tab");
-      }
+      },
     });
 
     this.addTabEl = document.createElement("div");

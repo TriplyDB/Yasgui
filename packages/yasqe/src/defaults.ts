@@ -17,13 +17,13 @@ SELECT * WHERE {
   ?sub ?pred ?obj .
 } LIMIT 10`,
     highlightSelectionMatches: {
-      showToken: /\w/
+      showToken: /\w/,
     },
     tabMode: "indent",
     lineNumbers: true,
     lineWrapping: true,
     foldGutter: {
-      rangeFinder: new (<any>CodeMirror).fold.combine((<any>CodeMirror).fold.brace, (<any>CodeMirror).fold.prefix)
+      rangeFinder: new (<any>CodeMirror).fold.combine((<any>CodeMirror).fold.brace, (<any>CodeMirror).fold.prefix),
     },
     collapsePrefixesOnLoad: false,
     gutters: ["gutterErrorBar", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
@@ -36,11 +36,11 @@ SELECT * WHERE {
        * Need to use _yasqe:any as function parameter here. Otherwise ts will complain that we're not following
        * the codemirror config interface (that specifies the type should be codemirror-editor)
        */
-      "Ctrl-Space": function(_yasqe: any) {
+      "Ctrl-Space": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
         yasqe.autocomplete();
       },
-      "Shift-Ctrl-K": function(_yasqe: any) {
+      "Shift-Ctrl-K": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
         const lineNumber = yasqe.getDoc().getCursor().line;
         if (lineNumber === yasqe.getDoc().lastLine() && lineNumber > 1) {
@@ -57,34 +57,34 @@ SELECT * WHERE {
           return yasqe.getDoc().replaceRange("", { ch: 0, line: lineNumber }, { ch: 0, line: lineNumber + 1 });
         }
       },
-      "Ctrl-/": function(_yasqe: any) {
+      "Ctrl-/": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
         yasqe.commentLines();
       },
-      "Shift-Ctrl-D": function(_yasqe: any) {
+      "Shift-Ctrl-D": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
         yasqe.duplicateLine();
       },
-      "Shift-Ctrl-F": function(_yasqe: any) {
+      "Shift-Ctrl-F": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
         yasqe.autoformat();
       },
-      "Ctrl-S": function(_yasqe: any) {
+      "Ctrl-S": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
         yasqe.saveQuery();
       },
 
-      "Cmd-Enter": function(_yasqe: any) {
+      "Cmd-Enter": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
         yasqe.query().catch(() => {}); //catch this to avoid unhandled rejection
       },
-      "Ctrl-Enter": function(_yasqe: any) {
+      "Ctrl-Enter": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
         yasqe.query().catch(() => {}); //catch this to avoid unhandled rejection
-      }
+      },
     },
 
-    createShareableLink: function(yasqe: Yasqe) {
+    createShareableLink: function (yasqe: Yasqe) {
       return (
         document.location.protocol +
         "//" +
@@ -99,10 +99,10 @@ SELECT * WHERE {
 
     createShortLink: undefined,
 
-    consumeShareLink: function(yasqe: Yasqe) {
+    consumeShareLink: function (yasqe: Yasqe) {
       yasqe.queryParamsToConfig(yasqe.getUrlParams());
     },
-    persistenceId: function(yasqe: Yasqe) {
+    persistenceId: function (yasqe: Yasqe) {
       //Traverse parents untl we've got an id
       // Get matching parent elements
       let id = "";
@@ -123,7 +123,7 @@ SELECT * WHERE {
     hintConfig: {},
     resizeable: true,
     editorHeight: "300px",
-    queryingDisabled: undefined
+    queryingDisabled: undefined,
   };
   const requestConfig: PlainRequestConfig = {
     queryArgument: undefined, //undefined means: get query argument based on query mode
@@ -137,7 +137,7 @@ SELECT * WHERE {
     args: [],
     headers: {},
     withCredentials: false,
-    adjustQueryBeforeRequest: false
+    adjustQueryBeforeRequest: false,
   };
   return { ...config, requestConfig };
 }

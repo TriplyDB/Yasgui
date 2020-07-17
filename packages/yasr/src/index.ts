@@ -8,7 +8,7 @@ import {
   drawSvgStringAsElement,
   removeClass,
   addClass,
-  hasClass
+  hasClass,
 } from "@triply/yasgui-utils";
 import Parser from "./parsers";
 export { default as Parser } from "./parsers";
@@ -144,7 +144,9 @@ export class Yasr extends EventEmitter {
 
   private getCompatiblePlugins(): string[] {
     if (!this.results)
-      return Object.keys(filter(this.config.plugins, val => (typeof val === "object" && val.enabled) || val === true));
+      return Object.keys(
+        filter(this.config.plugins, (val) => (typeof val === "object" && val.enabled) || val === true)
+      );
 
     // var autoSelectedPlugin: string = null;
     // var pluginPriority = -1;
@@ -154,7 +156,7 @@ export class Yasr extends EventEmitter {
         supportedPlugins.push({ name: pluginName, priority: this.plugins[pluginName].priority });
       }
     }
-    return supportedPlugins.sort((p1, p2) => p2.priority - p1.priority).map(p => p.name);
+    return supportedPlugins.sort((p1, p2) => p2.priority - p1.priority).map((p) => p.name);
   }
   public draw() {
     this.updateHelpButton();
@@ -200,7 +202,7 @@ export class Yasr extends EventEmitter {
             this.updatePluginSelectors(compatiblePlugins);
           }
         },
-        _e => console.error
+        (_e) => console.error
       );
     } else {
       this.resultsEl.textContent = "cannot render result";
@@ -251,7 +253,7 @@ export class Yasr extends EventEmitter {
     const pluginOrder = this.config.pluginOrder;
     Object.keys(this.config.plugins)
       .sort()
-      .forEach(plugin => {
+      .forEach((plugin) => {
         if (pluginOrder.indexOf(plugin) === -1) pluginOrder.push(plugin);
       });
     for (const pluginName of pluginOrder) {
@@ -461,7 +463,7 @@ export class Yasr extends EventEmitter {
   public getPersistentConfig(): PersistentConfig {
     return {
       selectedPlugin: this.getSelectedPluginName(),
-      pluginsConfig: mapValues(this.config.plugins, plugin => plugin.dynamicConfig)
+      pluginsConfig: mapValues(this.config.plugins, (plugin) => plugin.dynamicConfig),
     };
   }
   //This doesnt store the plugin complete config. Only those configs we want persisted

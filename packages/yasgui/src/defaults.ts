@@ -7,7 +7,7 @@ export default function initialize(): Config<CatalogueItem> {
   return {
     autofocus: true,
     endpointInfo: undefined,
-    persistenceId: function(yasgui) {
+    persistenceId: function (yasgui) {
       //Traverse parents untl we've got an id
       // Get matching parent elements
       var id = "";
@@ -32,11 +32,11 @@ export default function initialize(): Config<CatalogueItem> {
       getData: () => {
         return [
           {
-            endpoint: "https://dbpedia.org/sparql"
+            endpoint: "https://dbpedia.org/sparql",
           },
           {
-            endpoint: "https://query.wikidata.org/bigdata/namespace/wdq/sparql"
-          }
+            endpoint: "https://query.wikidata.org/bigdata/namespace/wdq/sparql",
+          },
         ];
       },
       keys: [],
@@ -53,12 +53,12 @@ export default function initialize(): Config<CatalogueItem> {
           ) || "";
         contentDiv.appendChild(endpointSpan);
         source.appendChild(contentDiv);
-      }
+      },
     },
     copyEndpointOnNewTab: true,
     populateFromUrl: true,
     autoAddOnInit: true,
     requestConfig: Yasqe.defaults.requestConfig,
-    contextMenuContainer: undefined
+    contextMenuContainer: undefined,
   };
 }

@@ -60,10 +60,10 @@ export default class Table implements Plugin<PluginConfig> {
           first: "&lt;&lt;", // Have to specify these two due to TS defs, <<
           last: "&gt;&gt;", // Have to specify these two due to TS defs, >>
           next: "&gt;", // >
-          previous: "&lt;" // <
-        }
-      }
-    }
+          previous: "&lt;", // <
+        },
+      },
+    },
   };
   private getRows(): string[][] {
     const rows: string[][] = [];
@@ -131,9 +131,9 @@ export default class Table implements Plugin<PluginConfig> {
     if (!this.yasr.results) return [];
     return [
       { name: "", searchable: false, width: this.getSizeFirstColumn(), sortable: false }, //prepend with row numbers column
-      ...this.yasr.results?.getVariables().map(name => {
+      ...this.yasr.results?.getVariables().map((name) => {
         return { name: name, title: name };
-      })
+      }),
     ];
   }
   private getSizeFirstColumn() {
@@ -236,7 +236,7 @@ export default class Table implements Plugin<PluginConfig> {
       getData: () => this.yasr.results?.asCsv() || "",
       contentType: "text/csv",
       title: "Download result",
-      filename: "queryResults.csv"
+      filename: "queryResults.csv",
     } as DownloadInfo;
   }
 

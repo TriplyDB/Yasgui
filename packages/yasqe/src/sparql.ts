@@ -42,7 +42,7 @@ export function getAjaxConfig(
     args: getUrlArguments(yasqe, config),
     headers: headers,
     accept: getAcceptHeader(yasqe, config),
-    withCredentials
+    withCredentials,
   };
   /**
    * merge additional request headers
@@ -61,10 +61,7 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
     var queryStart = Date.now();
 
     if (populatedConfig.reqMethod === "POST") {
-      req = superagent
-        .post(populatedConfig.url)
-        .type("form")
-        .send(populatedConfig.args);
+      req = superagent.post(populatedConfig.url).type("form").send(populatedConfig.args);
     } else {
       req = superagent.get(populatedConfig.url).query(populatedConfig.args);
     }
@@ -75,12 +72,12 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
     if (populatedConfig.withCredentials) req.withCredentials();
     yasqe.emit("query", req, populatedConfig);
     return req.then(
-      result => {
+      (result) => {
         yasqe.emit("queryResponse", result, Date.now() - queryStart);
         yasqe.emit("queryResults", result.body, Date.now() - queryStart);
         return result.body;
       },
-      e => {
+      (e) => {
         yasqe.emit("queryResponse", e, Date.now() - queryStart);
         yasqe.emit("error", e);
         throw e;

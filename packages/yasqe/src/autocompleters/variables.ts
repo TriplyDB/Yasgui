@@ -2,7 +2,7 @@ import * as autocompleter from "./";
 
 var conf: autocompleter.CompleterConfig = {
   name: "variables",
-  isValidCompletionPosition: function(yasqe) {
+  isValidCompletionPosition: function (yasqe) {
     var token = yasqe.getTokenAt(yasqe.getDoc().getCursor());
     if (token.type != "ws") {
       token = yasqe.getCompleteToken(token);
@@ -12,7 +12,7 @@ var conf: autocompleter.CompleterConfig = {
     }
     return false;
   },
-  get: function(yasqe, token) {
+  get: function (yasqe, token) {
     if (!token || token.string.length == 0) return []; //nothing to autocomplete
     const distinctVars: { [varname: string]: any } = {};
     const vars: string[] = [];
@@ -47,6 +47,6 @@ var conf: autocompleter.CompleterConfig = {
     return vars.sort();
   },
   bulk: false,
-  autoShow: true
+  autoShow: true,
 };
 export default conf;

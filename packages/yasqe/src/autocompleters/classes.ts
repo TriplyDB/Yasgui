@@ -1,14 +1,14 @@
 import * as Autocompleter from "./";
 
 var conf: Autocompleter.CompleterConfig = {
-  onInitialize: function(_yasqe) {
+  onInitialize: function (_yasqe) {
     // validPosition: yasqe.autocompleters.notifications.show,
     // invalidPosition: yasqe.autocompleters.notifications.hide
   },
-  get: function(yasqe, token) {
+  get: function (yasqe, token) {
     return Autocompleter.fetchFromLov(yasqe, "class", token);
   },
-  isValidCompletionPosition: function(yasqe) {
+  isValidCompletionPosition: function (yasqe) {
     const token = yasqe.getCompleteToken();
     if (token.string[0] === "?" || token.string[0] === "$") return false;
     const cur = yasqe.getDoc().getCursor();
@@ -19,14 +19,14 @@ var conf: Autocompleter.CompleterConfig = {
     if (previousToken.state.lastProperty === "rdfs:range") return true;
     return false;
   },
-  preProcessToken: function(yasqe, token) {
+  preProcessToken: function (yasqe, token) {
     return Autocompleter.preprocessIriForCompletion(yasqe, token);
   },
-  postProcessSuggestion: function(yasqe, token, suggestedString) {
+  postProcessSuggestion: function (yasqe, token, suggestedString) {
     return Autocompleter.postprocessIriCompletion(yasqe, token, suggestedString);
   },
   bulk: false,
-  name: "class"
+  name: "class",
 };
 
 export default conf;

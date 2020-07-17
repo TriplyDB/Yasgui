@@ -36,7 +36,7 @@ export default class Response implements Plugin<PluginConfig> {
     if (yasr.config.plugins["response"] && yasr.config.plugins["response"].dynamicConfig) {
       this.config = {
         ...this.config,
-        ...yasr.config.plugins["response"].dynamicConfig
+        ...yasr.config.plugins["response"].dynamicConfig,
       };
     }
   }
@@ -61,7 +61,7 @@ export default class Response implements Plugin<PluginConfig> {
       },
       filename: "queryResults" + (type ? "." + type : ""),
       contentType: contentType ? contentType : "text/plain",
-      title: "Download result"
+      title: "Download result",
     };
   }
   draw() {
@@ -78,7 +78,7 @@ export default class Response implements Plugin<PluginConfig> {
       lineWrapping: true,
       foldGutter: true,
       gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-      value: value
+      value: value,
     };
     const mode = this.yasr.results?.getType();
     if (mode === "json") {
@@ -155,6 +155,6 @@ export default class Response implements Plugin<PluginConfig> {
     this.cm.refresh();
   }
   public static defaults: PluginConfig = {
-    maxLines: 30
+    maxLines: 30,
   };
 }

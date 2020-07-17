@@ -1,5 +1,5 @@
 import * as DOMPurify from "dompurify";
-DOMPurify.addHook("afterSanitizeAttributes", node => {
+DOMPurify.addHook("afterSanitizeAttributes", (node) => {
   if (node instanceof HTMLAnchorElement) {
     node.target = "_blank";
     node.rel = "noopener noreferrer";

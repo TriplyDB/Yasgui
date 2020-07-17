@@ -1,7 +1,7 @@
 import { Config } from "./";
 export default function get(): Config {
   return {
-    persistenceId: function(yasr) {
+    persistenceId: function (yasr) {
       //Traverse parents untl we've got an id
       // Get matching parent elements
       var id = "";
@@ -23,6 +23,6 @@ export default function get(): Config {
     prefixes: {},
     plugins: {},
     pluginOrder: ["table", "response"], // Default plugins, others are sorted alphabetically
-    defaultPlugin: "table"
+    defaultPlugin: "table",
   };
 }

@@ -15,7 +15,7 @@ function getDefaults(): PersistedJson {
     tabs: [],
     active: undefined,
     tabConfig: {},
-    lastClosedTab: undefined
+    lastClosedTab: undefined,
   };
 }
 
