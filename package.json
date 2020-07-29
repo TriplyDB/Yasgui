@@ -47,10 +47,10 @@
       "prettier --write"
     ],
     "*.css": [
-      "prettier --parser postcss --write"
+      "prettier --parser css --write"
     ],
     "*.scss": [
-      "prettier --parser postcss --write"
+      "prettier --parser scss --write"
     ]
   },
   "husky": {
