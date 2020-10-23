@@ -1,3 +1,4 @@
+
 /*
 
 SPARQL 1.1 grammar rules based on the Last Call Working Draft of 24/07/2012:
@@ -6,18 +7,18 @@ SPARQL 1.1 grammar rules based on the Last Call Working Draft of 24/07/2012:
 Be careful with grammar notation - it is EBNF in prolog syntax!
 
 [...] lists always represent sequence.
-or can be used as binary operator or n-ary prefix term - do not put [...]
+or can be used as binary operator or n-ary prefix term - do not put [...] 
 inside unless you want sequence as a single disjunct.
 
-*, +, ? - generally used as 1-ary terms
+*, +, ? - generally used as 1-ary terms 
 
 stephen.cresswell@tso.co.uk
 */
 
 % We need to be careful with end-of-input marker $
-% Since we never actually receive this from Codemirror,
+% Since we never actually receive this from Codemirror, 
 % we can't have it appear on RHS of deployed rules.
-% However, we do need it to check whether rules *could* precede
+% However, we do need it to check whether rules *could* precede 
 % end-of-input, so use it with top-level
 
 :-dynamic '==>'/2.
@@ -26,19 +27,19 @@ sparql11 ==> [prologue,(queryAll or updateAll), $].
 queryUnit ==> [query,$].
 updateUnit ==> [update,$].
 
-query ==>
+query ==> 
 	[prologue,or(selectQuery,constructQuery,describeQuery,askQuery),valuesClause].
-queryAll ==>
+queryAll ==> 
 	[or(selectQuery,constructQuery,describeQuery,askQuery),valuesClause].
-
-prologue ==>
+	
+prologue ==> 
 	%[?(baseDecl),*(prefixDecl)].
 	[*(baseDecl or prefixDecl)].
 
-baseDecl ==>
+baseDecl ==> 
 	['BASE','IRI_REF'].
 
-prefixDecl ==>
+prefixDecl ==> 
 	['PREFIX','PNAME_NS','IRI_REF'].
 
 % [7]
@@ -49,54 +50,54 @@ subSelect ==>
         [selectClause,whereClause,solutionModifier,valuesClause].
 
 % [9]
-selectClause ==>
+selectClause ==> 
 	['SELECT',
 	?('DISTINCT' or 'REDUCED'),
 	(+(var or ['(',expression,'AS',var,')']) or '*')].
 
-%selectQuery ==>
+%selectQuery ==> 
 %	['SELECT',
 %	?('DISTINCT' or 'REDUCED'),
 %	(+(var) or '*'),
 %	*(datasetClause),whereClause,solutionModifier].
 
 %[10]
-constructQuery ==>
+constructQuery ==> 
 	['CONSTRUCT',
- 	 [constructTemplate,*(datasetClause),whereClause,solutionModifier]
+ 	 [constructTemplate,*(datasetClause),whereClause,solutionModifier] 
          or
 	 [*(datasetClause),'WHERE','{',?(triplesTemplate),'}',solutionModifier]].
 
-describeQuery ==>
-	['DESCRIBE',+(varOrIRIref) or '*',
+describeQuery ==> 
+	['DESCRIBE',+(varOrIRIref or embeddedTriple) or '*',
 	*(describeDatasetClause),?(whereClause),solutionModifier].
 
 askQuery ==>
 	['ASK',*(datasetClause),whereClause,solutionModifier].
 
 describeDatasetClause ==> % Not in spec - artificial distinction
-	['FROM',defaultGraphClause or namedGraphClause].
-datasetClause ==>
-	['FROM',defaultGraphClause or namedGraphClause].
+	['FROM',defaultGraphClause or namedGraphClause]. 
+datasetClause ==> 
+	['FROM',defaultGraphClause or namedGraphClause]. 
 
-defaultGraphClause ==>
+defaultGraphClause ==> 
 	[sourceSelector].
 
-namedGraphClause ==>
+namedGraphClause ==> 
 	['NAMED',sourceSelector].
 
-sourceSelector ==>
+sourceSelector ==> 
 	[iriRef].
 
-whereClause ==>
+whereClause ==> 
 	[?('WHERE'),groupGraphPattern].
 
 %[18]
-solutionModifier ==>
+solutionModifier ==> 
 	[?(groupClause),?(havingClause),?(orderClause),?(limitOffsetClauses)].
 
 %[19]
-groupClause ==>
+groupClause ==> 
 	['GROUP','BY',+(groupCondition)].
 
 %[20]
@@ -116,28 +117,28 @@ havingClause ==>
 havingCondition ==>
 	[constraint].
 
-orderClause ==>
+orderClause ==> 
 	['ORDER','BY',+(orderCondition)].
 
-orderCondition ==>
+orderCondition ==> 
 	['ASC' or 'DESC',brackettedExpression].
-orderCondition ==>
+orderCondition ==> 
 	[constraint].
-orderCondition ==>
+orderCondition ==> 
 	[var].
 
 %[25]
-limitOffsetClauses ==>
+limitOffsetClauses ==> 
 	[limitClause, ?(offsetClause)].
-limitOffsetClauses ==>
+limitOffsetClauses ==> 
 	[offsetClause, ?(limitClause)].
 
 %[26]
-limitClause ==>
+limitClause ==> 
 	['LIMIT','INTEGER'].
 
 %[27]
-offsetClause ==>
+offsetClause ==> 
 	['OFFSET','INTEGER'].
 
 %[28]
@@ -205,7 +206,7 @@ delete1 ==> [quadPatternNoBnodes,?(insertClause), % Originally part of nt modify
 %[41]
 % In the spec, WITH is optional, but we have refactored
 % and handled cases beginning 'DELETE' or 'INSERT'.
-modify ==>
+modify ==> 
 	['WITH',iriRef,
 	  [deleteClause,?(insertClause)] or insertClause,
 	  *(usingClause),
@@ -213,7 +214,7 @@ modify ==>
 	  groupGraphPattern].
 
 %[42]
-deleteClause ==>
+deleteClause ==> 
 	['DELETE',quadPattern].
 %[43]
 insertClause ==>
@@ -244,7 +245,7 @@ allowVars==>[].
 disallowBnodes==>[].
 allowBnodes==>[].
 %[50]
-quads ==>
+quads ==> 
 	[?(triplesTemplate),*([quadsNotTriples,?('.'),?(triplesTemplate)])].
 %[51]
 quadsNotTriples ==>
@@ -253,7 +254,7 @@ quadsNotTriples ==>
 triplesTemplate ==>
 	[triplesSameSubject,?(['.',?(triplesTemplate)])].
 %[53]
-groupGraphPattern ==>
+groupGraphPattern ==> 
 	['{',subSelect or groupGraphPatternSub,'}'].
 %groupGraphPattern ==> [
 %        '{',
@@ -278,13 +279,13 @@ graphPatternNotTriples ==> [inlineData].
 %[57]
 optionalGraphPattern ==> ['OPTIONAL',groupGraphPattern].
 %[58]
-graphGraphPattern ==>
+graphGraphPattern ==> 
 	['GRAPH',varOrIRIref,groupGraphPattern].
 %[59]
-serviceGraphPattern ==>
+serviceGraphPattern ==> 
 	['SERVICE',?('SILENT'),varOrIRIref,groupGraphPattern].
 %[60]
-bind ==>
+bind ==> 
 	['BIND','(',expression,'AS',var,')'].
 %[61]
 inlineData ==> ['VALUES',dataBlock].
@@ -293,38 +294,40 @@ dataBlock ==> [inlineDataOneVar or inlineDataFull].
 %[63]
 inlineDataOneVar ==> [var,'{',*(dataBlockValue),'}'].
 %[64]
-inlineDataFull ==> [ 'NIL' or ['(',*(var),')'],
+inlineDataFull ==> [ 'NIL' or ['(',*(var),')'], 
                         '{',*(['(',*(dataBlockValue),')'] or 'NIL'),'}'].
 %[65]
 dataBlockValue ==> [iriRef].
 dataBlockValue ==> [rdfLiteral].
 dataBlockValue ==> [numericLiteral].
 dataBlockValue ==> [booleanLiteral].
+% SPARQL* extension
+dataBlockValue ==> [disallowVars,embeddedTriple,allowVars].
 dataBlockValue ==> ['UNDEF'].
 
 %[66]
-minusGraphPattern ==>
+minusGraphPattern ==> 
 	['MINUS',groupGraphPattern].
 %[67]
-groupOrUnionGraphPattern ==>
+groupOrUnionGraphPattern ==> 
 	[groupGraphPattern,*(['UNION',groupGraphPattern])].
 %[68]
 filter ==>
 	['FILTER',constraint].
 %[69]
-constraint ==>
+constraint ==> 
 	[brackettedExpression].
-constraint ==>
+constraint ==> 
 	[builtInCall].
-constraint ==>
+constraint ==> 
 	[functionCall].
 %[70]
-functionCall ==>
+functionCall ==> 
 	[iriRef,argList].
 %[70]
-argList ==>
+argList ==> 
 	['NIL'].
-argList ==>
+argList ==> 
 	['(',?('DISTINCT'),expression,*([',',expression]),')'].
 %[71]
 expressionList ==> ['NIL'].
@@ -344,18 +347,18 @@ triplesSameSubject ==>
 propertyList ==> [propertyListNotEmpty].
 propertyList ==> [].
 %[77]
-propertyListNotEmpty ==>
-	[verb,objectList,*([';',?([verb,objectList])])].
+propertyListNotEmpty ==> 
+	[verbPath or verbSimple,objectList,*([';',?([verbPath or verbSimple,objectList])])].
 % storeProperty is a dummy for side-effect of remembering property
 storeProperty==>[].
 %[78]
 verb ==> [storeProperty,varOrIRIref].
 verb ==> [storeProperty,'a'].
 %[79]
-objectList ==>
+objectList ==> 
 	[object,*([',',object])].
 %[80]
-object ==>
+object ==> 
 	[graphNode].
 %[81]
 triplesSameSubjectPath ==> [varOrTerm,propertyListPathNotEmpty].
@@ -367,13 +370,13 @@ propertyListPath ==> [].
 propertyListPathNotEmpty ==>
 	[verbPath or verbSimple,
 	objectListPath,
-	*([';',?([verbPath or verbSimple,objectListPath])])].
+	*([';',?([verbPath or verbSimple,objectList])])].
 %[84]
 verbPath ==> [path].
 %[85]
 verbSimple ==> [var].
 %[86]
-objectListPath ==>
+objectListPath ==> 
 	[objectPath,*([',',objectPath])].
 %[87]
 objectPath ==> [graphNodePath].
@@ -391,12 +394,12 @@ pathElt ==>
 %[92]
 pathEltOrInverse ==> [pathElt].
 pathEltOrInverse ==> ['^',pathElt].
-%[93]  - last case below looks weird because
+%[93]  - last case below looks weird because 
 %        {0} and {0,1} and {0,} and {,1} are allowed
 pathMod ==> ['*'].
 pathMod ==> ['?'].
 pathMod ==> ['+'].
-pathMod ==>
+pathMod ==> 
 	['{',
           [integer,
 	     ([',', '}' or [integer,'}']])
@@ -408,11 +411,11 @@ pathMod ==>
         ].
 
 % Original expression from SPARQL1.1 spec:
-%'{' ( Integer
-%        ( ','
-%            ( '}' | Integer '}' )
-%        | '}' )
-%    | ',' Integer '}' )
+%'{' ( Integer 
+%        ( ',' 
+%            ( '}' | Integer '}' ) 
+%        | '}' ) 
+%    | ',' Integer '}' ) 
 
 %[94]
 pathPrimary ==> [storeProperty,iriRef].
@@ -421,9 +424,9 @@ pathPrimary ==> ['!',pathNegatedPropertySet].
 pathPrimary ==> ['(',path,')'].
 
 %[95]
-pathNegatedPropertySet ==>
+pathNegatedPropertySet ==> 
 	[pathOneInPropertySet].
-pathNegatedPropertySet ==>
+pathNegatedPropertySet ==> 
 	['(',
 	 ?([pathOneInPropertySet,
 	    *(['|',pathOneInPropertySet]) ]),
@@ -469,20 +472,22 @@ graphTerm ==> [rdfLiteral].
 graphTerm ==> [numericLiteral].
 graphTerm ==> [booleanLiteral].
 graphTerm ==> [blankNode].
+% SPARQL* extension
+graphTerm ==> [embeddedTriple].
 graphTerm ==> ['NIL'].
 %[110]
 expression ==> [conditionalOrExpression].
 %[111]
-conditionalOrExpression ==>
+conditionalOrExpression ==> 
 	[conditionalAndExpression,*(['||',conditionalAndExpression])].
 %[112]
-conditionalAndExpression ==>
+conditionalAndExpression ==> 
 	[valueLogical,*(['&&',valueLogical])].
 %[113]
 valueLogical ==> [relationalExpression].
 %[114]
-relationalExpression ==>
-	[numericExpression,
+relationalExpression ==> 
+	[numericExpression, 
 	 ?(or(['=',numericExpression],
 	      ['!=',numericExpression],
 	      ['<',numericExpression],
@@ -494,14 +499,14 @@ relationalExpression ==>
 %[115]
 numericExpression ==> [additiveExpression].
 %[116]
-additiveExpression ==>
-	[multiplicativeExpression,
+additiveExpression ==> 
+	[multiplicativeExpression, 
 	 *(or(['+',multiplicativeExpression],
 	      ['-',multiplicativeExpression],
               [numericLiteralPositive or numericLiteralNegative,
 	       ?(['*',unaryExpression] or ['/',unaryExpression]) ]))].
 %[117]
-multiplicativeExpression ==>
+multiplicativeExpression ==> 
 	[unaryExpression,*(['*',unaryExpression] or ['/',unaryExpression])].
 %[118]
 unaryExpression ==> ['!',primaryExpression].
@@ -515,6 +520,8 @@ primaryExpression ==> [iriRefOrFunction].
 primaryExpression ==> [rdfLiteral].
 primaryExpression ==> [numericLiteral].
 primaryExpression ==> [booleanLiteral].
+% SPARQL* extension
+primaryExpression ==> [embeddedTriple].
 primaryExpression ==> [var].
 primaryExpression ==> [aggregate].
 %[120]
@@ -530,7 +537,7 @@ builtInCall ==> ['URI','(',expression,')'].
 %builtInCall ==> ['BNODE','(',?(expression),')'].  % Avoided use of NIL
 %builtInCall ==> ['RAND','(',')'].                 % Avoided use of NIL
 builtInCall ==> ['BNODE',['(',expression,')'] or 'NIL'].
-builtInCall ==> ['RAND',['(',expression,')'] or 'NIL'].
+builtInCall ==> ['RAND','NIL'].
 builtInCall ==> ['ABS','(',expression,')'].
 builtInCall ==> ['CEIL','(',expression,')'].
 builtInCall ==> ['FLOOR','(',expression,')'].
@@ -578,13 +585,13 @@ builtInCall ==> [regexExpression].
 builtInCall ==> [existsFunc].
 builtInCall ==> [notExistsFunc].
 %[122]
-regexExpression ==>
+regexExpression ==> 
 	['REGEX','(',expression,',',expression,?([',',expression]),')'].
 %[123]
-substringExpression ==>
+substringExpression ==> 
 	['SUBSTR','(',expression,',',expression,?([',',expression]),')'].
 %[124]
-strReplaceExpression ==>
+strReplaceExpression ==> 
 	['REPLACE','(',expression,',',expression,',',expression,?([',',expression]),')'].
 %[125]
 existsFunc ==>
@@ -599,7 +606,7 @@ aggregate ==> ['MIN','(',?('DISTINCT'),expression,')'].
 aggregate ==> ['MAX','(',?('DISTINCT'),expression,')'].
 aggregate ==> ['AVG','(',?('DISTINCT'),expression,')'].
 aggregate ==> ['SAMPLE','(',?('DISTINCT'),expression,')'].
-aggregate ==>
+aggregate ==> 
 	['GROUP_CONCAT','(',
 	 ?('DISTINCT'),
 	 expression,
@@ -642,7 +649,8 @@ prefixedName ==> ['PNAME_NS'].
 %[138]
 blankNode ==> ['BLANK_NODE_LABEL'].
 blankNode ==> ['ANON'].
-
+% SPARQL* extension
+embeddedTriple ==> ['<<',varOrTerm,verb,varOrTerm,'>>'].
 
 % tokens defined by regular expressions elsewhere
 tm_regex([
@@ -793,7 +801,11 @@ tm_keywords([
 'SAMPLE',
 'SEPARATOR',
 
-'STR'
+'STR',
+
+% SPARQL* extension
+'<<',
+'>>'
 ]).
 
 % Other tokens representing fixed, case sensitive, strings
