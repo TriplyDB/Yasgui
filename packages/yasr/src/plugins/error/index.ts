@@ -108,7 +108,13 @@ export default class Error implements Plugin<PluginConfig> {
         const link = this.yasr.config.getPlainQueryLinkToEndpoint();
         if (link) header.appendChild(this.getTryBtn(link));
       }
-      el.appendChild(this.getCorsMessage());
+      if (error.text) {
+        const errTextEl = document.createElement("pre");
+        errTextEl.textContent = error.text;
+        el.appendChild(errTextEl);
+      } else {
+        el.appendChild(this.getCorsMessage());
+      }
     }
   }
   getIcon() {
