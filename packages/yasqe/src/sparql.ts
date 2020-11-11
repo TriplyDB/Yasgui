@@ -149,11 +149,11 @@ export function getAcceptHeader(yasqe: Yasqe, _config: Config["requestConfig"]) 
 export function getAsCurlString(yasqe: Yasqe, _config?: Config["requestConfig"]) {
   let ajaxConfig = getAjaxConfig(yasqe, getRequestConfigSettings(yasqe, _config));
   if (!ajaxConfig) return "";
-  var url = ajaxConfig.url;
+  let url = ajaxConfig.url;
   if (ajaxConfig.url.indexOf("http") !== 0) {
     //this is either a relative or absolute url, which is not supported by CURL.
     //Add domain, schema, etc etc
-    var url = window.location.protocol + "//" + window.location.host;
+    url = `${window.location.protocol}//${window.location.host}`;
     if (ajaxConfig.url.indexOf("/") === 0) {
       //its an absolute path
       url += ajaxConfig.url;
@@ -162,12 +162,22 @@ export function getAsCurlString(yasqe: Yasqe, _config?: Config["requestConfig"])
       url += window.location.pathname + ajaxConfig.url;
     }
   }
-  var cmds: string[] = ["curl", url, "-X", ajaxConfig.reqMethod];
-  if (ajaxConfig.reqMethod == "POST") {
-    cmds.push(`--data '${queryString.stringify(ajaxConfig.args)}'`);
+  const segments: string[] = ["curl"];
+
+  if (ajaxConfig.reqMethod === "GET") {
+    url += `?${queryString.stringify(ajaxConfig.args)}`;
+    segments.push(url);
+  } else if (ajaxConfig.reqMethod === "POST") {
+    segments.push(url);
+    segments.push("--data", queryString.stringify(ajaxConfig.args));
+  } else {
+    // I don't expect to get here but let's be sure
+    console.warn("Unexpected request-method", ajaxConfig.reqMethod);
+    segments.push(url);
   }
-  for (var header in ajaxConfig.headers) {
-    cmds.push(`-H  '${header} : ${ajaxConfig.headers[header]}'`);
+  segments.push("-X", ajaxConfig.reqMethod);
+  for (const header in ajaxConfig.headers) {
+    segments.push(`-H  '${header} : ${ajaxConfig.headers[header]}'`);
   }
-  return cmds.join(" ");
+  return segments.join(" ");
 }
