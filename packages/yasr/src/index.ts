@@ -89,6 +89,27 @@ export class Yasr extends EventEmitter {
       }
     }
   }
+
+  /**
+   * Ask the [[ Config.errorRenderers | configured error renderers ]] for a
+   * custom rendering of [[`error`]].
+   *
+   * @param  error the error for which to find a custom rendering
+   * @return       the first custom rendering found, or `undefined` if none was found.
+   */
+  public async renderError(error: Parser.ErrorSummary): Promise<HTMLElement | undefined> {
+    // Chain the errorRenderers to get the first special rendering of the error
+    // if no special rendering is found, return undefined
+    let element: HTMLElement | undefined = undefined;
+    if (this.config.errorRenderers !== undefined) {
+      for (let i in this.config.errorRenderers) {
+        element = await this.config.errorRenderers[i](error);
+        if (element !== undefined) break; // we found the first special case, so return that!
+      }
+    }
+    return element;
+  }
+
   public getStorageId(label: string, getter?: Config["persistenceId"]): string | undefined {
     const persistenceId = getter || this.config.persistenceId;
     if (!persistenceId) return;
@@ -190,13 +211,14 @@ export class Yasr extends EventEmitter {
       const plugin = this.plugins[pluginToDraw];
       let initPromise = plugin.initialize ? plugin.initialize() : Promise.resolve();
       initPromise.then(
-        () => {
+        async () => {
           if (pluginToDraw) {
-            //make sure to clear the object _here_
-            //otherwise we run into race conditions when draw is executed shortly after each other, and the plugin uses an initialize function
-            //as a result, things can be rendered _twice_
+            // make sure to clear the object _here_
+            // otherwise we run into race conditions when draw is executed
+            // shortly after each other, and the plugin uses an initialize function
+            // as a result, things can be rendered _twice_
             while (this.resultsEl.firstChild) this.resultsEl.firstChild.remove();
-            this.plugins[pluginToDraw].draw(this.config.plugins[pluginToDraw].dynamicConfig);
+            await this.plugins[pluginToDraw].draw(this.config.plugins[pluginToDraw].dynamicConfig);
             this.emit("drawn", this, this.plugins[pluginToDraw]);
             this.updateExportHeaders();
             this.updatePluginSelectors(compatiblePlugins);
@@ -555,6 +577,13 @@ export interface Config {
   defaultPlugin: string;
 
   prefixes: Prefixes | ((yasr: Yasr) => Prefixes);
+
+  /**
+   * Custom renderers for errors.
+   * Allow multiple to be able to add new custom renderers without having to
+   * overwrite or explicitly call previously added or default ones.
+   */
+  errorRenderers?: ((error: Parser.ErrorSummary) => Promise<HTMLElement | undefined>)[];
 }
 
 export function registerPlugin(name: string, plugin: typeof Plugin, enable = true) {

@@ -8,7 +8,7 @@ export interface Plugin<Opts extends any> {
 
   initialize?(): Promise<void>;
   destroy?(): void;
-  draw(persistentConfig: any, runtimeConfig?: any): void;
+  draw(persistentConfig: any, runtimeConfig?: any): Promise<void> | void;
   getIcon(): Element | undefined;
   download?(): DownloadInfo | undefined;
   helpReference?: string;

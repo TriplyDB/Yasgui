@@ -3,18 +3,13 @@
  */
 import { Plugin } from "../";
 import Yasr from "../../";
-import Parser from "../../parsers";
 require("./index.scss");
-export interface PluginConfig {
-  renderError?: (error: Parser.ErrorSummary) => HTMLElement;
-}
 
-export default class Error implements Plugin<PluginConfig> {
+export default class Error implements Plugin<never> {
   private yasr: Yasr;
-  public options: PluginConfig;
+  public options: never;
   constructor(yasr: Yasr) {
     this.yasr = yasr;
-    this.options = Error.defaults;
   }
   canHandleResults() {
     return !!this.yasr.results && !!this.yasr.results.getError();
@@ -59,7 +54,7 @@ export default class Error implements Plugin<PluginConfig> {
     corsEl.appendChild(list);
     return corsEl;
   }
-  draw() {
+  async draw() {
     const el = document.createElement("div");
     el.className = "errorResult";
     this.yasr.resultsEl.appendChild(el);
@@ -69,18 +64,18 @@ export default class Error implements Plugin<PluginConfig> {
     const header = document.createElement("div");
     header.className = "errorHeader";
     el.appendChild(header);
-    const renderError = this.options.renderError;
-    if (renderError) {
-      const newMessage = renderError(error);
-      if (newMessage) {
-        const customMessage = document.createElement("div");
-        customMessage.className = "redOutline";
-        customMessage.appendChild(newMessage);
-        el.appendChild(customMessage);
-        return;
-      }
+
+    // Try whether a custom rendering of the error exists
+    const newMessage = await this.yasr.renderError(error);
+    if (newMessage) {
+      const customMessage = document.createElement("div");
+      customMessage.className = "redOutline";
+      customMessage.appendChild(newMessage);
+      el.appendChild(customMessage);
+      return;
     }
 
+    // No custom rendering? Let's render it ourselves!
     if (error.status) {
       var statusText = "Error";
       if (error.statusText && error.statusText.length < 100) {
@@ -116,5 +111,4 @@ export default class Error implements Plugin<PluginConfig> {
   }
   priority = 20;
   hideFromSelection = true;
-  public static defaults: PluginConfig = {};
 }

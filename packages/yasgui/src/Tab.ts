@@ -407,8 +407,44 @@ export class Tab extends EventEmitter {
     }
     this.emit("change", this, this.persistentJson);
   };
+
+  public async renderSameOriginPolicyError(error: Parser.ErrorSummary): Promise<HTMLElement | undefined> {
+    if (!error.status) {
+      // Only show this custom error if
+      const shouldReferToHttp =
+        new URL(this.getEndpoint()).protocol === "http:" && window.location.protocol === "https:";
+      if (shouldReferToHttp) {
+        const errorEl = document.createElement("div");
+        const errorSpan = document.createElement("p");
+        errorSpan.innerHTML = `You are trying to query an HTTP endpoint (<a href="${this.getEndpoint()}" target="_blank" rel="noopener noreferrer">${this.getEndpoint()}</a>) from an HTTP<strong>S</strong> website (<a href="${
+          window.location.href
+        }">${
+          window.location.href
+        }</a>).<br>This is not allowed in modern browsers, see <a target="_blank" rel="noopener noreferrer" href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy</a>.`;
+        if (this.yasgui.config.nonSslDomain) {
+          const errorLink = document.createElement("p");
+          errorLink.innerHTML = `As a workaround, you can use the HTTP version of Yasgui instead: <a href="${this.getShareableLink(
+            this.yasgui.config.nonSslDomain
+          )}" target="_blank">${this.yasgui.config.nonSslDomain}</a>`;
+          errorSpan.appendChild(errorLink);
+        }
+        errorEl.appendChild(errorSpan);
+        return errorEl;
+      }
+    }
+  }
+
   private initYasr() {
     if (!this.yasrWrapperEl) throw new Error("Wrapper for yasr does not exist");
+
+    // Our own custom error renderer
+    let errorRenderers = [this.renderSameOriginPolicyError];
+
+    // Add the default renderers at the end
+    if (Yasr.defaults.errorRenderers !== undefined) {
+      errorRenderers = errorRenderers.concat(Yasr.defaults.errorRenderers);
+    }
+
     const yasrConf: Partial<YasrConfig> = {
       persistenceId: null, //yasgui handles persistent storing
       prefixes: () => this.yasqe?.getPrefixesFromQuery() || {},
@@ -424,35 +460,11 @@ export class Tab extends EventEmitter {
       plugins: mapValues(this.persistentJson.yasr.settings.pluginsConfig, (conf) => ({
         dynamicConfig: conf,
       })),
+      errorRenderers: errorRenderers,
     };
 
     this.yasr = new Yasr(this.yasrWrapperEl, yasrConf, this.persistentJson.yasr.response);
 
-    this.yasr.plugins["error"].options.renderError = (error: Parser.ErrorSummary) => {
-      if (!error.status) {
-        // Only show this custom error if
-        const shouldReferToHttp =
-          new URL(this.getEndpoint()).protocol === "http:" && window.location.protocol === "https:";
-        if (shouldReferToHttp) {
-          const errorEl = document.createElement("div");
-          const errorSpan = document.createElement("p");
-          errorSpan.innerHTML = `You are trying to query an HTTP endpoint (<a href="${this.getEndpoint()}" target="_blank" rel="noopener noreferrer">${this.getEndpoint()}</a>) from an HTTP<strong>S</strong> website (<a href="${
-            window.location.href
-          }">${
-            window.location.href
-          }</a>).<br>This is not allowed in modern browsers, see <a target="_blank" rel="noopener noreferrer" href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy</a>.`;
-          if (this.yasgui.config.nonSslDomain) {
-            const errorLink = document.createElement("p");
-            errorLink.innerHTML = `As a workaround, you can use the HTTP version of Yasgui instead: <a href="${this.getShareableLink(
-              this.yasgui.config.nonSslDomain
-            )}" target="_blank">${this.yasgui.config.nonSslDomain}</a>`;
-            errorSpan.appendChild(errorLink);
-          }
-          errorEl.appendChild(errorSpan);
-          return errorEl;
-        }
-      }
-    };
     //populate our own persistent config
     this.persistentJson.yasr.settings = this.yasr.getPersistentConfig();
     this.yasr.on("change", () => {
