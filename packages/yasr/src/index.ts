@@ -102,8 +102,8 @@ export class Yasr extends EventEmitter {
     // if no special rendering is found, return undefined
     let element: HTMLElement | undefined = undefined;
     if (this.config.errorRenderers !== undefined) {
-      for (let i in this.config.errorRenderers) {
-        element = await this.config.errorRenderers[i](error);
+      for (const renderer of this.config.errorRenderers) {
+        element = await renderer(error);
         if (element !== undefined) break; // we found the first special case, so return that!
       }
     }

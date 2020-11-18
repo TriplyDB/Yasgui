@@ -437,14 +437,6 @@ export class Tab extends EventEmitter {
   private initYasr() {
     if (!this.yasrWrapperEl) throw new Error("Wrapper for yasr does not exist");
 
-    // Our own custom error renderer
-    let errorRenderers = [this.renderSameOriginPolicyError];
-
-    // Add the default renderers at the end
-    if (Yasr.defaults.errorRenderers !== undefined) {
-      errorRenderers = errorRenderers.concat(Yasr.defaults.errorRenderers);
-    }
-
     const yasrConf: Partial<YasrConfig> = {
       persistenceId: null, //yasgui handles persistent storing
       prefixes: () => this.yasqe?.getPrefixesFromQuery() || {},
@@ -460,7 +452,12 @@ export class Tab extends EventEmitter {
       plugins: mapValues(this.persistentJson.yasr.settings.pluginsConfig, (conf) => ({
         dynamicConfig: conf,
       })),
-      errorRenderers: errorRenderers,
+      errorRenderers: [
+        // Use custom error renderer
+        this.renderSameOriginPolicyError,
+        // Add default renderers to the end, to give our custom ones priority.
+        ...(Yasr.defaults.errorRenderers || []),
+      ],
     };
 
     this.yasr = new Yasr(this.yasrWrapperEl, yasrConf, this.persistentJson.yasr.response);
