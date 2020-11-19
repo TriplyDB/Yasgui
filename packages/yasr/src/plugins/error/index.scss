@@ -1,5 +1,6 @@
 .yasr {
   .errorResult {
+    padding: 10px;
     .errorHeader {
       // display:flex;
       overflow: hidden;
@@ -25,9 +26,9 @@
       }
     }
 
-    padding: 10px;
-
     pre {
+      max-width: 100%;
+      overflow: auto;
       display: block;
       padding: 10px;
       margin: 10px 0 10px;
