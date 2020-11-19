@@ -3,6 +3,7 @@
  */
 import { Plugin } from "../";
 import Yasr from "../../";
+import { addClass } from "@triply/yasgui-utils";
 require("./index.scss");
 
 export default class Error implements Plugin<never> {
@@ -94,9 +95,13 @@ export default class Error implements Plugin<never> {
       }
 
       if (error.text) {
+        const textContainer = document.createElement("div");
+        addClass(textContainer, "errorMessageContainer");
+        el.appendChild(textContainer);
         const errTextEl = document.createElement("pre");
+        addClass(errTextEl, "errorMessage");
         errTextEl.textContent = error.text;
-        el.appendChild(errTextEl);
+        textContainer.appendChild(errTextEl);
       }
     } else {
       if (this.yasr.config.getPlainQueryLinkToEndpoint) {
