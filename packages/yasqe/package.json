@@ -5,7 +5,7 @@
   "main": "build/yasqe.min.js",
   "types": "build/ts/src/index.d.ts",
   "license": "MIT",
-  "author": "Laurens Rietveld",
+  "author": "Triply <info@triply.cc>",
   "homepage": "https://github.com/TriplyDB/yasgui",
   "engines": {
     "node": ">= 8"
@@ -16,13 +16,6 @@
     "Editor",
     "Semantic Web",
     "Linked Data"
-  ],
-  "maintainers": [
-    {
-      "name": "Laurens Rietveld",
-      "email": "laurens.rietveld@triply.cc",
-      "web": "https://triply.cc"
-    }
   ],
   "bugs": "https://github.com/TriplyDB/yasgui/issues/",
   "repository": {
