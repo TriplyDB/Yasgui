@@ -45,7 +45,7 @@
     "@triply/yasgui": "4.x"
   },
   "devDependencies": {
-    "@types/codemirror": "0.0.97",
+    "@types/codemirror": "0.0.100",
     "@types/datatables.net": "^1.10.18",
     "@types/dompurify": "^2.0.1",
     "@types/jquery": "^3.5.0",
