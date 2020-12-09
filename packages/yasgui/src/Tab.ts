@@ -231,7 +231,7 @@ export class Tab extends EventEmitter {
   public updateContextMenu(): void {
     this.getTabListEl().redrawContextMenu();
   }
-  private getShareableLink(baseURL?: string): string {
+  public getShareableLink(baseURL?: string): string {
     return shareLink.createShareLink(baseURL || window.location.href, this);
   }
   public getShareObject() {
@@ -408,32 +408,6 @@ export class Tab extends EventEmitter {
     this.emit("change", this, this.persistentJson);
   };
 
-  public async renderSameOriginPolicyError(error: Parser.ErrorSummary): Promise<HTMLElement | undefined> {
-    if (!error.status) {
-      // Only show this custom error if
-      const shouldReferToHttp =
-        new URL(this.getEndpoint()).protocol === "http:" && window.location.protocol === "https:";
-      if (shouldReferToHttp) {
-        const errorEl = document.createElement("div");
-        const errorSpan = document.createElement("p");
-        errorSpan.innerHTML = `You are trying to query an HTTP endpoint (<a href="${this.getEndpoint()}" target="_blank" rel="noopener noreferrer">${this.getEndpoint()}</a>) from an HTTP<strong>S</strong> website (<a href="${
-          window.location.href
-        }">${
-          window.location.href
-        }</a>).<br>This is not allowed in modern browsers, see <a target="_blank" rel="noopener noreferrer" href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy</a>.`;
-        if (this.yasgui.config.nonSslDomain) {
-          const errorLink = document.createElement("p");
-          errorLink.innerHTML = `As a workaround, you can use the HTTP version of Yasgui instead: <a href="${this.getShareableLink(
-            this.yasgui.config.nonSslDomain
-          )}" target="_blank">${this.yasgui.config.nonSslDomain}</a>`;
-          errorSpan.appendChild(errorLink);
-        }
-        errorEl.appendChild(errorSpan);
-        return errorEl;
-      }
-    }
-  }
-
   private initYasr() {
     if (!this.yasrWrapperEl) throw new Error("Wrapper for yasr does not exist");
 
@@ -454,7 +428,7 @@ export class Tab extends EventEmitter {
       })),
       errorRenderers: [
         // Use custom error renderer
-        this.renderSameOriginPolicyError,
+        getCorsErrorRenderer(this),
         // Add default renderers to the end, to give our custom ones priority.
         ...(Yasr.defaults.errorRenderers || []),
       ],
@@ -501,3 +475,31 @@ export class Tab extends EventEmitter {
 }
 
 export default Tab;
+
+function getCorsErrorRenderer(tab: Tab) {
+  return async (error: Parser.ErrorSummary): Promise<HTMLElement | undefined> => {
+    if (!error.status) {
+      // Only show this custom error if
+      const shouldReferToHttp =
+        new URL(tab.getEndpoint()).protocol === "http:" && window.location.protocol === "https:";
+      if (shouldReferToHttp) {
+        const errorEl = document.createElement("div");
+        const errorSpan = document.createElement("p");
+        errorSpan.innerHTML = `You are trying to query an HTTP endpoint (<a href="${tab.getEndpoint()}" target="_blank" rel="noopener noreferrer">${tab.getEndpoint()}</a>) from an HTTP<strong>S</strong> website (<a href="${
+          window.location.href
+        }">${
+          window.location.href
+        }</a>).<br>This is not allowed in modern browsers, see <a target="_blank" rel="noopener noreferrer" href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy</a>.`;
+        if (tab.yasgui.config.nonSslDomain) {
+          const errorLink = document.createElement("p");
+          errorLink.innerHTML = `As a workaround, you can use the HTTP version of Yasgui instead: <a href="${tab.getShareableLink(
+            tab.yasgui.config.nonSslDomain
+          )}" target="_blank">${tab.yasgui.config.nonSslDomain}</a>`;
+          errorSpan.appendChild(errorLink);
+        }
+        errorEl.appendChild(errorSpan);
+        return errorEl;
+      }
+    }
+  };
+}
