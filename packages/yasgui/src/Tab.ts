@@ -394,6 +394,10 @@ export class Tab extends EventEmitter {
   };
   handleQueryResponse = (_yasqe: Yasqe, response: any, duration: number) => {
     this.emit("queryResponse", this);
+    if (response instanceof Error && response.message === "Aborted") {
+      //The query was aborted. We should not do or draw anything
+      return;
+    }
     if (!this.yasr) throw new Error("Resultset visualizer not initialized. Cannot draw results");
     this.yasr.setResponse(response, duration);
     if (!this.yasr.results) return;
