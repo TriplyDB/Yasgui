@@ -78,7 +78,11 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
         return result.body;
       },
       (e) => {
-        yasqe.emit("queryResponse", e, Date.now() - queryStart);
+        if (e instanceof Error && e.message === "Aborted") {
+          //The query was aborted. We should not do or draw anything
+        } else {
+          yasqe.emit("queryResponse", e, Date.now() - queryStart);
+        }
         yasqe.emit("error", e);
         throw e;
       }
