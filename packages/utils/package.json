@@ -1,6 +1,6 @@
 {
   "name": "@triply/yasgui-utils",
-  "version": "4.2.1",
+  "version": "4.2.4",
   "description": "Utils for YASGUI libs",
   "main": "build/index.min.js",
   "types": "build/ts/src/index.d.ts",
