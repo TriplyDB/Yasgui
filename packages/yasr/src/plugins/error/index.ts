@@ -108,12 +108,12 @@ export default class Error implements Plugin<never> {
         const link = this.yasr.config.getPlainQueryLinkToEndpoint();
         if (link) header.appendChild(this.getTryBtn(link));
       }
-      if (error.text) {
+      if (!error.text || error.text.indexOf("Request has been terminated") >= 0) {
+        el.appendChild(this.getCorsMessage());
+      } else {
         const errTextEl = document.createElement("pre");
         errTextEl.textContent = error.text;
         el.appendChild(errTextEl);
-      } else {
-        el.appendChild(this.getCorsMessage());
       }
     }
   }
