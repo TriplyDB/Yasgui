@@ -403,7 +403,8 @@ export class Yasqe extends CodeMirror {
      */
     if (this.req && this.queryBtn.className.indexOf("busy") < 0) {
       this.queryBtn.className = this.queryBtn.className += " busy";
-    } else {
+    }
+    if (!this.req && this.queryBtn.className.indexOf("busy") >= 0) {
       this.queryBtn.className = this.queryBtn.className.replace("busy", "");
     }
   }
