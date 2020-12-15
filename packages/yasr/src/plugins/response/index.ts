@@ -51,7 +51,7 @@ export default class Response implements Plugin<PluginConfig> {
   public getIcon() {
     return drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faAlignIcon));
   }
-  download() {
+  download(filename?: string) {
     if (!this.yasr.results) return;
     const contentType = this.yasr.results.getContentType();
     const type = this.yasr.results.getType();
@@ -59,7 +59,7 @@ export default class Response implements Plugin<PluginConfig> {
       getData: () => {
         return this.yasr.results?.getOriginalResponseAsString() || "";
       },
-      filename: "queryResults" + (type ? "." + type : ""),
+      filename: `${filename || "queryResults"}${type ? "." + type : ""}`,
       contentType: contentType ? contentType : "text/plain",
       title: "Download result",
     };

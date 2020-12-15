@@ -4,7 +4,7 @@ import { TabListEl } from "./TabElements";
 import TabPanel from "./TabPanel";
 import { default as Yasqe, RequestConfig, PlainRequestConfig, PartialConfig as YasqeConfig } from "@triply/yasqe";
 import { default as Yasr, Parser, Config as YasrConfig, PersistentConfig as YasrPersistentConfig } from "@triply/yasr";
-import { mapValues, eq, mergeWith } from "lodash-es";
+import { mapValues, eq, mergeWith, words, deburr } from "lodash-es";
 import * as shareLink from "./linkUtils";
 import EndpointSelect from "./endpointSelect";
 import * as superagent from "superagent";
@@ -433,6 +433,10 @@ export class Tab extends EventEmitter {
         ...(Yasr.defaults.errorRenderers || []),
       ],
     };
+    // Allow getDownloadFilName to be overwritten by the global config
+    if (yasrConf.getDownloadFileName === undefined) {
+      yasrConf.getDownloadFileName = () => words(deburr(this.getName())).join("-");
+    }
 
     this.yasr = new Yasr(this.yasrWrapperEl, yasrConf, this.persistentJson.yasr.response);
 

@@ -421,7 +421,7 @@ export class Yasr extends EventEmitter {
       this.downloadBtn.title = "";
       const plugin = this.plugins[this.drawnPlugin];
       if (plugin && plugin.download) {
-        const downloadInfo = plugin.download();
+        const downloadInfo = plugin.download(this.config.getDownloadFileName?.());
         removeClass(this.downloadBtn, "disabled");
         if (downloadInfo) {
           if (downloadInfo.title) this.downloadBtn.title = downloadInfo.title;
@@ -447,7 +447,7 @@ export class Yasr extends EventEmitter {
     if (!this.drawnPlugin) return;
     const currentPlugin = this.plugins[this.drawnPlugin];
     if (currentPlugin && currentPlugin.download) {
-      const downloadInfo = currentPlugin.download();
+      const downloadInfo = currentPlugin.download(this.config.getDownloadFileName?.());
       if (!downloadInfo) return;
       const downloadUrl = this.stringToBlob(
         downloadInfo.getData(),
@@ -572,6 +572,7 @@ export interface Config {
   maxPersistentResponseSize: number;
   persistencyExpire: number;
   getPlainQueryLinkToEndpoint: (() => string | undefined) | undefined;
+  getDownloadFileName?: () => string | undefined;
   plugins: { [pluginName: string]: PluginConfig };
   pluginOrder: string[];
   defaultPlugin: string;

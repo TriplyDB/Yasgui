@@ -231,12 +231,12 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableControls.appendChild(pageSizerWrapper);
     this.yasr.pluginControls.appendChild(this.tableControls);
   }
-  download() {
+  download(filename?: string) {
     return {
       getData: () => this.yasr.results?.asCsv() || "",
       contentType: "text/csv",
       title: "Download result",
-      filename: "queryResults.csv",
+      filename: `${filename || "queryResults"}.csv`,
     } as DownloadInfo;
   }
 
