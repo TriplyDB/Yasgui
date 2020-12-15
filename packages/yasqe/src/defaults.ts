@@ -129,7 +129,7 @@ SELECT * WHERE {
     queryArgument: undefined, //undefined means: get query argument based on query mode
     endpoint: "https://dbpedia.org/sparql",
     method: "POST",
-    acceptHeaderGraph: "text/turtle,*/*;q=0.9",
+    acceptHeaderGraph: "application/n-triples,*/*;q=0.9",
     acceptHeaderSelect: "application/sparql-results+json,*/*;q=0.9",
     acceptHeaderUpdate: "text/plain,*/*;q=0.9",
     namedGraphs: [],
