@@ -55,11 +55,12 @@ export default class Response implements Plugin<PluginConfig> {
     if (!this.yasr.results) return;
     const contentType = this.yasr.results.getContentType();
     const type = this.yasr.results.getType();
+    const extension = type === "xml" ? "rdf" : type;
     return {
       getData: () => {
         return this.yasr.results?.getOriginalResponseAsString() || "";
       },
-      filename: `${filename || "queryResults"}${type ? "." + type : ""}`,
+      filename: `${filename || "queryResults"}${extension ? "." + extension : ""}`,
       contentType: contentType ? contentType : "text/plain",
       title: "Download result",
     };
