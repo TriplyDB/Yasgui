@@ -12,6 +12,7 @@ import { Plugin, DownloadInfo } from "../";
 import Yasr from "../../";
 import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg, addClass, removeClass } from "@triply/yasgui-utils";
 import * as faTableIcon from "@fortawesome/free-solid-svg-icons/faTable";
+import { cloneDeep } from "lodash-es";
 
 const ColumnResizer = require("column-resizer");
 const DEFAULT_PAGE_SIZE = 50;
@@ -42,7 +43,7 @@ export default class Table implements Plugin<PluginConfig> {
   constructor(yasr: Yasr) {
     this.yasr = yasr;
     //TODO read options from constructor
-    this.config = Table.defaults;
+    this.config = cloneDeep(Table.defaults);
   }
   public static defaults: PluginConfig = {
     openIriInNewWindow: true,

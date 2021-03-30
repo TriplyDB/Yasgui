@@ -19,6 +19,8 @@ import { drawSvgStringAsElement, addClass, removeClass, drawFontAwesomeIconAsSvg
 import * as faAlignIcon from "@fortawesome/free-solid-svg-icons/faAlignLeft";
 
 import * as imgs from "../../imgs";
+import { cloneDeep } from "lodash-es";
+
 export interface PluginConfig {
   maxLines: number;
 }
@@ -32,7 +34,7 @@ export default class Response implements Plugin<PluginConfig> {
   private cm: CodeMirror.Editor | undefined;
   constructor(yasr: Yasr) {
     this.yasr = yasr;
-    this.config = Response.defaults;
+    this.config = cloneDeep(Response.defaults);
     if (yasr.config.plugins["response"] && yasr.config.plugins["response"].dynamicConfig) {
       this.config = {
         ...this.config,
