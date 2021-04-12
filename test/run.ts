@@ -15,7 +15,7 @@ declare var window: Window & {
   yasqe: Yasqe;
 };
 
-describe("Yasqe", function() {
+describe("Yasqe", function () {
   // Define global variables
   let browser: puppeteer.Browser;
   let page: puppeteer.Page;
@@ -30,7 +30,7 @@ describe("Yasqe", function() {
     await page.keyboard.type(text);
     await page.waitForFunction(`window.yasqe.getValue().indexOf("${text}") >= 0`, { timeout: 600 });
   }
-  before(async function() {
+  before(async function () {
     const refs = await setup(this, path.resolve("./build"));
     browser = refs.browser;
     server = refs.server;
@@ -45,11 +45,11 @@ describe("Yasqe", function() {
     await closePage(this, page);
   });
 
-  after(async function() {
+  after(async function () {
     return destroy(browser, server);
   });
 
-  it("get a value", async function() {
+  it("get a value", async function () {
     const value = await page.evaluate(() => {
       return window.yasqe.getValue();
     });
@@ -74,8 +74,8 @@ describe("Yasqe", function() {
     await page.keyboard.up("Control");
   }
 
-  describe("Autoformatting", function() {
-    it("With literal", async function() {
+  describe("Autoformatting", function () {
+    it("With literal", async function () {
       const value = await page.evaluate(() => {
         window.yasqe.setValue(
           `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> select * {   ?a rdf:b ?c ;     rdf:d "e" ;     rdf:f rdf:g .}`
@@ -90,7 +90,7 @@ select * {
      rdf:f rdf:g .
 }`);
     });
-    it("With group concat", async function() {
+    it("With group concat", async function () {
       const value = await page.evaluate(() => {
         window.yasqe.setValue(`select (group_concat(str(?a); separator='" "') as ?b) { }`);
         window.yasqe.autoformat();
@@ -100,10 +100,10 @@ select * {
 }`);
     });
   });
-  describe("Autoadd prefixes", function() {
+  describe("Autoadd prefixes", function () {
     //note: this test also covers the infinite loop issue described here:
     //https://github.com/TriplyDB/YASGUI.YASQE/issues/135
-    it("Should autoadd foaf prefix", async function() {
+    it("Should autoadd foaf prefix", async function () {
       await page.evaluate(() => {
         const query = `# prefix #
 PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
@@ -119,7 +119,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
           return window.yasqe.getValue().indexOf("PREFIX foaf: <http://xmlns.com/foaf/0.1/>") >= 0;
         },
         {
-          polling: 10
+          polling: 10,
         }
       );
     });
@@ -139,7 +139,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
           return window.yasqe.getValue().indexOf("PREFIX testa: <https://test.a.com/>") >= 0;
         },
         {
-          polling: 10
+          polling: 10,
         }
       );
       //Note from Laurens: This is an invalid test. We should not expect a popup here (this is the property-autocompleter).
@@ -185,7 +185,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       }
     });
   });
-  describe("Autocompleting", function() {
+  describe("Autocompleting", function () {
     const getCompleteToken = () => {
       return page.evaluate(() => window.yasqe.getCompleteToken());
     };
@@ -400,7 +400,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
     /**
      * This test is tricky, as it uses the LOV API in our test. I.e, if this test fails, first check whether LOV is actually up
      */
-    describe("Async property autocompletion", function() {
+    describe("Async property autocompletion", function () {
       function focusOnAutocompletionPos() {
         return page.evaluate(() => {
           const query = `PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where {?x geo: ?y}`;
@@ -431,7 +431,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         expect(newResults).is.lessThan(allInitialResults || 0);
       });
 
-      it("Should not append the string we just typed (#1479)", async function() {
+      it("Should not append the string we just typed (#1479)", async function () {
         /**
          * Set the new query, and focus on location where we want to autocomplete
          */
@@ -470,7 +470,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
           `PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where {?x geo:asWKT ?y}`
         );
       });
-      it("Should only include matching strings", async function() {
+      it("Should only include matching strings", async function () {
         /**
          * Set the new query, and focus on location where we want to autocomplete
          */
@@ -509,7 +509,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         );
       });
     });
-    describe("Async class autocompletion", function() {
+    describe("Async class autocompletion", function () {
       function focusOnAutocompletionPos() {
         return page.evaluate(() => {
           const query = `PREFIX testb: <https://test.b.com/> select * where {?x a <htt`;
@@ -519,7 +519,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
           return window.yasqe.getDoc().getCursor();
         });
       }
-      it("Should use correct token for autocompleting classes (#1852)", async function() {
+      it("Should use correct token for autocompleting classes (#1852)", async function () {
         /**
          * Set the new query, and focus on location where we want to autocomplete
          */
@@ -557,7 +557,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         await page.waitFor(`.CodeMirror-hints`);
       });
     });
-    describe("Async prefix autocompletion", function() {
+    describe("Async prefix autocompletion", function () {
       function focusOnAutocompletionPos() {
         return page.evaluate(() => {
           window.yasqe.setValue("");
@@ -567,7 +567,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         });
       }
 
-      it("Should autocomplete", async function() {
+      it("Should autocomplete", async function () {
         // await inspectLive(this)
         /**
          * Set the new query, and focus on location where we want to autocomplete
@@ -588,7 +588,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
          */
         await type("esta");
 
-        const filteredResults = await waitForAutocompletionPopup();
+        const filteredResults = await waitForAutocompletionPopup(3);
         expect(filteredResults).to.equal(1);
         /**
          * Select the first suggestion
@@ -603,9 +603,9 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       });
     });
 
-    describe("Single line autocompletion", function() {
+    describe("Single line autocompletion", function () {
       async function executeFirstLineAutocompletion(query: string) {
-        await page.evaluate(query => {
+        await page.evaluate((query) => {
           window.yasqe.setValue(query);
           window.yasqe.focus();
           window.yasqe.getDoc().setCursor(1, 0);
@@ -619,7 +619,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         return page.evaluate(() => window.yasqe.getValue());
       }
 
-      it("Should autocomplete with multiple statements on one line", async function() {
+      it("Should autocomplete with multiple statements on one line", async function () {
         const query = `SELECT * WHERE {
           ?a <somwething.something.without.bbc.url> ?b. ?a <http
         }`;
@@ -627,7 +627,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         expect(autocompletedQuery).to.contain("<http://www.opengis.net/ont/geosparql#defaultGeometry>");
       });
 
-      it("Should autocomplete with single-line Predicate-Object lists", async function() {
+      it("Should autocomplete with single-line Predicate-Object lists", async function () {
         const query = `SELECT * WHERE {
           ?a <somwething.something.without.bbc.url> ?b ; <http
         }`;
@@ -635,7 +635,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         expect(autocompletedQuery).to.contain("<http://www.opengis.net/ont/geosparql#defaultGeometry>");
       });
 
-      it("Should autocomplete with single-line Object lists", async function() {
+      it("Should autocomplete with single-line Object lists", async function () {
         const query = `SELECT * WHERE {
           ?a a ?b, <http
         }`;
