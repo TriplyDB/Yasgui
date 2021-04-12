@@ -17,9 +17,8 @@ require("codemirror/mode/javascript/javascript.js");
 require("codemirror/lib/codemirror.css");
 import { drawSvgStringAsElement, addClass, removeClass, drawFontAwesomeIconAsSvg } from "@triply/yasgui-utils";
 import * as faAlignIcon from "@fortawesome/free-solid-svg-icons/faAlignLeft";
-
+import { DeepReadonly } from "ts-essentials";
 import * as imgs from "../../imgs";
-import { cloneDeep } from "lodash-es";
 
 export interface PluginConfig {
   maxLines: number;
@@ -29,12 +28,12 @@ export default class Response implements Plugin<PluginConfig> {
   label = "Response";
   priority = 2;
   helpReference = "https://triply.cc/docs/yasgui#response";
-  private config: PluginConfig;
+  private config: DeepReadonly<PluginConfig>;
   private overLay: HTMLDivElement | undefined;
   private cm: CodeMirror.Editor | undefined;
   constructor(yasr: Yasr) {
     this.yasr = yasr;
-    this.config = cloneDeep(Response.defaults);
+    this.config = Response.defaults;
     if (yasr.config.plugins["response"] && yasr.config.plugins["response"].dynamicConfig) {
       this.config = {
         ...this.config,
@@ -67,12 +66,16 @@ export default class Response implements Plugin<PluginConfig> {
       title: "Download result",
     };
   }
-  draw() {
+  draw(persistentConfig: PluginConfig) {
+    const config = {
+      ...this.config,
+      ...persistentConfig,
+    };
     // When the original response is empty, use an empty string
     let value = this.yasr.results?.getOriginalResponseAsString() || "";
     const lines = value.split("\n");
-    if (lines.length > this.config.maxLines) {
-      value = lines.slice(0, this.config.maxLines).join("\n");
+    if (lines.length > config.maxLines) {
+      value = lines.slice(0, config.maxLines).join("\n");
     }
 
     const codemirrorOpts: Partial<CodeMirror.EditorConfiguration> = {
@@ -90,7 +93,7 @@ export default class Response implements Plugin<PluginConfig> {
 
     this.cm = CodeMirror(this.yasr.resultsEl, codemirrorOpts);
     // Don't show less originally we've already set the value in the codemirrorOpts
-    if (lines.length > this.config.maxLines) this.showLess(false);
+    if (lines.length > config.maxLines) this.showLess(false);
   }
   private limitData(value: string) {
     const lines = value.split("\n");

@@ -12,6 +12,7 @@ import { Plugin, DownloadInfo } from "../";
 import Yasr from "../../";
 import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg, addClass, removeClass } from "@triply/yasgui-utils";
 import * as faTableIcon from "@fortawesome/free-solid-svg-icons/faTable";
+import { DeepReadonly } from "ts-essentials";
 import { cloneDeep } from "lodash-es";
 
 const ColumnResizer = require("column-resizer");
@@ -27,7 +28,7 @@ export interface PersistentConfig {
 }
 
 export default class Table implements Plugin<PluginConfig> {
-  private config: PluginConfig;
+  private config: DeepReadonly<PluginConfig>;
   private persistentConfig: PersistentConfig = {};
   private yasr: Yasr;
   private tableControls: Element | undefined;
@@ -43,7 +44,7 @@ export default class Table implements Plugin<PluginConfig> {
   constructor(yasr: Yasr) {
     this.yasr = yasr;
     //TODO read options from constructor
-    this.config = cloneDeep(Table.defaults);
+    this.config = Table.defaults;
   }
   public static defaults: PluginConfig = {
     openIriInNewWindow: true,
@@ -164,14 +165,13 @@ export default class Table implements Plugin<PluginConfig> {
       this.dataTable = undefined;
     }
     this.yasr.resultsEl.appendChild(table);
-
     // reset some default config properties as they couldn't be initialized beforehand
-    this.config.tableConfig.pageLength =
-      persistentConfig && persistentConfig.pageSize ? persistentConfig.pageSize : DEFAULT_PAGE_SIZE;
-    this.config.tableConfig.data = rows;
-    this.config.tableConfig.columns = columns;
-
-    const dtConfig: DataTables.Settings = { ...this.config.tableConfig };
+    const dtConfig: DataTables.Settings = {
+      ...((cloneDeep(this.config.tableConfig) as unknown) as DataTables.Settings),
+      pageLength: persistentConfig?.pageSize ? persistentConfig.pageSize : DEFAULT_PAGE_SIZE,
+      data: rows,
+      columns: columns,
+    };
     this.dataTable = $(table).DataTable(dtConfig);
     // .api();
     new ColumnResizer.default(table, { widths: [], partialRefresh: true });
