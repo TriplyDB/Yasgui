@@ -1,7 +1,7 @@
 {
   "name": "@triply/yasr",
   "description": "Yet Another SPARQL Resultset GUI",
-  "version": "4.2.9",
+  "version": "4.2.10",
   "main": "build/yasr.min.js",
   "types": "build/ts/src/index.d.ts",
   "license": "MIT",
