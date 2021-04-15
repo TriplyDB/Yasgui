@@ -67,7 +67,7 @@ export default class Response implements Plugin<PluginConfig> {
     };
   }
   draw(persistentConfig: PluginConfig) {
-    const config = {
+    const config: DeepReadonly<PluginConfig> = {
       ...this.config,
       ...persistentConfig,
     };
