@@ -87,6 +87,13 @@ Delimiters used by datatables
           word-break: break-all;
           hyphens: auto;
         }
+        .tableEllipse {
+          cursor: pointer;
+          font-weight: bold;
+          padding: 0 2px;
+          background-color: #428bca33;
+          border-radius: 2px;
+        }
       }
     }
 

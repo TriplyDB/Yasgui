@@ -21,6 +21,7 @@ const DEFAULT_PAGE_SIZE = 50;
 export interface PluginConfig {
   openIriInNewWindow: boolean;
   tableConfig: DataTables.Settings;
+  ellipseLength: number;
 }
 
 export interface PersistentConfig {
@@ -35,6 +36,8 @@ export default class Table implements Plugin<PluginConfig> {
   private dataTable: DataTables.Api | undefined;
   private tableFilterField: HTMLInputElement | undefined;
   private tableSizeField: HTMLSelectElement | undefined;
+  private expandedCells: { [rowCol: string]: boolean | undefined } = {};
+  private tableResizer: { reset: (options: { disable: boolean }) => void } | undefined;
   public helpReference = "https://triply.cc/docs/yasgui#table";
   public label = "Table";
   public priority = 10;
@@ -48,6 +51,7 @@ export default class Table implements Plugin<PluginConfig> {
   }
   public static defaults: PluginConfig = {
     openIriInNewWindow: true,
+    ellipseLength: 40,
     tableConfig: {
       dom: "tip", //  tip: Table, Page Information and Pager, change to ipt for showing pagination on top
       pageLength: DEFAULT_PAGE_SIZE, //default page length
@@ -67,26 +71,14 @@ export default class Table implements Plugin<PluginConfig> {
       },
     },
   };
-  private getRows(): string[][] {
-    const rows: string[][] = [];
+  private getRows(): [number, ...Parser.BindingValue[]][] {
+    const rows: [number, ...Parser.BindingValue[]][] = [];
 
     if (!this.yasr.results) return [];
     const bindings = this.yasr.results.getBindings();
     if (!bindings) return rows;
-    const vars = this.yasr.results.getVariables();
-    const prefixes = this.yasr.getPrefixes();
     for (let rowId = 0; rowId < bindings.length; rowId++) {
-      const binding = bindings[rowId];
-      const row: string[] = ["<div>" + (rowId + 1) + "</div>"];
-      for (let colId = 0; colId < vars.length; colId++) {
-        const sparqlVar = vars[colId];
-        if (sparqlVar in binding) {
-          row.push(this.getCellContent(binding, sparqlVar, prefixes));
-        } else {
-          row.push("");
-        }
-      }
-      rows.push(row);
+      rows.push([rowId + 1, ...Object.values(bindings[rowId])]);
     }
     return rows;
   }
@@ -108,18 +100,33 @@ export default class Table implements Plugin<PluginConfig> {
       this.config.openIriInNewWindow ? '_blank ref="noopener noreferrer"' : "_self"
     }' href='${href}'>${visibleString}</a>${prefixed ? "" : "&gt;"}`;
   }
-  private getCellContent(bindings: Parser.Binding, sparqlVar: string, prefixes?: { [label: string]: string }): string {
-    const binding = bindings[sparqlVar];
+  private getCellContent(
+    binding: Parser.BindingValue,
+    prefixes?: { [label: string]: string },
+    options?: { ellipse?: boolean }
+  ): string {
     let content: string;
     if (binding.type == "uri") {
       content = this.getUriLinkFromBinding(binding, prefixes);
     } else {
-      content = `<span class='nonIri'>${this.formatLiteral(binding, prefixes)}</span>`;
+      content = `<span class='nonIri'>${this.formatLiteral(binding, prefixes, options)}</span>`;
     }
-    return "<div>" + content + "</div>";
+    return `<div>${content}</div>`;
   }
-  private formatLiteral(literalBinding: any, prefixes?: { [key: string]: string }) {
+  private formatLiteral(
+    literalBinding: Parser.BindingValue,
+    prefixes?: { [key: string]: string },
+    options?: { ellipse?: boolean }
+  ) {
     let stringRepresentation = escape(literalBinding.value);
+    const shouldEllipse = options?.ellipse ?? true;
+    if (shouldEllipse && stringRepresentation.length > this.config.ellipseLength) {
+      const ellipseSize = this.config.ellipseLength / 3;
+      stringRepresentation = `${stringRepresentation.slice(
+        0,
+        ellipseSize
+      )}<a class="tableEllipse" title="Click to expand">...</a>${stringRepresentation.slice(-1 * ellipseSize)}`;
+    }
     if (literalBinding["xml:lang"]) {
       stringRepresentation = `"${stringRepresentation}"<sup>@${literalBinding["xml:lang"]}</sup>`;
     } else if (literalBinding.datatype) {
@@ -129,12 +136,48 @@ export default class Table implements Plugin<PluginConfig> {
     return stringRepresentation;
   }
 
-  private getColumns() {
+  private getColumns(): DataTables.ColumnSettings[] {
     if (!this.yasr.results) return [];
+    const prefixes = this.yasr.getPrefixes();
+
     return [
-      { name: "", searchable: false, width: this.getSizeFirstColumn(), sortable: false }, //prepend with row numbers column
+      {
+        name: "",
+        searchable: false,
+        width: this.getSizeFirstColumn(),
+        orderable: false,
+        render: (data: number, type: any) =>
+          type === "filter" || type === "sort" || !type ? data : `<div>${data}</div>`,
+      }, //prepend with row numbers column
       ...this.yasr.results?.getVariables().map((name) => {
-        return { name: name, title: name };
+        return <DataTables.ColumnSettings>{
+          name: name,
+          title: name,
+          render: (data: Parser.BindingValue, type: any, _row: any, meta: DataTables.CellMetaSettings) => {
+            if (type === "filter" || type === "sort" || !type) return data.value;
+            // Check if we need to show the ellipsed version
+            if (this.expandedCells[`${meta.row}-${meta.col}`]) {
+              return this.getCellContent(data, prefixes, { ellipse: false });
+            }
+            return this.getCellContent(data, prefixes);
+          },
+          createdCell: (cell: Node, cellData: Parser.BindingValue, _rowData: any, row: number, col: number) => {
+            // Ellipsis is only applied on literals variants
+            if (cellData.type === "literal" || cellData.type === "typed-literal") {
+              const ellipseEl = (cell as HTMLTableDataCellElement).querySelector(".tableEllipse");
+              if (ellipseEl)
+                ellipseEl.addEventListener("click", () => {
+                  this.expandedCells[`${row}-${col}`] = true;
+                  // Disable the resizer as it messes with the initial drawing
+                  this.tableResizer?.reset({ disable: true });
+                  // Make the table redraw the cell
+                  this.dataTable?.cell(row, col).invalidate();
+                  // Signal the table to redraw the width of the table
+                  this.dataTable?.columns.adjust();
+                });
+            }
+          },
+        };
       }),
     ];
   }
@@ -152,7 +195,7 @@ export default class Table implements Plugin<PluginConfig> {
     const table = document.createElement("table");
     const rows = this.getRows();
     const columns = this.getColumns();
-
+    this.expandedCells = {};
     if (rows.length <= (persistentConfig?.pageSize || DEFAULT_PAGE_SIZE)) {
       this.yasr.pluginControls;
       addClass(this.yasr.rootEl, "isSinglePage");
@@ -173,8 +216,9 @@ export default class Table implements Plugin<PluginConfig> {
       columns: columns,
     };
     this.dataTable = $(table).DataTable(dtConfig);
-    // .api();
-    new ColumnResizer.default(table, { widths: [], partialRefresh: true });
+    this.tableResizer = new ColumnResizer.default(table, { widths: [], partialRefresh: true });
+    // Expanding an ellipsis disables the resizing, wait for the signal to re-enable it again
+    this.dataTable.on("column-sizing", this.enableResizer);
     this.drawControls();
   }
 
@@ -255,8 +299,12 @@ export default class Table implements Plugin<PluginConfig> {
     while (this.tableControls?.firstChild) this.tableControls.firstChild.remove();
     this.tableControls?.remove();
   }
+  private enableResizer() {
+    this.tableResizer?.reset({ disable: false });
+  }
   destroy() {
     this.removeControls();
+    this.dataTable?.off("column-sizing", this.enableResizer);
     this.dataTable?.destroy(true);
     this.dataTable = undefined;
     removeClass(this.yasr.rootEl, "isSinglePage");
