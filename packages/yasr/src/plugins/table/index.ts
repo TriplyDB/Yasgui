@@ -124,7 +124,7 @@ export default class Table implements Plugin<PluginConfig> {
       const ellipseSize = this.config.ellipseLength / 3;
       stringRepresentation = `${escape(
         stringRepresentation.slice(0, ellipseSize)
-      )}<a class="tableEllipse" title="Click to expand">...</a>${escape(stringRepresentation.slice(-1 * ellipseSize))}`;
+      )}<a class="tableEllipse" title="Click to expand">…</a>${escape(stringRepresentation.slice(-1 * ellipseSize))}`;
     } else {
       stringRepresentation = escape(stringRepresentation);
     }
