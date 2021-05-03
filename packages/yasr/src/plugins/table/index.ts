@@ -218,7 +218,7 @@ export default class Table implements Plugin<PluginConfig> {
     this.dataTable = $(table).DataTable(dtConfig);
     this.tableResizer = new ColumnResizer.default(table, { widths: [], partialRefresh: true });
     // Expanding an ellipsis disables the resizing, wait for the signal to re-enable it again
-    this.dataTable.on("column-sizing", this.enableResizer);
+    this.dataTable.on("column-sizing", () => this.enableResizer());
     this.drawControls();
   }
 
@@ -304,7 +304,7 @@ export default class Table implements Plugin<PluginConfig> {
   }
   destroy() {
     this.removeControls();
-    this.dataTable?.off("column-sizing", this.enableResizer);
+    this.dataTable?.off("column-sizing", () => this.enableResizer());
     this.dataTable?.destroy(true);
     this.dataTable = undefined;
     removeClass(this.yasr.rootEl, "isSinglePage");
