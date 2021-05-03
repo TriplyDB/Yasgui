@@ -118,14 +118,15 @@ export default class Table implements Plugin<PluginConfig> {
     prefixes?: { [key: string]: string },
     options?: { ellipse?: boolean }
   ) {
-    let stringRepresentation = escape(literalBinding.value);
+    let stringRepresentation = literalBinding.value;
     const shouldEllipse = options?.ellipse ?? true;
     if (shouldEllipse && stringRepresentation.length > this.config.ellipseLength) {
       const ellipseSize = this.config.ellipseLength / 3;
-      stringRepresentation = `${stringRepresentation.slice(
-        0,
-        ellipseSize
-      )}<a class="tableEllipse" title="Click to expand">...</a>${stringRepresentation.slice(-1 * ellipseSize)}`;
+      stringRepresentation = `${escape(
+        stringRepresentation.slice(0, ellipseSize)
+      )}<a class="tableEllipse" title="Click to expand">...</a>${escape(stringRepresentation.slice(-1 * ellipseSize))}`;
+    } else {
+      stringRepresentation = escape(stringRepresentation);
     }
     if (literalBinding["xml:lang"]) {
       stringRepresentation = `"${stringRepresentation}"<sup>@${literalBinding["xml:lang"]}</sup>`;
