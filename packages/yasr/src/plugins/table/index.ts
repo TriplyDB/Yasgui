@@ -51,7 +51,7 @@ export default class Table implements Plugin<PluginConfig> {
   }
   public static defaults: PluginConfig = {
     openIriInNewWindow: true,
-    ellipseLength: 40,
+    ellipseLength: 30,
     tableConfig: {
       dom: "tip", //  tip: Table, Page Information and Pager, change to ipt for showing pagination on top
       pageLength: DEFAULT_PAGE_SIZE, //default page length
@@ -120,8 +120,9 @@ export default class Table implements Plugin<PluginConfig> {
   ) {
     let stringRepresentation = literalBinding.value;
     const shouldEllipse = options?.ellipse ?? true;
-    if (shouldEllipse && stringRepresentation.length > this.config.ellipseLength) {
-      const ellipseSize = this.config.ellipseLength / 3;
+    // make sure we don't do an ellipsis for just one character
+    if (shouldEllipse && stringRepresentation.length > this.config.ellipseLength + 1) {
+      const ellipseSize = this.config.ellipseLength / 2;
       stringRepresentation = `${escape(
         stringRepresentation.slice(0, ellipseSize)
       )}<a class="tableEllipse" title="Click to expand">…</a>${escape(stringRepresentation.slice(-1 * ellipseSize))}`;
