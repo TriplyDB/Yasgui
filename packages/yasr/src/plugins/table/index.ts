@@ -28,6 +28,8 @@ export interface PersistentConfig {
   pageSize?: number;
 }
 
+type DataRow = [number, ...(Parser.BindingValue | "")[]];
+
 export default class Table implements Plugin<PluginConfig> {
   private config: DeepReadonly<PluginConfig>;
   private persistentConfig: PersistentConfig = {};
@@ -71,16 +73,14 @@ export default class Table implements Plugin<PluginConfig> {
       },
     },
   };
-  private getRows(): [number, ...Parser.BindingValue[]][] {
-    const rows: [number, ...Parser.BindingValue[]][] = [];
-
+  private getRows(): DataRow[] {
     if (!this.yasr.results) return [];
     const bindings = this.yasr.results.getBindings();
-    if (!bindings) return rows;
-    for (let rowId = 0; rowId < bindings.length; rowId++) {
-      rows.push([rowId + 1, ...Object.values(bindings[rowId])]);
-    }
-    return rows;
+    if (!bindings) return [];
+    // Vars decide the columns
+    const vars = this.yasr.results.getVariables();
+    // Use "" as the empty value, undefined will throw runtime errors
+    return bindings.map((binding, rowId) => [rowId + 1, ...vars.map((variable) => binding[variable] ?? "")]);
   }
 
   private getUriLinkFromBinding(binding: Parser.BindingValue, prefixes?: { [key: string]: string }) {
@@ -155,7 +155,9 @@ export default class Table implements Plugin<PluginConfig> {
         return <DataTables.ColumnSettings>{
           name: name,
           title: name,
-          render: (data: Parser.BindingValue, type: any, _row: any, meta: DataTables.CellMetaSettings) => {
+          render: (data: Parser.BindingValue | "", type: any, _row: any, meta: DataTables.CellMetaSettings) => {
+            // Handle empty rows
+            if (data === "") return data;
             if (type === "filter" || type === "sort" || !type) return data.value;
             // Check if we need to show the ellipsed version
             if (this.expandedCells[`${meta.row}-${meta.col}`]) {
@@ -163,7 +165,9 @@ export default class Table implements Plugin<PluginConfig> {
             }
             return this.getCellContent(data, prefixes);
           },
-          createdCell: (cell: Node, cellData: Parser.BindingValue, _rowData: any, row: number, col: number) => {
+          createdCell: (cell: Node, cellData: Parser.BindingValue | "", _rowData: any, row: number, col: number) => {
+            // Do nothing on empty cells
+            if (cellData === "") return;
             // Ellipsis is only applied on literals variants
             if (cellData.type === "literal" || cellData.type === "typed-literal") {
               const ellipseEl = (cell as HTMLTableDataCellElement).querySelector(".tableEllipse");
