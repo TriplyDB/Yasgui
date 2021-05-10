@@ -23,17 +23,21 @@ Delimiters used by datatables
     .tableSizer {
       height: 100%;
     }
+    .switch {
+      display: flex;
+      align-items: center;
+      margin-right: 10px;
+    }
   }
 
   .dataTables_wrapper {
     .dataTable {
       min-width: 100%;
-      border: 1px solid #d9d9d9;
       box-sizing: border-box;
 
       // Override border-bottom datatables styling
       &.no-footer {
-        border-bottom: 1px solid #d9d9d9;
+        border-bottom: none;
       }
 
       thead {
@@ -58,7 +62,7 @@ Delimiters used by datatables
         }
       }
 
-      tr:nth-child(even) {
+      tbody tr:hover {
         background-color: #f9f9f9;
       }
 
@@ -66,26 +70,23 @@ Delimiters used by datatables
         //cannot select text anyway (as headers are buttons as well)
         //By setting it to none explicitly, we won't have issues when resizing columns _and_ selecting text at the meantime
         user-select: none;
-        border-right: 1px dotted gray;
-        font-weight: normal;
+        font-weight: bold;
+        text-align: start;
         overflow: hidden;
-        border-bottom: none;
+        border: none;
         padding: 8px 10px;
         padding-right: 16px;
-
-        &:last-child {
-          border-right: none;
-        }
       }
 
       td {
-        border-top: 1px solid #ddd;
-
         & > div {
           padding: 5px;
           padding-left: 7px;
           word-break: break-all;
           hyphens: auto;
+          &.rowNumber {
+            word-break: keep-all;
+          }
         }
         .tableEllipse {
           cursor: pointer;
@@ -93,6 +94,7 @@ Delimiters used by datatables
           padding: 0 2px;
           background-color: #428bca33;
           border-radius: 2px;
+          margin: 0 3px;
         }
       }
     }

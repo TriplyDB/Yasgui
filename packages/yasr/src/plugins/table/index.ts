@@ -26,6 +26,7 @@ export interface PluginConfig {
 
 export interface PersistentConfig {
   pageSize?: number;
+  compact?: boolean;
 }
 
 type DataRow = [number, ...(Parser.BindingValue | "")[]];
@@ -38,6 +39,7 @@ export default class Table implements Plugin<PluginConfig> {
   private dataTable: DataTables.Api | undefined;
   private tableFilterField: HTMLInputElement | undefined;
   private tableSizeField: HTMLSelectElement | undefined;
+  private tableCompactSwitch: HTMLInputElement | undefined;
   private expandedCells: { [rowCol: string]: boolean | undefined } = {};
   private tableResizer: { reset: (options: { disable: boolean }) => void } | undefined;
   public helpReference = "https://triply.cc/docs/yasgui#table";
@@ -96,9 +98,11 @@ export default class Table implements Plugin<PluginConfig> {
         }
       }
     }
-    return `${prefixed ? "" : "&lt;"}<a class='iri' target='${
+    // Hide brackets when prefixed or compact
+    const hideBrackets = prefixed || this.persistentConfig.compact;
+    return `${hideBrackets ? "" : "&lt;"}<a class='iri' target='${
       this.config.openIriInNewWindow ? '_blank ref="noopener noreferrer"' : "_self"
-    }' href='${href}'>${visibleString}</a>${prefixed ? "" : "&gt;"}`;
+    }' href='${href}'>${visibleString}</a>${hideBrackets ? "" : "&gt;"}`;
   }
   private getCellContent(
     binding: Parser.BindingValue,
@@ -129,6 +133,9 @@ export default class Table implements Plugin<PluginConfig> {
     } else {
       stringRepresentation = escape(stringRepresentation);
     }
+    // Return now when in compact mode.
+    if (this.persistentConfig.compact) return stringRepresentation;
+
     if (literalBinding["xml:lang"]) {
       stringRepresentation = `"${stringRepresentation}"<sup>@${literalBinding["xml:lang"]}</sup>`;
     } else if (literalBinding.datatype) {
@@ -146,10 +153,12 @@ export default class Table implements Plugin<PluginConfig> {
       {
         name: "",
         searchable: false,
-        width: this.getSizeFirstColumn(),
+        width: `${this.getSizeFirstColumn()}px`,
+        type: "num",
         orderable: false,
+        visible: this.persistentConfig.compact !== true,
         render: (data: number, type: any) =>
-          type === "filter" || type === "sort" || !type ? data : `<div>${data}</div>`,
+          type === "filter" || type === "sort" || !type ? data : `<div class="rowNumber">${data}</div>`,
       }, //prepend with row numbers column
       ...this.yasr.results?.getVariables().map((name) => {
         return <DataTables.ColumnSettings>{
@@ -189,12 +198,7 @@ export default class Table implements Plugin<PluginConfig> {
   }
   private getSizeFirstColumn() {
     const numResults = this.yasr.results?.getBindings()?.length || 0;
-    if (numResults > 999) {
-      return "30px";
-    } else if (numResults > 99) {
-      return "20px";
-    }
-    return "10px";
+    return numResults.toString().length * 5;
   }
 
   public draw(persistentConfig: PersistentConfig) {
@@ -210,6 +214,10 @@ export default class Table implements Plugin<PluginConfig> {
     }
 
     if (this.dataTable) {
+      // Resizer needs to be disabled otherwise it will mess with the new table's width
+      this.tableResizer?.reset({ disable: true });
+      this.tableResizer = undefined;
+
       this.dataTable.destroy(true);
       this.dataTable = undefined;
     }
@@ -222,7 +230,10 @@ export default class Table implements Plugin<PluginConfig> {
       columns: columns,
     };
     this.dataTable = $(table).DataTable(dtConfig);
-    this.tableResizer = new ColumnResizer.default(table, { widths: [], partialRefresh: true });
+    this.tableResizer = new ColumnResizer.default(table, {
+      widths: this.persistentConfig.compact === true ? [] : [this.getSizeFirstColumn()],
+      partialRefresh: true,
+    });
     // Expanding an ellipsis disables the resizing, wait for the signal to re-enable it again
     this.dataTable.on("column-sizing", () => this.enableResizer());
     this.drawControls();
@@ -239,12 +250,38 @@ export default class Table implements Plugin<PluginConfig> {
     this.persistentConfig.pageSize = pageLength;
     this.yasr.storePluginConfig("table", this.persistentConfig);
   };
-
+  private handleSetCompactToggle = (event: Event) => {
+    // Store in persistentConfig
+    this.persistentConfig.compact = (event.target as HTMLInputElement).checked;
+    // Update the table
+    this.yasr.storePluginConfig("table", this.persistentConfig);
+    this.draw(this.persistentConfig);
+  };
+  /**
+   * Draws controls on each update
+   */
   drawControls() {
     // Remove old header
     this.removeControls();
     this.tableControls = document.createElement("div");
     this.tableControls.className = "tableControls";
+
+    // Compact switch
+    const toggleWrapper = document.createElement("div");
+    const switchComponent = document.createElement("label");
+    const textComponent = document.createElement("span");
+    textComponent.innerText = "Compact";
+    addClass(textComponent, "label");
+    switchComponent.appendChild(textComponent);
+    addClass(switchComponent, "switch");
+    toggleWrapper.appendChild(switchComponent);
+    this.tableCompactSwitch = document.createElement("input");
+    switchComponent.addEventListener("change", this.handleSetCompactToggle);
+    this.tableCompactSwitch.type = "checkbox";
+    switchComponent.appendChild(this.tableCompactSwitch);
+    this.tableCompactSwitch.defaultChecked = !!this.persistentConfig.compact;
+    this.tableControls.appendChild(toggleWrapper);
+
     // Create table filter
     this.tableFilterField = document.createElement("input");
     this.tableFilterField.className = "tableFilter";
@@ -300,7 +337,8 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableFilterField = undefined;
     this.tableSizeField?.removeEventListener("change", this.handleTableSizeSelect);
     this.tableSizeField = undefined;
-
+    this.tableCompactSwitch?.removeEventListener("change", this.handleSetCompactToggle);
+    this.tableCompactSwitch = undefined;
     // Empty controls
     while (this.tableControls?.firstChild) this.tableControls.firstChild.remove();
     this.tableControls?.remove();
@@ -310,6 +348,8 @@ export default class Table implements Plugin<PluginConfig> {
   }
   destroy() {
     this.removeControls();
+    this.tableResizer?.reset({ disable: true });
+    this.tableResizer = undefined;
     this.dataTable?.off("column-sizing", () => this.enableResizer());
     this.dataTable?.destroy(true);
     this.dataTable = undefined;
