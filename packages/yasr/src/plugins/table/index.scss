@@ -76,6 +76,9 @@ Delimiters used by datatables
         border: none;
         padding: 8px 10px;
         padding-right: 16px;
+        &:hover {
+          background-color: #f9f9f9;
+        }
       }
 
       td {

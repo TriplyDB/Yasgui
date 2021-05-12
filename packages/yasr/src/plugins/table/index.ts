@@ -202,6 +202,7 @@ export default class Table implements Plugin<PluginConfig> {
   }
 
   public draw(persistentConfig: PersistentConfig) {
+    this.persistentConfig = { ...this.persistentConfig, ...persistentConfig };
     const table = document.createElement("table");
     const rows = this.getRows();
     const columns = this.getColumns();
