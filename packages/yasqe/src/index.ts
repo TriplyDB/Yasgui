@@ -335,6 +335,7 @@ export class Yasqe extends CodeMirror {
     addClass(chip, "resizeChip");
     this.resizeWrapper.appendChild(chip);
     this.resizeWrapper.addEventListener("mousedown", this.initDrag, false);
+    this.resizeWrapper.addEventListener("dblclick", this.expandEditor);
     this.rootEl.appendChild(this.resizeWrapper);
   }
   private initDrag() {
@@ -864,12 +865,16 @@ export class Yasqe extends CodeMirror {
       this.emit("queryAbort", this, this.req);
     }
   }
+  public expandEditor() {
+    this.setSize(null, "100%");
+  }
 
   public destroy() {
     //  Abort running query;
     this.abortQuery();
     this.unregisterEventListeners();
     this.resizeWrapper?.removeEventListener("mousedown", this.initDrag, false);
+    this.resizeWrapper?.removeEventListener("dblclick", this.expandEditor);
     for (const autocompleter in this.autocompleters) {
       this.disableCompleter(autocompleter);
     }
