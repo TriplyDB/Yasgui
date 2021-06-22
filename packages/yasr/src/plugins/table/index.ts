@@ -206,10 +206,8 @@ export default class Table implements Plugin<PluginConfig> {
       columns: columns,
     };
     this.dataTable = $(this.tableEl).DataTable(dtConfig);
+    this.tableEl.style.width = "unset";
     this.tableResizer = new ColumnResizer.default(this.tableEl, {
-      widths: this.persistentConfig.compact === true ? [] : [this.getSizeFirstColumn()],
-      partialRefresh: true,
-      onResize: this.setEllipsisHandlers,
     });
     // DataTables uses the rendered style to decide the widths of columns.
     // Before a draw remove the ellipseTable styling
