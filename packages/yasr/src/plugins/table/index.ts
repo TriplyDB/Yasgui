@@ -231,6 +231,7 @@ export default class Table implements Plugin<PluginConfig> {
       columns: columns,
     };
     this.dataTable = $(table).DataTable(dtConfig);
+    table.style.width = "unset";
     this.tableResizer = new ColumnResizer.default(table, {
       widths: this.persistentConfig.compact === true ? [] : [this.getSizeFirstColumn()],
       partialRefresh: true,
