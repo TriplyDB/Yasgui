@@ -207,26 +207,6 @@ export default class Table implements Plugin<PluginConfig> {
     };
     this.dataTable = $(this.tableEl).DataTable(dtConfig);
     this.tableEl.style.width = "unset";
-<<<<<<< HEAD
-    this.tableResizer = new ColumnResizer.default(this.tableEl, {
-    });
-    // DataTables uses the rendered style to decide the widths of columns.
-    // Before a draw remove the ellipseTable styling
-    this.dataTable.on("preDraw", () => {
-      this.disableResizer();
-      removeClass(this.tableEl, "ellipseTable");
-      return true; // Indicate it should re-render
-    });
-    // After a draw
-    this.dataTable.on("draw", () => {
-      // Enable the re-sizer
-      this.enableResizer();
-      // Re-add the ellipsis
-      addClass(this.tableEl, "ellipseTable");
-      // Check if cells need the ellipsisHandlers
-      this.setEllipsisHandlers();
-    });
-=======
 
     this.tableResizer = new ColumnResizer.default(this.tableEl, {
       widths: this.persistentConfig.compact === true ? [] : [this.getSizeFirstColumn()],
@@ -249,7 +229,6 @@ export default class Table implements Plugin<PluginConfig> {
       // Check if cells need the ellipsisHandlers
       this.setEllipsisHandlers();
     });
->>>>>>> Feat: Use CSS to ellipse table results
 
     this.drawControls();
     // Draw again but with the events
