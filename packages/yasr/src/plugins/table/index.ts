@@ -160,7 +160,6 @@ export default class Table implements Plugin<PluginConfig> {
             // Handle empty rows
             if (data === "") return data;
             if (type === "filter" || type === "sort" || !type) return data.value;
-            // console.log(type, this.persistentConfig.compact, this.getCellContent(data, prefixes));
             // Check if we need to show the ellipsed version
             if (this.expandedCells[`${meta.row}-${meta.col}`]) {
               return this.getCellContent(data, prefixes, { ellipse: false });
@@ -206,8 +205,8 @@ export default class Table implements Plugin<PluginConfig> {
       columns: columns,
     };
     this.dataTable = $(this.tableEl).DataTable(dtConfig);
-    this.tableEl.style.width = "unset";
-
+    this.tableEl.style.removeProperty("width");
+    this.tableEl.style.width = this.tableEl.clientWidth + "px";
     this.tableResizer = new ColumnResizer.default(this.tableEl, {
       widths: this.persistentConfig.compact === true ? [] : [this.getSizeFirstColumn()],
       partialRefresh: true,
@@ -218,10 +217,19 @@ export default class Table implements Plugin<PluginConfig> {
     this.dataTable.on("preDraw", () => {
       this.disableResizer();
       removeClass(this.tableEl, "ellipseTable");
+      this.tableEl?.style.removeProperty("width");
+      this.tableEl?.style.setProperty("width", this.tableEl.clientWidth + "px");
       return true; // Indicate it should re-render
     });
     // After a draw
     this.dataTable.on("draw", () => {
+      if (!this.tableEl) return;
+      // Width of table after render, removing width will make it fall back to 100%
+      let targetSize = this.tableEl.clientWidth;
+      this.tableEl.style.removeProperty("width");
+      // Let's make sure the new size is not bigger
+      if (targetSize > this.tableEl.clientWidth) targetSize = this.tableEl.clientWidth;
+      this.tableEl?.style.setProperty("width", `${targetSize}px`);
       // Enable the re-sizer
       this.enableResizer();
       // Re-add the ellipsis
@@ -232,7 +240,9 @@ export default class Table implements Plugin<PluginConfig> {
 
     this.drawControls();
     // Draw again but with the events
-    this.dataTable.draw();
+    addClass(this.tableEl, "ellipseTable");
+    this.setEllipsisHandlers();
+    // if (this.tableEl.clientWidth > width) this.tableEl.parentElement?.style.setProperty("overflow", "hidden");
   }
   private onExpand = (row: number, col: number) => {
     this.expandedCells[`${row}-${col}`] = true;
@@ -241,7 +251,7 @@ export default class Table implements Plugin<PluginConfig> {
   };
 
   private setEllipsisHandlers = () => {
-    this.dataTable?.cells().every((rowIdx, colIdx) => {
+    this.dataTable?.cells({ page: "current" }).every((rowIdx, colIdx) => {
       const cell = this.dataTable?.cell(rowIdx, colIdx);
       if (cell) {
         if (cell.data() === "") return;
@@ -280,10 +290,8 @@ export default class Table implements Plugin<PluginConfig> {
       removeClass(this.tableEl, "ellipseTable");
       this.disableResizer();
       this.dataTable.column(0).visible(!this.persistentConfig.compact);
-      this.dataTable.cells().invalidate();
-      this.dataTable.draw();
-      addClass(this.tableEl, "ellipseTable");
-      this.setEllipsisHandlers();
+      this.dataTable.cells({ page: "current" }).invalidate();
+      this.dataTable.draw("page");
     }
     this.yasr.storePluginConfig("table", this.persistentConfig);
   };
