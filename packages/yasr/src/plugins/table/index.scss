@@ -54,11 +54,13 @@ Delimiters used by datatables
 
   .dataTables_wrapper {
     font-size: 0.9em;
-
+    min-width: 100%;
+    .grip-container {
+      max-width: 100%;
+    }
     .dataTable {
       min-width: 100%;
       box-sizing: border-box;
-
       // Override border-bottom datatables styling
       &.no-footer {
         border-bottom: none;
