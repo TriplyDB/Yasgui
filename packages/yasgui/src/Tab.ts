@@ -4,7 +4,7 @@ import { TabListEl } from "./TabElements";
 import TabPanel from "./TabPanel";
 import { default as Yasqe, RequestConfig, PlainRequestConfig, PartialConfig as YasqeConfig } from "@triply/yasqe";
 import { default as Yasr, Parser, Config as YasrConfig, PersistentConfig as YasrPersistentConfig } from "@triply/yasr";
-import { mapValues, eq, mergeWith, words, deburr } from "lodash-es";
+import { mapValues, eq, mergeWith, words, deburr, invert } from "lodash-es";
 import * as shareLink from "./linkUtils";
 import EndpointSelect from "./endpointSelect";
 import * as superagent from "superagent";
@@ -413,7 +413,17 @@ export class Tab extends EventEmitter {
 
     const yasrConf: Partial<YasrConfig> = {
       persistenceId: null, //yasgui handles persistent storing
-      prefixes: () => this.yasqe?.getPrefixesFromQuery() || {},
+      prefixes: (yasr) => {
+        // Prefixes defined in YASR's config
+        const prefixesFromYasrConf =
+          typeof this.yasgui.config.yasr.prefixes === "function"
+            ? this.yasgui.config.yasr.prefixes(yasr)
+            : this.yasgui.config.yasr.prefixes;
+        const prefixesFromYasqe = this.yasqe?.getPrefixesFromQuery();
+        // Invert twice to make sure both keys and values are unique
+        // YASQE's prefixes should take president
+        return invert(invert({ ...prefixesFromYasrConf, ...prefixesFromYasqe }));
+      },
       defaultPlugin: this.persistentJson.yasr.settings.selectedPlugin,
       getPlainQueryLinkToEndpoint: () => {
         if (this.yasqe) {
