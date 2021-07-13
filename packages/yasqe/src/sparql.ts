@@ -181,7 +181,7 @@ export function getAsCurlString(yasqe: Yasqe, _config?: Config["requestConfig"])
   }
   segments.push("-X", ajaxConfig.reqMethod);
   for (const header in ajaxConfig.headers) {
-    segments.push(`-H  '${header} : ${ajaxConfig.headers[header]}'`);
+    segments.push(`-H  '${header}: ${ajaxConfig.headers[header]}'`);
   }
   return segments.join(" ");
 }
