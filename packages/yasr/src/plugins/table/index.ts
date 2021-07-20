@@ -211,6 +211,7 @@ export default class Table implements Plugin<PluginConfig> {
       widths: this.persistentConfig.compact === true ? [] : [this.getSizeFirstColumn()],
       partialRefresh: true,
       onResize: this.setEllipsisHandlers,
+      minWidth: 50,
     });
     // DataTables uses the rendered style to decide the widths of columns.
     // Before a draw remove the ellipseTable styling

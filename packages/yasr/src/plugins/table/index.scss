@@ -47,7 +47,7 @@ Delimiters used by datatables
   }
   .ellipsable {
     cursor: pointer;
-    * {
+    a {
       pointer-events: none;
     }
   }
@@ -57,6 +57,11 @@ Delimiters used by datatables
     min-width: 100%;
     .grip-container {
       max-width: 100%;
+    }
+    .grip-padding > tbody > tr > td,
+    .grip-padding > tbody > tr > th {
+      padding-left: 7px !important;
+      padding-right: 5px !important;
     }
     .dataTable {
       min-width: 100%;
@@ -108,10 +113,8 @@ Delimiters used by datatables
       }
 
       td {
-        padding: 0;
+        padding: 5px;
         & > div {
-          padding: 5px;
-          padding-left: 7px;
           hyphens: auto;
           &.rowNumber {
             word-break: keep-all;
