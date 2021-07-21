@@ -21,7 +21,6 @@ const DEFAULT_PAGE_SIZE = 50;
 export interface PluginConfig {
   openIriInNewWindow: boolean;
   tableConfig: DataTables.Settings;
-  ellipseLength: number;
 }
 
 export interface PersistentConfig {
@@ -56,7 +55,6 @@ export default class Table implements Plugin<PluginConfig> {
   }
   public static defaults: PluginConfig = {
     openIriInNewWindow: true,
-    ellipseLength: 30,
     tableConfig: {
       dom: "tip", //  tip: Table, Page Information and Pager, change to ipt for showing pagination on top
       pageLength: DEFAULT_PAGE_SIZE, //default page length
@@ -273,12 +271,12 @@ export default class Table implements Plugin<PluginConfig> {
     });
   };
   private handleTableSearch = (event: KeyboardEvent) => {
-    this.dataTable?.search((event.target as HTMLInputElement).value).draw();
+    this.dataTable?.search((event.target as HTMLInputElement).value).draw("page");
   };
   private handleTableSizeSelect = (event: Event) => {
     const pageLength = parseInt((event.target as HTMLSelectElement).value);
     // Set page length
-    this.dataTable?.page.len(pageLength).draw();
+    this.dataTable?.page.len(pageLength).draw("page");
     // Store in persistentConfig
     this.persistentConfig.pageSize = pageLength;
     this.yasr.storePluginConfig("table", this.persistentConfig);
@@ -291,7 +289,9 @@ export default class Table implements Plugin<PluginConfig> {
       removeClass(this.tableEl, "ellipseTable");
       this.disableResizer();
       this.dataTable.column(0).visible(!this.persistentConfig.compact);
-      this.dataTable.cells({ page: "current" }).invalidate();
+      // Invalidate all cells
+      this.dataTable.cells().invalidate();
+      // Just redraw the current page of the table
       this.dataTable.draw("page");
     }
     this.yasr.storePluginConfig("table", this.persistentConfig);
