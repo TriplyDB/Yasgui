@@ -132,5 +132,9 @@
       "path": "build/yasqe.min.js",
       "maxSize": "495 kB"
     }
-  ]
+  ],
+  "resolutions": {
+    "brotli-size": "4.0.0"
+  }
+
 }
