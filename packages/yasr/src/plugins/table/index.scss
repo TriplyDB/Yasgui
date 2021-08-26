@@ -1,4 +1,4 @@
-/** 
+/**
 Delimiters
 Delimiters used by us
 - CamelCase
@@ -31,21 +31,21 @@ Delimiters used by datatables
   }
   .dataTable.ellipseTable {
     white-space: nowrap;
-    div:not(.unellipsed) {
+    div:not(.expanded) {
       overflow: hidden;
       text-overflow: ellipsis;
     }
   }
   .dataTable:not(.ellipseTable) {
-    div:not(.unellipsed) {
+    div:not(.expanded) {
       word-break: break-all;
     }
   }
-  .unellipsed {
+  .expanded {
     white-space: normal;
     word-break: break-all;
   }
-  .ellipsable {
+  .expandable:not(.expanded) {
     cursor: pointer;
     a {
       pointer-events: none;
@@ -104,9 +104,15 @@ Delimiters used by datatables
         font-weight: bold;
         text-align: start;
         overflow: hidden;
+        text-overflow: ellipsis;
         border: none;
         padding: 5px;
         padding-left: 7px;
+        min-width: 28px;
+        &.sorting {
+          min-width: 10px;
+          padding-right: 18px; //space for sort icon
+        }
         &:hover {
           background-color: #f9f9f9;
         }
