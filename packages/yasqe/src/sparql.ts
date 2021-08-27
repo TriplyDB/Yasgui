@@ -71,7 +71,7 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     if (populatedConfig.withCredentials) req.withCredentials();
     yasqe.emit("query", req, populatedConfig);
-    return req.then(
+    return await req.then(
       (result) => {
         yasqe.emit("queryResponse", result, Date.now() - queryStart);
         yasqe.emit("queryResults", result.body, Date.now() - queryStart);
