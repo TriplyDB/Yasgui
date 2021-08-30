@@ -14,6 +14,7 @@ module.exports = {
   },
   plugins: ["@typescript-eslint", "jest", "lodash"],
   rules: {
+    "no-return-await": "off", // Disable this rule so that "@typescript-eslint/return-await" works correctly.
     ...(expensive
       ? { "@typescript-eslint/no-floating-promises": errLevel, "@typescript-eslint/return-await": errLevel }
       : {}),
