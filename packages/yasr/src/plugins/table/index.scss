@@ -1,4 +1,4 @@
-/** 
+/**
 Delimiters
 Delimiters used by us
 - CamelCase
@@ -29,12 +29,43 @@ Delimiters used by datatables
       margin-right: 10px;
     }
   }
+  .dataTable.ellipseTable {
+    white-space: nowrap;
+    div:not(.expanded) {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+  .dataTable:not(.ellipseTable) {
+    div:not(.expanded) {
+      word-break: break-all;
+    }
+  }
+  .expanded {
+    white-space: normal;
+    word-break: break-all;
+  }
+  .expandable:not(.expanded) {
+    cursor: pointer;
+    a {
+      pointer-events: none;
+    }
+  }
 
   .dataTables_wrapper {
+    font-size: 0.9em;
+    min-width: 100%;
+    .grip-container {
+      max-width: 100%;
+    }
+    .grip-padding > tbody > tr > td,
+    .grip-padding > tbody > tr > th {
+      padding-left: 7px !important;
+      padding-right: 5px !important;
+    }
     .dataTable {
       min-width: 100%;
       box-sizing: border-box;
-
       // Override border-bottom datatables styling
       &.no-footer {
         border-bottom: none;
@@ -73,22 +104,27 @@ Delimiters used by datatables
         font-weight: bold;
         text-align: start;
         overflow: hidden;
+        text-overflow: ellipsis;
         border: none;
-        padding: 8px 10px;
-        padding-right: 16px;
+        padding: 5px;
+        padding-left: 7px;
+        min-width: 28px;
+        &.sorting {
+          min-width: 10px;
+          padding-right: 18px; //space for sort icon
+        }
         &:hover {
           background-color: #f9f9f9;
         }
       }
 
       td {
+        padding: 5px;
         & > div {
-          padding: 5px;
-          padding-left: 7px;
-          word-break: break-all;
           hyphens: auto;
           &.rowNumber {
             word-break: keep-all;
+            overflow: visible;
           }
         }
         .tableEllipse {
