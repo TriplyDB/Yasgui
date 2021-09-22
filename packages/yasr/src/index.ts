@@ -287,24 +287,24 @@ export class Yasr extends EventEmitter {
       if (!plugin) continue; //plugin not loaded
       if (plugin.hideFromSelection) continue;
       const name = plugin.label || pluginName;
-      const div = document.createElement("div");
-      addClass(div, "yasr_btn", "select_" + pluginName);
-      div.title = name;
+      const button = document.createElement("button"); // change to a button
+      addClass(button, "yasr_btn", "select_" + pluginName);
+      button.title = name;
       if (plugin.getIcon) {
         const icon = plugin.getIcon();
         if (icon) {
           // icon.className = '';
           addClass(icon, "plugin_icon");
-          div.appendChild(icon);
+          button.appendChild(icon);
         }
       }
-      // div.textContent = name;
+      // button.textContent = name;
       const nameEl = document.createElement("span");
       nameEl.textContent = name;
-      div.appendChild(nameEl);
-      div.onclick = () => this.selectPlugin(pluginName);
-      const li = document.createElement("div");
-      li.appendChild(div);
+      button.appendChild(nameEl);
+      button.onclick = () => this.selectPlugin(pluginName);
+      const li = document.createElement("li");
+      li.appendChild(button);
       this.pluginSelectorsEl.appendChild(li);
     }
 
