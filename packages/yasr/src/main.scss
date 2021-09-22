@@ -1,5 +1,10 @@
 @import "./scss/variables.scss";
 .yasr {
+  .yasr_btn {
+    // basic button style
+    border: none;
+    background: inherit;
+  }
   .svgImg {
     display: flex;
     flex-direction: row;
@@ -49,6 +54,7 @@
       text-align: center;
     }
     .yasr_btn {
+      // previous styling
       border-bottom: 2px solid transparent;
       &.selected {
         border-bottom: 2px solid #337ab7;
@@ -59,6 +65,7 @@
       margin-right: 6px;
     }
   }
+
   // Default med screen +
   @media (max-width: 768px) {
     .yasr_btn {

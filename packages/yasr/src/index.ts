@@ -290,6 +290,8 @@ export class Yasr extends EventEmitter {
       const button = document.createElement("button"); // change to a button
       addClass(button, "yasr_btn", "select_" + pluginName);
       button.title = name;
+      button.type = "button";
+      button.setAttribute("aria-label", `Shows ${name} view`);
       if (plugin.getIcon) {
         const icon = plugin.getIcon();
         if (icon) {
@@ -302,7 +304,7 @@ export class Yasr extends EventEmitter {
       const nameEl = document.createElement("span");
       nameEl.textContent = name;
       button.appendChild(nameEl);
-      button.onclick = () => this.selectPlugin(pluginName);
+      button.addEventListener("click", () => this.selectPlugin(pluginName)); // where should I remove this EventListener?
       const li = document.createElement("li");
       li.appendChild(button);
       this.pluginSelectorsEl.appendChild(li);
@@ -345,6 +347,10 @@ export class Yasr extends EventEmitter {
     this.headerEl.appendChild(spaceElement);
     this.pluginControls = document.createElement("div");
     this.pluginControls.setAttribute("id", "yasr_plugin_control");
+    // this.pluginControls.setAttribute("tabindex", "0");
+    // if (this.pluginControls.firstElementChild) {
+    //   this.pluginControls.firstElementChild.setAttribute("aria-hidden", "true");
+    // }
     addClass(this.pluginControls, "yasr_plugin_control");
     this.headerEl.appendChild(this.pluginControls);
   }
@@ -365,16 +371,28 @@ export class Yasr extends EventEmitter {
   private stringToBlobSupported() {
     return window.URL && Blob;
   }
-  private downloadBtn: HTMLDivElement | undefined;
+  private downloadBtn: HTMLAnchorElement | undefined;
   private drawDownloadIcon() {
     if (!this.stringToBlobSupported()) return;
-    this.downloadBtn = document.createElement("div");
+    this.downloadBtn = document.createElement("a"); // should be an anchor
     addClass(this.downloadBtn, "yasr_btn", "yasr_downloadIcon", "btn_icon");
-    this.downloadBtn.appendChild(drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faDownload)));
-    this.downloadBtn.onclick = () => {
+    this.downloadBtn.download = ""; // should default to the file name of the blob
+    this.downloadBtn.setAttribute("aria-labelledby", "Download Results");
+    this.downloadBtn.setAttribute("tabindex", "0"); // I don't know why this doesnt automatically have a tab index as an anchorEl, something else going on?
+    const iconEl = drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faDownload));
+    if (iconEl.firstElementChild) {
+      // existing path is a > div > svg, when I add these properties to the svg firefox still complains, why?
+      // iconEl.setAttribute("aria-labelledby", "Download Results");
+      // iconEl.setAttribute("title", "Download Results");
+      // iconEl.setAttribute("desc", "Download Results");
+      iconEl.setAttribute("aria-hidden", "true");
+    }
+    this.downloadBtn.appendChild(iconEl);
+    this.downloadBtn.addEventListener("click", () => {
+      // also need to removeAllListeners, but where?
       if (hasClass(this.downloadBtn, "disabled")) return;
       this.download();
-    };
+    });
 
     this.headerEl.appendChild(this.downloadBtn);
   }
@@ -409,6 +427,13 @@ export class Yasr extends EventEmitter {
     if (selectedPlugin?.helpReference) {
       this.documentationButton.href = selectedPlugin.helpReference;
       this.documentationButton.title = `View documentation of ${selectedPlugin.label || this.getSelectedPluginName()}`;
+      this.documentationButton.setAttribute(
+        "aria-lable",
+        `View documentation of ${selectedPlugin.label || this.getSelectedPluginName()}`
+      );
+      if (this.documentationButton.firstElementChild) {
+        this.documentationButton.firstElementChild.setAttribute("aria-hidden", "true");
+      }
       removeClass(this.documentationButton, "disabled");
     } else {
       addClass(this.documentationButton, "disabled");
