@@ -378,7 +378,7 @@ export class Yasr extends EventEmitter {
     addClass(this.downloadBtn, "yasr_btn", "yasr_downloadIcon", "btn_icon");
     this.downloadBtn.download = ""; // should default to the file name of the blob
     this.downloadBtn.setAttribute("aria-labelledby", "Download Results");
-    this.downloadBtn.setAttribute("tabindex", "0"); // I don't know why this doesnt automatically have a tab index as an anchorEl, something else going on?
+    this.downloadBtn.setAttribute("tabindex", "0"); // anchor elements with no href are not automatically included in the tabindex
     const iconEl = drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faDownload));
     if (iconEl.firstElementChild) {
       // existing path is a > div > svg, when I add these properties to the svg firefox still complains, why?
@@ -392,6 +392,13 @@ export class Yasr extends EventEmitter {
       // also need to removeAllListeners, but where?
       if (hasClass(this.downloadBtn, "disabled")) return;
       this.download();
+    });
+    this.downloadBtn.addEventListener("keydown", (event) => {
+      // needed for accessibility
+      if (event.code === "Space" || event.code === "Enter") {
+        if (hasClass(this.downloadBtn, "disabled")) return;
+        this.download();
+      }
     });
 
     this.headerEl.appendChild(this.downloadBtn);
@@ -432,6 +439,7 @@ export class Yasr extends EventEmitter {
         `View documentation of ${selectedPlugin.label || this.getSelectedPluginName()}`
       );
       if (this.documentationButton.firstElementChild) {
+        // sets the svg image to hidden
         this.documentationButton.firstElementChild.setAttribute("aria-hidden", "true");
       }
       removeClass(this.documentationButton, "disabled");
@@ -466,6 +474,7 @@ export class Yasr extends EventEmitter {
     this.documentationButton.href = "//triply.cc/docs/yasgui";
     this.documentationButton.target = "_blank";
     this.documentationButton.rel = "noopener noreferrer";
+    this.documentationButton.setAttribute("role", "button"); // used to gain spacebar functionality
     this.headerEl.appendChild(this.documentationButton); // We can do this as long as the help-element is the last item in the row
   }
   download() {
