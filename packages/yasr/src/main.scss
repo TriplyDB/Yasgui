@@ -53,7 +53,7 @@
       text-align: center;
     }
     .yasr_btn {
-      // redeclared here to target btn in btnGroup
+      // redeclared here to target yasr_btns in btnGroup
       border-bottom: 2px solid transparent;
       &.selected {
         border-bottom: 2px solid #337ab7;
