@@ -76,6 +76,8 @@ export class Yasr extends EventEmitter {
 
     const resp = data || this.getResponseFromStorage();
     if (resp) this.setResponse(resp);
+    //  TODO: remove
+    document.activeElement?.addEventListener("change", () => console.log("curEl", document.activeElement));
   }
   private getConfigFromStorage() {
     const storageId = this.getStorageId(this.config.persistenceLabelConfig);
