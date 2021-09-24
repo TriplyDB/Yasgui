@@ -26,7 +26,7 @@ export interface FaIcon {
  * @returns
  */
 export function drawFontAwesomeIconAsSvg(faIcon: FaIcon) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${faIcon.width} ${faIcon.height}"><path fill="currentColor" d="${faIcon.svgPathData}"></path></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${faIcon.width} ${faIcon.height}" aria-hidden="true"><path fill="currentColor" d="${faIcon.svgPathData}"></path></svg>`;
 }
 
 export function hasClass(el: Element | undefined, className: string) {

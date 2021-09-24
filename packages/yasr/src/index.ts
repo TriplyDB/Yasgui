@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { merge, filter, mapValues } from "lodash-es";
+import { merge, filter, mapValues, uniqueId } from "lodash-es";
 import getDefaults from "./defaults";
 import { Plugin } from "./plugins";
 import {
@@ -69,7 +69,7 @@ export class Yasr extends EventEmitter {
     this.rootEl.appendChild(this.fallbackInfoEl);
     this.resultsEl = document.createElement("div");
     this.resultsEl.className = "yasr_results";
-    this.resultsEl.id = "yasr_results";
+    this.resultsEl.id = uniqueId("yasrId"); // possibly unnecessary
     this.rootEl.appendChild(this.resultsEl);
     this.initializePlugins();
     this.drawHeader();
@@ -293,7 +293,6 @@ export class Yasr extends EventEmitter {
       button.title = name;
       button.type = "button";
       button.setAttribute("aria-label", `Shows ${name} view`);
-      button.setAttribute("id", `${name.toLowerCase()}-btn`);
       if (plugin.getIcon) {
         const icon = plugin.getIcon();
         if (icon) {
@@ -379,16 +378,10 @@ export class Yasr extends EventEmitter {
     this.downloadBtn = document.createElement("a"); // should be an anchor
     addClass(this.downloadBtn, "yasr_btn", "yasr_downloadIcon", "btn_icon");
     this.downloadBtn.download = ""; // should default to the file name of the blob
-    this.downloadBtn.setAttribute("aria-labelledby", "Download Results");
+    this.downloadBtn.setAttribute("aria-label", "Download Results");
     this.downloadBtn.setAttribute("tabindex", "0"); // anchor elements with no href are not automatically included in the tabindex
     const iconEl = drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faDownload));
-    if (iconEl.firstElementChild) {
-      // existing path is a > div > svg, when I add these properties to the svg firefox still complains, why?
-      // iconEl.setAttribute("aria-labelledby", "Download Results");
-      // iconEl.setAttribute("title", "Download Results");
-      // iconEl.setAttribute("desc", "Download Results");
-      iconEl.setAttribute("aria-hidden", "true");
-    }
+    iconEl.setAttribute("aria-hidden", "true");
     this.downloadBtn.appendChild(iconEl);
     this.downloadBtn.addEventListener("click", () => {
       // also need to removeAllListeners, but where?
@@ -434,20 +427,14 @@ export class Yasr extends EventEmitter {
   private updateHelpButton() {
     const selectedPlugin = this.getSelectedPlugin();
     if (selectedPlugin?.helpReference) {
-      this.documentationButton.href = selectedPlugin.helpReference;
-      this.documentationButton.title = `View documentation of ${selectedPlugin.label || this.getSelectedPluginName()}`;
-      this.documentationButton.setAttribute(
-        "aria-lable",
-        `View documentation of ${selectedPlugin.label || this.getSelectedPluginName()}`
-      );
-      if (this.documentationButton.firstElementChild) {
-        // sets the svg image to hidden
-        this.documentationButton.firstElementChild.setAttribute("aria-hidden", "true");
-      }
-      removeClass(this.documentationButton, "disabled");
+      const titleLabel = `View documentation of ${selectedPlugin.label || this.getSelectedPluginName()}`;
+      this.documentationLink.href = selectedPlugin.helpReference;
+      this.documentationLink.title = titleLabel;
+      this.documentationLink.setAttribute("aria-label", titleLabel);
+      removeClass(this.documentationLink, "disabled");
     } else {
-      addClass(this.documentationButton, "disabled");
-      this.documentationButton.title =
+      addClass(this.documentationLink, "disabled");
+      this.documentationLink.title =
         "This plugin doesn't have a help reference yet. Please contact the maintainer to fix this";
     }
   }
@@ -468,16 +455,15 @@ export class Yasr extends EventEmitter {
     }
   }
 
-  private documentationButton!: HTMLAnchorElement;
+  private documentationLink!: HTMLAnchorElement;
   private drawDocumentationButton() {
-    this.documentationButton = document.createElement("a");
-    addClass(this.documentationButton, "yasr_btn", "yasr_external_ref_btn");
-    this.documentationButton.appendChild(drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faQuestionCircle)));
-    this.documentationButton.href = "//triply.cc/docs/yasgui";
-    this.documentationButton.target = "_blank";
-    this.documentationButton.rel = "noopener noreferrer";
-    this.documentationButton.setAttribute("role", "button"); // used to gain spacebar functionality
-    this.headerEl.appendChild(this.documentationButton); // We can do this as long as the help-element is the last item in the row
+    this.documentationLink = document.createElement("a");
+    addClass(this.documentationLink, "yasr_btn", "yasr_external_ref_btn");
+    this.documentationLink.appendChild(drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faQuestionCircle)));
+    this.documentationLink.href = "//triply.cc/docs/yasgui";
+    this.documentationLink.target = "_blank";
+    this.documentationLink.rel = "noopener noreferrer";
+    this.headerEl.appendChild(this.documentationLink); // We can do this as long as the help-element is the last item in the row
   }
   download() {
     if (!this.drawnPlugin) return;
