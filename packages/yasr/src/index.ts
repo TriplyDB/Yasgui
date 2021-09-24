@@ -69,6 +69,7 @@ export class Yasr extends EventEmitter {
     this.rootEl.appendChild(this.fallbackInfoEl);
     this.resultsEl = document.createElement("div");
     this.resultsEl.className = "yasr_results";
+    this.resultsEl.id = "yasr_results";
     this.rootEl.appendChild(this.resultsEl);
     this.initializePlugins();
     this.drawHeader();
@@ -292,6 +293,7 @@ export class Yasr extends EventEmitter {
       button.title = name;
       button.type = "button";
       button.setAttribute("aria-label", `Shows ${name} view`);
+      button.setAttribute("id", `${name.toLowerCase()}-btn`);
       if (plugin.getIcon) {
         const icon = plugin.getIcon();
         if (icon) {

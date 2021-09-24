@@ -297,6 +297,7 @@ export default class Table implements Plugin<PluginConfig> {
     this.removeControls();
     this.tableControls = document.createElement("div");
     this.tableControls.className = "tableControls";
+    // this.tableControls.setAttribute("aria-controls", "yasr_results") // Do I want to control the table, where is this name being generated from?
 
     // Compact switch
     const toggleWrapper = document.createElement("div");
@@ -310,6 +311,7 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableCompactSwitch = document.createElement("input");
     switchComponent.addEventListener("change", this.handleSetCompactToggle);
     this.tableCompactSwitch.type = "checkbox";
+    this.tableCompactSwitch.setAttribute("aria-controls", "yasr_results");
     switchComponent.appendChild(this.tableCompactSwitch);
     this.tableCompactSwitch.defaultChecked = !!this.persistentConfig.compact;
     this.tableControls.appendChild(toggleWrapper);
@@ -318,6 +320,8 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableFilterField = document.createElement("input");
     this.tableFilterField.className = "tableFilter";
     this.tableFilterField.placeholder = "Filter query results";
+    this.tableFilterField.setAttribute("aria-label", "Filter query results");
+    this.tableFilterField.setAttribute("aria-controls", "yasr_results");
     this.tableControls.appendChild(this.tableFilterField);
     this.tableFilterField.addEventListener("keyup", this.handleTableSearch);
 
@@ -334,6 +338,7 @@ export default class Table implements Plugin<PluginConfig> {
     // Create page size element
     this.tableSizeField = document.createElement("select");
     this.tableSizeField.className = "tableSizer";
+    this.tableSizeField.setAttribute("aria-controls", "yasr_results");
 
     // Create options for page sizer
     const options = [10, 50, 100, 1000, -1];
