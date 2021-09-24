@@ -1,7 +1,6 @@
 @import "./scss/variables.scss";
 .yasr {
   .yasr_btn {
-    // basic button style
     border: none;
     background: inherit;
   }
@@ -54,7 +53,7 @@
       text-align: center;
     }
     .yasr_btn {
-      // previous styling
+      // redeclared here to target btn in btnGroup
       border-bottom: 2px solid transparent;
       &.selected {
         border-bottom: 2px solid #337ab7;
@@ -119,6 +118,9 @@
     display: flex;
     margin-left: auto;
     align-items: center;
+    &:empty {
+      display: none;
+    }
   }
   .yasr_btn {
     color: #505050;
