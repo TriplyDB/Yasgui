@@ -129,7 +129,7 @@ export default class Response implements Plugin<PluginConfig> {
     showMoreButton.title = "Show all";
     addClass(showMoreButton, "yasr_btn", "overlay_btn");
     showMoreButton.textContent = "Show all";
-    showMoreButton.onclick = () => this.showMore();
+    showMoreButton.addEventListener("click", () => this.showMore());
     overlayContent.append(showMoreButton);
 
     const downloadButton = document.createElement("button");
@@ -140,7 +140,10 @@ export default class Response implements Plugin<PluginConfig> {
     text.innerText = "Download result";
     downloadButton.appendChild(text);
     downloadButton.appendChild(drawSvgStringAsElement(imgs.download));
-    downloadButton.onclick = () => this.yasr.download();
+    downloadButton.addEventListener("click", () => this.yasr.download());
+    downloadButton.addEventListener("keydown", (event) => {
+      if (event.code === "Space" || event.code === "Enter") this.yasr.download();
+    });
 
     overlayContent.appendChild(downloadButton);
     this.overLay.appendChild(overlayContent);

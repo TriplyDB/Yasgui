@@ -69,7 +69,7 @@ export class Yasr extends EventEmitter {
     this.rootEl.appendChild(this.fallbackInfoEl);
     this.resultsEl = document.createElement("div");
     this.resultsEl.className = "yasr_results";
-    this.resultsEl.id = uniqueId("yasrId"); // possibly unnecessary
+    this.resultsEl.id = uniqueId("resultsId");
     this.rootEl.appendChild(this.resultsEl);
     this.initializePlugins();
     this.drawHeader();
@@ -288,7 +288,7 @@ export class Yasr extends EventEmitter {
       if (!plugin) continue; //plugin not loaded
       if (plugin.hideFromSelection) continue;
       const name = plugin.label || pluginName;
-      const button = document.createElement("button"); // change to a button
+      const button = document.createElement("button");
       addClass(button, "yasr_btn", "select_" + pluginName);
       button.title = name;
       button.type = "button";
@@ -301,11 +301,10 @@ export class Yasr extends EventEmitter {
           button.appendChild(icon);
         }
       }
-      // button.textContent = name;
       const nameEl = document.createElement("span");
       nameEl.textContent = name;
       button.appendChild(nameEl);
-      button.addEventListener("click", () => this.selectPlugin(pluginName)); // where should I remove this EventListener?
+      button.addEventListener("click", () => this.selectPlugin(pluginName));
       const li = document.createElement("li");
       li.appendChild(button);
       this.pluginSelectorsEl.appendChild(li);
@@ -348,10 +347,6 @@ export class Yasr extends EventEmitter {
     this.headerEl.appendChild(spaceElement);
     this.pluginControls = document.createElement("div");
     this.pluginControls.setAttribute("id", "yasr_plugin_control");
-    // this.pluginControls.setAttribute("tabindex", "0");
-    // if (this.pluginControls.firstElementChild) {
-    //   this.pluginControls.firstElementChild.setAttribute("aria-hidden", "true");
-    // }
     addClass(this.pluginControls, "yasr_plugin_control");
     this.headerEl.appendChild(this.pluginControls);
   }
@@ -375,7 +370,7 @@ export class Yasr extends EventEmitter {
   private downloadBtn: HTMLAnchorElement | undefined;
   private drawDownloadIcon() {
     if (!this.stringToBlobSupported()) return;
-    this.downloadBtn = document.createElement("a"); // should be an anchor
+    this.downloadBtn = document.createElement("a");
     addClass(this.downloadBtn, "yasr_btn", "yasr_downloadIcon", "btn_icon");
     this.downloadBtn.download = ""; // should default to the file name of the blob
     this.downloadBtn.setAttribute("aria-label", "Download Results");
@@ -384,7 +379,6 @@ export class Yasr extends EventEmitter {
     iconEl.setAttribute("aria-hidden", "true");
     this.downloadBtn.appendChild(iconEl);
     this.downloadBtn.addEventListener("click", () => {
-      // also need to removeAllListeners, but where?
       if (hasClass(this.downloadBtn, "disabled")) return;
       this.download();
     });
