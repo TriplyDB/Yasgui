@@ -26,6 +26,7 @@ export interface PluginConfig {
 export interface PersistentConfig {
   pageSize?: number;
   compact?: boolean;
+  isEllipsed?: boolean;
 }
 
 type DataRow = [number, ...(Parser.BindingValue | "")[]];
@@ -45,6 +46,7 @@ export default class Table implements Plugin<PluginConfig> {
   private tableFilterField: HTMLInputElement | undefined;
   private tableSizeField: HTMLSelectElement | undefined;
   private tableCompactSwitch: HTMLInputElement | undefined;
+  private tableEllipseSwitch: HTMLInputElement | undefined;
   private tableResizer:
     | {
         reset: (options: {
@@ -209,44 +211,48 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableResizer = new ColumnResizer.default(this.tableEl, {
       widths: this.persistentConfig.compact === true ? widths : [this.getSizeFirstColumn(), ...widths.slice(1)],
       partialRefresh: true,
-      onResize: this.setEllipsisHandlers,
+      onResize: this.persistentConfig.isEllipsed !== false && this.setEllipsisHandlers,
       headerOnly: true,
     });
     // DataTables uses the rendered style to decide the widths of columns.
     // Before a draw remove the ellipseTable styling
-    this.dataTable.on("preDraw", () => {
-      this.tableResizer?.reset({ disable: true });
-      removeClass(this.tableEl, "ellipseTable");
-      this.tableEl?.style.removeProperty("width");
-      this.tableEl?.style.setProperty("width", this.tableEl.clientWidth + "px");
-      return true; // Indicate it should re-render
-    });
-    // After a draw
-    this.dataTable.on("draw", () => {
-      if (!this.tableEl) return;
-      // Width of table after render, removing width will make it fall back to 100%
-      let targetSize = this.tableEl.clientWidth;
-      this.tableEl.style.removeProperty("width");
-      // Let's make sure the new size is not bigger
-      if (targetSize > this.tableEl.clientWidth) targetSize = this.tableEl.clientWidth;
-      this.tableEl?.style.setProperty("width", `${targetSize}px`);
-      // Enable the re-sizer
-      this.tableResizer?.reset({
-        disable: false,
-        partialRefresh: true,
-        onResize: this.setEllipsisHandlers,
-        headerOnly: true,
+    if (this.persistentConfig.isEllipsed !== false) {
+      this.dataTable?.on("preDraw", () => {
+        this.tableResizer?.reset({ disable: true });
+        removeClass(this.tableEl, "ellipseTable");
+        this.tableEl?.style.removeProperty("width");
+        this.tableEl?.style.setProperty("width", this.tableEl.clientWidth + "px");
+        return true; // Indicate it should re-render
       });
-      // Re-add the ellipsis
-      addClass(this.tableEl, "ellipseTable");
-      // Check if cells need the ellipsisHandlers
-      this.setEllipsisHandlers();
-    });
+      // After a draw
+      this.dataTable?.on("draw", () => {
+        if (!this.tableEl) return;
+        // Width of table after render, removing width will make it fall back to 100%
+        let targetSize = this.tableEl.clientWidth;
+        this.tableEl.style.removeProperty("width");
+        // Let's make sure the new size is not bigger
+        if (targetSize > this.tableEl.clientWidth) targetSize = this.tableEl.clientWidth;
+        this.tableEl?.style.setProperty("width", `${targetSize}px`);
+        // Enable the re-sizer
+        this.tableResizer?.reset({
+          disable: false,
+          partialRefresh: true,
+          onResize: this.setEllipsisHandlers,
+          headerOnly: true,
+        });
+        // Re-add the ellipsis
+        addClass(this.tableEl, "ellipseTable");
+        // Check if cells need the ellipsisHandlers
+        this.setEllipsisHandlers();
+      });
+    }
 
     this.drawControls();
     // Draw again but with the events
-    addClass(this.tableEl, "ellipseTable");
-    this.setEllipsisHandlers();
+    if (this.persistentConfig.isEllipsed !== false) {
+      addClass(this.tableEl, "ellipseTable");
+      this.setEllipsisHandlers();
+    }
     // if (this.tableEl.clientWidth > width) this.tableEl.parentElement?.style.setProperty("overflow", "hidden");
   }
 
@@ -289,6 +295,13 @@ export default class Table implements Plugin<PluginConfig> {
     this.draw(this.persistentConfig);
     this.yasr.storePluginConfig("table", this.persistentConfig);
   };
+  private handleSetEllipsisToggle = (event: Event) => {
+    // Store in persistentConfig
+    this.persistentConfig.isEllipsed = (event.target as HTMLInputElement).checked;
+    // Update the table
+    this.draw(this.persistentConfig);
+    this.yasr.storePluginConfig("table", this.persistentConfig);
+  };
   /**
    * Draws controls on each update
    */
@@ -302,7 +315,7 @@ export default class Table implements Plugin<PluginConfig> {
     const toggleWrapper = document.createElement("div");
     const switchComponent = document.createElement("label");
     const textComponent = document.createElement("span");
-    textComponent.innerText = "Compact";
+    textComponent.innerText = "Simple view";
     addClass(textComponent, "label");
     switchComponent.appendChild(textComponent);
     addClass(switchComponent, "switch");
@@ -313,6 +326,22 @@ export default class Table implements Plugin<PluginConfig> {
     switchComponent.appendChild(this.tableCompactSwitch);
     this.tableCompactSwitch.defaultChecked = !!this.persistentConfig.compact;
     this.tableControls.appendChild(toggleWrapper);
+
+    // Ellipsis switch
+    const ellipseToggleWrapper = document.createElement("div");
+    const ellipseSwitchComponent = document.createElement("label");
+    const ellipseTextComponent = document.createElement("span");
+    ellipseTextComponent.innerText = "Ellipse";
+    addClass(ellipseTextComponent, "label");
+    ellipseSwitchComponent.appendChild(ellipseTextComponent);
+    addClass(ellipseSwitchComponent, "switch");
+    ellipseToggleWrapper.appendChild(ellipseSwitchComponent);
+    this.tableEllipseSwitch = document.createElement("input");
+    ellipseSwitchComponent.addEventListener("change", this.handleSetEllipsisToggle);
+    this.tableEllipseSwitch.type = "checkbox";
+    ellipseSwitchComponent.appendChild(this.tableEllipseSwitch);
+    this.tableEllipseSwitch.defaultChecked = this.persistentConfig.isEllipsed !== false;
+    this.tableControls.appendChild(ellipseToggleWrapper);
 
     // Create table filter
     this.tableFilterField = document.createElement("input");
@@ -371,6 +400,8 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableSizeField = undefined;
     this.tableCompactSwitch?.removeEventListener("change", this.handleSetCompactToggle);
     this.tableCompactSwitch = undefined;
+    this.tableEllipseSwitch?.removeEventListener("change", this.handleSetEllipsisToggle);
+    this.tableEllipseSwitch = undefined;
     // Empty controls
     while (this.tableControls?.firstChild) this.tableControls.firstChild.remove();
     this.tableControls?.remove();
