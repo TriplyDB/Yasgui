@@ -85,7 +85,6 @@ export default class Response implements Plugin<PluginConfig> {
       foldGutter: true,
       gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
       value: value,
-      // tabindex: -1,
     };
     const mode = this.yasr.results?.getType();
     if (mode === "json") {
