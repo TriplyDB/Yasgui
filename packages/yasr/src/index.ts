@@ -76,8 +76,6 @@ export class Yasr extends EventEmitter {
 
     const resp = data || this.getResponseFromStorage();
     if (resp) this.setResponse(resp);
-    //  TODO: remove
-    document.activeElement?.addEventListener("change", () => console.log("curEl", document.activeElement));
   }
   private getConfigFromStorage() {
     const storageId = this.getStorageId(this.config.persistenceLabelConfig);
@@ -350,6 +348,7 @@ export class Yasr extends EventEmitter {
     this.pluginControls = document.createElement("div");
     this.pluginControls.setAttribute("id", "yasr_plugin_control");
     addClass(this.pluginControls, "yasr_plugin_control");
+    this.pluginControls.setAttribute("aria-controls", this.resultsEl.id);
     this.headerEl.appendChild(this.pluginControls);
   }
 
