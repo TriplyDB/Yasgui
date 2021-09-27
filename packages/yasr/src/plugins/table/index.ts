@@ -310,7 +310,6 @@ export default class Table implements Plugin<PluginConfig> {
     this.removeControls();
     this.tableControls = document.createElement("div");
     this.tableControls.className = "tableControls";
-    this.tableControls.setAttribute("aria-controls", this.yasr.resultsEl.id);
 
     // Compact switch
     const toggleWrapper = document.createElement("div");
