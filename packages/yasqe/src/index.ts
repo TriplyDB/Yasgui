@@ -208,8 +208,17 @@ export class Yasqe extends CodeMirror {
       shareLinkWrapper.innerHTML = svgShare.innerHTML;
       shareLinkWrapper.className = "yasqe_share";
       shareLinkWrapper.title = "Share query";
+      shareLinkWrapper.setAttribute("aria-label", "Share query");
       buttons.appendChild(shareLinkWrapper);
-      shareLinkWrapper.onclick = (event: MouseEvent) => {
+      // shareLinkWrapper.onclick = (event: MouseEvent) => {
+      shareLinkWrapper.addEventListener("click", (event: MouseEvent) => showSharePopup(event));
+      shareLinkWrapper.addEventListener("keydown", (event: KeyboardEvent) => {
+        if (event.code === "Enter") {
+          showSharePopup(event);
+        }
+      });
+
+      const showSharePopup = (event: MouseEvent | KeyboardEvent) => {
         event.stopPropagation();
         let popup: HTMLDivElement | undefined = document.createElement("div");
         popup.className = "yasqe_sharePopup";
@@ -297,7 +306,6 @@ export class Yasqe extends CodeMirror {
         input.focus();
       };
     }
-
     /**
      * Draw query btn
      */
@@ -325,6 +333,7 @@ export class Yasqe extends CodeMirror {
         }
       };
       this.queryBtn.title = "Run query";
+      this.queryBtn.setAttribute("aria-label", "Run query");
 
       buttons.appendChild(this.queryBtn);
       this.updateQueryButton();
@@ -391,6 +400,7 @@ export class Yasqe extends CodeMirror {
     } else {
       removeClass(this.queryBtn, "query_disabled");
       this.queryBtn.title = "Run query";
+      this.queryBtn.setAttribute("aria-label", "Run query");
     }
     if (!status) {
       status = this.queryValid ? "valid" : "error";
