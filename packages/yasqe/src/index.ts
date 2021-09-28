@@ -54,7 +54,7 @@ export class Yasqe extends CodeMirror {
   public lastQueryDuration: number | undefined;
   private req: superagent.SuperAgentRequest | undefined;
   private queryStatus: "valid" | "error" | undefined;
-  private queryBtn: HTMLDivElement | undefined;
+  private queryBtn: HTMLButtonElement | undefined;
   private resizeWrapper?: HTMLDivElement;
   public rootEl: HTMLDivElement;
   public storage: YStorage;
@@ -203,10 +203,13 @@ export class Yasqe extends CodeMirror {
      */
     if (this.config.createShareableLink) {
       var svgShare = drawSvgStringAsElement(imgs.share);
-      svgShare.className = "yasqe_share";
-      svgShare.title = "Share query";
-      buttons.appendChild(svgShare);
-      svgShare.onclick = (event: MouseEvent) => {
+      const shareLinkWrapper = document.createElement("a"); // swap svgShard DivEl for AnchorEl
+      shareLinkWrapper.setAttribute("tabindex", "0"); // AnchorEl with no href cannot be focused
+      shareLinkWrapper.innerHTML = svgShare.innerHTML;
+      shareLinkWrapper.className = "yasqe_share";
+      shareLinkWrapper.title = "Share query";
+      buttons.appendChild(shareLinkWrapper);
+      shareLinkWrapper.onclick = (event: MouseEvent) => {
         event.stopPropagation();
         let popup: HTMLDivElement | undefined = document.createElement("div");
         popup.className = "yasqe_sharePopup";
@@ -299,7 +302,7 @@ export class Yasqe extends CodeMirror {
      * Draw query btn
      */
     if (this.config.showQueryButton) {
-      this.queryBtn = document.createElement("div");
+      this.queryBtn = document.createElement("button");
       addClass(this.queryBtn, "yasqe_queryButton");
 
       /**
@@ -712,6 +715,15 @@ export class Yasqe extends CodeMirror {
         this.queryValid = false;
         break;
       }
+    }
+  }
+  public blurElement() {
+    if (this.rootEl) {
+      const shareLink = this.rootEl.querySelector("a");
+      const queryBtn = this.rootEl.querySelector("button");
+      if (shareLink) shareLink.focus();
+      else if (queryBtn) queryBtn.focus();
+      else return;
     }
   }
   /**
