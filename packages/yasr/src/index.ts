@@ -269,9 +269,9 @@ export class Yasr extends EventEmitter {
     this.updatePluginSelectors();
     this.draw();
   }
-  private pluginSelectorsEl!: HTMLDivElement;
+  private pluginSelectorsEl!: HTMLUListElement;
   drawPluginSelectors() {
-    this.pluginSelectorsEl = document.createElement("div");
+    this.pluginSelectorsEl = document.createElement("ul");
     this.pluginSelectorsEl.className = "yasr_btnGroup";
     const pluginOrder = this.config.pluginOrder;
     Object.keys(this.config.plugins)
