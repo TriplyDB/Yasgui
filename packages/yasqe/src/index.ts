@@ -210,7 +210,6 @@ export class Yasqe extends CodeMirror {
       shareLinkWrapper.title = "Share query";
       shareLinkWrapper.setAttribute("aria-label", "Share query");
       buttons.appendChild(shareLinkWrapper);
-      // shareLinkWrapper.onclick = (event: MouseEvent) => {
       shareLinkWrapper.addEventListener("click", (event: MouseEvent) => showSharePopup(event));
       shareLinkWrapper.addEventListener("keydown", (event: KeyboardEvent) => {
         if (event.code === "Enter") {
