@@ -6,6 +6,7 @@ export function drawSvgStringAsElement(svgString: string) {
     var parser = new DOMParser();
     var dom = parser.parseFromString(svgString, "text/xml");
     var svg = dom.documentElement;
+    svg.setAttribute("aria-hidden", "true");
 
     var svgContainer = document.createElement("div");
     svgContainer.className = "svgImg";
