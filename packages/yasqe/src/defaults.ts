@@ -84,7 +84,7 @@ SELECT * WHERE {
       },
       Esc: function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
-        yasqe.blurElement();
+        yasqe.blurEditor();
       },
     },
 
