@@ -727,7 +727,7 @@ export class Yasqe extends CodeMirror {
       }
     }
   }
-  public blurElement() {
+  public blurEditor() {
     if (this.rootEl) {
       const shareLink = this.rootEl.querySelector("a");
       const queryBtn = this.rootEl.querySelector("button");
