@@ -82,6 +82,10 @@ SELECT * WHERE {
         const yasqe: Yasqe = _yasqe;
         yasqe.query().catch(() => {}); //catch this to avoid unhandled rejection
       },
+      Esc: function (_yasqe: any) {
+        const yasqe: Yasqe = _yasqe;
+        yasqe.blurElement();
+      },
     },
 
     createShareableLink: function (yasqe: Yasqe) {

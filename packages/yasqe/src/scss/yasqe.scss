@@ -86,4 +86,13 @@
       visibility: visible;
     }
   }
+  button.yasqe_queryButton {
+    // position: absolute;
+    background: none;
+    border: none;
+    .svgImg {
+      top: 0;
+      left: 0;
+    }
+  }
 }
