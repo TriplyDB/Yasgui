@@ -203,12 +203,11 @@ export class Yasqe extends CodeMirror {
      */
     if (this.config.createShareableLink) {
       var svgShare = drawSvgStringAsElement(imgs.share);
-      const shareLinkWrapper = document.createElement("a"); // swap svgShard DivEl for AnchorEl
-      shareLinkWrapper.setAttribute("tabindex", "0"); // AnchorEl with no href cannot be focused
-      shareLinkWrapper.innerHTML = svgShare.innerHTML;
+      const shareLinkWrapper = document.createElement("button");
       shareLinkWrapper.className = "yasqe_share";
       shareLinkWrapper.title = "Share query";
       shareLinkWrapper.setAttribute("aria-label", "Share query");
+      shareLinkWrapper.appendChild(svgShare);
       buttons.appendChild(shareLinkWrapper);
       shareLinkWrapper.addEventListener("click", (event: MouseEvent) => showSharePopup(event));
       shareLinkWrapper.addEventListener("keydown", (event: KeyboardEvent) => {
@@ -724,15 +723,6 @@ export class Yasqe extends CodeMirror {
         this.queryValid = false;
         break;
       }
-    }
-  }
-  public blurEditor() {
-    if (this.rootEl) {
-      const shareLink = this.rootEl.querySelector("a");
-      const queryBtn = this.rootEl.querySelector("button");
-      if (shareLink) shareLink.focus();
-      else if (queryBtn) queryBtn.focus();
-      else return;
     }
   }
   /**
