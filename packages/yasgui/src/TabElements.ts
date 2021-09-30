@@ -62,9 +62,10 @@ export class TabListEl {
     const tabLinkEl = document.createElement("a"); // This is our tab
     tabLinkEl.setAttribute("role", "tab");
     tabLinkEl.href = "#" + this.tabId;
-    tabLinkEl.id = this.tabId;
+    tabLinkEl.id = "tab-" + this.tabId; // why is the tab id the same as the panel id?
     tabLinkEl.setAttribute("aria-selected", "false"); // change with changeTabs func
-    tabLinkEl.setAttribute("aria-controls", "false"); // respective tabPanel id
+    // tabLinkEl.setAttribute("aria-controls", this.yasgui.tabPanelsEl.id); // respective tabPanel id
+    tabLinkEl.setAttribute("aria-controls", this.tabId); // respective tabPanel id
     tabLinkEl.setAttribute("tabindex", "0"); // change with changeTabs func
 
     // if (this.yasgui.persistentConfig.tabIsActive(this.tabId)) {
@@ -171,6 +172,11 @@ export class TabList {
     addClass(this._tabsListEl, "tabsList");
 
     this._tabsListEl.setAttribute("role", "tablist");
+    this._tabsListEl.addEventListener("keydown", (e: KeyboardEvent) => {
+      // determines tabfocus using the keyboard
+      if (e.code === "ArrowLeft") console.log("left");
+      if (e.code === "ArrowRight") console.log("right");
+    });
     sortablejs.default.create(this._tabsListEl, {
       group: "tabList",
       animation: 100,
