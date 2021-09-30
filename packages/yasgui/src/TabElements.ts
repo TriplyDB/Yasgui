@@ -59,9 +59,14 @@ export class TabListEl {
     };
     addClass(this.tabEl, "tab");
 
-    const tabLinkEl = document.createElement("a");
+    const tabLinkEl = document.createElement("a"); // This is our tab
     tabLinkEl.setAttribute("role", "tab");
     tabLinkEl.href = "#" + this.tabId;
+    tabLinkEl.id = this.tabId;
+    tabLinkEl.setAttribute("aria-selected", "false"); // change with changeTabs func
+    tabLinkEl.setAttribute("aria-controls", "false"); // respective tabPanel id
+    tabLinkEl.setAttribute("tabindex", "0"); // change with changeTabs func
+
     // if (this.yasgui.persistentConfig.tabIsActive(this.tabId)) {
     //   this.yasgui.store.dispatch(selectTab(this.tabId))
     // }
