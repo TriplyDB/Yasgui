@@ -71,6 +71,21 @@ export class TabListEl {
     tabLinkEl.href = "#" + this.tabId;
     tabLinkEl.id = "tab-" + this.tabId; // why is the tab id the same as the panel id?
     tabLinkEl.setAttribute("aria-controls", this.tabId); // respective tabPanel id
+    tabLinkEl.addEventListener("blur", () => {
+      console.log("just blurred a tab");
+      const activeTabId = this.yasgui.persistentConfig.getActiveId();
+      // THIS CODE NEEDS TO WORK WHEN NONE OF THE TABS IN THE LIST ARE IN FOCUS
+      // const allTabs = this.yasgui.getAllTabArray();
+      // if (!activeTabId) return;
+      // const activeTabIndex = allTabs.indexOf(activeTabId);
+      // this.tabList.ariaTabIndex = activeTabIndex;
+      if (this.tabId !== activeTabId) {
+        tabLinkEl.setAttribute("tabindex", "-1");
+      } else {
+        tabLinkEl.setAttribute("tabindex", "0");
+      }
+      return;
+    });
 
     // if (this.yasgui.persistentConfig.tabIsActive(this.tabId)) {
     //   this.yasgui.store.dispatch(selectTab(this.tabId))
@@ -142,7 +157,7 @@ export class TabList {
   public _tabs: { [tabId: string]: TabListEl } = {};
   public _tabsListEl?: HTMLDivElement; //the list of actual tabs
   public tabContextMenu?: TabContextMenu;
-  private ariaTabIndex: number | undefined;
+  public ariaTabIndex: number | undefined;
 
   constructor(yasgui: Yasgui) {
     this.yasgui = yasgui;
@@ -186,7 +201,9 @@ export class TabList {
         const numOfChildren = this._tabsListEl.childElementCount - 1; // minus 1 to not count the add new tab
         if (typeof this.ariaTabIndex !== "number") return;
         const divTab = this._tabsListEl.children[this.ariaTabIndex];
-        divTab.setAttribute("tabindex", "-1"); // cur tab removed from tab index
+        divTab.children[0].setAttribute("tabindex", "-1"); // cur tab removed from tab index
+        // a) if tab is active, dont remove ariaTabIndex
+        // b) on tabList event blur tabindex "0" for active tab
         if (e.code === "ArrowLeft") {
           // console.log("left");
           this.ariaTabIndex--;
@@ -201,10 +218,12 @@ export class TabList {
             this.ariaTabIndex = 0;
           }
         }
-        divTab.setAttribute("tabindex", "0"); // include the new tab in the tab index
-        (divTab.children[0] as HTMLElement).focus(); // focus on the a tag inside the div for click event
+        const newDivTab = this._tabsListEl.children[this.ariaTabIndex];
+        newDivTab.children[0].setAttribute("tabindex", "0"); // include the new tab in the tab index, would this be better to specify an anchor tag?
+        (newDivTab.children[0] as HTMLElement).focus(); // focus on the a tag inside the div for click event
       }
     });
+
     sortablejs.default.create(this._tabsListEl, {
       group: "tabList",
       animation: 100,
@@ -228,12 +247,12 @@ export class TabList {
     addTabLink.title = "Add tab";
     addTabLink.setAttribute("tabindex", "0");
     addTabLink.addEventListener("click", this.handleAddNewTab);
-    // addTabLink.addEventListener("keydown", (e: KeyboardEvent) => {
-    //   if (e.code === "Enter") {
-    //     console.log("add new tab");
-    //     this.handleAddNewTab;
-    //   }
-    // });
+    addTabLink.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.code === "Enter") {
+        console.log("add new tab");
+        this.handleAddNewTab(e);
+      }
+    });
     this.addTabEl.appendChild(addTabLink);
     this._tabsListEl.appendChild(this.addTabEl);
     this.tabContextMenu = TabContextMenu.get(

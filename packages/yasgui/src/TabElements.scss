@@ -27,6 +27,9 @@ $minTabHeight: 35px;
       &:focus {
         transform: scale(1.1);
       }
+      &:focus {
+        color: #faa857;
+      }
     }
     .tab {
       position: relative;
@@ -99,9 +102,12 @@ $minTabHeight: 35px;
         padding: 0px 24px 0px 30px;
         white-space: nowrap;
         overflow: hidden;
-        &:hover,
-        &:focus {
+        &:hover {
           border-bottom-color: $hoverColor;
+          color: #555;
+        }
+        &:focus {
+          border-bottom-color: #faa857; // is there some preferable global variable
           color: #555;
         }
         .closeTab {
