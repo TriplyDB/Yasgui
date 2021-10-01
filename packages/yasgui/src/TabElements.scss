@@ -23,7 +23,8 @@ $minTabHeight: 35px;
       font-weight: 800;
       padding: 0px 5px 2px 5px;
 
-      &:hover {
+      &:hover,
+      &:focus {
         transform: scale(1.1);
       }
     }
@@ -98,7 +99,8 @@ $minTabHeight: 35px;
         padding: 0px 24px 0px 30px;
         white-space: nowrap;
         overflow: hidden;
-        &:hover {
+        &:hover,
+        &:focus {
           border-bottom-color: $hoverColor;
           color: #555;
         }

@@ -33,10 +33,17 @@ export class TabListEl {
     }
   }
   public active(active: boolean) {
+    if (!this.tabEl) return;
     if (active) {
       addClass(this.tabEl, "active");
+      // add aria-properties
+      this.tabEl.children[0].setAttribute("aria-selected", "true"); // change with changeTabs func
+      this.tabEl.children[0].setAttribute("tabindex", "0"); // change with changeTabs func
     } else {
       removeClass(this.tabEl, "active");
+      // remove aria-properties
+      this.tabEl.children[0].setAttribute("aria-selected", "false"); // change with changeTabs func
+      this.tabEl.children[0].setAttribute("tabindex", "-1"); // change with changeTabs func
     }
   }
   public rename(name: string) {
@@ -63,10 +70,7 @@ export class TabListEl {
     tabLinkEl.setAttribute("role", "tab");
     tabLinkEl.href = "#" + this.tabId;
     tabLinkEl.id = "tab-" + this.tabId; // why is the tab id the same as the panel id?
-    tabLinkEl.setAttribute("aria-selected", "false"); // change with changeTabs func
-    // tabLinkEl.setAttribute("aria-controls", this.yasgui.tabPanelsEl.id); // respective tabPanel id
     tabLinkEl.setAttribute("aria-controls", this.tabId); // respective tabPanel id
-    tabLinkEl.setAttribute("tabindex", "0"); // change with changeTabs func
 
     // if (this.yasgui.persistentConfig.tabIsActive(this.tabId)) {
     //   this.yasgui.store.dispatch(selectTab(this.tabId))
@@ -138,10 +142,12 @@ export class TabList {
   public _tabs: { [tabId: string]: TabListEl } = {};
   public _tabsListEl?: HTMLDivElement; //the list of actual tabs
   public tabContextMenu?: TabContextMenu;
+  private ariaTabIndex: number | undefined;
 
   constructor(yasgui: Yasgui) {
     this.yasgui = yasgui;
     this.registerListeners();
+    this.ariaTabIndex = yasgui.persistentConfig.getActiveIndex();
   }
   get(tabId: string) {
     return this._tabs[tabId];
@@ -170,12 +176,34 @@ export class TabList {
   drawTabsList() {
     this._tabsListEl = document.createElement("div");
     addClass(this._tabsListEl, "tabsList");
-
     this._tabsListEl.setAttribute("role", "tablist");
     this._tabsListEl.addEventListener("keydown", (e: KeyboardEvent) => {
       // determines tabfocus using the keyboard
-      if (e.code === "ArrowLeft") console.log("left");
-      if (e.code === "ArrowRight") console.log("right");
+      // console.log("tablist");
+      if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
+        // console.log("tablist arrowKeys", e.code);
+        if (!this._tabsListEl) return;
+        const numOfChildren = this._tabsListEl.childElementCount - 1; // minus 1 to not count the add new tab
+        if (typeof this.ariaTabIndex !== "number") return;
+        const divTab = this._tabsListEl.children[this.ariaTabIndex];
+        divTab.setAttribute("tabindex", "-1"); // cur tab removed from tab index
+        if (e.code === "ArrowLeft") {
+          // console.log("left");
+          this.ariaTabIndex--;
+          if (this.ariaTabIndex < 0) {
+            this.ariaTabIndex = numOfChildren - 1;
+          }
+        }
+        if (e.code === "ArrowRight") {
+          // console.log("right");
+          this.ariaTabIndex++;
+          if (this.ariaTabIndex >= numOfChildren) {
+            this.ariaTabIndex = 0;
+          }
+        }
+        divTab.setAttribute("tabindex", "0"); // include the new tab in the tab index
+        (divTab.children[0] as HTMLElement).focus(); // focus on the a tag inside the div for click event
+      }
     });
     sortablejs.default.create(this._tabsListEl, {
       group: "tabList",
@@ -198,7 +226,14 @@ export class TabList {
     addTabLink.className = "addTab";
     addTabLink.textContent = "+";
     addTabLink.title = "Add tab";
+    addTabLink.setAttribute("tabindex", "0");
     addTabLink.addEventListener("click", this.handleAddNewTab);
+    // addTabLink.addEventListener("keydown", (e: KeyboardEvent) => {
+    //   if (e.code === "Enter") {
+    //     console.log("add new tab");
+    //     this.handleAddNewTab;
+    //   }
+    // });
     this.addTabEl.appendChild(addTabLink);
     this._tabsListEl.appendChild(this.addTabEl);
     this.tabContextMenu = TabContextMenu.get(
