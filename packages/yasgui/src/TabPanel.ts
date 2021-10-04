@@ -37,11 +37,6 @@ export default class TabPanel {
   private init(controlBarEl: HTMLElement) {
     this.settingsButton = document.createElement("button");
     this.toggleAriaSettings();
-    // this.settingsButton.setAttribute(
-    //   "aria-label",
-    //   this.isOpen ? "Close settings" : "Open settings"
-    // );
-    // this.settingsButton.setAttribute("aria-expanded", `${this.isOpen}`);
     this.settingsButton.appendChild(
       drawSvgStringAsElement(
         `<svg width="100.06" height="100.05" data-name="Layer 1" version="1.1" viewBox="0 0 100.06 100.05" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
@@ -66,7 +61,6 @@ export default class TabPanel {
     };
     this.menuElement = document.createElement("div");
     addClass(this.menuElement, "tabMenu");
-    // this.rootEl.appendChild(this.menuElement);
     controlBarEl.appendChild(this.menuElement);
     this.menuElement.onclick = (ev) => {
       ev.stopImmediatePropagation();
@@ -105,11 +99,6 @@ export default class TabPanel {
       this.isOpen = true;
       addClass(this.menuElement, "open");
       this.toggleAriaSettings();
-      // this.settingsButton.setAttribute(
-      //   "aria-label",
-      //   this.isOpen ? "Close settings" : "Open settings"
-      // );
-      // this.settingsButton.setAttribute("aria-expanded", `${this.isOpen}`);
       const handleClick = (ev: MouseEvent) => {
         // Stops propagation in IE11
         let parent = <HTMLElement>ev.target;
