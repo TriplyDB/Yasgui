@@ -78,7 +78,6 @@ export class Tab extends EventEmitter {
     this.rootEl.className = "tabPanel";
     this.rootEl.id = this.persistentJson.id; // give the div tag a panel id
     this.rootEl.setAttribute("role", "tabpanel");
-    this.rootEl.setAttribute("tabindex", "0"); // possibly not necessary, already taken care of with active
     this.rootEl.setAttribute("aria-labelledby", "tab-" + this.persistentJson.id);
 
     const wrapper = document.createElement("div");

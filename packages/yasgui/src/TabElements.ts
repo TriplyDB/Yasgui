@@ -244,17 +244,12 @@ export class TabList {
     this.addTabEl = document.createElement("div");
     this.addTabEl.setAttribute("role", "presentation");
 
-    const addTabLink = document.createElement("a");
+    const addTabLink = document.createElement("button"); // make a button
     addTabLink.className = "addTab";
     addTabLink.textContent = "+";
     addTabLink.title = "Add tab";
-    addTabLink.setAttribute("tabindex", "0");
+    addTabLink.setAttribute("aria-label", "Add a new tab");
     addTabLink.addEventListener("click", this.handleAddNewTab);
-    addTabLink.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.code === "Enter") {
-        this.handleAddNewTab(e);
-      }
-    });
     addTabLink.addEventListener("focus", () => {
       // sets aria tab index to active tab
       const activeTabId = this.yasgui.persistentConfig.getActiveId();
