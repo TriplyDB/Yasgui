@@ -72,16 +72,32 @@ export class TabListEl {
     tabLinkEl.id = "tab-" + this.tabId; // why is the tab id the same as the panel id?
     tabLinkEl.setAttribute("aria-controls", this.tabId); // respective tabPanel id
     tabLinkEl.addEventListener("blur", () => {
-      const activeTabId = this.yasgui.persistentConfig.getActiveId();
-      if (activeTabId === this.tabId) {
+      if (!this.tabEl) return;
+      if (this.tabEl.classList.contains("active")) {
         tabLinkEl.setAttribute("tabindex", "0");
       } else {
         tabLinkEl.setAttribute("tabindex", "-1");
       }
-      return;
+      // const activeTabId = this.yasgui.persistentConfig.getActiveId();
+      // console.log("this.tabId", this.tabId);
+      // console.log("activeTabId", activeTabId);
+      // if (this.tabId !== activeTabId) {
+      //   // tabLinkEl.setAttribute("tabindex", "-1");
+      //   this.active(false)
+      // } else {
+      //   // tabLinkEl.setAttribute("tabindex", "0");
+      //   this.active(true)
+      // }
+      // return;
+      //
+      // this.tabId
+      // this.tabList._tabs
+      // // this.active()
+      // for (let tabId in this.tabList._tabs) {
+      //   // this.active(activeTabId === tabId);
+      // }
     });
     tabLinkEl.addEventListener("focus", () => {
-      console.log("focus tab");
       const activeTabId = this.yasgui.persistentConfig.getActiveId();
       if (activeTabId === this.tabId) {
         const allTabs = this.yasgui.getAllTabArray();
@@ -201,11 +217,13 @@ export class TabList {
         // console.log("tablist arrowKeys", e.code);
         if (!this._tabsListEl) return;
         const numOfChildren = this._tabsListEl.childElementCount - 1; // minus 1 to not count the add new tab
+        // const numOfChildren = this._tabsListEl.childElementCount; // if we want to include the plus tab
         if (typeof this.ariaTabIndex !== "number") return;
         const divTab = this._tabsListEl.children[this.ariaTabIndex];
-        divTab.children[0].setAttribute("tabindex", "-1"); // cur tab removed from tab index
-        // a) if tab is active, dont remove ariaTabIndex
-        // b) on tabList event blur tabindex "0" for active tab
+        // If the current tab does not have active set its tabindex to -1
+        if (!divTab.classList.contains("active")) {
+          divTab.children[0].setAttribute("tabindex", "-1"); // cur tab removed from tab index
+        }
         if (e.code === "ArrowLeft") {
           // console.log("left");
           this.ariaTabIndex--;
@@ -254,6 +272,16 @@ export class TabList {
         console.log("add new tab");
         this.handleAddNewTab(e);
       }
+    });
+    addTabLink.addEventListener("focus", () => {
+      const activeTabId = this.yasgui.persistentConfig.getActiveId();
+      // if (activeTabId === this.tabId) {
+      if (activeTabId !== "undefined" && typeof activeTabId === "string") {
+        const allTabs = this.yasgui.getAllTabArray();
+        const activeTabIndex = allTabs.indexOf(activeTabId);
+        this.ariaTabIndex = activeTabIndex;
+      }
+      // }
     });
     this.addTabEl.appendChild(addTabLink);
     this._tabsListEl.appendChild(this.addTabEl);
