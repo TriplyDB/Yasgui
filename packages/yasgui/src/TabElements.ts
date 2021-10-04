@@ -72,21 +72,23 @@ export class TabListEl {
     tabLinkEl.id = "tab-" + this.tabId; // why is the tab id the same as the panel id?
     tabLinkEl.setAttribute("aria-controls", this.tabId); // respective tabPanel id
     tabLinkEl.addEventListener("blur", () => {
-      console.log("just blurred a tab");
       const activeTabId = this.yasgui.persistentConfig.getActiveId();
-      // THIS CODE NEEDS TO WORK WHEN NONE OF THE TABS IN THE LIST ARE IN FOCUS
-      // const allTabs = this.yasgui.getAllTabArray();
-      // if (!activeTabId) return;
-      // const activeTabIndex = allTabs.indexOf(activeTabId);
-      // this.tabList.ariaTabIndex = activeTabIndex;
-      if (this.tabId !== activeTabId) {
-        tabLinkEl.setAttribute("tabindex", "-1");
-      } else {
+      if (activeTabId === this.tabId) {
         tabLinkEl.setAttribute("tabindex", "0");
+      } else {
+        tabLinkEl.setAttribute("tabindex", "-1");
       }
       return;
     });
-
+    tabLinkEl.addEventListener("focus", () => {
+      console.log("focus tab");
+      const activeTabId = this.yasgui.persistentConfig.getActiveId();
+      if (activeTabId === this.tabId) {
+        const allTabs = this.yasgui.getAllTabArray();
+        const activeTabIndex = allTabs.indexOf(activeTabId);
+        this.tabList.ariaTabIndex = activeTabIndex;
+      }
+    });
     // if (this.yasgui.persistentConfig.tabIsActive(this.tabId)) {
     //   this.yasgui.store.dispatch(selectTab(this.tabId))
     // }
