@@ -287,7 +287,6 @@ export class Yasgui extends EventEmitter {
       if (id !== panelId) this._tabs[id].hide();
     }
     this.tabPanelsEl.appendChild(panel);
-    console.log("panel", panel);
   }
   public _removePanel(panel: HTMLDivElement | undefined) {
     if (panel) this.tabPanelsEl.removeChild(panel);
