@@ -65,6 +65,9 @@ export class TabListEl {
       this.startRename();
     };
     addClass(this.tabEl, "tab");
+    this.tabEl.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.code === "Delete" || e.keyCode === 46) handleDeleteTab();
+    });
 
     const tabLinkEl = document.createElement("a"); // This is our tab Link
     tabLinkEl.setAttribute("role", "tab");
@@ -105,11 +108,13 @@ export class TabListEl {
     closeBtn.innerHTML = "&#x2716;";
     closeBtn.title = "Close tab";
     addClass(closeBtn, "closeTab");
-    closeBtn.onclick = (e) => {
-      e.preventDefault();
+    closeBtn.addEventListener("click", (e) => handleDeleteTab(e));
+    tabLinkEl.appendChild(closeBtn);
+
+    const handleDeleteTab = (e?: MouseEvent) => {
+      e?.preventDefault();
       this.yasgui.getTab(this.tabId)?.close();
     };
-    tabLinkEl.appendChild(closeBtn);
 
     const renameEl = (this.renameEl = document.createElement("input"));
     renameEl.type = "text";
