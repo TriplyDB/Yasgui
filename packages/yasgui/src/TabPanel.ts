@@ -22,7 +22,7 @@ const AcceptHeaderGraphMap: { key: string; value: string }[] = [
 type TextInputPair = { name: string; value: string };
 export default class TabPanel {
   menuElement!: HTMLElement;
-  settingsButton!: HTMLElement;
+  settingsButton!: HTMLButtonElement;
   tab: Tab;
   rootEl: HTMLElement;
   isOpen: boolean;
@@ -35,7 +35,13 @@ export default class TabPanel {
     this.init(controlBarEl);
   }
   private init(controlBarEl: HTMLElement) {
-    this.settingsButton = document.createElement("div");
+    this.settingsButton = document.createElement("button");
+    this.toggleAriaSettings();
+    // this.settingsButton.setAttribute(
+    //   "aria-label",
+    //   this.isOpen ? "Close settings" : "Open settings"
+    // );
+    // this.settingsButton.setAttribute("aria-expanded", `${this.isOpen}`);
     this.settingsButton.appendChild(
       drawSvgStringAsElement(
         `<svg width="100.06" height="100.05" data-name="Layer 1" version="1.1" viewBox="0 0 100.06 100.05" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
@@ -60,7 +66,8 @@ export default class TabPanel {
     };
     this.menuElement = document.createElement("div");
     addClass(this.menuElement, "tabMenu");
-    this.rootEl.appendChild(this.menuElement);
+    // this.rootEl.appendChild(this.menuElement);
+    controlBarEl.appendChild(this.menuElement);
     this.menuElement.onclick = (ev) => {
       ev.stopImmediatePropagation();
       return false;
@@ -97,6 +104,12 @@ export default class TabPanel {
       this.updateBody();
       this.isOpen = true;
       addClass(this.menuElement, "open");
+      this.toggleAriaSettings();
+      // this.settingsButton.setAttribute(
+      //   "aria-label",
+      //   this.isOpen ? "Close settings" : "Open settings"
+      // );
+      // this.settingsButton.setAttribute("aria-expanded", `${this.isOpen}`);
       const handleClick = (ev: MouseEvent) => {
         // Stops propagation in IE11
         let parent = <HTMLElement>ev.target;
@@ -118,9 +131,13 @@ export default class TabPanel {
     if (this.isOpen) {
       this.isOpen = false;
       removeClass(this.menuElement, "open");
+      this.toggleAriaSettings();
     }
   }
-
+  private toggleAriaSettings() {
+    this.settingsButton.setAttribute("aria-label", this.isOpen ? "Close settings" : "Open settings");
+    this.settingsButton.setAttribute("aria-expanded", `${this.isOpen}`);
+  }
   private setRequestMethod!: (method: Exclude<RequestConfig<any>["method"], Function>) => void;
   private drawRequestMethodSelector() {
     const requestTypeWrapper = document.createElement("div");
