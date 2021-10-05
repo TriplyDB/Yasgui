@@ -88,12 +88,16 @@ export class TabListEl {
       }
     });
     tabLinkEl.addEventListener("focus", () => {
-      const activeTabId = this.yasgui.persistentConfig.getActiveId();
       // can I get this active Id from somewhere else?
+      // const activeTabId = this.yasgui.persistentConfig.getActiveId();
       if (!this.tabEl) return;
       if (this.tabEl.classList.contains("active")) {
-        const activeTabIndex = this.yasgui.persistentConfig.getActiveIndex();
-        this.tabList.tabEntryIndex = activeTabIndex;
+        // CAN i GET THIS ACTIVE INDEX FROM SOMEWHERE ELSE
+        // const activeTabIndex = this.yasgui.persistentConfig.getActiveIndex();
+        // this.tabList.tabEntryIndex = activeTabIndex;
+        const allTabs = Object.keys(this.tabList._tabs);
+        const currentTabIndex = allTabs.indexOf(this.tabId);
+        this.tabList.tabEntryIndex = currentTabIndex;
       }
       // if (activeTabId === this.tabId) {
       //   const activeTabIndex = this.yasgui.persistentConfig.getActiveIndex();
