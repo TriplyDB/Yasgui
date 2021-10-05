@@ -74,7 +74,7 @@ export class TabListEl {
       this.yasgui.getTab(this.tabId)?.close();
     };
 
-    const tabLinkEl = document.createElement("a"); // This is our tab Link
+    const tabLinkEl = document.createElement("a");
     tabLinkEl.setAttribute("role", "tab");
     tabLinkEl.href = "#" + this.tabId;
     tabLinkEl.id = "tab-" + this.tabId; // use the id for the tabpanel which is tabId to set the actual tab id
@@ -156,7 +156,7 @@ export class TabList {
   private _selectedTab?: string;
   private addTabEl?: HTMLDivElement;
   public _tabs: { [tabId: string]: TabListEl } = {};
-  public _tabsListEl?: HTMLDivElement; //the list of actual tabs
+  public _tabsListEl?: HTMLDivElement;
   public tabContextMenu?: TabContextMenu;
   public tabEntryIndex: number | undefined;
 
@@ -197,8 +197,7 @@ export class TabList {
       // determines tabfocus using the keyboard
       if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
         if (!this._tabsListEl) return;
-        const numOfChildren = this._tabsListEl.childElementCount - 1; // minus 1 to not count the add new tab
-        // const numOfChildren = this._tabsListEl.childElementCount; // if we want to include the plus tab
+        const numOfChildren = this._tabsListEl.childElementCount - 1;
         if (typeof this.tabEntryIndex !== "number") return;
         const divTab = this._tabsListEl.children[this.tabEntryIndex];
         // If the current tab does not have active set its tabindex to -1
@@ -218,7 +217,7 @@ export class TabList {
           }
         }
         const newDivTab = this._tabsListEl.children[this.tabEntryIndex];
-        newDivTab.children[0].setAttribute("tabindex", "0"); // include the new tab in the tab index, would this be better to specify an anchor tag?
+        newDivTab.children[0].setAttribute("tabindex", "0");
         (newDivTab.children[0] as HTMLElement).focus(); // focus on the a tag inside the div for click event
       }
     });
@@ -240,7 +239,7 @@ export class TabList {
     this.addTabEl = document.createElement("div");
     this.addTabEl.setAttribute("role", "presentation");
 
-    const addTabLink = document.createElement("button"); // make a button
+    const addTabLink = document.createElement("button");
     addTabLink.className = "addTab";
     addTabLink.textContent = "+";
     addTabLink.title = "Add tab";
@@ -267,9 +266,6 @@ export class TabList {
   //   this.tabPanelsEl = document.createElement("div");
   //   return this.tabsListEl;
   // }
-
-  //
-
   public addTab(tabId: string, index?: number) {
     return this.drawTab(tabId, index);
   }

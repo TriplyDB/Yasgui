@@ -125,7 +125,7 @@ export default class TabPanel {
   }
   private toggleAriaSettings() {
     this.settingsButton.setAttribute("aria-label", this.isOpen ? "Close settings" : "Open settings");
-    this.settingsButton.setAttribute("aria-expanded", `${this.isOpen}`); // argument of type boolean is not assignable to argument of type string
+    this.settingsButton.setAttribute("aria-expanded", `${this.isOpen}`);
   }
   private setRequestMethod!: (method: Exclude<RequestConfig<any>["method"], Function>) => void;
   private drawRequestMethodSelector() {
