@@ -167,7 +167,7 @@ export class TabList {
   constructor(yasgui: Yasgui) {
     this.yasgui = yasgui;
     this.registerListeners();
-    this.tabEntryIndex = yasgui.persistentConfig.getActiveIndex();
+    this.tabEntryIndex = this.getActiveIndex();
   }
   get(tabId: string) {
     return this._tabs[tabId];
@@ -193,38 +193,44 @@ export class TabList {
       }
     });
   }
+  private getActiveIndex() {
+    if (!this._selectedTab) return;
+    const allTabs = Object.keys(this._tabs);
+    const currentTabIndex = allTabs.indexOf(this._selectedTab);
+    return currentTabIndex;
+  }
+  private handleKeydownArrowKeys = (e: KeyboardEvent) => {
+    if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
+      if (!this._tabsListEl) return;
+      const numOfChildren = this._tabsListEl.childElementCount - 1; // removes the add new tab from the list
+      if (typeof this.tabEntryIndex !== "number") return;
+      const tabEntryDiv = this._tabsListEl.children[this.tabEntryIndex];
+      // If the current tab does not have active set its tabindex to -1
+      if (!tabEntryDiv.classList.contains("active")) {
+        tabEntryDiv.children[0].setAttribute("tabindex", "-1"); // cur tab removed from tab index
+      }
+      if (e.code === "ArrowLeft") {
+        this.tabEntryIndex--;
+        if (this.tabEntryIndex < 0) {
+          this.tabEntryIndex = numOfChildren - 1;
+        }
+      }
+      if (e.code === "ArrowRight") {
+        this.tabEntryIndex++;
+        if (this.tabEntryIndex >= numOfChildren) {
+          this.tabEntryIndex = 0;
+        }
+      }
+      const newTabEntryDiv = this._tabsListEl.children[this.tabEntryIndex];
+      newTabEntryDiv.children[0].setAttribute("tabindex", "0");
+      (newTabEntryDiv.children[0] as HTMLElement).focus(); // focus on the a tag inside the div for click event
+    }
+  };
   drawTabsList() {
     this._tabsListEl = document.createElement("div");
     addClass(this._tabsListEl, "tabsList");
     this._tabsListEl.setAttribute("role", "tablist");
-    this._tabsListEl.addEventListener("keydown", (e: KeyboardEvent) => {
-      // determines tabfocus using the keyboard
-      if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
-        if (!this._tabsListEl) return;
-        const numOfChildren = this._tabsListEl.childElementCount - 1; // removes the add new tab from the list
-        if (typeof this.tabEntryIndex !== "number") return;
-        const divTab = this._tabsListEl.children[this.tabEntryIndex];
-        // If the current tab does not have active set its tabindex to -1
-        if (!divTab.classList.contains("active")) {
-          divTab.children[0].setAttribute("tabindex", "-1"); // cur tab removed from tab index
-        }
-        if (e.code === "ArrowLeft") {
-          this.tabEntryIndex--;
-          if (this.tabEntryIndex < 0) {
-            this.tabEntryIndex = numOfChildren - 1;
-          }
-        }
-        if (e.code === "ArrowRight") {
-          this.tabEntryIndex++;
-          if (this.tabEntryIndex >= numOfChildren) {
-            this.tabEntryIndex = 0;
-          }
-        }
-        const newDivTab = this._tabsListEl.children[this.tabEntryIndex];
-        newDivTab.children[0].setAttribute("tabindex", "0");
-        (newDivTab.children[0] as HTMLElement).focus(); // focus on the a tag inside the div for click event
-      }
-    });
+    this._tabsListEl.addEventListener("keydown", this.handleKeydownArrowKeys);
 
     sortablejs.default.create(this._tabsListEl, {
       group: "tabList",
@@ -251,15 +257,7 @@ export class TabList {
     addTabLink.addEventListener("click", this.handleAddNewTab);
     addTabLink.addEventListener("focus", () => {
       // sets aria tabEntryIndex to active tab
-      // const activeTabIndex = this.yasgui.persistentConfig.getActiveIndex();
-      // this.tabEntryIndex = activeTabIndex;
-      // if (!this.tabEl) return;
-      // if (this.tabEl.classList.contains("active")) {
-      const allTabs = Object.keys(this._tabs);
-      if (!this._selectedTab) return;
-      const currentTabIndex = allTabs.indexOf(this._selectedTab);
-      this.tabEntryIndex = currentTabIndex;
-      // }
+      this.tabEntryIndex = this.getActiveIndex();
     });
     this.addTabEl.appendChild(addTabLink);
     this._tabsListEl.appendChild(this.addTabEl);
