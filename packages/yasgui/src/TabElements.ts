@@ -257,7 +257,12 @@ export class TabList {
     addTabLink.addEventListener("click", this.handleAddNewTab);
     addTabLink.addEventListener("focus", () => {
       // sets aria tabEntryIndex to active tab
-      this.tabEntryIndex = this.getActiveIndex();
+      // this.tabEntryIndex = this.getActiveIndex();
+      if (!this._tabsListEl) return;
+      this.tabEntryIndex = this._tabsListEl.childElementCount - 1; // sets tabEntry to add tab, visually makes sense, not sure about accessibility-wise
+    });
+    addTabLink.addEventListener("blur", () => {
+      addTabLink.setAttribute("tabindex", "0"); // maintains tabability
     });
     this.addTabEl.appendChild(addTabLink);
     this._tabsListEl.appendChild(this.addTabEl);

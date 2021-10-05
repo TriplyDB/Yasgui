@@ -39,11 +39,6 @@ export default class PersistentConfig {
   public getActiveId(): string | undefined {
     return this.persistedJson.active;
   }
-  // public getActiveIndex(): number | undefined {
-  //   const activeId = this.getActiveId();
-  //   if (!activeId) return;
-  //   return this.persistedJson.tabs.indexOf(activeId);
-  // }
   public addToTabList(tabId: string, index?: number) {
     if (index !== undefined && this.persistedJson.tabs.length > index) {
       this.persistedJson.tabs.splice(index, 0, tabId);
