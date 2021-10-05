@@ -158,9 +158,6 @@ export class Yasgui extends EventEmitter {
       }
     }
   }
-  public getAllTabArray() {
-    return this.persistentConfig.getTabs();
-  }
   public hasFullscreen(fullscreen: boolean) {
     if (fullscreen) {
       this.emit("fullscreen-enter", this);

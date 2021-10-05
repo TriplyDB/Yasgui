@@ -37,13 +37,13 @@ export class TabListEl {
     if (active) {
       addClass(this.tabEl, "active");
       // add aria-properties
-      this.tabEl.children[0].setAttribute("aria-selected", "true"); // change with changeTabs func
-      this.tabEl.children[0].setAttribute("tabindex", "0"); // change with changeTabs func
+      this.tabEl.children[0].setAttribute("aria-selected", "true");
+      this.tabEl.children[0].setAttribute("tabindex", "0");
     } else {
       removeClass(this.tabEl, "active");
       // remove aria-properties
-      this.tabEl.children[0].setAttribute("aria-selected", "false"); // change with changeTabs func
-      this.tabEl.children[0].setAttribute("tabindex", "-1"); // change with changeTabs func
+      this.tabEl.children[0].setAttribute("aria-selected", "false");
+      this.tabEl.children[0].setAttribute("tabindex", "-1");
     }
   }
   public rename(name: string) {
@@ -66,8 +66,13 @@ export class TabListEl {
     };
     addClass(this.tabEl, "tab");
     this.tabEl.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.code === "Delete" || e.keyCode === 46) handleDeleteTab();
+      if (e.code === "Delete") handleDeleteTab();
     });
+
+    const handleDeleteTab = (e?: MouseEvent) => {
+      e?.preventDefault();
+      this.yasgui.getTab(this.tabId)?.close();
+    };
 
     const tabLinkEl = document.createElement("a"); // This is our tab Link
     tabLinkEl.setAttribute("role", "tab");
@@ -83,12 +88,8 @@ export class TabListEl {
       }
     });
     tabLinkEl.addEventListener("focus", () => {
-      const activeTabId = this.yasgui.persistentConfig.getActiveId();
-      if (activeTabId === this.tabId) {
-        const allTabs = this.yasgui.getAllTabArray();
-        const activeTabIndex = allTabs.indexOf(activeTabId);
-        this.tabList.ariaTabIndex = activeTabIndex;
-      }
+      const activeTabIndex = this.yasgui.persistentConfig.getActiveIndex();
+      this.tabList.tabEntryIndex = activeTabIndex;
     });
     // if (this.yasgui.persistentConfig.tabIsActive(this.tabId)) {
     //   this.yasgui.store.dispatch(selectTab(this.tabId))
@@ -108,13 +109,8 @@ export class TabListEl {
     closeBtn.innerHTML = "&#x2716;";
     closeBtn.title = "Close tab";
     addClass(closeBtn, "closeTab");
-    closeBtn.addEventListener("click", (e) => handleDeleteTab(e));
+    closeBtn.addEventListener("click", handleDeleteTab);
     tabLinkEl.appendChild(closeBtn);
-
-    const handleDeleteTab = (e?: MouseEvent) => {
-      e?.preventDefault();
-      this.yasgui.getTab(this.tabId)?.close();
-    };
 
     const renameEl = (this.renameEl = document.createElement("input"));
     renameEl.type = "text";
@@ -162,12 +158,12 @@ export class TabList {
   public _tabs: { [tabId: string]: TabListEl } = {};
   public _tabsListEl?: HTMLDivElement; //the list of actual tabs
   public tabContextMenu?: TabContextMenu;
-  public ariaTabIndex: number | undefined;
+  public tabEntryIndex: number | undefined;
 
   constructor(yasgui: Yasgui) {
     this.yasgui = yasgui;
     this.registerListeners();
-    this.ariaTabIndex = yasgui.persistentConfig.getActiveIndex();
+    this.tabEntryIndex = yasgui.persistentConfig.getActiveIndex();
   }
   get(tabId: string) {
     return this._tabs[tabId];
@@ -203,25 +199,25 @@ export class TabList {
         if (!this._tabsListEl) return;
         const numOfChildren = this._tabsListEl.childElementCount - 1; // minus 1 to not count the add new tab
         // const numOfChildren = this._tabsListEl.childElementCount; // if we want to include the plus tab
-        if (typeof this.ariaTabIndex !== "number") return;
-        const divTab = this._tabsListEl.children[this.ariaTabIndex];
+        if (typeof this.tabEntryIndex !== "number") return;
+        const divTab = this._tabsListEl.children[this.tabEntryIndex];
         // If the current tab does not have active set its tabindex to -1
         if (!divTab.classList.contains("active")) {
           divTab.children[0].setAttribute("tabindex", "-1"); // cur tab removed from tab index
         }
         if (e.code === "ArrowLeft") {
-          this.ariaTabIndex--;
-          if (this.ariaTabIndex < 0) {
-            this.ariaTabIndex = numOfChildren - 1;
+          this.tabEntryIndex--;
+          if (this.tabEntryIndex < 0) {
+            this.tabEntryIndex = numOfChildren - 1;
           }
         }
         if (e.code === "ArrowRight") {
-          this.ariaTabIndex++;
-          if (this.ariaTabIndex >= numOfChildren) {
-            this.ariaTabIndex = 0;
+          this.tabEntryIndex++;
+          if (this.tabEntryIndex >= numOfChildren) {
+            this.tabEntryIndex = 0;
           }
         }
-        const newDivTab = this._tabsListEl.children[this.ariaTabIndex];
+        const newDivTab = this._tabsListEl.children[this.tabEntryIndex];
         newDivTab.children[0].setAttribute("tabindex", "0"); // include the new tab in the tab index, would this be better to specify an anchor tag?
         (newDivTab.children[0] as HTMLElement).focus(); // focus on the a tag inside the div for click event
       }
@@ -252,12 +248,8 @@ export class TabList {
     addTabLink.addEventListener("click", this.handleAddNewTab);
     addTabLink.addEventListener("focus", () => {
       // sets aria tab index to active tab
-      const activeTabId = this.yasgui.persistentConfig.getActiveId();
-      if (activeTabId !== "undefined" && typeof activeTabId === "string") {
-        const allTabs = this.yasgui.getAllTabArray();
-        const activeTabIndex = allTabs.indexOf(activeTabId);
-        this.ariaTabIndex = activeTabIndex;
-      }
+      const activeTabIndex = this.yasgui.persistentConfig.getActiveIndex();
+      this.tabEntryIndex = activeTabIndex;
     });
     this.addTabEl.appendChild(addTabLink);
     this._tabsListEl.appendChild(this.addTabEl);
