@@ -197,7 +197,7 @@ export class TabList {
       // determines tabfocus using the keyboard
       if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
         if (!this._tabsListEl) return;
-        const numOfChildren = this._tabsListEl.childElementCount - 1;
+        const numOfChildren = this._tabsListEl.childElementCount - 1; // removes the add new tab from the list
         if (typeof this.tabEntryIndex !== "number") return;
         const divTab = this._tabsListEl.children[this.tabEntryIndex];
         // If the current tab does not have active set its tabindex to -1
