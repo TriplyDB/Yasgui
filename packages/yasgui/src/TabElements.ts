@@ -88,21 +88,12 @@ export class TabListEl {
       }
     });
     tabLinkEl.addEventListener("focus", () => {
-      // can I get this active Id from somewhere else?
-      // const activeTabId = this.yasgui.persistentConfig.getActiveId();
       if (!this.tabEl) return;
       if (this.tabEl.classList.contains("active")) {
-        // CAN i GET THIS ACTIVE INDEX FROM SOMEWHERE ELSE
-        // const activeTabIndex = this.yasgui.persistentConfig.getActiveIndex();
-        // this.tabList.tabEntryIndex = activeTabIndex;
         const allTabs = Object.keys(this.tabList._tabs);
         const currentTabIndex = allTabs.indexOf(this.tabId);
         this.tabList.tabEntryIndex = currentTabIndex;
       }
-      // if (activeTabId === this.tabId) {
-      //   const activeTabIndex = this.yasgui.persistentConfig.getActiveIndex();
-      //   this.tabList.tabEntryIndex = activeTabIndex;
-      // }
     });
     // if (this.yasgui.persistentConfig.tabIsActive(this.tabId)) {
     //   this.yasgui.store.dispatch(selectTab(this.tabId))
@@ -259,9 +250,16 @@ export class TabList {
     addTabLink.setAttribute("aria-label", "Add a new tab");
     addTabLink.addEventListener("click", this.handleAddNewTab);
     addTabLink.addEventListener("focus", () => {
-      // sets aria tab index to active tab
-      const activeTabIndex = this.yasgui.persistentConfig.getActiveIndex();
-      this.tabEntryIndex = activeTabIndex;
+      // sets aria tabEntryIndex to active tab
+      // const activeTabIndex = this.yasgui.persistentConfig.getActiveIndex();
+      // this.tabEntryIndex = activeTabIndex;
+      // if (!this.tabEl) return;
+      // if (this.tabEl.classList.contains("active")) {
+      const allTabs = Object.keys(this._tabs);
+      if (!this._selectedTab) return;
+      const currentTabIndex = allTabs.indexOf(this._selectedTab);
+      this.tabEntryIndex = currentTabIndex;
+      // }
     });
     this.addTabEl.appendChild(addTabLink);
     this._tabsListEl.appendChild(this.addTabEl);
