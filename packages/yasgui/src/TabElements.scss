@@ -18,13 +18,22 @@ $minTabHeight: 35px;
       box-sizing: border-box;
     }
     .addTab {
-      margin-left: 15px;
+      cursor: pointer;
+      height: 100%;
       font-size: 120%;
       font-weight: 800;
+      margin-left: 15px;
       padding: 0px 5px 2px 5px;
+      background: inherit;
+      border: none;
+      color: #337ab7;
 
-      &:hover {
+      &:hover,
+      &:focus-visible {
         transform: scale(1.1);
+      }
+      &:focus {
+        color: #faa857;
       }
     }
     .tab {
@@ -100,6 +109,10 @@ $minTabHeight: 35px;
         overflow: hidden;
         &:hover {
           border-bottom-color: $hoverColor;
+          color: #555;
+        }
+        &:focus {
+          border-bottom-color: #faa857;
           color: #555;
         }
         .closeTab {

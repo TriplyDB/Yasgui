@@ -60,6 +60,10 @@
         &:focus {
           outline: none;
         }
+        &:focus-visible {
+          color: black;
+          border-color: black;
+        }
       }
     }
 

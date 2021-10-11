@@ -33,10 +33,17 @@ export class TabListEl {
     }
   }
   public active(active: boolean) {
+    if (!this.tabEl) return;
     if (active) {
       addClass(this.tabEl, "active");
+      // add aria-properties
+      this.tabEl.children[0].setAttribute("aria-selected", "true");
+      this.tabEl.children[0].setAttribute("tabindex", "0");
     } else {
       removeClass(this.tabEl, "active");
+      // remove aria-properties
+      this.tabEl.children[0].setAttribute("aria-selected", "false");
+      this.tabEl.children[0].setAttribute("tabindex", "-1");
     }
   }
   public rename(name: string) {
@@ -58,17 +65,43 @@ export class TabListEl {
       this.startRename();
     };
     addClass(this.tabEl, "tab");
+    this.tabEl.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.code === "Delete") handleDeleteTab();
+    });
+
+    const handleDeleteTab = (e?: MouseEvent) => {
+      e?.preventDefault();
+      this.yasgui.getTab(this.tabId)?.close();
+    };
 
     const tabLinkEl = document.createElement("a");
     tabLinkEl.setAttribute("role", "tab");
     tabLinkEl.href = "#" + this.tabId;
+    tabLinkEl.id = "tab-" + this.tabId; // use the id for the tabpanel which is tabId to set the actual tab id
+    tabLinkEl.setAttribute("aria-controls", this.tabId); // respective tabPanel id
+    tabLinkEl.addEventListener("blur", () => {
+      if (!this.tabEl) return;
+      if (this.tabEl.classList.contains("active")) {
+        tabLinkEl.setAttribute("tabindex", "0");
+      } else {
+        tabLinkEl.setAttribute("tabindex", "-1");
+      }
+    });
+    tabLinkEl.addEventListener("focus", () => {
+      if (!this.tabEl) return;
+      if (this.tabEl.classList.contains("active")) {
+        const allTabs = Object.keys(this.tabList._tabs);
+        const currentTabIndex = allTabs.indexOf(this.tabId);
+        this.tabList.tabEntryIndex = currentTabIndex;
+      }
+    });
     // if (this.yasgui.persistentConfig.tabIsActive(this.tabId)) {
     //   this.yasgui.store.dispatch(selectTab(this.tabId))
     // }
-    tabLinkEl.onclick = (e) => {
+    tabLinkEl.addEventListener("click", (e) => {
       e.preventDefault();
       this.yasgui.selectTabId(this.tabId);
-    };
+    });
 
     //tab name
     this.nameEl = document.createElement("span");
@@ -79,11 +112,10 @@ export class TabListEl {
     const closeBtn = document.createElement("div");
     closeBtn.innerHTML = "&#x2716;";
     closeBtn.title = "Close tab";
+    closeBtn.setAttribute("tabindex", "-1");
+    closeBtn.setAttribute("aria-hidden", "true");
     addClass(closeBtn, "closeTab");
-    closeBtn.onclick = (e) => {
-      e.preventDefault();
-      this.yasgui.getTab(this.tabId)?.close();
-    };
+    closeBtn.addEventListener("click", handleDeleteTab);
     tabLinkEl.appendChild(closeBtn);
 
     const renameEl = (this.renameEl = document.createElement("input"));
@@ -130,12 +162,14 @@ export class TabList {
   private _selectedTab?: string;
   private addTabEl?: HTMLDivElement;
   public _tabs: { [tabId: string]: TabListEl } = {};
-  public _tabsListEl?: HTMLDivElement; //the list of actual tabs
+  public _tabsListEl?: HTMLDivElement;
   public tabContextMenu?: TabContextMenu;
+  public tabEntryIndex: number | undefined;
 
   constructor(yasgui: Yasgui) {
     this.yasgui = yasgui;
     this.registerListeners();
+    this.tabEntryIndex = this.getActiveIndex();
   }
   get(tabId: string) {
     return this._tabs[tabId];
@@ -161,11 +195,45 @@ export class TabList {
       }
     });
   }
+  private getActiveIndex() {
+    if (!this._selectedTab) return;
+    const allTabs = Object.keys(this._tabs);
+    const currentTabIndex = allTabs.indexOf(this._selectedTab);
+    return currentTabIndex;
+  }
+  private handleKeydownArrowKeys = (e: KeyboardEvent) => {
+    if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
+      if (!this._tabsListEl) return;
+      const numOfChildren = this._tabsListEl.childElementCount;
+      if (typeof this.tabEntryIndex !== "number") return;
+      const tabEntryDiv = this._tabsListEl.children[this.tabEntryIndex];
+      // If the current tab does not have active set its tabindex to -1
+      if (!tabEntryDiv.classList.contains("active")) {
+        tabEntryDiv.children[0].setAttribute("tabindex", "-1"); // cur tab removed from tab index
+      }
+      if (e.code === "ArrowLeft") {
+        this.tabEntryIndex--;
+        if (this.tabEntryIndex < 0) {
+          this.tabEntryIndex = numOfChildren - 1;
+        }
+      }
+      if (e.code === "ArrowRight") {
+        this.tabEntryIndex++;
+        if (this.tabEntryIndex >= numOfChildren) {
+          this.tabEntryIndex = 0;
+        }
+      }
+      const newTabEntryDiv = this._tabsListEl.children[this.tabEntryIndex];
+      newTabEntryDiv.children[0].setAttribute("tabindex", "0");
+      (newTabEntryDiv.children[0] as HTMLElement).focus(); // focus on the a tag inside the div for click event
+    }
+  };
   drawTabsList() {
     this._tabsListEl = document.createElement("div");
     addClass(this._tabsListEl, "tabsList");
-
     this._tabsListEl.setAttribute("role", "tablist");
+    this._tabsListEl.addEventListener("keydown", this.handleKeydownArrowKeys);
+
     sortablejs.default.create(this._tabsListEl, {
       group: "tabList",
       animation: 100,
@@ -183,11 +251,21 @@ export class TabList {
     this.addTabEl = document.createElement("div");
     this.addTabEl.setAttribute("role", "presentation");
 
-    const addTabLink = document.createElement("a");
+    const addTabLink = document.createElement("button");
     addTabLink.className = "addTab";
     addTabLink.textContent = "+";
     addTabLink.title = "Add tab";
+    addTabLink.setAttribute("aria-label", "Add a new tab");
     addTabLink.addEventListener("click", this.handleAddNewTab);
+    addTabLink.addEventListener("focus", () => {
+      // sets aria tabEntryIndex to active tab
+      // this.tabEntryIndex = this.getActiveIndex();
+      if (!this._tabsListEl) return;
+      this.tabEntryIndex = this._tabsListEl.childElementCount - 1; // sets tabEntry to add tab, visually makes sense, not sure about accessibility-wise
+    });
+    addTabLink.addEventListener("blur", () => {
+      addTabLink.setAttribute("tabindex", "0"); // maintains tabability
+    });
     this.addTabEl.appendChild(addTabLink);
     this._tabsListEl.appendChild(this.addTabEl);
     this.tabContextMenu = TabContextMenu.get(
@@ -204,9 +282,6 @@ export class TabList {
   //   this.tabPanelsEl = document.createElement("div");
   //   return this.tabsListEl;
   // }
-
-  //
-
   public addTab(tabId: string, index?: number) {
     return this.drawTab(tabId, index);
   }

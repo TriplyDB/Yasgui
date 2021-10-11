@@ -76,6 +76,10 @@ export class Tab extends EventEmitter {
     if (this.rootEl) return; //aready drawn
     this.rootEl = document.createElement("div");
     this.rootEl.className = "tabPanel";
+    this.rootEl.id = this.persistentJson.id;
+    this.rootEl.setAttribute("role", "tabpanel");
+    this.rootEl.setAttribute("aria-labelledby", "tab-" + this.persistentJson.id);
+
     const wrapper = document.createElement("div");
     //controlbar
     this.controlBarEl = document.createElement("div");
