@@ -376,6 +376,7 @@ export class Yasr extends EventEmitter {
     this.downloadBtn.download = ""; // should default to the file name of the blob
     this.downloadBtn.setAttribute("aria-label", "Download Results");
     this.downloadBtn.setAttribute("tabindex", "0"); // anchor elements with no href are not automatically included in the tabindex
+    this.downloadBtn.setAttribute("role", "button");
     const iconEl = drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faDownload));
     iconEl.setAttribute("aria-hidden", "true");
     this.downloadBtn.appendChild(iconEl);

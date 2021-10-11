@@ -98,10 +98,10 @@ export class TabListEl {
     // if (this.yasgui.persistentConfig.tabIsActive(this.tabId)) {
     //   this.yasgui.store.dispatch(selectTab(this.tabId))
     // }
-    tabLinkEl.onclick = (e) => {
+    tabLinkEl.addEventListener("click", (e) => {
       e.preventDefault();
       this.yasgui.selectTabId(this.tabId);
-    };
+    });
 
     //tab name
     this.nameEl = document.createElement("span");
@@ -112,6 +112,8 @@ export class TabListEl {
     const closeBtn = document.createElement("div");
     closeBtn.innerHTML = "&#x2716;";
     closeBtn.title = "Close tab";
+    closeBtn.setAttribute("tabindex", "-1");
+    closeBtn.setAttribute("aria-hidden", "true");
     addClass(closeBtn, "closeTab");
     closeBtn.addEventListener("click", handleDeleteTab);
     tabLinkEl.appendChild(closeBtn);
