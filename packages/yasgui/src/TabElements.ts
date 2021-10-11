@@ -202,7 +202,7 @@ export class TabList {
   private handleKeydownArrowKeys = (e: KeyboardEvent) => {
     if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
       if (!this._tabsListEl) return;
-      const numOfChildren = this._tabsListEl.childElementCount - 1; // removes the add new tab from the list
+      const numOfChildren = this._tabsListEl.childElementCount;
       if (typeof this.tabEntryIndex !== "number") return;
       const tabEntryDiv = this._tabsListEl.children[this.tabEntryIndex];
       // If the current tab does not have active set its tabindex to -1
