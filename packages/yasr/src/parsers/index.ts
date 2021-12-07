@@ -1,13 +1,13 @@
 import * as SuperAgent from "superagent";
 import SparqlJsonParser from "./json";
-import TurtleParser from "./turtleFamily";
+import TurtleParser, { getTurtleAsStatements } from "./turtleFamily";
 import SparqlXmlParser from "./xml";
 import bindingsToCsv from "../bindingsToCsv";
 import { cloneDeep } from "lodash-es";
+import N3 from "n3";
 
 namespace Parser {
   export interface ErrorSummary {
-    // message: string;
     status?: number;
     text: string;
     statusText?: string;
@@ -33,7 +33,6 @@ namespace Parser {
   //a json response summary, that we can store in localstorage
   export interface ResponseSummary {
     data?: any;
-    // textStatus: string
     error?: ErrorSummary;
     status?: number;
     contentType?: string;
@@ -63,7 +62,6 @@ class Parser {
   private error: any;
   private type: "json" | "xml" | "csv" | "tsv" | "ttl" | undefined;
   private executionTime: number | undefined;
-  // private contentType: string;
   constructor(responseOrObject: Parser.ResponseSummary | SuperAgent.Response | Error | any, executionTime?: number) {
     if (responseOrObject.executionTime) this.executionTime = responseOrObject.executionTime;
     if (executionTime) this.executionTime = executionTime; // Parameter has priority
@@ -100,7 +98,6 @@ class Parser {
     if (!this.errorSummary) {
       if (this.res && this.res.status >= 400) {
         this.errorSummary = {
-          // message: this.res.error.message,
           text: this.res.text,
           status: this.res.status,
           statusText: this.res.error ? this.res.error.text : undefined,
@@ -185,7 +182,11 @@ class Parser {
           return true;
         }
       } catch (e) {
-        this.errorSummary = { text: e.message };
+        if (e instanceof Error) {
+          this.errorSummary = { text: e.message };
+        } else {
+          this.errorSummary = { text: e as any };
+        }
       }
     }
     return false;
@@ -201,30 +202,38 @@ class Parser {
       this.json = SparqlXmlParser(data, applyMustacheToLiterals);
       this.type = "xml";
       return true;
-    } catch (err) {}
+    } catch {}
     return false;
   }
 
   public getVariables(): string[] {
-    var json = this.getAsJson();
+    const json = this.getAsJson();
     if (json && json.head) return json.head.vars;
     return [];
   }
 
   public getBoolean(): boolean | undefined {
-    var json = this.getAsJson();
+    const json = this.getAsJson();
     if (json && "boolean" in json) {
       return json.boolean;
     }
   }
 
   public getBindings() {
-    var json = this.getAsJson();
+    const json = this.getAsJson();
     if (json && json.results) {
       return json.results.bindings;
     } else {
       return null;
     }
+  }
+  private statements: false | N3.Quad[] | undefined;
+  public getStatements() {
+    if (!this.statements && this.type === "ttl") {
+      this.statements = getTurtleAsStatements(this.getData());
+    }
+    if (this.statements) return this.statements;
+    return null;
   }
   getOriginalResponseAsString(): string {
     const data = this.getData();
@@ -253,7 +262,7 @@ class Parser {
   //and, make sure we can easily pass it on back to this wrapper function when loading it again from storage
   //When an object is too large to store, this method returns undefined
   public getAsStoreObject(maxResponseSize: number): Parser.ResponseSummary | undefined {
-    var summary = this.summary;
+    let summary = this.summary;
     if (!summary && this.res) {
       summary = {
         contentType: this.getContentType(),

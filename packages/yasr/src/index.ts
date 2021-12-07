@@ -170,10 +170,8 @@ export class Yasr extends EventEmitter {
         filter(this.config.plugins, (val) => (typeof val === "object" && val.enabled) || val === true)
       );
 
-    // var autoSelectedPlugin: string = null;
-    // var pluginPriority = -1;
-    var supportedPlugins: { name: string; priority: number }[] = [];
-    for (var pluginName in this.plugins) {
+    const supportedPlugins: { name: string; priority: number }[] = [];
+    for (const pluginName in this.plugins) {
       if (this.plugins[pluginName].canHandleResults()) {
         supportedPlugins.push({ name: pluginName, priority: this.plugins[pluginName].priority });
       }
@@ -186,9 +184,8 @@ export class Yasr extends EventEmitter {
     if (!this.results) return;
     const compatiblePlugins = this.getCompatiblePlugins();
     if (this.drawnPlugin && this.getSelectedPluginName() !== this.drawnPlugin) {
-      const length = this.pluginControls.children.length;
-      for (var i = length - 1; i >= 0; i--) {
-        this.pluginControls.children[i].remove();
+      while (this.pluginControls.firstChild) {
+        this.pluginControls.firstChild.remove();
       }
       this.plugins[this.drawnPlugin].destroy?.();
     }
@@ -210,7 +207,7 @@ export class Yasr extends EventEmitter {
 
       this.emit("draw", this, this.plugins[pluginToDraw]);
       const plugin = this.plugins[pluginToDraw];
-      let initPromise = plugin.initialize ? plugin.initialize() : Promise.resolve();
+      const initPromise = plugin.initialize ? plugin.initialize() : Promise.resolve();
       initPromise.then(
         async () => {
           if (pluginToDraw) {
@@ -359,18 +356,8 @@ export class Yasr extends EventEmitter {
     this.drawDownloadIcon();
     this.drawDocumentationButton();
   }
-  private stringToBlob(string: string, contentType: string): string | undefined {
-    if (this.stringToBlobSupported()) {
-      var blob = new Blob([string], { type: contentType });
-      return window.URL.createObjectURL(blob);
-    }
-  }
-  private stringToBlobSupported() {
-    return window.URL && Blob;
-  }
   private downloadBtn: HTMLAnchorElement | undefined;
   private drawDownloadIcon() {
-    if (!this.stringToBlobSupported()) return;
     this.downloadBtn = document.createElement("a");
     addClass(this.downloadBtn, "yasr_btn", "yasr_downloadIcon", "btn_icon");
     this.downloadBtn.download = ""; // should default to the file name of the blob
@@ -402,7 +389,7 @@ export class Yasr extends EventEmitter {
     this.updateResponseInfo();
   }
   private updateResponseInfo() {
-    var innerText = "";
+    let innerText = "";
     if (this.results) {
       removeClass(this.dataElement, "empty");
       const bindings = this.results.getBindings();
@@ -467,25 +454,18 @@ export class Yasr extends EventEmitter {
     if (currentPlugin && currentPlugin.download) {
       const downloadInfo = currentPlugin.download(this.config.getDownloadFileName?.());
       if (!downloadInfo) return;
-      const downloadUrl = this.stringToBlob(
-        downloadInfo.getData(),
-        downloadInfo.contentType ? downloadInfo.contentType : "text/plain"
-      );
-      if (downloadUrl) {
-        const mockLink = document.createElement("a");
-        mockLink.href = downloadUrl;
-        mockLink.download = downloadInfo.filename;
-        //simulate click
-        if (document.dispatchEvent as any) {
-          // W3C
-          const oEvent = document.createEvent("MouseEvents");
-          oEvent.initMouseEvent("click", true, true, window, 1, 1, 1, 1, 1, false, false, false, false, 0, mockLink);
-          mockLink.dispatchEvent(oEvent);
-        } else if ((<any>document).fireEvent) {
-          // IE
-          mockLink.click();
-        }
+      const data = downloadInfo.getData();
+      let downloadUrl: string;
+      if (data.startsWith("data:")) {
+        downloadUrl = data;
+      } else {
+        const blob = new Blob([data], { type: downloadInfo.contentType ?? "text/plain" });
+        downloadUrl = window.URL.createObjectURL(blob);
       }
+      const mockLink = document.createElement("a");
+      mockLink.href = downloadUrl;
+      mockLink.download = downloadInfo.filename;
+      mockLink.click();
     }
   }
 

@@ -33,12 +33,10 @@ function n3TermToSparqlBinding(term: N3.Term): Parser.BindingValue {
   };
 }
 export default function (queryResponse: any): Parser.SparqlResults {
-  const parser = new N3.Parser();
-  // When no the response has no body use an empty string
-  const parsed = parser.parse(queryResponse || "");
+  const statements = getTurtleAsStatements(queryResponse);
   var hasGraph = false;
   const vars = ["subject", "predicate", "object"];
-  const bindings = parsed.map((statement) => {
+  const bindings = statements.map((statement) => {
     const binding: Parser.Binding = {
       subject: n3TermToSparqlBinding(statement.subject),
       predicate: n3TermToSparqlBinding(statement.predicate),
@@ -59,4 +57,10 @@ export default function (queryResponse: any): Parser.SparqlResults {
       bindings: bindings,
     },
   };
+}
+export function getTurtleAsStatements(queryResponse: any): N3.Quad[] {
+  const parser = new N3.Parser();
+  // When no the response has no body use an empty string
+  const parsed = parser.parse(queryResponse || "");
+  return parsed;
 }

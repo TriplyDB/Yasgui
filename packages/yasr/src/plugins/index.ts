@@ -15,6 +15,9 @@ export interface Plugin<Opts extends any> {
 }
 export interface DownloadInfo {
   contentType: string;
+  /**
+   * File contents as a string or a data url
+   */
   getData: () => string;
   filename: string;
   title: string;
