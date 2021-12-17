@@ -59,7 +59,8 @@ class Parser {
   private res: SuperAgent.Response | undefined;
   private summary: Parser.ResponseSummary | undefined;
   private errorSummary: Parser.ErrorSummary | undefined;
-  private error: any;
+  // Contrary to the typings, statusText is part of responseError
+  private error: Error | (SuperAgent.ResponseError & { response: { statusText: string } }) | undefined;
   private type: "json" | "xml" | "csv" | "tsv" | "ttl" | undefined;
   private executionTime: number | undefined;
   constructor(responseOrObject: Parser.ResponseSummary | SuperAgent.Response | Error | any, executionTime?: number) {
@@ -107,12 +108,19 @@ class Parser {
         this.errorSummary = this.summary.error;
       }
       if (this.error) {
-        if (this.error.response) {
+        if ("response" in this.error && this.error.response !== undefined) {
           this.errorSummary = {
             text: this.error.response.text,
             status: this.error.response.status,
             statusText: this.error.response.statusText,
           };
+          if (
+            this.error.response.body &&
+            typeof this.error.response.body === "object" &&
+            "message" in this.error.response.body
+          ) {
+            this.errorSummary.text = this.error.response.body.message;
+          }
         } else {
           this.errorSummary = {
             text: this.error.message,
