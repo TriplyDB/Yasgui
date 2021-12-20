@@ -116,8 +116,10 @@ export default class Table implements Plugin<PluginConfig> {
     // Hide brackets when prefixed or compact
     const hideBrackets = prefixed || this.persistentConfig.compact;
     return `${hideBrackets ? "" : "&lt;"}<a class='iri' target='${
-      this.config.openIriInNewWindow ? '_blank ref="noopener noreferrer"' : "_self"
-    }' href='${href}'>${visibleString}</a>${hideBrackets ? "" : "&gt;"}`;
+      this.config.openIriInNewWindow ? "_blank" : "_self"
+    }'${this.config.openIriInNewWindow ? " ref='noopener noreferrer'" : ""} href='${href}'>${visibleString}</a>${
+      hideBrackets ? "" : "&gt;"
+    }`;
   }
   private getCellContent(binding: Parser.BindingValue, prefixes?: { [label: string]: string }): string {
     let content: string;
