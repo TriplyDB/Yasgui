@@ -34,7 +34,6 @@ function n3TermToSparqlBinding(term: N3.Term): Parser.BindingValue {
 }
 export default function (queryResponse: any): Parser.SparqlResults {
   const statements = getTurtleAsStatements(queryResponse);
-  var hasGraph = false;
   const vars = ["subject", "predicate", "object"];
   const bindings = statements.map((statement) => {
     const binding: Parser.Binding = {
@@ -42,13 +41,8 @@ export default function (queryResponse: any): Parser.SparqlResults {
       predicate: n3TermToSparqlBinding(statement.predicate),
       object: n3TermToSparqlBinding(statement.object),
     };
-    if (statement.graph) {
-      hasGraph = true;
-      binding.graph = n3TermToSparqlBinding(statement.graph);
-    }
     return binding;
   });
-  if (hasGraph) vars.push("graph");
   return {
     head: {
       vars: vars,
