@@ -6,6 +6,8 @@ import bindingsToCsv from "../bindingsToCsv";
 import { cloneDeep } from "lodash-es";
 import N3 from "n3";
 
+import * as Papa from "papaparse";
+
 namespace Parser {
   export interface ErrorSummary {
     status?: number;
@@ -44,7 +46,8 @@ const applyMustacheToLiterals: Parser.PostProcessBinding = (binding: Parser.Bind
   for (const lit in binding) {
     if (binding[lit].type === "uri") continue;
     binding[lit].value = binding[lit].value.replace(/{{(.*?)}}/g, (variable) => {
-      variable = variable.substr(2, variable.length - 4).trim();
+      variable = variable.substring(2, variable.length - 4).trim();
+
       if (binding[variable]) {
         return binding[variable].value;
       } else {
@@ -53,6 +56,85 @@ const applyMustacheToLiterals: Parser.PostProcessBinding = (binding: Parser.Bind
     });
   }
   return binding;
+};
+
+const csvToJson = (csvString: string) => {
+  let vars: string[] = [];
+  let bindings: Parser.Binding[] = [];
+  let bindingContainer = {};
+  let bindingItem: Parser.Binding = {};
+
+  const csvStringToJsonObject = Papa.parse(csvString, { header: true, skipEmptyLines: true });
+  let sparqlData = csvStringToJsonObject.data;
+
+  if (csvStringToJsonObject.meta.fields === undefined) vars = [];
+  else vars = csvStringToJsonObject.meta.fields;
+
+  sparqlData.map((singleQuery: any) => {
+    for (const variable in singleQuery) {
+      bindingItem = { [variable]: { value: singleQuery[variable], type: "literal" } };
+
+      singleQuery[variable] = bindingItem[variable];
+    }
+    bindingContainer = { ...singleQuery };
+    bindings.push(bindingContainer);
+    return bindings;
+  });
+
+  const sparqlResults: Parser.SparqlResults = {
+    head: {
+      vars: vars,
+    },
+    results: {
+      bindings: bindings,
+    },
+  };
+
+  return sparqlResults;
+};
+
+const tsvToJson = (tsvString: string) => {
+  const lines = tsvString.split("\n");
+
+  lines.pop();
+
+  let [headersString, ...sparqlDataStringArr] = lines;
+  const headers = headersString.split("\t").map((header) => header.substring(1));
+
+  const sparqlData = sparqlDataStringArr.map((row) => {
+    const binding: Parser.Binding = {};
+    for (const [index, value] of row.split("\t").entries()) {
+      const bindingName = headers[index];
+      if (value[0] === "<") {
+        binding[bindingName] = { value: value.substring(1, value.length - 1), type: "uri" };
+      } else if (value[0] === '"') {
+        const lastDoubleQuote = value.lastIndexOf('"');
+        const literalValue = value.substring(1, lastDoubleQuote);
+        if (lastDoubleQuote === value.length - 1) binding[bindingName] = { value: literalValue, type: "literal" };
+        else if (lastDoubleQuote < value.lastIndexOf("@")) {
+          const langTag = value.substring(value.lastIndexOf("@") + 1);
+          binding[bindingName] = { value: literalValue, type: "literal", "xml:lang": langTag };
+        } else if (lastDoubleQuote < value.lastIndexOf("^^")) {
+          const dataTag = value.substring(value.lastIndexOf("^^") + 2);
+          binding[bindingName] = { value: literalValue, type: "typed-literal", datatype: dataTag };
+        }
+      }
+    }
+    return binding;
+  });
+
+  const sparqlResults: Parser.SparqlResults = {
+    head: {
+      vars: headers,
+    },
+    results: {
+      bindings: sparqlData,
+    },
+  };
+
+  // console.log("sparqlResults is: ", sparqlResults);
+
+  return sparqlResults;
 };
 
 class Parser {
@@ -174,9 +256,11 @@ class Parser {
           this.type = "xml";
           return true;
         } else if (contentType.indexOf("csv") > -1) {
+          this.json = csvToJson(data);
           this.type = "csv";
           return true;
         } else if (contentType.indexOf("tab-separated") > -1) {
+          this.json = tsvToJson(data);
           this.type = "tsv";
           return true;
         } else if (
@@ -216,24 +300,21 @@ class Parser {
 
   public getVariables(): string[] {
     const json = this.getAsJson();
+
     if (json && json.head) return json.head.vars;
+
     return [];
   }
 
   public getBoolean(): boolean | undefined {
     const json = this.getAsJson();
-    if (json && "boolean" in json) {
-      return json.boolean;
-    }
+    if (json && "boolean" in json) return json.boolean;
   }
 
   public getBindings() {
     const json = this.getAsJson();
-    if (json && json.results) {
-      return json.results.bindings;
-    } else {
-      return null;
-    }
+    if (json && json.results) return json.results.bindings;
+    else return null;
   }
   private statements: false | N3.Quad[] | undefined;
   public getStatements() {
@@ -247,7 +328,7 @@ class Parser {
     const data = this.getData();
     if (typeof data === "string") {
       return data;
-    } else if (this.type == "json") {
+    } else if (this.type === "json") {
       return JSON.stringify(data, undefined, 2);
     }
     return data;
