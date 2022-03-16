@@ -99,8 +99,7 @@ const tsvToJson = (tsvString: string) => {
       } else if (value[0] === '"') {
         const lastDoubleQuote = value.lastIndexOf('"');
         const literalValue = value.substring(1, lastDoubleQuote);
-        if (literalValue.length === 0) continue;
-        else if (lastDoubleQuote === value.length - 1) binding[bindingName] = { value: literalValue, type: "literal" };
+        if (lastDoubleQuote === value.length - 1) binding[bindingName] = { value: literalValue, type: "literal" };
         else if (lastDoubleQuote < value.lastIndexOf("@")) {
           const langTag = value.substring(value.lastIndexOf("@") + 1);
           binding[bindingName] = { value: literalValue, type: "literal", "xml:lang": langTag };
@@ -121,8 +120,6 @@ const tsvToJson = (tsvString: string) => {
       bindings: sparqlData,
     },
   };
-
-  // console.log("sparqlResults is: ", sparqlResults);
 
   return sparqlResults;
 };
