@@ -2,9 +2,9 @@ import * as SuperAgent from "superagent";
 import SparqlJsonParser from "./json";
 import TurtleParser, { getTurtleAsStatements } from "./turtleFamily";
 import SparqlXmlParser from "./xml";
-import bindingsToCsv from "../bindingsToCsv";
 import SparqlCsvParser from "./csv";
 import SparqlTsvParser from "./tsv";
+import bindingsToCsv from "../bindingsToCsv";
 import { cloneDeep } from "lodash-es";
 import N3 from "n3";
 

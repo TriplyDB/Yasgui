@@ -1,4 +1,5 @@
 import Parser from "./";
+
 export default function (tsvString: string) {
   const lines = tsvString.split("\n");
 
