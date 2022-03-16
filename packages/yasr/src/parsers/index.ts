@@ -2,6 +2,8 @@ import * as SuperAgent from "superagent";
 import SparqlJsonParser from "./json";
 import TurtleParser, { getTurtleAsStatements } from "./turtleFamily";
 import SparqlXmlParser from "./xml";
+import SparqlCsvParser from "./csv";
+import SparqlTsvParser from "./tsv";
 import bindingsToCsv from "../bindingsToCsv";
 import { cloneDeep } from "lodash-es";
 import N3 from "n3";
@@ -44,7 +46,8 @@ const applyMustacheToLiterals: Parser.PostProcessBinding = (binding: Parser.Bind
   for (const lit in binding) {
     if (binding[lit].type === "uri") continue;
     binding[lit].value = binding[lit].value.replace(/{{(.*?)}}/g, (variable) => {
-      variable = variable.substr(2, variable.length - 4).trim();
+      variable = variable.substring(2, variable.length - 4).trim();
+
       if (binding[variable]) {
         return binding[variable].value;
       } else {
@@ -54,7 +57,6 @@ const applyMustacheToLiterals: Parser.PostProcessBinding = (binding: Parser.Bind
   }
   return binding;
 };
-
 class Parser {
   private res: SuperAgent.Response | undefined;
   private summary: Parser.ResponseSummary | undefined;
@@ -174,9 +176,11 @@ class Parser {
           this.type = "xml";
           return true;
         } else if (contentType.indexOf("csv") > -1) {
+          this.json = SparqlCsvParser(data);
           this.type = "csv";
           return true;
         } else if (contentType.indexOf("tab-separated") > -1) {
+          this.json = SparqlTsvParser(data);
           this.type = "tsv";
           return true;
         } else if (
@@ -216,24 +220,21 @@ class Parser {
 
   public getVariables(): string[] {
     const json = this.getAsJson();
+
     if (json && json.head) return json.head.vars;
+
     return [];
   }
 
   public getBoolean(): boolean | undefined {
     const json = this.getAsJson();
-    if (json && "boolean" in json) {
-      return json.boolean;
-    }
+    if (json && "boolean" in json) return json.boolean;
   }
 
   public getBindings() {
     const json = this.getAsJson();
-    if (json && json.results) {
-      return json.results.bindings;
-    } else {
-      return null;
-    }
+    if (json && json.results) return json.results.bindings;
+    else return null;
   }
   private statements: false | N3.Quad[] | undefined;
   public getStatements() {
@@ -247,7 +248,7 @@ class Parser {
     const data = this.getData();
     if (typeof data === "string") {
       return data;
-    } else if (this.type == "json") {
+    } else if (this.type === "json") {
       return JSON.stringify(data, undefined, 2);
     }
     return data;
