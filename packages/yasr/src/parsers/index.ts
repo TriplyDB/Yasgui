@@ -3,10 +3,10 @@ import SparqlJsonParser from "./json";
 import TurtleParser, { getTurtleAsStatements } from "./turtleFamily";
 import SparqlXmlParser from "./xml";
 import bindingsToCsv from "../bindingsToCsv";
+import csvToJson from "./csv";
+import tsvToJson from "./tsv";
 import { cloneDeep } from "lodash-es";
 import N3 from "n3";
-
-import * as Papa from "papaparse";
 
 namespace Parser {
   export interface ErrorSummary {
@@ -57,73 +57,6 @@ const applyMustacheToLiterals: Parser.PostProcessBinding = (binding: Parser.Bind
   }
   return binding;
 };
-
-const csvToJson = (csvString: string) => {
-  const csvStringToJsonObject = Papa.parse(csvString, { header: true, skipEmptyLines: true });
-  const header = csvStringToJsonObject.meta.fields === undefined ? [] : csvStringToJsonObject.meta.fields;
-  const lines = csvStringToJsonObject.data;
-
-  const sparqlData = lines.map((row: any) => {
-    for (const variable in row) {
-      row[variable] = { value: row[variable], type: "literal" };
-    }
-    return row;
-  });
-
-  const sparqlResults: Parser.SparqlResults = {
-    head: {
-      vars: header,
-    },
-    results: {
-      bindings: sparqlData,
-    },
-  };
-
-  return sparqlResults;
-};
-
-const tsvToJson = (tsvString: string) => {
-  const lines = tsvString.split("\n");
-
-  lines.pop(); //remove the last empty line
-
-  const [headersString, ...sparqlDataStringArr] = lines;
-  const headers = headersString.split("\t").map((header) => header.substring(1));
-
-  const sparqlData = sparqlDataStringArr.map((row) => {
-    const binding: Parser.Binding = {};
-    for (const [index, value] of row.split("\t").entries()) {
-      const bindingName = headers[index];
-      if (value[0] === "<") {
-        binding[bindingName] = { value: value.substring(1, value.length - 1), type: "uri" };
-      } else if (value[0] === '"') {
-        const lastDoubleQuote = value.lastIndexOf('"');
-        const literalValue = value.substring(1, lastDoubleQuote);
-        if (lastDoubleQuote === value.length - 1) binding[bindingName] = { value: literalValue, type: "literal" };
-        else if (lastDoubleQuote < value.lastIndexOf("@")) {
-          const langTag = value.substring(value.lastIndexOf("@") + 1);
-          binding[bindingName] = { value: literalValue, type: "literal", "xml:lang": langTag };
-        } else if (lastDoubleQuote < value.lastIndexOf("^^")) {
-          const dataTag = value.substring(value.lastIndexOf("^^") + 2);
-          binding[bindingName] = { value: literalValue, type: "typed-literal", datatype: dataTag };
-        }
-      }
-    }
-    return binding;
-  });
-
-  const sparqlResults: Parser.SparqlResults = {
-    head: {
-      vars: headers,
-    },
-    results: {
-      bindings: sparqlData,
-    },
-  };
-
-  return sparqlResults;
-};
-
 class Parser {
   private res: SuperAgent.Response | undefined;
   private summary: Parser.ResponseSummary | undefined;
