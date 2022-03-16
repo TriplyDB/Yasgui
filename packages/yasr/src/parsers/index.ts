@@ -59,34 +59,23 @@ const applyMustacheToLiterals: Parser.PostProcessBinding = (binding: Parser.Bind
 };
 
 const csvToJson = (csvString: string) => {
-  let vars: string[] = [];
-  let bindings: Parser.Binding[] = [];
-  let bindingContainer = {};
-  let bindingItem: Parser.Binding = {};
-
   const csvStringToJsonObject = Papa.parse(csvString, { header: true, skipEmptyLines: true });
-  let sparqlData = csvStringToJsonObject.data;
+  const header = csvStringToJsonObject.meta.fields === undefined ? [] : csvStringToJsonObject.meta.fields;
+  const lines = csvStringToJsonObject.data;
 
-  if (csvStringToJsonObject.meta.fields === undefined) vars = [];
-  else vars = csvStringToJsonObject.meta.fields;
-
-  sparqlData.map((singleQuery: any) => {
-    for (const variable in singleQuery) {
-      bindingItem = { [variable]: { value: singleQuery[variable], type: "literal" } };
-
-      singleQuery[variable] = bindingItem[variable];
+  const sparqlData = lines.map((row: any) => {
+    for (const variable in row) {
+      row[variable] = { value: row[variable], type: "literal" };
     }
-    bindingContainer = { ...singleQuery };
-    bindings.push(bindingContainer);
-    return bindings;
+    return row;
   });
 
   const sparqlResults: Parser.SparqlResults = {
     head: {
-      vars: vars,
+      vars: header,
     },
     results: {
-      bindings: bindings,
+      bindings: sparqlData,
     },
   };
 
@@ -96,9 +85,9 @@ const csvToJson = (csvString: string) => {
 const tsvToJson = (tsvString: string) => {
   const lines = tsvString.split("\n");
 
-  lines.pop();
+  lines.pop(); //remove the last empty line
 
-  let [headersString, ...sparqlDataStringArr] = lines;
+  const [headersString, ...sparqlDataStringArr] = lines;
   const headers = headersString.split("\t").map((header) => header.substring(1));
 
   const sparqlData = sparqlDataStringArr.map((row) => {
@@ -110,7 +99,8 @@ const tsvToJson = (tsvString: string) => {
       } else if (value[0] === '"') {
         const lastDoubleQuote = value.lastIndexOf('"');
         const literalValue = value.substring(1, lastDoubleQuote);
-        if (lastDoubleQuote === value.length - 1) binding[bindingName] = { value: literalValue, type: "literal" };
+        if (literalValue.length === 0) continue;
+        else if (lastDoubleQuote === value.length - 1) binding[bindingName] = { value: literalValue, type: "literal" };
         else if (lastDoubleQuote < value.lastIndexOf("@")) {
           const langTag = value.substring(value.lastIndexOf("@") + 1);
           binding[bindingName] = { value: literalValue, type: "literal", "xml:lang": langTag };
