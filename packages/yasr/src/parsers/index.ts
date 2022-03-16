@@ -3,8 +3,8 @@ import SparqlJsonParser from "./json";
 import TurtleParser, { getTurtleAsStatements } from "./turtleFamily";
 import SparqlXmlParser from "./xml";
 import bindingsToCsv from "../bindingsToCsv";
-import csvToJson from "./csv";
-import tsvToJson from "./tsv";
+import SparqlCsvParser from "./csv";
+import SparqlTsvParser from "./tsv";
 import { cloneDeep } from "lodash-es";
 import N3 from "n3";
 
@@ -176,11 +176,11 @@ class Parser {
           this.type = "xml";
           return true;
         } else if (contentType.indexOf("csv") > -1) {
-          this.json = csvToJson(data);
+          this.json = SparqlCsvParser(data);
           this.type = "csv";
           return true;
         } else if (contentType.indexOf("tab-separated") > -1) {
-          this.json = tsvToJson(data);
+          this.json = SparqlTsvParser(data);
           this.type = "tsv";
           return true;
         } else if (
