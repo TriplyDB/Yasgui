@@ -5,6 +5,10 @@ export interface ItemWrapper<V = {}> {
   namespace: string;
   time: number;
 }
+
+interface QuotaExceededError extends Error {
+  quotaExceeded?: boolean;
+}
 export default class Storage {
   private namespace: string;
   constructor(namespace: string) {
@@ -24,12 +28,16 @@ export default class Storage {
           time: new Date().getTime() / 1000,
         });
       } catch (e) {
-        e.quotaExceeded = isQuotaExceeded(e);
-        if (e.quotaExceeded && onQuotaExceeded) {
-          onQuotaExceeded(e);
-        } else {
-          throw e;
+        if (e instanceof Error) {
+          const quotaExceededError = e as QuotaExceededError;
+          quotaExceededError.quotaExceeded = isQuotaExceeded(e);
+          if (quotaExceededError.quotaExceeded && onQuotaExceeded) {
+            onQuotaExceeded(e);
+          } else {
+            throw quotaExceededError;
+          }
         }
+        throw e;
       }
     }
   }
