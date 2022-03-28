@@ -8,7 +8,6 @@ require("./index.scss");
 
 export default class Error implements Plugin<never> {
   private yasr: Yasr;
-  public options: never;
   constructor(yasr: Yasr) {
     this.yasr = yasr;
   }
