@@ -46,8 +46,7 @@ const applyMustacheToLiterals: Parser.PostProcessBinding = (binding: Parser.Bind
   for (const lit in binding) {
     if (binding[lit].type === "uri") continue;
     binding[lit].value = binding[lit].value.replace(/{{(.*?)}}/g, (variable) => {
-      variable = variable.substring(2, variable.length - 4).trim();
-
+      variable = variable.substring(2, variable.length - 2).trim();
       if (binding[variable]) {
         return binding[variable].value;
       } else {
