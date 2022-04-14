@@ -79,8 +79,6 @@ export default class Response implements Plugin<PluginConfig> {
     }
 
     const codemirrorOpts: Partial<CodeMirror.EditorConfiguration> = {
-      // cursorBlinkRate: -1,
-      // readOnly: "nocursor",
       readOnly: true,
       lineNumbers: true,
       lineWrapping: true,
