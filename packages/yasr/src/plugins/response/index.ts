@@ -79,12 +79,13 @@ export default class Response implements Plugin<PluginConfig> {
     }
 
     const codemirrorOpts: Partial<CodeMirror.EditorConfiguration> = {
-      readOnly: "nocursor",
+      readOnly: true,
       lineNumbers: true,
       lineWrapping: true,
       foldGutter: true,
       gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
       value: value,
+      extraKeys: { Tab: false },
     };
     const mode = this.yasr.results?.getType();
     if (mode === "json") {
