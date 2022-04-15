@@ -179,7 +179,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         expect(hasAutocomplete).to.be.undefined("", "Expected codemirror hint to not be there");
       } catch (e) {
         // We expect the timeout to trigger here
-        if (e.name !== "TimeoutError") {
+        if ((e as any).name !== "TimeoutError") {
           throw e;
         }
       }
@@ -544,7 +544,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
           expect(hasAutocomplete).to.be.undefined("", "Expected codemirror hint to not be there");
         } catch (e) {
           // We expect the timeout to trigger here
-          if (e.name !== "TimeoutError") {
+          if ((e as any).name !== "TimeoutError") {
             throw e;
           }
         }
