@@ -4,8 +4,6 @@ var tokenTypes: { [id: string]: "prefixed" | "var" } = {
   "string-2": "prefixed",
   atom: "var",
 };
-const prefixCcApi =
-  (window.location.protocol.indexOf("http") === 0 ? "//" : "http://") + "prefix.cc/popular/all.file.json";
 import * as superagent from "superagent";
 
 var conf: Autocompleter.CompleterConfig = {
@@ -92,8 +90,8 @@ var conf: Autocompleter.CompleterConfig = {
     if (!previousToken || previousToken.string.toUpperCase() != "PREFIX") return false;
     return true;
   },
-  get: function (_token) {
-    return superagent.get(prefixCcApi).then((resp) => {
+  get: function (yasqe) {
+    return superagent.get(yasqe.config.prefixCcApi).then((resp) => {
       var prefixArray: string[] = [];
       for (var prefix in resp.body) {
         var completeString = prefix + ": <" + resp.body[prefix] + ">";

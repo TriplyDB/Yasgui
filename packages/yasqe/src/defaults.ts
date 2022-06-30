@@ -8,6 +8,8 @@ import { default as Yasqe, Config, PlainRequestConfig } from "./";
 import * as queryString from "query-string";
 //need to pass Yasqe object as argument, as the imported version might not have inherited all (e.g. `fold`) props of Codemirror yet
 export default function get() {
+  const prefixCcApi =
+    (window.location.protocol.indexOf("http") === 0 ? "//" : "http://") + "prefix.cc/popular/all.file.json";
   const CodeMirror = require("codemirror");
   const config: Omit<Config, "requestConfig"> = {
     mode: "sparql11",
@@ -128,6 +130,7 @@ SELECT * WHERE {
     resizeable: true,
     editorHeight: "300px",
     queryingDisabled: undefined,
+    prefixCcApi: prefixCcApi,
   };
   const requestConfig: PlainRequestConfig = {
     queryArgument: undefined, //undefined means: get query argument based on query mode
