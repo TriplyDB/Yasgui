@@ -15,5 +15,8 @@
   "dependencies": {
     "@types/node": "14.0.23",
     "store": "^2.0.12"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

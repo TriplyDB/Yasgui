@@ -41,5 +41,8 @@
     "@types/node": "14.0.23",
     "@types/superagent": "^4.1.4",
     "npm-check": "^5.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

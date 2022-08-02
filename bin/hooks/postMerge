@@ -18,4 +18,4 @@ check_run() {
   fi
 }
 REPO_ROOT=`git rev-parse --show-toplevel`
-check_run ^yarn.lock "cd ${REPO_ROOT} && yarn install --frozen-lockfile"
+check_run ^yarn.lock "cd ${REPO_ROOT} && yarn install --immutable"

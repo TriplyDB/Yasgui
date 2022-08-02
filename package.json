@@ -37,7 +37,6 @@
       }
     }
   },
-  "devDependencies": {},
   "lint-staged": {
     "*.ts?(x)": [
       "prettier --parser typescript --write",
@@ -135,5 +134,6 @@
   ],
   "resolutions": {
     "brotli-size": "4.0.0"
-  }
+  },
+  "packageManager": "yarn@3.2.2"
 }
