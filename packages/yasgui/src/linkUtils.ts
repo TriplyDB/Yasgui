@@ -73,6 +73,7 @@ export function createShareLink(forUrl: string, tab: Tab) {
 export type ShareConfigObject = {
   query: string;
   endpoint: string;
+  useLogin: boolean;
   requestMethod: PlainRequestConfig["method"];
   tabTitle: string;
   headers: PlainRequestConfig["headers"];
@@ -92,6 +93,7 @@ export function createShareConfig(tab: Tab): ShareConfigObject {
   return {
     query: tab.getQuery(),
     endpoint: tab.getEndpoint(),
+    useLogin: getAsValue(requestConfig.withCredentials, yasgui),
     requestMethod: getAsValue(requestConfig.method, yasgui),
     tabTitle: tab.getName(),
     // headers: isFunction(requestConfig.headers) ? requestConfig.headers(tab.yasgui) : requestConfig.headers,
@@ -134,6 +136,8 @@ export function getConfigFromUrl(defaults: PersistedJson, _url?: string): Persis
       options.requestConfig.acceptHeaderSelect = value;
     } else if (key == "endpoint") {
       options.requestConfig.endpoint = value;
+    } else if (key == "useLogin") {
+      options.requestConfig.withCredentials = value === "true";
     } else if (key == "requestMethod") {
       options.requestConfig.method = <any>value;
     } else if (key == "tabTitle") {

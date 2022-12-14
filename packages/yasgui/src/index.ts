@@ -310,6 +310,7 @@ export class Yasgui extends EventEmitter {
       const currentTab = this.getTab();
       if (currentTab) {
         tabConfig.requestConfig.endpoint = currentTab.getEndpoint();
+        tabConfig.requestConfig.withCredentials = currentTab.getRequestConfig().withCredentials;
       }
     }
     if (opts.avoidDuplicateTabs) {
