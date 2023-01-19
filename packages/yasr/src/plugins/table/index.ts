@@ -333,7 +333,7 @@ export default class Table implements Plugin<PluginConfig> {
     const ellipseToggleWrapper = document.createElement("div");
     const ellipseSwitchComponent = document.createElement("label");
     const ellipseTextComponent = document.createElement("span");
-    ellipseTextComponent.innerText = "Ellipse";
+    ellipseTextComponent.innerText = "Ellipsis";
     addClass(ellipseTextComponent, "label");
     ellipseSwitchComponent.appendChild(ellipseTextComponent);
     addClass(ellipseSwitchComponent, "switch");
