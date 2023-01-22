@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- SWI Prolog
+- SWI Prolog 7.x
 
 ## How to make modifications to grammar:
 
