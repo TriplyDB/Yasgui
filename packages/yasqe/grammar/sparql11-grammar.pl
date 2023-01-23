@@ -46,7 +46,7 @@ selectQuery ==>
 	[selectClause,*(datasetClause),whereClause,solutionModifier].
 
 subSelect ==>
-        [selectClause,whereClause,solutionModifier,valuesClause].
+  [selectClause,whereClause,solutionModifier,valuesClause].
 
 % [9]
 selectClause ==>
@@ -296,6 +296,7 @@ inlineDataOneVar ==> [var,'{',*(dataBlockValue),'}'].
 inlineDataFull ==> [ 'NIL' or ['(',*(var),')'],
                         '{',*(['(',*(dataBlockValue),')'] or 'NIL'),'}'].
 %[65]
+dataBlockValue ==> [quotedTriple].
 dataBlockValue ==> [iriRef].
 dataBlockValue ==> [rdfLiteral].
 dataBlockValue ==> [numericLiteral].
@@ -337,7 +338,7 @@ constructTriples ==>
 	[triplesSameSubject,?(['.',?(constructTriples)])].
 %[75]
 triplesSameSubject ==>
-	[varOrTerm,propertyListNotEmpty].
+	[varOrTermOrQuotedTP,propertyListNotEmpty].
 triplesSameSubject ==>
 	[triplesNode,propertyList].
 %[76]
@@ -356,9 +357,10 @@ objectList ==>
 	[object,*([',',object])].
 %[80]
 object ==>
-	[graphNode].
+	[graphNode, ?(annotationPattern)].
 %[81]
-triplesSameSubjectPath ==> [varOrTerm,propertyListPathNotEmpty].
+triplesSameSubjectPath ==> [varOrTermOrQuotedTP,propertyListPathNotEmpty].
+% TODO: triplesNodePath[100] or triplesNode[98] below?
 triplesSameSubjectPath ==> [triplesNodePath,propertyListPath].
 %[82]
 propertyListPath ==> [propertyListNotEmpty].
@@ -376,7 +378,7 @@ verbSimple ==> [var].
 objectListPath ==>
 	[objectPath,*([',',objectPath])].
 %[87]
-objectPath ==> [graphNodePath].
+objectPath ==> [graphNodePath, ?(annotationPatternPath)].
 %[88]
 path ==> [pathAlternative].
 %[89].
@@ -449,10 +451,10 @@ collection ==> ['(',+(graphNode),')'].
 %[103]
 collectionPath ==> ['(',+(graphNodePath),')'].
 %[104]
-graphNode ==> [varOrTerm].
+graphNode ==> [varOrTermOrQuotedTP].
 graphNode ==> [triplesNode].
 %[105]
-graphNodePath ==> [varOrTerm].
+graphNodePath ==> [varOrTermOrQuotedTP].
 graphNodePath ==> [triplesNodePath].
 %[106]
 varOrTerm ==> [var].
@@ -516,6 +518,7 @@ primaryExpression ==> [rdfLiteral].
 primaryExpression ==> [numericLiteral].
 primaryExpression ==> [booleanLiteral].
 primaryExpression ==> [var].
+primaryExpression ==> [exprQuotedTP].
 primaryExpression ==> [aggregate].
 %[120]
 brackettedExpression ==> ['(',expression,')'].
@@ -577,6 +580,11 @@ builtInCall ==> ['ISNUMERIC','(',expression,')'].
 builtInCall ==> [regexExpression].
 builtInCall ==> [existsFunc].
 builtInCall ==> [notExistsFunc].
+builtInCall ==> ['TRIPLE','(',expression,expression,expression,')'].
+builtInCall ==> ['SUBJECT','(',expression,')'].
+builtInCall ==> ['PREDICATE','(',expression,')'].
+builtInCall ==> ['OBJECT','(',expression,')'].
+builtInCall ==> ['isTRIPLE','(',expression,')'].
 %[122]
 regexExpression ==>
 	['REGEX','(',expression,',',expression,?([',',expression]),')'].
@@ -642,7 +650,41 @@ prefixedName ==> ['PNAME_NS'].
 %[138]
 blankNode ==> ['BLANK_NODE_LABEL'].
 blankNode ==> ['ANON'].
-
+%[174]
+quotedTP ==> ['<<',qtSubjectOrObject,verb,qtSubjectOrObject,'>>'].
+%[175]
+quotedTriple ==> ['<<',dataValueTerm,iriRef or 'a',dataValueTerm,'>>'].
+%[176]
+qtSubjectOrObject ==> [var].
+qtSubjectOrObject ==> [blankNode].
+qtSubjectOrObject ==> [iriRef].
+qtSubjectOrObject ==> [rdfLiteral].
+qtSubjectOrObject ==> [numericLiteral].
+qtSubjectOrObject ==> [booleanLiteral].
+qtSubjectOrObject ==> [quotedTP].
+%[177]
+dataValueTerm ==> [iriRef].
+dataValueTerm ==> [rdfLiteral].
+dataValueTerm ==> [numericLiteral].
+dataValueTerm ==> [booleanLiteral].
+dataValueTerm ==> [quotedTriple].
+%[178]
+varOrTermOrQuotedTP ==> [var].
+varOrTermOrQuotedTP ==> [graphTerm].
+varOrTermOrQuotedTP ==> [quotedTP].
+%[179]
+annotationPattern ==> ['{|',propertyListNotEmpty,'|}'].
+%[180]
+annotationPatternPath ==> ['{|',propertyListPathNotEmpty,'|}'].
+%[181]
+exprQuotedTP ==> ['<<',exprVarOrTerm,verb,exprVarOrTerm,'>>'].
+%[182]
+exprVarOrTerm ==> [iriRef].
+exprVarOrTerm ==> [rdfLiteral].
+exprVarOrTerm ==> [numericLiteral].
+exprVarOrTerm ==> [booleanLiteral].
+exprVarOrTerm ==> [var].
+exprVarOrTerm ==> [exprQuotedTP].
 
 % tokens defined by regular expressions elsewhere
 tm_regex([
@@ -793,7 +835,13 @@ tm_keywords([
 'SAMPLE',
 'SEPARATOR',
 
-'STR'
+'STR',
+
+'TRIPLE',
+'SUBJECT',
+'PREDICATE',
+'OBJECT',
+'isTRIPLE'
 ]).
 
 % Other tokens representing fixed, case sensitive, strings
@@ -804,6 +852,10 @@ tm_keywords([
 % e.g. DOUBLE, DECIMAL, INTEGER
 % e.g. INTEGER_POSITIVE, PLUS
 tm_punct([
+'<<'= '<<',
+'>>'= '>>',
+'{|'= '\\{\\|',
+'|}'= '\\|\\}',
 '*'= '\\*',
 'a'= 'a',
 '.'= '\\.',
