@@ -100,8 +100,7 @@ export default class Table implements Plugin<PluginConfig> {
     return bindings.map((binding, rowId) => [rowId + 1, ...vars.map((variable) => binding[variable] ?? "")]);
   }
 
-  private getUriLinkFromBinding(binding: Parser.BindingValue, prefixes?: { [key: string]: string }) {
-    const href = binding.value;
+  private getUriLinkFromBinding(href: string, prefixes?: { [key: string]: string }) {
     let visibleString = href;
     let prefixed = false;
     if (prefixes) {
@@ -124,7 +123,7 @@ export default class Table implements Plugin<PluginConfig> {
   private getCellContent(binding: Parser.BindingValue, prefixes?: { [label: string]: string }): string {
     let content: string;
     if (binding.type == "uri") {
-      content = `<span>${this.getUriLinkFromBinding(binding, prefixes)}</span>`;
+      content = `<span>${this.getUriLinkFromBinding(binding.value as string, prefixes)}</span>`;
     } else {
       content = `<span class='nonIri'>${this.formatLiteral(binding, prefixes)}</span>`;
     }
@@ -132,14 +131,15 @@ export default class Table implements Plugin<PluginConfig> {
     return `<div>${content}</div>`;
   }
   private formatLiteral(literalBinding: Parser.BindingValue, prefixes?: { [key: string]: string }) {
-    let stringRepresentation = escape(literalBinding.value);
+    const literalValue = Parser.getBindingValueValueAsString(literalBinding.value);
+    let stringRepresentation = escape(literalValue);
     // Return now when in compact mode.
     if (this.persistentConfig.compact) return stringRepresentation;
 
     if (literalBinding["xml:lang"]) {
       stringRepresentation = `"${stringRepresentation}"<sup>@${literalBinding["xml:lang"]}</sup>`;
     } else if (literalBinding.datatype) {
-      const dataType = this.getUriLinkFromBinding({ type: "uri", value: literalBinding.datatype }, prefixes);
+      const dataType = this.getUriLinkFromBinding(literalBinding.datatype, prefixes);
       stringRepresentation = `"${stringRepresentation}"<sup>^^${dataType}</sup>`;
     }
     return stringRepresentation;
