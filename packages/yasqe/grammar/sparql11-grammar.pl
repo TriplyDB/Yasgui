@@ -269,6 +269,7 @@ triplesBlock ==>
 %[56]
 graphPatternNotTriples ==> [groupOrUnionGraphPattern].
 graphPatternNotTriples ==> [optionalGraphPattern].
+graphPatternNotTriples ==> [lateralGraphPattern].
 graphPatternNotTriples ==> [minusGraphPattern].
 graphPatternNotTriples ==> [graphGraphPattern].
 graphPatternNotTriples ==> [serviceGraphPattern].
@@ -277,6 +278,7 @@ graphPatternNotTriples ==> [bind].
 graphPatternNotTriples ==> [inlineData].
 %[57]
 optionalGraphPattern ==> ['OPTIONAL',groupGraphPattern].
+lateralGraphPattern ==> ['LATERAL',groupGraphPattern].
 %[58]
 graphGraphPattern ==>
 	['GRAPH',varOrIRIref,groupGraphPattern].
@@ -700,6 +702,7 @@ tm_keywords([
 'WHERE',
 'GRAPH',
 'OPTIONAL',
+'LATERAL',
 'UNION',
 'FILTER',
 'GROUP',
