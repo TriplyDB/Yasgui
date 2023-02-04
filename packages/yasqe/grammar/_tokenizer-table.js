@@ -19,6 +19,7 @@ module.exports = {
       "]": [],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       GRAPH: [],
       SERVICE: [],
@@ -36,6 +37,7 @@ module.exports = {
       GRAPH: [],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       SERVICE: [],
       FILTER: [],
@@ -78,6 +80,7 @@ module.exports = {
       "]": [],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       GRAPH: [],
       SERVICE: [],
@@ -94,6 +97,7 @@ module.exports = {
       GRAPH: [],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       SERVICE: [],
       FILTER: [],
@@ -130,6 +134,7 @@ module.exports = {
       ".": [],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       GRAPH: [],
       SERVICE: [],
@@ -141,6 +146,7 @@ module.exports = {
     "*[graphPatternNotTriples,?.,?triplesBlock]": {
       "{": ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       OPTIONAL: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      LATERAL: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       MINUS: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       GRAPH: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       SERVICE: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
@@ -907,6 +913,7 @@ module.exports = {
       GRAPH: [],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       SERVICE: [],
       FILTER: [],
@@ -1058,6 +1065,7 @@ module.exports = {
       ".": ["[.,?triplesBlock]"],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       GRAPH: [],
       SERVICE: [],
@@ -1103,6 +1111,7 @@ module.exports = {
       "]": [],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       GRAPH: [],
       SERVICE: [],
@@ -1146,6 +1155,7 @@ module.exports = {
       GRAPH: [],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       SERVICE: [],
       FILTER: [],
@@ -1315,6 +1325,7 @@ module.exports = {
       GRAPH: [],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       SERVICE: [],
       FILTER: [],
@@ -1449,6 +1460,7 @@ module.exports = {
       DOUBLE_NEGATIVE: ["triplesBlock"],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       GRAPH: [],
       SERVICE: [],
@@ -1615,6 +1627,7 @@ module.exports = {
     "[graphPatternNotTriples,?.,?triplesBlock]": {
       "{": ["graphPatternNotTriples", "?.", "?triplesBlock"],
       OPTIONAL: ["graphPatternNotTriples", "?.", "?triplesBlock"],
+      LATERAL: ["graphPatternNotTriples", "?.", "?triplesBlock"],
       MINUS: ["graphPatternNotTriples", "?.", "?triplesBlock"],
       GRAPH: ["graphPatternNotTriples", "?.", "?triplesBlock"],
       SERVICE: ["graphPatternNotTriples", "?.", "?triplesBlock"],
@@ -2714,6 +2727,7 @@ module.exports = {
     graphPatternNotTriples: {
       "{": ["groupOrUnionGraphPattern"],
       OPTIONAL: ["optionalGraphPattern"],
+      LATERAL: ["lateralGraphPattern"],
       MINUS: ["minusGraphPattern"],
       GRAPH: ["graphGraphPattern"],
       SERVICE: ["serviceGraphPattern"],
@@ -2824,6 +2838,7 @@ module.exports = {
     groupGraphPatternSub: {
       "{": ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       OPTIONAL: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
+      LATERAL: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       MINUS: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       GRAPH: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       SERVICE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
@@ -3300,6 +3315,9 @@ module.exports = {
     optionalGraphPattern: {
       OPTIONAL: ["OPTIONAL", "groupGraphPattern"]
     },
+    lateralGraphPattern: {
+      LATERAL: ["LATERAL", "groupGraphPattern"]
+    },
     "or([*,expression])": {
       "*": ["*"],
       "!": ["expression"],
@@ -3542,6 +3560,7 @@ module.exports = {
       SELECT: ["subSelect"],
       "{": ["groupGraphPatternSub"],
       OPTIONAL: ["groupGraphPatternSub"],
+      LATERAL: ["groupGraphPatternSub"],
       MINUS: ["groupGraphPatternSub"],
       GRAPH: ["groupGraphPatternSub"],
       SERVICE: ["groupGraphPatternSub"],
@@ -3874,6 +3893,7 @@ module.exports = {
       ".": [],
       "{": [],
       OPTIONAL: [],
+      LATERAL: [],
       MINUS: [],
       GRAPH: [],
       SERVICE: [],
@@ -4761,7 +4781,7 @@ module.exports = {
     }
   },
 
-  keywords: /^(GROUP_CONCAT|DATATYPE|BASE|PREFIX|SELECT|CONSTRUCT|DESCRIBE|ASK|FROM|NAMED|ORDER|BY|LIMIT|ASC|DESC|OFFSET|DISTINCT|REDUCED|WHERE|GRAPH|OPTIONAL|UNION|FILTER|GROUP|HAVING|AS|VALUES|LOAD|CLEAR|DROP|CREATE|MOVE|COPY|SILENT|INSERT|DELETE|DATA|WITH|TO|USING|NAMED|MINUS|BIND|LANGMATCHES|LANG|BOUND|SAMETERM|ISIRI|ISURI|ISBLANK|ISLITERAL|REGEX|TRUE|FALSE|UNDEF|ADD|DEFAULT|ALL|SERVICE|INTO|IN|NOT|IRI|URI|BNODE|RAND|ABS|CEIL|FLOOR|ROUND|CONCAT|STRLEN|UCASE|LCASE|ENCODE_FOR_URI|CONTAINS|STRSTARTS|STRENDS|STRBEFORE|STRAFTER|YEAR|MONTH|DAY|HOURS|MINUTES|SECONDS|TIMEZONE|TZ|NOW|UUID|STRUUID|MD5|SHA1|SHA256|SHA384|SHA512|COALESCE|IF|STRLANG|STRDT|ISNUMERIC|SUBSTR|REPLACE|EXISTS|COUNT|SUM|MIN|MAX|AVG|SAMPLE|SEPARATOR|STR)/i,
+  keywords: /^(GROUP_CONCAT|DATATYPE|BASE|PREFIX|SELECT|CONSTRUCT|DESCRIBE|ASK|FROM|NAMED|ORDER|BY|LIMIT|ASC|DESC|OFFSET|DISTINCT|REDUCED|WHERE|GRAPH|OPTIONAL|LATERAL|UNION|FILTER|GROUP|HAVING|AS|VALUES|LOAD|CLEAR|DROP|CREATE|MOVE|COPY|SILENT|INSERT|DELETE|DATA|WITH|TO|USING|NAMED|MINUS|BIND|LANGMATCHES|LANG|BOUND|SAMETERM|ISIRI|ISURI|ISBLANK|ISLITERAL|REGEX|TRUE|FALSE|UNDEF|ADD|DEFAULT|ALL|SERVICE|INTO|IN|NOT|IRI|URI|BNODE|RAND|ABS|CEIL|FLOOR|ROUND|CONCAT|STRLEN|UCASE|LCASE|ENCODE_FOR_URI|CONTAINS|STRSTARTS|STRENDS|STRBEFORE|STRAFTER|YEAR|MONTH|DAY|HOURS|MINUTES|SECONDS|TIMEZONE|TZ|NOW|UUID|STRUUID|MD5|SHA1|SHA256|SHA384|SHA512|COALESCE|IF|STRLANG|STRDT|ISNUMERIC|SUBSTR|REPLACE|EXISTS|COUNT|SUM|MIN|MAX|AVG|SAMPLE|SEPARATOR|STR)/i,
 
   punct: /^(\*|a|\.|\{|\}|,|\(|\)|;|\[|\]|\|\||&&|=|!=|!|<=|>=|<|>|\+|-|\/|\^\^|\?|\||\^)/,
 
