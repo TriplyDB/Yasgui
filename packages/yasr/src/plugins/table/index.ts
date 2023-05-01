@@ -14,6 +14,7 @@ import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg, addClass, removeClass
 import * as faTableIcon from "@fortawesome/free-solid-svg-icons/faTable";
 import { DeepReadonly } from "ts-essentials";
 import { cloneDeep } from "lodash-es";
+import sanitize from "../../helpers/sanitize";
 
 const ColumnResizer = require("column-resizer");
 const DEFAULT_PAGE_SIZE = 50;
@@ -162,8 +163,8 @@ export default class Table implements Plugin<PluginConfig> {
       }, //prepend with row numbers column
       ...this.yasr.results?.getVariables().map((name) => {
         return <DataTables.ColumnSettings>{
-          name: name,
-          title: name,
+          name,
+          title: sanitize(name),
           render: (data: Parser.BindingValue | "", type: any, _row: any, _meta: DataTables.CellMetaSettings) => {
             // Handle empty rows
             if (data === "") return data;
