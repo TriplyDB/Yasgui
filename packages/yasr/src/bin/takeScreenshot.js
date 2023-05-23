@@ -212,7 +212,7 @@ select * {
 //
 // `;
 
-const getHtml = plugin => `
+const getHtml = (plugin) => `
 
 <!DOCTYPE html>
 <html lang="en">
@@ -288,7 +288,7 @@ const getHtml = plugin => `
 
 `;
 
-const getScreenWidth = plugin => {
+const getScreenWidth = (plugin) => {
   switch (plugin) {
     case "geo":
       // case "table":
@@ -305,10 +305,10 @@ let staticFileServer = new static.Server("./");
 function setupServer() {
   return new Promise((resolve, reject) => {
     var server = http
-      .createServer(function(request, response) {
+      .createServer(function (request, response) {
         if (request.url === "/") return response.end(getHtml(plugin));
         request
-          .addListener("end", function() {
+          .addListener("end", function () {
             staticFileServer.serve(request, response);
           })
           .resume();
@@ -316,17 +316,17 @@ function setupServer() {
       .listen(PORT, "localhost", () => {
         resolve(server);
       })
-      .on("error", e => reject(e));
+      .on("error", (e) => reject(e));
   });
 }
 function wait(time) {
-  return new Promise(resolve => setTimeout(resolve, time));
+  return new Promise((resolve) => setTimeout(resolve, time));
 }
 function waitForImagesToLoad(page) {
   return page.evaluate(() => {
     const selectors = Array.from(document.querySelectorAll("img"));
     return Promise.all(
-      selectors.map(img => {
+      selectors.map((img) => {
         if (img.complete) return;
         return new Promise((resolve, reject) => {
           img.addEventListener("load", resolve);
@@ -342,7 +342,7 @@ function waitForImagesToLoad(page) {
   const browser = await puppeteer.launch({
     headless: false,
     // devtools: true,
-    args: [process.env["NO_SANDBOX"] ? "--no-sandbox" : ""]
+    args: [process.env["NO_SANDBOX"] ? "--no-sandbox" : ""],
   });
   const page = await browser.newPage();
   await page.setViewport({ width: getScreenWidth(plugin), height: 1200 });
@@ -357,14 +357,15 @@ function waitForImagesToLoad(page) {
       x: rect.left,
       y: rect.top,
       width: rect.width,
-      height: rect.height
+      height: rect.height,
     };
   });
+  // eslint-disable-next-line no-console
   console.log(clip);
   await page.screenshot({
     path: "screenshot.png",
     fullPage: false,
-    clip: clip
+    clip: clip,
   });
   await page.close();
   await browser.close();

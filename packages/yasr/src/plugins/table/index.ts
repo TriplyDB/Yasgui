@@ -201,7 +201,7 @@ export default class Table implements Plugin<PluginConfig> {
     this.yasr.resultsEl.appendChild(this.tableEl);
     // reset some default config properties as they couldn't be initialized beforehand
     const dtConfig: DataTables.Settings = {
-      ...((cloneDeep(this.config.tableConfig) as unknown) as DataTables.Settings),
+      ...(cloneDeep(this.config.tableConfig) as unknown as DataTables.Settings),
       pageLength: persistentConfig?.pageSize ? persistentConfig.pageSize : DEFAULT_PAGE_SIZE,
       data: rows,
       columns: columns,

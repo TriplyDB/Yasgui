@@ -1,18 +1,18 @@
 "use strict";
 var $ = require("jquery");
 
-$.fn.tableToCsv = function(config) {
+$.fn.tableToCsv = function (config) {
   var csvString = "";
   config = $.extend(
     {
       quote: '"',
       delimiter: ",",
-      lineBreak: "\n"
+      lineBreak: "\n",
     },
     config
   );
 
-  var needToQuoteString = function(value) {
+  var needToQuoteString = function (value) {
     //quote when it contains whitespace or the delimiter
     var needQuoting = false;
     if (value.match("[\\w|" + config.delimiter + "|" + config.quote + "]")) {
@@ -20,7 +20,7 @@ $.fn.tableToCsv = function(config) {
     }
     return needQuoting;
   };
-  var addValueToString = function(value) {
+  var addValueToString = function (value) {
     //Quotes in the string need to be escaped
     value.replace(config.quote, config.quote + config.quote);
     if (needToQuoteString(value)) {
@@ -29,8 +29,8 @@ $.fn.tableToCsv = function(config) {
     csvString += " " + value + " " + config.delimiter;
   };
 
-  var addRowToString = function(rowArray) {
-    rowArray.forEach(function(val) {
+  var addRowToString = function (rowArray) {
+    rowArray.forEach(function (val) {
       addValueToString(val);
     });
     csvString += config.lineBreak;
@@ -41,7 +41,7 @@ $.fn.tableToCsv = function(config) {
   var rowspans = {};
 
   var totalColCount = 0;
-  $el.find("tr:first *").each(function() {
+  $el.find("tr:first *").each(function () {
     if ($(this).attr("colspan")) {
       totalColCount += +$(this).attr("colspan");
     } else {
@@ -49,7 +49,7 @@ $.fn.tableToCsv = function(config) {
     }
   });
 
-  $el.find("tr").each(function(rowId, tr) {
+  $el.find("tr").each(function (rowId, tr) {
     var $tr = $(tr);
     var rowArray = [];
 
@@ -74,7 +74,7 @@ $.fn.tableToCsv = function(config) {
         if (rowspan > 1) {
           rowspans[actualColId] = {
             rowSpan: rowspan - 1,
-            text: $cell.text()
+            text: $cell.text(),
           };
         }
         actualColId++;
