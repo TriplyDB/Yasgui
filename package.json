@@ -25,13 +25,13 @@
   },
   "betterScripts": {
     "dev": {
-      "command": "yarn run util:buildWebpackConfig && webpack-dev-server --public 0.0.0.0 --host 0.0.0.0 --port 4000 --config  ./webpack/config.js --disable-host-check",
+      "command": "yarn run util:buildWebpackConfig && webpack-dev-server --host 0.0.0.0 --port 4000 --config ./webpack/config.js --static-directory .",
       "env": {
         "NODE_ENV": "development"
       }
     },
     "build": {
-      "command": "rm -rf ./build && yarn run util:buildWebpackConfig && webpack --colors --display-error-details --config ./webpack/config.js && ./webpack/distributeBuildFiles.sh",
+      "command": "rm -rf ./build && yarn run util:buildWebpackConfig && webpack --config ./webpack/config.js && ./webpack/distributeBuildFiles.sh",
       "env": {
         "NODE_ENV": "production"
       }
@@ -66,14 +66,9 @@
     "@types/autoprefixer": "^9.7.2",
     "@types/chai": "^4.2.11",
     "@types/fs-extra": "^9.0.1",
-    "@types/html-webpack-plugin": "^3.2.3",
-    "@types/mini-css-extract-plugin": "^0.9.1",
     "@types/mocha": "^8.0.0",
-    "@types/node-static": "^0.7.5",
-    "@types/optimize-css-assets-webpack-plugin": "^5.0.1",
-    "@types/puppeteer": "^3.0.1",
-    "@types/webpack": "^4.41.21",
-    "@types/webpack-bundle-analyzer": "^3.8.0",
+    "@types/node-static": "^0.7.7",
+    "@types/webpack-bundle-analyzer": "^4.6.0",
     "@typescript-eslint/eslint-plugin": "^3.6.1",
     "@typescript-eslint/parser": "^3.6.1",
     "autoprefixer": "^9.7.4",
@@ -87,33 +82,31 @@
     "eslint-plugin-jest": "^23.8.1",
     "eslint-plugin-lodash": "^7.1.0",
     "fs-extra": "^9.0.1",
-    "html-webpack-plugin": "^4.3.0",
+    "html-webpack-plugin": "^5.5.1",
     "husky": "^4.2.3",
     "lerna": "^3.20.2",
     "lint-staged": "^10.0.8",
-    "mini-css-extract-plugin": "^0.9.0",
+    "mini-css-extract-plugin": "^2.7.6",
     "mocha": "^8.0.1",
-    "nightmare": "^3.0.2",
     "node-sass": "6",
     "node-static": "^0.7.11",
-    "optimize-css-assets-webpack-plugin": "^5.0.1",
     "postcss-bgimage": "2.1.3",
     "postcss-loader": "^3.0.0",
     "prettier": "^2.0.5",
-    "puppeteer": "^5.2.0",
-    "sass-loader": "10",
+    "puppeteer": "^20.3.0",
+    "sass-loader": "^13.3.0",
     "source-map": "^0.7.3",
     "source-map-loader": "^1.0.1",
     "source-map-support": "^0.5.12",
     "style-loader": "^1.1.3",
     "terser-webpack-plugin": "^3.0.7",
     "ts-loader": "^8.0.1",
-    "typescript": "^4.6.3",
-    "webpack": "^4.41.6",
-    "webpack-bundle-analyzer": "^3.3.2",
-    "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.10.3",
-    "webpack-livereload-plugin": "^2.3.0"
+    "typescript": "^5.0.4",
+    "webpack": "^5.83.1",
+    "webpack-bundle-analyzer": "^4.8.0",
+    "webpack-cli": "^5.1.1",
+    "webpack-dev-server": "^4.15.0",
+    "webpack-livereload-plugin": "^3.0.2"
   },
   "bundlesize": [
     {
@@ -135,5 +128,8 @@
   "resolutions": {
     "brotli-size": "4.0.0"
   },
-  "packageManager": "yarn@3.2.2"
+  "packageManager": "yarn@3.2.2",
+  "devDependencies": {
+    "css-minimizer-webpack-plugin": "^5.0.0"
+  }
 }
