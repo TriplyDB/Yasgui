@@ -298,7 +298,6 @@ export class Tab extends EventEmitter {
 
   private initYasqe() {
     const yasqeConf: Partial<YasqeConfig> = {
-      ...this.yasgui.config.yasqe,
       value: this.persistentJson.yasqe.value,
       editorHeight: this.persistentJson.yasqe.editorHeight ? this.persistentJson.yasqe.editorHeight : undefined,
       persistenceId: null, //yasgui handles persistent storing
@@ -337,6 +336,7 @@ export class Tab extends EventEmitter {
         }
         return processedReqConfig as PlainRequestConfig;
       },
+      ...this.yasgui.config.yasqe,
     };
     if (!yasqeConf.hintConfig) {
       yasqeConf.hintConfig = {};
