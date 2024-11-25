@@ -8,6 +8,8 @@
     "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
 
+    "skipLibCheck": true,
+
     "removeComments": true,
     "sourceMap": true,
     "listFiles": false,
@@ -15,17 +17,15 @@
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "@triply/yasr": [ "./packages/yasr/src" ],
-      "@triply/yasqe": [ "./packages/yasqe/src" ],
-      "@triply/yasgui-utils": [ "./packages/utils/src" ],
-      "@triply/yasgui": [ "./packages/yasgui/src" ]
+      "@triply/yasr": ["./packages/yasr/src"],
+      "@triply/yasqe": ["./packages/yasqe/src"],
+      "@triply/yasgui-utils": ["./packages/utils/src"],
+      "@triply/yasgui": ["./packages/yasgui/src"]
     },
     "types": ["datatables.net"]
   },
   "files": ["./packages/yasgui/typings-custom/main.d.ts"],
   "include": ["./packages/*/src/**/**/*", "./webpack/**/*", "./test/*", "./packages/yasqe/grammar/tokenizer.ts"],
   "compileOnSave": false,
-  "exclude": [
-    "**/build/**"
-  ]
+  "exclude": ["**/build/**"]
 }

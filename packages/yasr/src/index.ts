@@ -167,7 +167,7 @@ export class Yasr extends EventEmitter {
   private getCompatiblePlugins(): string[] {
     if (!this.results)
       return Object.keys(
-        filter(this.config.plugins, (val) => (typeof val === "object" && val.enabled) || val === true)
+        filter(this.config.plugins, (val) => (typeof val === "object" && val.enabled) || (val as any) === true)
       );
 
     const supportedPlugins: { name: string; priority: number }[] = [];
