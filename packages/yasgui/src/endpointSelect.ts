@@ -4,6 +4,7 @@ import { pick } from "lodash-es";
 import { addClass } from "@triply/yasgui-utils";
 require("./endpointSelect.scss");
 import parse from "autosuggest-highlight/parse";
+import { sanitize } from "dompurify";
 
 //Export this here instead of from our custom-types folder of autocomplete-js
 //as this interface is exported via the yasgui config. The custom typings are
@@ -128,15 +129,14 @@ export class EndpointSelect extends EventEmitter {
       },
       resultItem: {
         content: (data, source) => {
+          const endpoint = sanitize(data.value.endpoint);
+
           // Custom handling of items with history, these are able to be removed
           if (data.value.type && data.value.type === "history") {
             // Add a container to make folding work correctly
             const resultsContainer = document.createElement("div");
             // Match is highlighted text
-            resultsContainer.innerHTML = parse(
-              data.value.endpoint,
-              createHighlights(data.value.endpoint, this.inputField.value)
-            ).reduce(
+            resultsContainer.innerHTML = parse(endpoint, createHighlights(endpoint, this.inputField.value)).reduce(
               (current, object) => (object.highlight ? current + object.text.bold() : current + object.text),
               ""
             );
@@ -147,7 +147,7 @@ export class EndpointSelect extends EventEmitter {
             removeBtn.textContent = "✖";
             addClass(removeBtn, "removeItem");
             removeBtn.addEventListener("mousedown", (event) => {
-              this.history = this.history.filter((item) => item.endpoint !== data.value.endpoint);
+              this.history = this.history.filter((item) => item.endpoint !== endpoint);
               this.emit(
                 "remove",
                 this.value,
