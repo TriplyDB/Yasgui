@@ -6,11 +6,11 @@ module.exports = {
       ")": [],
       ",": [],
       "||": [],
-      ";": []
+      ";": [],
     },
     "*[,,expression]": {
       ",": ["[,,expression]", "*[,,expression]"],
-      ")": []
+      ")": [],
     },
     "*[,,objectPath]": {
       ",": ["[,,objectPath]", "*[,,objectPath]"],
@@ -25,7 +25,7 @@ module.exports = {
       FILTER: [],
       BIND: [],
       VALUES: [],
-      "}": []
+      "}": [],
     },
     "*[,,object]": {
       ",": ["[,,object]", "*[,,object]"],
@@ -40,7 +40,7 @@ module.exports = {
       SERVICE: [],
       FILTER: [],
       BIND: [],
-      VALUES: []
+      VALUES: [],
     },
     "*[/,pathEltOrInverse]": {
       "/": ["[/,pathEltOrInverse]", "*[/,pathEltOrInverse]"],
@@ -70,7 +70,7 @@ module.exports = {
       DOUBLE_POSITIVE: [],
       INTEGER_NEGATIVE: [],
       DECIMAL_NEGATIVE: [],
-      DOUBLE_NEGATIVE: []
+      DOUBLE_NEGATIVE: [],
     },
     "*[;,?[or([verbPath,verbSimple]),objectListPath]]": {
       ";": ["[;,?[or([verbPath,verbSimple]),objectListPath]]", "*[;,?[or([verbPath,verbSimple]),objectListPath]]"],
@@ -84,7 +84,7 @@ module.exports = {
       FILTER: [],
       BIND: [],
       VALUES: [],
-      "}": []
+      "}": [],
     },
     "*[;,?[verb,objectList]]": {
       ";": ["[;,?[verb,objectList]]", "*[;,?[verb,objectList]]"],
@@ -98,7 +98,7 @@ module.exports = {
       SERVICE: [],
       FILTER: [],
       BIND: [],
-      VALUES: []
+      VALUES: [],
     },
     "*[UNION,groupGraphPattern]": {
       UNION: ["[UNION,groupGraphPattern]", "*[UNION,groupGraphPattern]"],
@@ -136,7 +136,7 @@ module.exports = {
       FILTER: [],
       BIND: [],
       VALUES: [],
-      "}": []
+      "}": [],
     },
     "*[graphPatternNotTriples,?.,?triplesBlock]": {
       "{": ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
@@ -147,15 +147,15 @@ module.exports = {
       FILTER: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       BIND: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       VALUES: ["[graphPatternNotTriples,?.,?triplesBlock]", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      "}": []
+      "}": [],
     },
     "*[quadsNotTriples,?.,?triplesTemplate]": {
       GRAPH: ["[quadsNotTriples,?.,?triplesTemplate]", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      "}": []
+      "}": [],
     },
     "*[|,pathOneInPropertySet]": {
       "|": ["[|,pathOneInPropertySet]", "*[|,pathOneInPropertySet]"],
-      ")": []
+      ")": [],
     },
     "*[|,pathSequence]": {
       "|": ["[|,pathSequence]", "*[|,pathSequence]"],
@@ -184,14 +184,14 @@ module.exports = {
       DOUBLE_POSITIVE: [],
       INTEGER_NEGATIVE: [],
       DECIMAL_NEGATIVE: [],
-      DOUBLE_NEGATIVE: []
+      DOUBLE_NEGATIVE: [],
     },
     "*[||,conditionalAndExpression]": {
       "||": ["[||,conditionalAndExpression]", "*[||,conditionalAndExpression]"],
       AS: [],
       ")": [],
       ",": [],
-      ";": []
+      ";": [],
     },
     "*dataBlockValue": {
       UNDEF: ["dataBlockValue", "*dataBlockValue"],
@@ -214,12 +214,12 @@ module.exports = {
       DECIMAL_NEGATIVE: ["dataBlockValue", "*dataBlockValue"],
       DOUBLE_NEGATIVE: ["dataBlockValue", "*dataBlockValue"],
       "}": [],
-      ")": []
+      ")": [],
     },
     "*datasetClause": {
       FROM: ["datasetClause", "*datasetClause"],
       WHERE: [],
-      "{": []
+      "{": [],
     },
     "*describeDatasetClause": {
       FROM: ["describeDatasetClause", "*describeDatasetClause"],
@@ -231,7 +231,7 @@ module.exports = {
       WHERE: [],
       "{": [],
       VALUES: [],
-      $: []
+      $: [],
     },
     "*graphNode": {
       "(": ["graphNode", "*graphNode"],
@@ -259,7 +259,7 @@ module.exports = {
       INTEGER_NEGATIVE: ["graphNode", "*graphNode"],
       DECIMAL_NEGATIVE: ["graphNode", "*graphNode"],
       DOUBLE_NEGATIVE: ["graphNode", "*graphNode"],
-      ")": []
+      ")": [],
     },
     "*graphNodePath": {
       "(": ["graphNodePath", "*graphNodePath"],
@@ -287,7 +287,7 @@ module.exports = {
       INTEGER_NEGATIVE: ["graphNodePath", "*graphNodePath"],
       DECIMAL_NEGATIVE: ["graphNodePath", "*graphNodePath"],
       DOUBLE_NEGATIVE: ["graphNodePath", "*graphNodePath"],
-      ")": []
+      ")": [],
     },
     "*groupCondition": {
       "(": ["groupCondition", "*groupCondition"],
@@ -356,7 +356,7 @@ module.exports = {
       ORDER: [],
       HAVING: [],
       $: [],
-      "}": []
+      "}": [],
     },
     "*havingCondition": {
       "(": ["havingCondition", "*havingCondition"],
@@ -422,12 +422,12 @@ module.exports = {
       OFFSET: [],
       ORDER: [],
       $: [],
-      "}": []
+      "}": [],
     },
     "*or([[(,*dataBlockValue,)],NIL])": {
       "(": ["or([[(,*dataBlockValue,)],NIL])", "*or([[(,*dataBlockValue,)],NIL])"],
       NIL: ["or([[(,*dataBlockValue,)],NIL])", "*or([[(,*dataBlockValue,)],NIL])"],
-      "}": []
+      "}": [],
     },
     "*or([[*,unaryExpression],[/,unaryExpression]])": {
       "*": ["or([[*,unaryExpression],[/,unaryExpression]])", "*or([[*,unaryExpression],[/,unaryExpression]])"],
@@ -453,56 +453,57 @@ module.exports = {
       INTEGER_NEGATIVE: [],
       DECIMAL_NEGATIVE: [],
       DOUBLE_NEGATIVE: [],
-      ";": []
+      ";": [],
     },
-    "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])": {
-      "+": [
-        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
-      ],
-      "-": [
-        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
-      ],
-      INTEGER_POSITIVE: [
-        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
-      ],
-      DECIMAL_POSITIVE: [
-        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
-      ],
-      DOUBLE_POSITIVE: [
-        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
-      ],
-      INTEGER_NEGATIVE: [
-        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
-      ],
-      DECIMAL_NEGATIVE: [
-        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
-      ],
-      DOUBLE_NEGATIVE: [
-        "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
-      ],
-      AS: [],
-      ")": [],
-      ",": [],
-      "||": [],
-      "&&": [],
-      "=": [],
-      "!=": [],
-      "<": [],
-      ">": [],
-      "<=": [],
-      ">=": [],
-      IN: [],
-      NOT: [],
-      ";": []
-    },
+    "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])":
+      {
+        "+": [
+          "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+          "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        ],
+        "-": [
+          "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+          "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        ],
+        INTEGER_POSITIVE: [
+          "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+          "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        ],
+        DECIMAL_POSITIVE: [
+          "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+          "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        ],
+        DOUBLE_POSITIVE: [
+          "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+          "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        ],
+        INTEGER_NEGATIVE: [
+          "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+          "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        ],
+        DECIMAL_NEGATIVE: [
+          "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+          "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        ],
+        DOUBLE_NEGATIVE: [
+          "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+          "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+        ],
+        AS: [],
+        ")": [],
+        ",": [],
+        "||": [],
+        "&&": [],
+        "=": [],
+        "!=": [],
+        "<": [],
+        ">": [],
+        "<=": [],
+        ">=": [],
+        IN: [],
+        NOT: [],
+        ";": [],
+      },
     "*or([baseDecl,prefixDecl])": {
       BASE: ["or([baseDecl,prefixDecl])", "*or([baseDecl,prefixDecl])"],
       PREFIX: ["or([baseDecl,prefixDecl])", "*or([baseDecl,prefixDecl])"],
@@ -520,7 +521,7 @@ module.exports = {
       MOVE: [],
       COPY: [],
       CREATE: [],
-      WITH: []
+      WITH: [],
     },
     "*or([var,[(,expression,AS,var,)]])": {
       "(": ["or([var,[(,expression,AS,var,)]])", "*or([var,[(,expression,AS,var,)]])"],
@@ -528,7 +529,7 @@ module.exports = {
       VAR2: ["or([var,[(,expression,AS,var,)]])", "*or([var,[(,expression,AS,var,)]])"],
       WHERE: [],
       "{": [],
-      FROM: []
+      FROM: [],
     },
     "*orderCondition": {
       ASC: ["orderCondition", "*orderCondition"],
@@ -597,16 +598,16 @@ module.exports = {
       LIMIT: [],
       OFFSET: [],
       $: [],
-      "}": []
+      "}": [],
     },
     "*usingClause": {
       USING: ["usingClause", "*usingClause"],
-      WHERE: []
+      WHERE: [],
     },
     "*var": {
       VAR1: ["var", "*var"],
       VAR2: ["var", "*var"],
-      ")": []
+      ")": [],
     },
     "*varOrIRIref": {
       VAR1: ["varOrIRIref", "*varOrIRIref"],
@@ -623,7 +624,7 @@ module.exports = {
       "{": [],
       FROM: [],
       VALUES: [],
-      $: []
+      $: [],
     },
     "+graphNode": {
       "(": ["graphNode", "*graphNode"],
@@ -650,7 +651,7 @@ module.exports = {
       DOUBLE_POSITIVE: ["graphNode", "*graphNode"],
       INTEGER_NEGATIVE: ["graphNode", "*graphNode"],
       DECIMAL_NEGATIVE: ["graphNode", "*graphNode"],
-      DOUBLE_NEGATIVE: ["graphNode", "*graphNode"]
+      DOUBLE_NEGATIVE: ["graphNode", "*graphNode"],
     },
     "+graphNodePath": {
       "(": ["graphNodePath", "*graphNodePath"],
@@ -677,7 +678,7 @@ module.exports = {
       DOUBLE_POSITIVE: ["graphNodePath", "*graphNodePath"],
       INTEGER_NEGATIVE: ["graphNodePath", "*graphNodePath"],
       DECIMAL_NEGATIVE: ["graphNodePath", "*graphNodePath"],
-      DOUBLE_NEGATIVE: ["graphNodePath", "*graphNodePath"]
+      DOUBLE_NEGATIVE: ["graphNodePath", "*graphNodePath"],
     },
     "+groupCondition": {
       "(": ["groupCondition", "*groupCondition"],
@@ -739,7 +740,7 @@ module.exports = {
       NOT: ["groupCondition", "*groupCondition"],
       IRI_REF: ["groupCondition", "*groupCondition"],
       PNAME_LN: ["groupCondition", "*groupCondition"],
-      PNAME_NS: ["groupCondition", "*groupCondition"]
+      PNAME_NS: ["groupCondition", "*groupCondition"],
     },
     "+havingCondition": {
       "(": ["havingCondition", "*havingCondition"],
@@ -799,12 +800,12 @@ module.exports = {
       NOT: ["havingCondition", "*havingCondition"],
       IRI_REF: ["havingCondition", "*havingCondition"],
       PNAME_LN: ["havingCondition", "*havingCondition"],
-      PNAME_NS: ["havingCondition", "*havingCondition"]
+      PNAME_NS: ["havingCondition", "*havingCondition"],
     },
     "+or([var,[(,expression,AS,var,)]])": {
       "(": ["or([var,[(,expression,AS,var,)]])", "*or([var,[(,expression,AS,var,)]])"],
       VAR1: ["or([var,[(,expression,AS,var,)]])", "*or([var,[(,expression,AS,var,)]])"],
-      VAR2: ["or([var,[(,expression,AS,var,)]])", "*or([var,[(,expression,AS,var,)]])"]
+      VAR2: ["or([var,[(,expression,AS,var,)]])", "*or([var,[(,expression,AS,var,)]])"],
     },
     "+orderCondition": {
       ASC: ["orderCondition", "*orderCondition"],
@@ -868,14 +869,14 @@ module.exports = {
       NOT: ["orderCondition", "*orderCondition"],
       IRI_REF: ["orderCondition", "*orderCondition"],
       PNAME_LN: ["orderCondition", "*orderCondition"],
-      PNAME_NS: ["orderCondition", "*orderCondition"]
+      PNAME_NS: ["orderCondition", "*orderCondition"],
     },
     "+varOrIRIref": {
       VAR1: ["varOrIRIref", "*varOrIRIref"],
       VAR2: ["varOrIRIref", "*varOrIRIref"],
       IRI_REF: ["varOrIRIref", "*varOrIRIref"],
       PNAME_LN: ["varOrIRIref", "*varOrIRIref"],
-      PNAME_NS: ["varOrIRIref", "*varOrIRIref"]
+      PNAME_NS: ["varOrIRIref", "*varOrIRIref"],
     },
     "?.": {
       ".": ["."],
@@ -912,7 +913,7 @@ module.exports = {
       FILTER: [],
       BIND: [],
       VALUES: [],
-      "}": []
+      "}": [],
     },
     "?DISTINCT": {
       DISTINCT: ["DISTINCT"],
@@ -1001,13 +1002,13 @@ module.exports = {
       DOUBLE_NEGATIVE: [],
       PNAME_LN: [],
       PNAME_NS: [],
-      "*": []
+      "*": [],
     },
     "?GRAPH": {
       GRAPH: ["GRAPH"],
       IRI_REF: [],
       PNAME_LN: [],
-      PNAME_NS: []
+      PNAME_NS: [],
     },
     "?SILENT": {
       SILENT: ["SILENT"],
@@ -1015,24 +1016,24 @@ module.exports = {
       VAR2: [],
       IRI_REF: [],
       PNAME_LN: [],
-      PNAME_NS: []
+      PNAME_NS: [],
     },
     "?SILENT_1": {
       SILENT: ["SILENT"],
       IRI_REF: [],
       PNAME_LN: [],
-      PNAME_NS: []
+      PNAME_NS: [],
     },
     "?SILENT_2": {
       SILENT: ["SILENT"],
       GRAPH: [],
       DEFAULT: [],
       NAMED: [],
-      ALL: []
+      ALL: [],
     },
     "?SILENT_3": {
       SILENT: ["SILENT"],
-      GRAPH: []
+      GRAPH: [],
     },
     "?SILENT_4": {
       SILENT: ["SILENT"],
@@ -1040,19 +1041,19 @@ module.exports = {
       GRAPH: [],
       IRI_REF: [],
       PNAME_LN: [],
-      PNAME_NS: []
+      PNAME_NS: [],
     },
     "?WHERE": {
       WHERE: ["WHERE"],
-      "{": []
+      "{": [],
     },
     "?[,,expression]": {
       ",": ["[,,expression]"],
-      ")": []
+      ")": [],
     },
     "?[.,?constructTriples]": {
       ".": ["[.,?constructTriples]"],
-      "}": []
+      "}": [],
     },
     "?[.,?triplesBlock]": {
       ".": ["[.,?triplesBlock]"],
@@ -1064,29 +1065,29 @@ module.exports = {
       FILTER: [],
       BIND: [],
       VALUES: [],
-      "}": []
+      "}": [],
     },
     "?[.,?triplesTemplate]": {
       ".": ["[.,?triplesTemplate]"],
       "}": [],
-      GRAPH: []
+      GRAPH: [],
     },
     "?[;,SEPARATOR,=,string]": {
       ";": ["[;,SEPARATOR,=,string]"],
-      ")": []
+      ")": [],
     },
     "?[;,update]": {
       ";": ["[;,update]"],
-      $: []
+      $: [],
     },
     "?[AS,var]": {
       AS: ["[AS,var]"],
-      ")": []
+      ")": [],
     },
     "?[INTO,graphRef]": {
       INTO: ["[INTO,graphRef]"],
       ";": [],
-      $: []
+      $: [],
     },
     "?[or([verbPath,verbSimple]),objectListPath]": {
       VAR1: ["[or([verbPath,verbSimple]),objectListPath]"],
@@ -1109,7 +1110,7 @@ module.exports = {
       FILTER: [],
       BIND: [],
       VALUES: [],
-      "}": []
+      "}": [],
     },
     "?[pathOneInPropertySet,*[|,pathOneInPropertySet]]": {
       a: ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"],
@@ -1117,7 +1118,7 @@ module.exports = {
       IRI_REF: ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"],
       PNAME_LN: ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"],
       PNAME_NS: ["[pathOneInPropertySet,*[|,pathOneInPropertySet]]"],
-      ")": []
+      ")": [],
     },
     "?[update1,?[;,update]]": {
       INSERT: ["[update1,?[;,update]]"],
@@ -1130,7 +1131,7 @@ module.exports = {
       COPY: ["[update1,?[;,update]]"],
       CREATE: ["[update1,?[;,update]]"],
       WITH: ["[update1,?[;,update]]"],
-      $: []
+      $: [],
     },
     "?[verb,objectList]": {
       a: ["[verb,objectList]"],
@@ -1150,7 +1151,7 @@ module.exports = {
       SERVICE: [],
       FILTER: [],
       BIND: [],
-      VALUES: []
+      VALUES: [],
     },
     "?argList": {
       NIL: ["argList"],
@@ -1178,7 +1179,7 @@ module.exports = {
       DOUBLE_NEGATIVE: [],
       "*": [],
       "/": [],
-      ";": []
+      ";": [],
     },
     "?constructTriples": {
       VAR1: ["constructTriples"],
@@ -1206,7 +1207,7 @@ module.exports = {
       INTEGER_NEGATIVE: ["constructTriples"],
       DECIMAL_NEGATIVE: ["constructTriples"],
       DOUBLE_NEGATIVE: ["constructTriples"],
-      "}": []
+      "}": [],
     },
     "?groupClause": {
       GROUP: ["groupClause"],
@@ -1216,7 +1217,7 @@ module.exports = {
       ORDER: [],
       HAVING: [],
       $: [],
-      "}": []
+      "}": [],
     },
     "?havingClause": {
       HAVING: ["havingClause"],
@@ -1225,31 +1226,31 @@ module.exports = {
       OFFSET: [],
       ORDER: [],
       $: [],
-      "}": []
+      "}": [],
     },
     "?insertClause": {
       INSERT: ["insertClause"],
       WHERE: [],
-      USING: []
+      USING: [],
     },
     "?limitClause": {
       LIMIT: ["limitClause"],
       VALUES: [],
       $: [],
-      "}": []
+      "}": [],
     },
     "?limitOffsetClauses": {
       LIMIT: ["limitOffsetClauses"],
       OFFSET: ["limitOffsetClauses"],
       VALUES: [],
       $: [],
-      "}": []
+      "}": [],
     },
     "?offsetClause": {
       OFFSET: ["offsetClause"],
       VALUES: [],
       $: [],
-      "}": []
+      "}": [],
     },
     "?or([DISTINCT,REDUCED])": {
       DISTINCT: ["or([DISTINCT,REDUCED])"],
@@ -1257,7 +1258,7 @@ module.exports = {
       "*": [],
       "(": [],
       VAR1: [],
-      VAR2: []
+      VAR2: [],
     },
     "?or([LANGTAG,[^^,iriRef]])": {
       LANGTAG: ["or([LANGTAG,[^^,iriRef]])"],
@@ -1319,7 +1320,7 @@ module.exports = {
       SERVICE: [],
       FILTER: [],
       BIND: [],
-      VALUES: []
+      VALUES: [],
     },
     "?or([[*,unaryExpression],[/,unaryExpression]])": {
       "*": ["or([[*,unaryExpression],[/,unaryExpression]])"],
@@ -1345,47 +1346,48 @@ module.exports = {
       ">=": [],
       IN: [],
       NOT: [],
-      ";": []
+      ";": [],
     },
-    "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])": {
-      "=": [
-        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
-      ],
-      "!=": [
-        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
-      ],
-      "<": [
-        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
-      ],
-      ">": [
-        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
-      ],
-      "<=": [
-        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
-      ],
-      ">=": [
-        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
-      ],
-      IN: [
-        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
-      ],
-      NOT: [
-        "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
-      ],
-      AS: [],
-      ")": [],
-      ",": [],
-      "||": [],
-      "&&": [],
-      ";": []
-    },
+    "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])":
+      {
+        "=": [
+          "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
+        ],
+        "!=": [
+          "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
+        ],
+        "<": [
+          "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
+        ],
+        ">": [
+          "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
+        ],
+        "<=": [
+          "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
+        ],
+        ">=": [
+          "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
+        ],
+        IN: [
+          "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
+        ],
+        NOT: [
+          "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
+        ],
+        AS: [],
+        ")": [],
+        ",": [],
+        "||": [],
+        "&&": [],
+        ";": [],
+      },
     "?orderClause": {
       ORDER: ["orderClause"],
       VALUES: [],
       LIMIT: [],
       OFFSET: [],
       $: [],
-      "}": []
+      "}": [],
     },
     "?pathMod": {
       "*": ["pathMod"],
@@ -1419,7 +1421,7 @@ module.exports = {
       DOUBLE_POSITIVE: [],
       INTEGER_NEGATIVE: [],
       DECIMAL_NEGATIVE: [],
-      DOUBLE_NEGATIVE: []
+      DOUBLE_NEGATIVE: [],
     },
     "?triplesBlock": {
       VAR1: ["triplesBlock"],
@@ -1455,7 +1457,7 @@ module.exports = {
       FILTER: [],
       BIND: [],
       VALUES: [],
-      "}": []
+      "}": [],
     },
     "?triplesTemplate": {
       VAR1: ["triplesTemplate"],
@@ -1484,7 +1486,7 @@ module.exports = {
       DECIMAL_NEGATIVE: ["triplesTemplate"],
       DOUBLE_NEGATIVE: ["triplesTemplate"],
       "}": [],
-      GRAPH: []
+      GRAPH: [],
     },
     "?whereClause": {
       WHERE: ["whereClause"],
@@ -1495,122 +1497,122 @@ module.exports = {
       LIMIT: [],
       OFFSET: [],
       VALUES: [],
-      $: []
+      $: [],
     },
     "[!=,numericExpression]": {
-      "!=": ["!=", "numericExpression"]
+      "!=": ["!=", "numericExpression"],
     },
     "[&&,valueLogical]": {
-      "&&": ["&&", "valueLogical"]
+      "&&": ["&&", "valueLogical"],
     },
     "[(,*dataBlockValue,)]": {
-      "(": ["(", "*dataBlockValue", ")"]
+      "(": ["(", "*dataBlockValue", ")"],
     },
     "[(,*var,)]": {
-      "(": ["(", "*var", ")"]
+      "(": ["(", "*var", ")"],
     },
     "[(,expression,)]": {
-      "(": ["(", "expression", ")"]
+      "(": ["(", "expression", ")"],
     },
     "[(,expression,AS,var,)]": {
-      "(": ["(", "expression", "AS", "var", ")"]
+      "(": ["(", "expression", "AS", "var", ")"],
     },
     "[*,unaryExpression]": {
-      "*": ["*", "unaryExpression"]
+      "*": ["*", "unaryExpression"],
     },
     "[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]": {
       WHERE: ["*datasetClause", "WHERE", "{", "?triplesTemplate", "}", "solutionModifier"],
-      FROM: ["*datasetClause", "WHERE", "{", "?triplesTemplate", "}", "solutionModifier"]
+      FROM: ["*datasetClause", "WHERE", "{", "?triplesTemplate", "}", "solutionModifier"],
     },
     "[+,multiplicativeExpression]": {
-      "+": ["+", "multiplicativeExpression"]
+      "+": ["+", "multiplicativeExpression"],
     },
     "[,,expression]": {
-      ",": [",", "expression"]
+      ",": [",", "expression"],
     },
     "[,,integer,}]": {
-      ",": [",", "integer", "}"]
+      ",": [",", "integer", "}"],
     },
     "[,,objectPath]": {
-      ",": [",", "objectPath"]
+      ",": [",", "objectPath"],
     },
     "[,,object]": {
-      ",": [",", "object"]
+      ",": [",", "object"],
     },
     "[,,or([},[integer,}]])]": {
-      ",": [",", "or([},[integer,}]])"]
+      ",": [",", "or([},[integer,}]])"],
     },
     "[-,multiplicativeExpression]": {
-      "-": ["-", "multiplicativeExpression"]
+      "-": ["-", "multiplicativeExpression"],
     },
     "[.,?constructTriples]": {
-      ".": [".", "?constructTriples"]
+      ".": [".", "?constructTriples"],
     },
     "[.,?triplesBlock]": {
-      ".": [".", "?triplesBlock"]
+      ".": [".", "?triplesBlock"],
     },
     "[.,?triplesTemplate]": {
-      ".": [".", "?triplesTemplate"]
+      ".": [".", "?triplesTemplate"],
     },
     "[/,pathEltOrInverse]": {
-      "/": ["/", "pathEltOrInverse"]
+      "/": ["/", "pathEltOrInverse"],
     },
     "[/,unaryExpression]": {
-      "/": ["/", "unaryExpression"]
+      "/": ["/", "unaryExpression"],
     },
     "[;,?[or([verbPath,verbSimple]),objectListPath]]": {
-      ";": [";", "?[or([verbPath,verbSimple]),objectListPath]"]
+      ";": [";", "?[or([verbPath,verbSimple]),objectListPath]"],
     },
     "[;,?[verb,objectList]]": {
-      ";": [";", "?[verb,objectList]"]
+      ";": [";", "?[verb,objectList]"],
     },
     "[;,SEPARATOR,=,string]": {
-      ";": [";", "SEPARATOR", "=", "string"]
+      ";": [";", "SEPARATOR", "=", "string"],
     },
     "[;,update]": {
-      ";": [";", "update"]
+      ";": [";", "update"],
     },
     "[<,numericExpression]": {
-      "<": ["<", "numericExpression"]
+      "<": ["<", "numericExpression"],
     },
     "[<=,numericExpression]": {
-      "<=": ["<=", "numericExpression"]
+      "<=": ["<=", "numericExpression"],
     },
     "[=,numericExpression]": {
-      "=": ["=", "numericExpression"]
+      "=": ["=", "numericExpression"],
     },
     "[>,numericExpression]": {
-      ">": [">", "numericExpression"]
+      ">": [">", "numericExpression"],
     },
     "[>=,numericExpression]": {
-      ">=": [">=", "numericExpression"]
+      ">=": [">=", "numericExpression"],
     },
     "[AS,var]": {
-      AS: ["AS", "var"]
+      AS: ["AS", "var"],
     },
     "[IN,expressionList]": {
-      IN: ["IN", "expressionList"]
+      IN: ["IN", "expressionList"],
     },
     "[INTO,graphRef]": {
-      INTO: ["INTO", "graphRef"]
+      INTO: ["INTO", "graphRef"],
     },
     "[NAMED,iriRef]": {
-      NAMED: ["NAMED", "iriRef"]
+      NAMED: ["NAMED", "iriRef"],
     },
     "[NOT,IN,expressionList]": {
-      NOT: ["NOT", "IN", "expressionList"]
+      NOT: ["NOT", "IN", "expressionList"],
     },
     "[UNION,groupGraphPattern]": {
-      UNION: ["UNION", "groupGraphPattern"]
+      UNION: ["UNION", "groupGraphPattern"],
     },
     "[^^,iriRef]": {
-      "^^": ["^^", "iriRef"]
+      "^^": ["^^", "iriRef"],
     },
     "[constructTemplate,*datasetClause,whereClause,solutionModifier]": {
-      "{": ["constructTemplate", "*datasetClause", "whereClause", "solutionModifier"]
+      "{": ["constructTemplate", "*datasetClause", "whereClause", "solutionModifier"],
     },
     "[deleteClause,?insertClause]": {
-      DELETE: ["deleteClause", "?insertClause"]
+      DELETE: ["deleteClause", "?insertClause"],
     },
     "[graphPatternNotTriples,?.,?triplesBlock]": {
       "{": ["graphPatternNotTriples", "?.", "?triplesBlock"],
@@ -1620,39 +1622,39 @@ module.exports = {
       SERVICE: ["graphPatternNotTriples", "?.", "?triplesBlock"],
       FILTER: ["graphPatternNotTriples", "?.", "?triplesBlock"],
       BIND: ["graphPatternNotTriples", "?.", "?triplesBlock"],
-      VALUES: ["graphPatternNotTriples", "?.", "?triplesBlock"]
+      VALUES: ["graphPatternNotTriples", "?.", "?triplesBlock"],
     },
     "[integer,or([[,,or([},[integer,}]])],}])]": {
-      INTEGER: ["integer", "or([[,,or([},[integer,}]])],}])"]
+      INTEGER: ["integer", "or([[,,or([},[integer,}]])],}])"],
     },
     "[integer,}]": {
-      INTEGER: ["integer", "}"]
+      INTEGER: ["integer", "}"],
     },
     "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]": {
       INTEGER_POSITIVE: [
         "or([numericLiteralPositive,numericLiteralNegative])",
-        "?or([[*,unaryExpression],[/,unaryExpression]])"
+        "?or([[*,unaryExpression],[/,unaryExpression]])",
       ],
       DECIMAL_POSITIVE: [
         "or([numericLiteralPositive,numericLiteralNegative])",
-        "?or([[*,unaryExpression],[/,unaryExpression]])"
+        "?or([[*,unaryExpression],[/,unaryExpression]])",
       ],
       DOUBLE_POSITIVE: [
         "or([numericLiteralPositive,numericLiteralNegative])",
-        "?or([[*,unaryExpression],[/,unaryExpression]])"
+        "?or([[*,unaryExpression],[/,unaryExpression]])",
       ],
       INTEGER_NEGATIVE: [
         "or([numericLiteralPositive,numericLiteralNegative])",
-        "?or([[*,unaryExpression],[/,unaryExpression]])"
+        "?or([[*,unaryExpression],[/,unaryExpression]])",
       ],
       DECIMAL_NEGATIVE: [
         "or([numericLiteralPositive,numericLiteralNegative])",
-        "?or([[*,unaryExpression],[/,unaryExpression]])"
+        "?or([[*,unaryExpression],[/,unaryExpression]])",
       ],
       DOUBLE_NEGATIVE: [
         "or([numericLiteralPositive,numericLiteralNegative])",
-        "?or([[*,unaryExpression],[/,unaryExpression]])"
-      ]
+        "?or([[*,unaryExpression],[/,unaryExpression]])",
+      ],
     },
     "[or([verbPath,verbSimple]),objectListPath]": {
       VAR1: ["or([verbPath,verbSimple])", "objectListPath"],
@@ -1663,17 +1665,17 @@ module.exports = {
       "(": ["or([verbPath,verbSimple])", "objectListPath"],
       IRI_REF: ["or([verbPath,verbSimple])", "objectListPath"],
       PNAME_LN: ["or([verbPath,verbSimple])", "objectListPath"],
-      PNAME_NS: ["or([verbPath,verbSimple])", "objectListPath"]
+      PNAME_NS: ["or([verbPath,verbSimple])", "objectListPath"],
     },
     "[pathOneInPropertySet,*[|,pathOneInPropertySet]]": {
       a: ["pathOneInPropertySet", "*[|,pathOneInPropertySet]"],
       "^": ["pathOneInPropertySet", "*[|,pathOneInPropertySet]"],
       IRI_REF: ["pathOneInPropertySet", "*[|,pathOneInPropertySet]"],
       PNAME_LN: ["pathOneInPropertySet", "*[|,pathOneInPropertySet]"],
-      PNAME_NS: ["pathOneInPropertySet", "*[|,pathOneInPropertySet]"]
+      PNAME_NS: ["pathOneInPropertySet", "*[|,pathOneInPropertySet]"],
     },
     "[quadsNotTriples,?.,?triplesTemplate]": {
-      GRAPH: ["quadsNotTriples", "?.", "?triplesTemplate"]
+      GRAPH: ["quadsNotTriples", "?.", "?triplesTemplate"],
     },
     "[update1,?[;,update]]": {
       INSERT: ["update1", "?[;,update]"],
@@ -1685,7 +1687,7 @@ module.exports = {
       MOVE: ["update1", "?[;,update]"],
       COPY: ["update1", "?[;,update]"],
       CREATE: ["update1", "?[;,update]"],
-      WITH: ["update1", "?[;,update]"]
+      WITH: ["update1", "?[;,update]"],
     },
     "[verb,objectList]": {
       a: ["verb", "objectList"],
@@ -1693,361 +1695,361 @@ module.exports = {
       VAR2: ["verb", "objectList"],
       IRI_REF: ["verb", "objectList"],
       PNAME_LN: ["verb", "objectList"],
-      PNAME_NS: ["verb", "objectList"]
+      PNAME_NS: ["verb", "objectList"],
     },
     "[|,pathOneInPropertySet]": {
-      "|": ["|", "pathOneInPropertySet"]
+      "|": ["|", "pathOneInPropertySet"],
     },
     "[|,pathSequence]": {
-      "|": ["|", "pathSequence"]
+      "|": ["|", "pathSequence"],
     },
     "[||,conditionalAndExpression]": {
-      "||": ["||", "conditionalAndExpression"]
+      "||": ["||", "conditionalAndExpression"],
     },
     add: {
-      ADD: ["ADD", "?SILENT_4", "graphOrDefault", "TO", "graphOrDefault"]
+      ADD: ["ADD", "?SILENT_4", "graphOrDefault", "TO", "graphOrDefault"],
     },
     additiveExpression: {
       "!": [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       "+": [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       "-": [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       VAR1: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       VAR2: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       "(": [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STR: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       LANG: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       LANGMATCHES: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       DATATYPE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       BOUND: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       IRI: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       URI: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       BNODE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       RAND: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       ABS: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       CEIL: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       FLOOR: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       ROUND: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       CONCAT: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRLEN: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       UCASE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       LCASE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       ENCODE_FOR_URI: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       CONTAINS: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRSTARTS: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRENDS: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRBEFORE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRAFTER: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       YEAR: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       MONTH: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       DAY: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       HOURS: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       MINUTES: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       SECONDS: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       TIMEZONE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       TZ: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       NOW: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       UUID: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRUUID: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       MD5: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       SHA1: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       SHA256: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       SHA384: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       SHA512: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       COALESCE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       IF: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRLANG: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRDT: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       SAMETERM: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       ISIRI: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       ISURI: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       ISBLANK: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       ISLITERAL: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       ISNUMERIC: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       TRUE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       FALSE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       COUNT: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       SUM: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       MIN: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       MAX: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       AVG: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       SAMPLE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       GROUP_CONCAT: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       SUBSTR: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       REPLACE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       REGEX: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       EXISTS: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       NOT: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       IRI_REF: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRING_LITERAL1: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRING_LITERAL2: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRING_LITERAL_LONG1: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       STRING_LITERAL_LONG2: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       INTEGER: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       DECIMAL: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       DOUBLE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       INTEGER_POSITIVE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       DECIMAL_POSITIVE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       DOUBLE_POSITIVE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       INTEGER_NEGATIVE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       DECIMAL_NEGATIVE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       DOUBLE_NEGATIVE: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       PNAME_LN: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
       ],
       PNAME_NS: [
         "multiplicativeExpression",
-        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])"
-      ]
+        "*or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])",
+      ],
     },
     aggregate: {
       COUNT: ["COUNT", "(", "?DISTINCT", "or([*,expression])", ")"],
@@ -2056,43 +2058,43 @@ module.exports = {
       MAX: ["MAX", "(", "?DISTINCT", "expression", ")"],
       AVG: ["AVG", "(", "?DISTINCT", "expression", ")"],
       SAMPLE: ["SAMPLE", "(", "?DISTINCT", "expression", ")"],
-      GROUP_CONCAT: ["GROUP_CONCAT", "(", "?DISTINCT", "expression", "?[;,SEPARATOR,=,string]", ")"]
+      GROUP_CONCAT: ["GROUP_CONCAT", "(", "?DISTINCT", "expression", "?[;,SEPARATOR,=,string]", ")"],
     },
     allowBnodes: {
-      "}": []
+      "}": [],
     },
     allowVars: {
-      "}": []
+      "}": [],
     },
     argList: {
       NIL: ["NIL"],
-      "(": ["(", "?DISTINCT", "expression", "*[,,expression]", ")"]
+      "(": ["(", "?DISTINCT", "expression", "*[,,expression]", ")"],
     },
     askQuery: {
-      ASK: ["ASK", "*datasetClause", "whereClause", "solutionModifier"]
+      ASK: ["ASK", "*datasetClause", "whereClause", "solutionModifier"],
     },
     baseDecl: {
-      BASE: ["BASE", "IRI_REF"]
+      BASE: ["BASE", "IRI_REF"],
     },
     bind: {
-      BIND: ["BIND", "(", "expression", "AS", "var", ")"]
+      BIND: ["BIND", "(", "expression", "AS", "var", ")"],
     },
     blankNode: {
       BLANK_NODE_LABEL: ["BLANK_NODE_LABEL"],
-      ANON: ["ANON"]
+      ANON: ["ANON"],
     },
     blankNodePropertyList: {
-      "[": ["[", "propertyListNotEmpty", "]"]
+      "[": ["[", "propertyListNotEmpty", "]"],
     },
     blankNodePropertyListPath: {
-      "[": ["[", "propertyListPathNotEmpty", "]"]
+      "[": ["[", "propertyListPathNotEmpty", "]"],
     },
     booleanLiteral: {
       TRUE: ["TRUE"],
-      FALSE: ["FALSE"]
+      FALSE: ["FALSE"],
     },
     brackettedExpression: {
-      "(": ["(", "expression", ")"]
+      "(": ["(", "expression", ")"],
     },
     builtInCall: {
       STR: ["STR", "(", "expression", ")"],
@@ -2148,16 +2150,16 @@ module.exports = {
       ISNUMERIC: ["ISNUMERIC", "(", "expression", ")"],
       REGEX: ["regexExpression"],
       EXISTS: ["existsFunc"],
-      NOT: ["notExistsFunc"]
+      NOT: ["notExistsFunc"],
     },
     clear: {
-      CLEAR: ["CLEAR", "?SILENT_2", "graphRefAll"]
+      CLEAR: ["CLEAR", "?SILENT_2", "graphRefAll"],
     },
     collection: {
-      "(": ["(", "+graphNode", ")"]
+      "(": ["(", "+graphNode", ")"],
     },
     collectionPath: {
-      "(": ["(", "+graphNodePath", ")"]
+      "(": ["(", "+graphNodePath", ")"],
     },
     conditionalAndExpression: {
       "!": ["valueLogical", "*[&&,valueLogical]"],
@@ -2244,7 +2246,7 @@ module.exports = {
       DECIMAL_NEGATIVE: ["valueLogical", "*[&&,valueLogical]"],
       DOUBLE_NEGATIVE: ["valueLogical", "*[&&,valueLogical]"],
       PNAME_LN: ["valueLogical", "*[&&,valueLogical]"],
-      PNAME_NS: ["valueLogical", "*[&&,valueLogical]"]
+      PNAME_NS: ["valueLogical", "*[&&,valueLogical]"],
     },
     conditionalOrExpression: {
       "!": ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
@@ -2331,7 +2333,7 @@ module.exports = {
       DECIMAL_NEGATIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       DOUBLE_NEGATIVE: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
       PNAME_LN: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
-      PNAME_NS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"]
+      PNAME_NS: ["conditionalAndExpression", "*[||,conditionalAndExpression]"],
     },
     constraint: {
       "(": ["brackettedExpression"],
@@ -2391,16 +2393,16 @@ module.exports = {
       NOT: ["builtInCall"],
       IRI_REF: ["functionCall"],
       PNAME_LN: ["functionCall"],
-      PNAME_NS: ["functionCall"]
+      PNAME_NS: ["functionCall"],
     },
     constructQuery: {
       CONSTRUCT: [
         "CONSTRUCT",
-        "or([[constructTemplate,*datasetClause,whereClause,solutionModifier],[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]])"
-      ]
+        "or([[constructTemplate,*datasetClause,whereClause,solutionModifier],[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]])",
+      ],
     },
     constructTemplate: {
-      "{": ["{", "?constructTriples", "}"]
+      "{": ["{", "?constructTriples", "}"],
     },
     constructTriples: {
       VAR1: ["triplesSameSubject", "?[.,?constructTriples]"],
@@ -2427,19 +2429,19 @@ module.exports = {
       DOUBLE_POSITIVE: ["triplesSameSubject", "?[.,?constructTriples]"],
       INTEGER_NEGATIVE: ["triplesSameSubject", "?[.,?constructTriples]"],
       DECIMAL_NEGATIVE: ["triplesSameSubject", "?[.,?constructTriples]"],
-      DOUBLE_NEGATIVE: ["triplesSameSubject", "?[.,?constructTriples]"]
+      DOUBLE_NEGATIVE: ["triplesSameSubject", "?[.,?constructTriples]"],
     },
     copy: {
-      COPY: ["COPY", "?SILENT_4", "graphOrDefault", "TO", "graphOrDefault"]
+      COPY: ["COPY", "?SILENT_4", "graphOrDefault", "TO", "graphOrDefault"],
     },
     create: {
-      CREATE: ["CREATE", "?SILENT_3", "graphRef"]
+      CREATE: ["CREATE", "?SILENT_3", "graphRef"],
     },
     dataBlock: {
       NIL: ["or([inlineDataOneVar,inlineDataFull])"],
       "(": ["or([inlineDataOneVar,inlineDataFull])"],
       VAR1: ["or([inlineDataOneVar,inlineDataFull])"],
-      VAR2: ["or([inlineDataOneVar,inlineDataFull])"]
+      VAR2: ["or([inlineDataOneVar,inlineDataFull])"],
     },
     dataBlockValue: {
       IRI_REF: ["iriRef"],
@@ -2460,29 +2462,29 @@ module.exports = {
       DOUBLE_NEGATIVE: ["numericLiteral"],
       TRUE: ["booleanLiteral"],
       FALSE: ["booleanLiteral"],
-      UNDEF: ["UNDEF"]
+      UNDEF: ["UNDEF"],
     },
     datasetClause: {
-      FROM: ["FROM", "or([defaultGraphClause,namedGraphClause])"]
+      FROM: ["FROM", "or([defaultGraphClause,namedGraphClause])"],
     },
     defaultGraphClause: {
       IRI_REF: ["sourceSelector"],
       PNAME_LN: ["sourceSelector"],
-      PNAME_NS: ["sourceSelector"]
+      PNAME_NS: ["sourceSelector"],
     },
     delete1: {
       DATA: ["DATA", "quadDataNoBnodes"],
       WHERE: ["WHERE", "quadPatternNoBnodes"],
-      "{": ["quadPatternNoBnodes", "?insertClause", "*usingClause", "WHERE", "groupGraphPattern"]
+      "{": ["quadPatternNoBnodes", "?insertClause", "*usingClause", "WHERE", "groupGraphPattern"],
     },
     deleteClause: {
-      DELETE: ["DELETE", "quadPattern"]
+      DELETE: ["DELETE", "quadPattern"],
     },
     describeDatasetClause: {
-      FROM: ["FROM", "or([defaultGraphClause,namedGraphClause])"]
+      FROM: ["FROM", "or([defaultGraphClause,namedGraphClause])"],
     },
     describeQuery: {
-      DESCRIBE: ["DESCRIBE", "or([+varOrIRIref,*])", "*describeDatasetClause", "?whereClause", "solutionModifier"]
+      DESCRIBE: ["DESCRIBE", "or([+varOrIRIref,*])", "*describeDatasetClause", "?whereClause", "solutionModifier"],
     },
     disallowBnodes: {
       "}": [],
@@ -2511,7 +2513,7 @@ module.exports = {
       DOUBLE_POSITIVE: [],
       INTEGER_NEGATIVE: [],
       DECIMAL_NEGATIVE: [],
-      DOUBLE_NEGATIVE: []
+      DOUBLE_NEGATIVE: [],
     },
     disallowVars: {
       "}": [],
@@ -2540,13 +2542,13 @@ module.exports = {
       DOUBLE_POSITIVE: [],
       INTEGER_NEGATIVE: [],
       DECIMAL_NEGATIVE: [],
-      DOUBLE_NEGATIVE: []
+      DOUBLE_NEGATIVE: [],
     },
     drop: {
-      DROP: ["DROP", "?SILENT_2", "graphRefAll"]
+      DROP: ["DROP", "?SILENT_2", "graphRefAll"],
     },
     existsFunc: {
-      EXISTS: ["EXISTS", "groupGraphPattern"]
+      EXISTS: ["EXISTS", "groupGraphPattern"],
     },
     expression: {
       "!": ["conditionalOrExpression"],
@@ -2633,22 +2635,22 @@ module.exports = {
       DECIMAL_NEGATIVE: ["conditionalOrExpression"],
       DOUBLE_NEGATIVE: ["conditionalOrExpression"],
       PNAME_LN: ["conditionalOrExpression"],
-      PNAME_NS: ["conditionalOrExpression"]
+      PNAME_NS: ["conditionalOrExpression"],
     },
     expressionList: {
       NIL: ["NIL"],
-      "(": ["(", "expression", "*[,,expression]", ")"]
+      "(": ["(", "expression", "*[,,expression]", ")"],
     },
     filter: {
-      FILTER: ["FILTER", "constraint"]
+      FILTER: ["FILTER", "constraint"],
     },
     functionCall: {
       IRI_REF: ["iriRef", "argList"],
       PNAME_LN: ["iriRef", "argList"],
-      PNAME_NS: ["iriRef", "argList"]
+      PNAME_NS: ["iriRef", "argList"],
     },
     graphGraphPattern: {
-      GRAPH: ["GRAPH", "varOrIRIref", "groupGraphPattern"]
+      GRAPH: ["GRAPH", "varOrIRIref", "groupGraphPattern"],
     },
     graphNode: {
       VAR1: ["varOrTerm"],
@@ -2675,7 +2677,7 @@ module.exports = {
       DECIMAL_NEGATIVE: ["varOrTerm"],
       DOUBLE_NEGATIVE: ["varOrTerm"],
       "(": ["triplesNode"],
-      "[": ["triplesNode"]
+      "[": ["triplesNode"],
     },
     graphNodePath: {
       VAR1: ["varOrTerm"],
@@ -2702,14 +2704,14 @@ module.exports = {
       DECIMAL_NEGATIVE: ["varOrTerm"],
       DOUBLE_NEGATIVE: ["varOrTerm"],
       "(": ["triplesNodePath"],
-      "[": ["triplesNodePath"]
+      "[": ["triplesNodePath"],
     },
     graphOrDefault: {
       DEFAULT: ["DEFAULT"],
       IRI_REF: ["?GRAPH", "iriRef"],
       PNAME_LN: ["?GRAPH", "iriRef"],
       PNAME_NS: ["?GRAPH", "iriRef"],
-      GRAPH: ["?GRAPH", "iriRef"]
+      GRAPH: ["?GRAPH", "iriRef"],
     },
     graphPatternNotTriples: {
       "{": ["groupOrUnionGraphPattern"],
@@ -2719,16 +2721,16 @@ module.exports = {
       SERVICE: ["serviceGraphPattern"],
       FILTER: ["filter"],
       BIND: ["bind"],
-      VALUES: ["inlineData"]
+      VALUES: ["inlineData"],
     },
     graphRef: {
-      GRAPH: ["GRAPH", "iriRef"]
+      GRAPH: ["GRAPH", "iriRef"],
     },
     graphRefAll: {
       GRAPH: ["graphRef"],
       DEFAULT: ["DEFAULT"],
       NAMED: ["NAMED"],
-      ALL: ["ALL"]
+      ALL: ["ALL"],
     },
     graphTerm: {
       IRI_REF: ["iriRef"],
@@ -2751,10 +2753,10 @@ module.exports = {
       FALSE: ["booleanLiteral"],
       BLANK_NODE_LABEL: ["blankNode"],
       ANON: ["blankNode"],
-      NIL: ["NIL"]
+      NIL: ["NIL"],
     },
     groupClause: {
-      GROUP: ["GROUP", "BY", "+groupCondition"]
+      GROUP: ["GROUP", "BY", "+groupCondition"],
     },
     groupCondition: {
       STR: ["builtInCall"],
@@ -2816,10 +2818,10 @@ module.exports = {
       PNAME_NS: ["functionCall"],
       "(": ["(", "expression", "?[AS,var]", ")"],
       VAR1: ["var"],
-      VAR2: ["var"]
+      VAR2: ["var"],
     },
     groupGraphPattern: {
-      "{": ["{", "or([subSelect,groupGraphPatternSub])", "}"]
+      "{": ["{", "or([subSelect,groupGraphPatternSub])", "}"],
     },
     groupGraphPatternSub: {
       "{": ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
@@ -2855,13 +2857,13 @@ module.exports = {
       INTEGER_NEGATIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       DECIMAL_NEGATIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
       DOUBLE_NEGATIVE: ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
-      "}": ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"]
+      "}": ["?triplesBlock", "*[graphPatternNotTriples,?.,?triplesBlock]"],
     },
     groupOrUnionGraphPattern: {
-      "{": ["groupGraphPattern", "*[UNION,groupGraphPattern]"]
+      "{": ["groupGraphPattern", "*[UNION,groupGraphPattern]"],
     },
     havingClause: {
-      HAVING: ["HAVING", "+havingCondition"]
+      HAVING: ["HAVING", "+havingCondition"],
     },
     havingCondition: {
       "(": ["constraint"],
@@ -2921,51 +2923,51 @@ module.exports = {
       NOT: ["constraint"],
       IRI_REF: ["constraint"],
       PNAME_LN: ["constraint"],
-      PNAME_NS: ["constraint"]
+      PNAME_NS: ["constraint"],
     },
     inlineData: {
-      VALUES: ["VALUES", "dataBlock"]
+      VALUES: ["VALUES", "dataBlock"],
     },
     inlineDataFull: {
       NIL: ["or([NIL,[(,*var,)]])", "{", "*or([[(,*dataBlockValue,)],NIL])", "}"],
-      "(": ["or([NIL,[(,*var,)]])", "{", "*or([[(,*dataBlockValue,)],NIL])", "}"]
+      "(": ["or([NIL,[(,*var,)]])", "{", "*or([[(,*dataBlockValue,)],NIL])", "}"],
     },
     inlineDataOneVar: {
       VAR1: ["var", "{", "*dataBlockValue", "}"],
-      VAR2: ["var", "{", "*dataBlockValue", "}"]
+      VAR2: ["var", "{", "*dataBlockValue", "}"],
     },
     insert1: {
       DATA: ["DATA", "quadData"],
-      "{": ["quadPattern", "*usingClause", "WHERE", "groupGraphPattern"]
+      "{": ["quadPattern", "*usingClause", "WHERE", "groupGraphPattern"],
     },
     insertClause: {
-      INSERT: ["INSERT", "quadPattern"]
+      INSERT: ["INSERT", "quadPattern"],
     },
     integer: {
-      INTEGER: ["INTEGER"]
+      INTEGER: ["INTEGER"],
     },
     iriRef: {
       IRI_REF: ["IRI_REF"],
       PNAME_LN: ["prefixedName"],
-      PNAME_NS: ["prefixedName"]
+      PNAME_NS: ["prefixedName"],
     },
     iriRefOrFunction: {
       IRI_REF: ["iriRef", "?argList"],
       PNAME_LN: ["iriRef", "?argList"],
-      PNAME_NS: ["iriRef", "?argList"]
+      PNAME_NS: ["iriRef", "?argList"],
     },
     limitClause: {
-      LIMIT: ["LIMIT", "INTEGER"]
+      LIMIT: ["LIMIT", "INTEGER"],
     },
     limitOffsetClauses: {
       LIMIT: ["limitClause", "?offsetClause"],
-      OFFSET: ["offsetClause", "?limitClause"]
+      OFFSET: ["offsetClause", "?limitClause"],
     },
     load: {
-      LOAD: ["LOAD", "?SILENT_1", "iriRef", "?[INTO,graphRef]"]
+      LOAD: ["LOAD", "?SILENT_1", "iriRef", "?[INTO,graphRef]"],
     },
     minusGraphPattern: {
-      MINUS: ["MINUS", "groupGraphPattern"]
+      MINUS: ["MINUS", "groupGraphPattern"],
     },
     modify: {
       WITH: [
@@ -2974,11 +2976,11 @@ module.exports = {
         "or([[deleteClause,?insertClause],insertClause])",
         "*usingClause",
         "WHERE",
-        "groupGraphPattern"
-      ]
+        "groupGraphPattern",
+      ],
     },
     move: {
-      MOVE: ["MOVE", "?SILENT_4", "graphOrDefault", "TO", "graphOrDefault"]
+      MOVE: ["MOVE", "?SILENT_4", "graphOrDefault", "TO", "graphOrDefault"],
     },
     multiplicativeExpression: {
       "!": ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
@@ -3065,13 +3067,13 @@ module.exports = {
       DECIMAL_NEGATIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
       DOUBLE_NEGATIVE: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
       PNAME_LN: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
-      PNAME_NS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"]
+      PNAME_NS: ["unaryExpression", "*or([[*,unaryExpression],[/,unaryExpression]])"],
     },
     namedGraphClause: {
-      NAMED: ["NAMED", "sourceSelector"]
+      NAMED: ["NAMED", "sourceSelector"],
     },
     notExistsFunc: {
-      NOT: ["NOT", "EXISTS", "groupGraphPattern"]
+      NOT: ["NOT", "EXISTS", "groupGraphPattern"],
     },
     numericExpression: {
       "!": ["additiveExpression"],
@@ -3158,7 +3160,7 @@ module.exports = {
       DECIMAL_NEGATIVE: ["additiveExpression"],
       DOUBLE_NEGATIVE: ["additiveExpression"],
       PNAME_LN: ["additiveExpression"],
-      PNAME_NS: ["additiveExpression"]
+      PNAME_NS: ["additiveExpression"],
     },
     numericLiteral: {
       INTEGER: ["numericLiteralUnsigned"],
@@ -3169,22 +3171,22 @@ module.exports = {
       DOUBLE_POSITIVE: ["numericLiteralPositive"],
       INTEGER_NEGATIVE: ["numericLiteralNegative"],
       DECIMAL_NEGATIVE: ["numericLiteralNegative"],
-      DOUBLE_NEGATIVE: ["numericLiteralNegative"]
+      DOUBLE_NEGATIVE: ["numericLiteralNegative"],
     },
     numericLiteralNegative: {
       INTEGER_NEGATIVE: ["INTEGER_NEGATIVE"],
       DECIMAL_NEGATIVE: ["DECIMAL_NEGATIVE"],
-      DOUBLE_NEGATIVE: ["DOUBLE_NEGATIVE"]
+      DOUBLE_NEGATIVE: ["DOUBLE_NEGATIVE"],
     },
     numericLiteralPositive: {
       INTEGER_POSITIVE: ["INTEGER_POSITIVE"],
       DECIMAL_POSITIVE: ["DECIMAL_POSITIVE"],
-      DOUBLE_POSITIVE: ["DOUBLE_POSITIVE"]
+      DOUBLE_POSITIVE: ["DOUBLE_POSITIVE"],
     },
     numericLiteralUnsigned: {
       INTEGER: ["INTEGER"],
       DECIMAL: ["DECIMAL"],
-      DOUBLE: ["DOUBLE"]
+      DOUBLE: ["DOUBLE"],
     },
     object: {
       "(": ["graphNode"],
@@ -3211,7 +3213,7 @@ module.exports = {
       DOUBLE_POSITIVE: ["graphNode"],
       INTEGER_NEGATIVE: ["graphNode"],
       DECIMAL_NEGATIVE: ["graphNode"],
-      DOUBLE_NEGATIVE: ["graphNode"]
+      DOUBLE_NEGATIVE: ["graphNode"],
     },
     objectList: {
       "(": ["object", "*[,,object]"],
@@ -3238,7 +3240,7 @@ module.exports = {
       DOUBLE_POSITIVE: ["object", "*[,,object]"],
       INTEGER_NEGATIVE: ["object", "*[,,object]"],
       DECIMAL_NEGATIVE: ["object", "*[,,object]"],
-      DOUBLE_NEGATIVE: ["object", "*[,,object]"]
+      DOUBLE_NEGATIVE: ["object", "*[,,object]"],
     },
     objectListPath: {
       "(": ["objectPath", "*[,,objectPath]"],
@@ -3265,7 +3267,7 @@ module.exports = {
       DOUBLE_POSITIVE: ["objectPath", "*[,,objectPath]"],
       INTEGER_NEGATIVE: ["objectPath", "*[,,objectPath]"],
       DECIMAL_NEGATIVE: ["objectPath", "*[,,objectPath]"],
-      DOUBLE_NEGATIVE: ["objectPath", "*[,,objectPath]"]
+      DOUBLE_NEGATIVE: ["objectPath", "*[,,objectPath]"],
     },
     objectPath: {
       "(": ["graphNodePath"],
@@ -3292,13 +3294,13 @@ module.exports = {
       DOUBLE_POSITIVE: ["graphNodePath"],
       INTEGER_NEGATIVE: ["graphNodePath"],
       DECIMAL_NEGATIVE: ["graphNodePath"],
-      DOUBLE_NEGATIVE: ["graphNodePath"]
+      DOUBLE_NEGATIVE: ["graphNodePath"],
     },
     offsetClause: {
-      OFFSET: ["OFFSET", "INTEGER"]
+      OFFSET: ["OFFSET", "INTEGER"],
     },
     optionalGraphPattern: {
-      OPTIONAL: ["OPTIONAL", "groupGraphPattern"]
+      OPTIONAL: ["OPTIONAL", "groupGraphPattern"],
     },
     "or([*,expression])": {
       "*": ["*"],
@@ -3386,13 +3388,13 @@ module.exports = {
       DECIMAL_NEGATIVE: ["expression"],
       DOUBLE_NEGATIVE: ["expression"],
       PNAME_LN: ["expression"],
-      PNAME_NS: ["expression"]
+      PNAME_NS: ["expression"],
     },
     "or([+or([var,[(,expression,AS,var,)]]),*])": {
       "(": ["+or([var,[(,expression,AS,var,)]])"],
       VAR1: ["+or([var,[(,expression,AS,var,)]])"],
       VAR2: ["+or([var,[(,expression,AS,var,)]])"],
-      "*": ["*"]
+      "*": ["*"],
     },
     "or([+varOrIRIref,*])": {
       VAR1: ["+varOrIRIref"],
@@ -3400,112 +3402,115 @@ module.exports = {
       IRI_REF: ["+varOrIRIref"],
       PNAME_LN: ["+varOrIRIref"],
       PNAME_NS: ["+varOrIRIref"],
-      "*": ["*"]
+      "*": ["*"],
     },
     "or([ASC,DESC])": {
       ASC: ["ASC"],
-      DESC: ["DESC"]
+      DESC: ["DESC"],
     },
     "or([DISTINCT,REDUCED])": {
       DISTINCT: ["DISTINCT"],
-      REDUCED: ["REDUCED"]
+      REDUCED: ["REDUCED"],
     },
     "or([LANGTAG,[^^,iriRef]])": {
       LANGTAG: ["LANGTAG"],
-      "^^": ["[^^,iriRef]"]
+      "^^": ["[^^,iriRef]"],
     },
     "or([NIL,[(,*var,)]])": {
       NIL: ["NIL"],
-      "(": ["[(,*var,)]"]
+      "(": ["[(,*var,)]"],
     },
     "or([[(,*dataBlockValue,)],NIL])": {
       "(": ["[(,*dataBlockValue,)]"],
-      NIL: ["NIL"]
+      NIL: ["NIL"],
     },
     "or([[(,expression,)],NIL])": {
       "(": ["[(,expression,)]"],
-      NIL: ["NIL"]
+      NIL: ["NIL"],
     },
     "or([[*,unaryExpression],[/,unaryExpression]])": {
       "*": ["[*,unaryExpression]"],
-      "/": ["[/,unaryExpression]"]
+      "/": ["[/,unaryExpression]"],
     },
-    "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])": {
-      "+": ["[+,multiplicativeExpression]"],
-      "-": ["[-,multiplicativeExpression]"],
-      INTEGER_POSITIVE: [
-        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
-      ],
-      DECIMAL_POSITIVE: [
-        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
-      ],
-      DOUBLE_POSITIVE: [
-        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
-      ],
-      INTEGER_NEGATIVE: [
-        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
-      ],
-      DECIMAL_NEGATIVE: [
-        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
-      ],
-      DOUBLE_NEGATIVE: [
-        "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]"
-      ]
-    },
+    "or([[+,multiplicativeExpression],[-,multiplicativeExpression],[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]])":
+      {
+        "+": ["[+,multiplicativeExpression]"],
+        "-": ["[-,multiplicativeExpression]"],
+        INTEGER_POSITIVE: [
+          "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]",
+        ],
+        DECIMAL_POSITIVE: [
+          "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]",
+        ],
+        DOUBLE_POSITIVE: [
+          "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]",
+        ],
+        INTEGER_NEGATIVE: [
+          "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]",
+        ],
+        DECIMAL_NEGATIVE: [
+          "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]",
+        ],
+        DOUBLE_NEGATIVE: [
+          "[or([numericLiteralPositive,numericLiteralNegative]),?or([[*,unaryExpression],[/,unaryExpression]])]",
+        ],
+      },
     "or([[,,or([},[integer,}]])],}])": {
       ",": ["[,,or([},[integer,}]])]"],
-      "}": ["}"]
+      "}": ["}"],
     },
-    "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])": {
-      "=": ["[=,numericExpression]"],
-      "!=": ["[!=,numericExpression]"],
-      "<": ["[<,numericExpression]"],
-      ">": ["[>,numericExpression]"],
-      "<=": ["[<=,numericExpression]"],
-      ">=": ["[>=,numericExpression]"],
-      IN: ["[IN,expressionList]"],
-      NOT: ["[NOT,IN,expressionList]"]
-    },
-    "or([[constructTemplate,*datasetClause,whereClause,solutionModifier],[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]])": {
-      "{": ["[constructTemplate,*datasetClause,whereClause,solutionModifier]"],
-      WHERE: ["[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]"],
-      FROM: ["[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]"]
-    },
+    "or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])":
+      {
+        "=": ["[=,numericExpression]"],
+        "!=": ["[!=,numericExpression]"],
+        "<": ["[<,numericExpression]"],
+        ">": ["[>,numericExpression]"],
+        "<=": ["[<=,numericExpression]"],
+        ">=": ["[>=,numericExpression]"],
+        IN: ["[IN,expressionList]"],
+        NOT: ["[NOT,IN,expressionList]"],
+      },
+    "or([[constructTemplate,*datasetClause,whereClause,solutionModifier],[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]])":
+      {
+        "{": ["[constructTemplate,*datasetClause,whereClause,solutionModifier]"],
+        WHERE: ["[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]"],
+        FROM: ["[*datasetClause,WHERE,{,?triplesTemplate,},solutionModifier]"],
+      },
     "or([[deleteClause,?insertClause],insertClause])": {
       DELETE: ["[deleteClause,?insertClause]"],
-      INSERT: ["insertClause"]
+      INSERT: ["insertClause"],
     },
     "or([[integer,or([[,,or([},[integer,}]])],}])],[,,integer,}]])": {
       INTEGER: ["[integer,or([[,,or([},[integer,}]])],}])]"],
-      ",": ["[,,integer,}]"]
+      ",": ["[,,integer,}]"],
     },
     "or([baseDecl,prefixDecl])": {
       BASE: ["baseDecl"],
-      PREFIX: ["prefixDecl"]
+      PREFIX: ["prefixDecl"],
     },
     "or([defaultGraphClause,namedGraphClause])": {
       IRI_REF: ["defaultGraphClause"],
       PNAME_LN: ["defaultGraphClause"],
       PNAME_NS: ["defaultGraphClause"],
-      NAMED: ["namedGraphClause"]
+      NAMED: ["namedGraphClause"],
     },
     "or([inlineDataOneVar,inlineDataFull])": {
       VAR1: ["inlineDataOneVar"],
       VAR2: ["inlineDataOneVar"],
       NIL: ["inlineDataFull"],
-      "(": ["inlineDataFull"]
+      "(": ["inlineDataFull"],
     },
     "or([iriRef,[NAMED,iriRef]])": {
       IRI_REF: ["iriRef"],
       PNAME_LN: ["iriRef"],
       PNAME_NS: ["iriRef"],
-      NAMED: ["[NAMED,iriRef]"]
+      NAMED: ["[NAMED,iriRef]"],
     },
     "or([iriRef,a])": {
       IRI_REF: ["iriRef"],
       PNAME_LN: ["iriRef"],
       PNAME_NS: ["iriRef"],
-      a: ["a"]
+      a: ["a"],
     },
     "or([numericLiteralPositive,numericLiteralNegative])": {
       INTEGER_POSITIVE: ["numericLiteralPositive"],
@@ -3513,7 +3518,7 @@ module.exports = {
       DOUBLE_POSITIVE: ["numericLiteralPositive"],
       INTEGER_NEGATIVE: ["numericLiteralNegative"],
       DECIMAL_NEGATIVE: ["numericLiteralNegative"],
-      DOUBLE_NEGATIVE: ["numericLiteralNegative"]
+      DOUBLE_NEGATIVE: ["numericLiteralNegative"],
     },
     "or([queryAll,updateAll])": {
       CONSTRUCT: ["queryAll"],
@@ -3530,13 +3535,13 @@ module.exports = {
       COPY: ["updateAll"],
       CREATE: ["updateAll"],
       WITH: ["updateAll"],
-      $: ["updateAll"]
+      $: ["updateAll"],
     },
     "or([selectQuery,constructQuery,describeQuery,askQuery])": {
       SELECT: ["selectQuery"],
       CONSTRUCT: ["constructQuery"],
       DESCRIBE: ["describeQuery"],
-      ASK: ["askQuery"]
+      ASK: ["askQuery"],
     },
     "or([subSelect,groupGraphPatternSub])": {
       SELECT: ["subSelect"],
@@ -3573,12 +3578,12 @@ module.exports = {
       INTEGER_NEGATIVE: ["groupGraphPatternSub"],
       DECIMAL_NEGATIVE: ["groupGraphPatternSub"],
       DOUBLE_NEGATIVE: ["groupGraphPatternSub"],
-      "}": ["groupGraphPatternSub"]
+      "}": ["groupGraphPatternSub"],
     },
     "or([var,[(,expression,AS,var,)]])": {
       VAR1: ["var"],
       VAR2: ["var"],
-      "(": ["[(,expression,AS,var,)]"]
+      "(": ["[(,expression,AS,var,)]"],
     },
     "or([verbPath,verbSimple])": {
       "^": ["verbPath"],
@@ -3589,14 +3594,14 @@ module.exports = {
       PNAME_LN: ["verbPath"],
       PNAME_NS: ["verbPath"],
       VAR1: ["verbSimple"],
-      VAR2: ["verbSimple"]
+      VAR2: ["verbSimple"],
     },
     "or([},[integer,}]])": {
       "}": ["}"],
-      INTEGER: ["[integer,}]"]
+      INTEGER: ["[integer,}]"],
     },
     orderClause: {
-      ORDER: ["ORDER", "BY", "+orderCondition"]
+      ORDER: ["ORDER", "BY", "+orderCondition"],
     },
     orderCondition: {
       ASC: ["or([ASC,DESC])", "brackettedExpression"],
@@ -3660,7 +3665,7 @@ module.exports = {
       PNAME_LN: ["constraint"],
       PNAME_NS: ["constraint"],
       VAR1: ["var"],
-      VAR2: ["var"]
+      VAR2: ["var"],
     },
     path: {
       "^": ["pathAlternative"],
@@ -3669,7 +3674,7 @@ module.exports = {
       "(": ["pathAlternative"],
       IRI_REF: ["pathAlternative"],
       PNAME_LN: ["pathAlternative"],
-      PNAME_NS: ["pathAlternative"]
+      PNAME_NS: ["pathAlternative"],
     },
     pathAlternative: {
       "^": ["pathSequence", "*[|,pathSequence]"],
@@ -3678,7 +3683,7 @@ module.exports = {
       "(": ["pathSequence", "*[|,pathSequence]"],
       IRI_REF: ["pathSequence", "*[|,pathSequence]"],
       PNAME_LN: ["pathSequence", "*[|,pathSequence]"],
-      PNAME_NS: ["pathSequence", "*[|,pathSequence]"]
+      PNAME_NS: ["pathSequence", "*[|,pathSequence]"],
     },
     pathElt: {
       a: ["pathPrimary", "?pathMod"],
@@ -3686,7 +3691,7 @@ module.exports = {
       "(": ["pathPrimary", "?pathMod"],
       IRI_REF: ["pathPrimary", "?pathMod"],
       PNAME_LN: ["pathPrimary", "?pathMod"],
-      PNAME_NS: ["pathPrimary", "?pathMod"]
+      PNAME_NS: ["pathPrimary", "?pathMod"],
     },
     pathEltOrInverse: {
       a: ["pathElt"],
@@ -3695,13 +3700,13 @@ module.exports = {
       IRI_REF: ["pathElt"],
       PNAME_LN: ["pathElt"],
       PNAME_NS: ["pathElt"],
-      "^": ["^", "pathElt"]
+      "^": ["^", "pathElt"],
     },
     pathMod: {
       "*": ["*"],
       "?": ["?"],
       "+": ["+"],
-      "{": ["{", "or([[integer,or([[,,or([},[integer,}]])],}])],[,,integer,}]])"]
+      "{": ["{", "or([[integer,or([[,,or([},[integer,}]])],}])],[,,integer,}]])"],
     },
     pathNegatedPropertySet: {
       a: ["pathOneInPropertySet"],
@@ -3709,14 +3714,14 @@ module.exports = {
       IRI_REF: ["pathOneInPropertySet"],
       PNAME_LN: ["pathOneInPropertySet"],
       PNAME_NS: ["pathOneInPropertySet"],
-      "(": ["(", "?[pathOneInPropertySet,*[|,pathOneInPropertySet]]", ")"]
+      "(": ["(", "?[pathOneInPropertySet,*[|,pathOneInPropertySet]]", ")"],
     },
     pathOneInPropertySet: {
       IRI_REF: ["iriRef"],
       PNAME_LN: ["iriRef"],
       PNAME_NS: ["iriRef"],
       a: ["a"],
-      "^": ["^", "or([iriRef,a])"]
+      "^": ["^", "or([iriRef,a])"],
     },
     pathPrimary: {
       IRI_REF: ["storeProperty", "iriRef"],
@@ -3724,7 +3729,7 @@ module.exports = {
       PNAME_NS: ["storeProperty", "iriRef"],
       a: ["storeProperty", "a"],
       "!": ["!", "pathNegatedPropertySet"],
-      "(": ["(", "path", ")"]
+      "(": ["(", "path", ")"],
     },
     pathSequence: {
       "^": ["pathEltOrInverse", "*[/,pathEltOrInverse]"],
@@ -3733,14 +3738,14 @@ module.exports = {
       "(": ["pathEltOrInverse", "*[/,pathEltOrInverse]"],
       IRI_REF: ["pathEltOrInverse", "*[/,pathEltOrInverse]"],
       PNAME_LN: ["pathEltOrInverse", "*[/,pathEltOrInverse]"],
-      PNAME_NS: ["pathEltOrInverse", "*[/,pathEltOrInverse]"]
+      PNAME_NS: ["pathEltOrInverse", "*[/,pathEltOrInverse]"],
     },
     prefixDecl: {
-      PREFIX: ["PREFIX", "PNAME_NS", "IRI_REF"]
+      PREFIX: ["PREFIX", "PNAME_NS", "IRI_REF"],
     },
     prefixedName: {
       PNAME_LN: ["PNAME_LN"],
-      PNAME_NS: ["PNAME_NS"]
+      PNAME_NS: ["PNAME_NS"],
     },
     primaryExpression: {
       "(": ["brackettedExpression"],
@@ -3824,7 +3829,7 @@ module.exports = {
       MAX: ["aggregate"],
       AVG: ["aggregate"],
       SAMPLE: ["aggregate"],
-      GROUP_CONCAT: ["aggregate"]
+      GROUP_CONCAT: ["aggregate"],
     },
     prologue: {
       BASE: ["*or([baseDecl,prefixDecl])"],
@@ -3843,7 +3848,7 @@ module.exports = {
       MOVE: ["*or([baseDecl,prefixDecl])"],
       COPY: ["*or([baseDecl,prefixDecl])"],
       CREATE: ["*or([baseDecl,prefixDecl])"],
-      WITH: ["*or([baseDecl,prefixDecl])"]
+      WITH: ["*or([baseDecl,prefixDecl])"],
     },
     propertyList: {
       a: ["propertyListNotEmpty"],
@@ -3854,7 +3859,7 @@ module.exports = {
       PNAME_NS: ["propertyListNotEmpty"],
       ".": [],
       "}": [],
-      GRAPH: []
+      GRAPH: [],
     },
     propertyListNotEmpty: {
       a: ["verb", "objectList", "*[;,?[verb,objectList]]"],
@@ -3862,7 +3867,7 @@ module.exports = {
       VAR2: ["verb", "objectList", "*[;,?[verb,objectList]]"],
       IRI_REF: ["verb", "objectList", "*[;,?[verb,objectList]]"],
       PNAME_LN: ["verb", "objectList", "*[;,?[verb,objectList]]"],
-      PNAME_NS: ["verb", "objectList", "*[;,?[verb,objectList]]"]
+      PNAME_NS: ["verb", "objectList", "*[;,?[verb,objectList]]"],
     },
     propertyListPath: {
       a: ["propertyListNotEmpty"],
@@ -3880,7 +3885,7 @@ module.exports = {
       FILTER: [],
       BIND: [],
       VALUES: [],
-      "}": []
+      "}": [],
     },
     propertyListPathNotEmpty: {
       VAR1: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectListPath]]"],
@@ -3891,19 +3896,19 @@ module.exports = {
       "(": ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectListPath]]"],
       IRI_REF: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectListPath]]"],
       PNAME_LN: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectListPath]]"],
-      PNAME_NS: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectListPath]]"]
+      PNAME_NS: ["or([verbPath,verbSimple])", "objectListPath", "*[;,?[or([verbPath,verbSimple]),objectListPath]]"],
     },
     quadData: {
-      "{": ["{", "disallowVars", "quads", "allowVars", "}"]
+      "{": ["{", "disallowVars", "quads", "allowVars", "}"],
     },
     quadDataNoBnodes: {
-      "{": ["{", "disallowBnodes", "disallowVars", "quads", "allowVars", "allowBnodes", "}"]
+      "{": ["{", "disallowBnodes", "disallowVars", "quads", "allowVars", "allowBnodes", "}"],
     },
     quadPattern: {
-      "{": ["{", "quads", "}"]
+      "{": ["{", "quads", "}"],
     },
     quadPatternNoBnodes: {
-      "{": ["{", "disallowBnodes", "quads", "allowBnodes", "}"]
+      "{": ["{", "disallowBnodes", "quads", "allowBnodes", "}"],
     },
     quads: {
       GRAPH: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
@@ -3932,376 +3937,376 @@ module.exports = {
       INTEGER_NEGATIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
       DECIMAL_NEGATIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
       DOUBLE_NEGATIVE: ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
-      "}": ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"]
+      "}": ["?triplesTemplate", "*[quadsNotTriples,?.,?triplesTemplate]"],
     },
     quadsNotTriples: {
-      GRAPH: ["GRAPH", "varOrIRIref", "{", "?triplesTemplate", "}"]
+      GRAPH: ["GRAPH", "varOrIRIref", "{", "?triplesTemplate", "}"],
     },
     queryAll: {
       CONSTRUCT: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"],
       DESCRIBE: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"],
       ASK: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"],
-      SELECT: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"]
+      SELECT: ["or([selectQuery,constructQuery,describeQuery,askQuery])", "valuesClause"],
     },
     rdfLiteral: {
       STRING_LITERAL1: ["string", "?or([LANGTAG,[^^,iriRef]])"],
       STRING_LITERAL2: ["string", "?or([LANGTAG,[^^,iriRef]])"],
       STRING_LITERAL_LONG1: ["string", "?or([LANGTAG,[^^,iriRef]])"],
-      STRING_LITERAL_LONG2: ["string", "?or([LANGTAG,[^^,iriRef]])"]
+      STRING_LITERAL_LONG2: ["string", "?or([LANGTAG,[^^,iriRef]])"],
     },
     regexExpression: {
-      REGEX: ["REGEX", "(", "expression", ",", "expression", "?[,,expression]", ")"]
+      REGEX: ["REGEX", "(", "expression", ",", "expression", "?[,,expression]", ")"],
     },
     relationalExpression: {
       "!": [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       "+": [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       "-": [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       VAR1: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       VAR2: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       "(": [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STR: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       LANG: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       LANGMATCHES: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       DATATYPE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       BOUND: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       IRI: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       URI: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       BNODE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       RAND: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       ABS: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       CEIL: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       FLOOR: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       ROUND: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       CONCAT: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRLEN: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       UCASE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       LCASE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       ENCODE_FOR_URI: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       CONTAINS: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRSTARTS: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRENDS: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRBEFORE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRAFTER: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       YEAR: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       MONTH: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       DAY: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       HOURS: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       MINUTES: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       SECONDS: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       TIMEZONE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       TZ: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       NOW: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       UUID: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRUUID: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       MD5: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       SHA1: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       SHA256: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       SHA384: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       SHA512: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       COALESCE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       IF: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRLANG: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRDT: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       SAMETERM: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       ISIRI: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       ISURI: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       ISBLANK: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       ISLITERAL: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       ISNUMERIC: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       TRUE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       FALSE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       COUNT: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       SUM: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       MIN: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       MAX: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       AVG: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       SAMPLE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       GROUP_CONCAT: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       SUBSTR: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       REPLACE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       REGEX: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       EXISTS: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       NOT: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       IRI_REF: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRING_LITERAL1: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRING_LITERAL2: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRING_LITERAL_LONG1: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       STRING_LITERAL_LONG2: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       INTEGER: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       DECIMAL: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       DOUBLE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       INTEGER_POSITIVE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       DECIMAL_POSITIVE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       DOUBLE_POSITIVE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       INTEGER_NEGATIVE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       DECIMAL_NEGATIVE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       DOUBLE_NEGATIVE: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       PNAME_LN: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
       ],
       PNAME_NS: [
         "numericExpression",
-        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])"
-      ]
+        "?or([[=,numericExpression],[!=,numericExpression],[<,numericExpression],[>,numericExpression],[<=,numericExpression],[>=,numericExpression],[IN,expressionList],[NOT,IN,expressionList]])",
+      ],
     },
     selectClause: {
-      SELECT: ["SELECT", "?or([DISTINCT,REDUCED])", "or([+or([var,[(,expression,AS,var,)]]),*])"]
+      SELECT: ["SELECT", "?or([DISTINCT,REDUCED])", "or([+or([var,[(,expression,AS,var,)]]),*])"],
     },
     selectQuery: {
-      SELECT: ["selectClause", "*datasetClause", "whereClause", "solutionModifier"]
+      SELECT: ["selectClause", "*datasetClause", "whereClause", "solutionModifier"],
     },
     serviceGraphPattern: {
-      SERVICE: ["SERVICE", "?SILENT", "varOrIRIref", "groupGraphPattern"]
+      SERVICE: ["SERVICE", "?SILENT", "varOrIRIref", "groupGraphPattern"],
     },
     solutionModifier: {
       LIMIT: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
@@ -4311,12 +4316,12 @@ module.exports = {
       GROUP: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
       VALUES: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
       $: ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
-      "}": ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"]
+      "}": ["?groupClause", "?havingClause", "?orderClause", "?limitOffsetClauses"],
     },
     sourceSelector: {
       IRI_REF: ["iriRef"],
       PNAME_LN: ["iriRef"],
-      PNAME_NS: ["iriRef"]
+      PNAME_NS: ["iriRef"],
     },
     sparql11: {
       $: ["prologue", "or([queryAll,updateAll])", "$"],
@@ -4335,7 +4340,7 @@ module.exports = {
       CREATE: ["prologue", "or([queryAll,updateAll])", "$"],
       WITH: ["prologue", "or([queryAll,updateAll])", "$"],
       BASE: ["prologue", "or([queryAll,updateAll])", "$"],
-      PREFIX: ["prologue", "or([queryAll,updateAll])", "$"]
+      PREFIX: ["prologue", "or([queryAll,updateAll])", "$"],
     },
     storeProperty: {
       VAR1: [],
@@ -4343,22 +4348,22 @@ module.exports = {
       IRI_REF: [],
       PNAME_LN: [],
       PNAME_NS: [],
-      a: []
+      a: [],
     },
     strReplaceExpression: {
-      REPLACE: ["REPLACE", "(", "expression", ",", "expression", ",", "expression", "?[,,expression]", ")"]
+      REPLACE: ["REPLACE", "(", "expression", ",", "expression", ",", "expression", "?[,,expression]", ")"],
     },
     string: {
       STRING_LITERAL1: ["STRING_LITERAL1"],
       STRING_LITERAL2: ["STRING_LITERAL2"],
       STRING_LITERAL_LONG1: ["STRING_LITERAL_LONG1"],
-      STRING_LITERAL_LONG2: ["STRING_LITERAL_LONG2"]
+      STRING_LITERAL_LONG2: ["STRING_LITERAL_LONG2"],
     },
     subSelect: {
-      SELECT: ["selectClause", "whereClause", "solutionModifier", "valuesClause"]
+      SELECT: ["selectClause", "whereClause", "solutionModifier", "valuesClause"],
     },
     substringExpression: {
-      SUBSTR: ["SUBSTR", "(", "expression", ",", "expression", "?[,,expression]", ")"]
+      SUBSTR: ["SUBSTR", "(", "expression", ",", "expression", "?[,,expression]", ")"],
     },
     triplesBlock: {
       VAR1: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
@@ -4385,15 +4390,15 @@ module.exports = {
       DOUBLE_POSITIVE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
       INTEGER_NEGATIVE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
       DECIMAL_NEGATIVE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
-      DOUBLE_NEGATIVE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"]
+      DOUBLE_NEGATIVE: ["triplesSameSubjectPath", "?[.,?triplesBlock]"],
     },
     triplesNode: {
       "(": ["collection"],
-      "[": ["blankNodePropertyList"]
+      "[": ["blankNodePropertyList"],
     },
     triplesNodePath: {
       "(": ["collectionPath"],
-      "[": ["blankNodePropertyListPath"]
+      "[": ["blankNodePropertyListPath"],
     },
     triplesSameSubject: {
       VAR1: ["varOrTerm", "propertyListNotEmpty"],
@@ -4420,7 +4425,7 @@ module.exports = {
       DECIMAL_NEGATIVE: ["varOrTerm", "propertyListNotEmpty"],
       DOUBLE_NEGATIVE: ["varOrTerm", "propertyListNotEmpty"],
       "(": ["triplesNode", "propertyList"],
-      "[": ["triplesNode", "propertyList"]
+      "[": ["triplesNode", "propertyList"],
     },
     triplesSameSubjectPath: {
       VAR1: ["varOrTerm", "propertyListPathNotEmpty"],
@@ -4447,7 +4452,7 @@ module.exports = {
       DECIMAL_NEGATIVE: ["varOrTerm", "propertyListPathNotEmpty"],
       DOUBLE_NEGATIVE: ["varOrTerm", "propertyListPathNotEmpty"],
       "(": ["triplesNodePath", "propertyListPath"],
-      "[": ["triplesNodePath", "propertyListPath"]
+      "[": ["triplesNodePath", "propertyListPath"],
     },
     triplesTemplate: {
       VAR1: ["triplesSameSubject", "?[.,?triplesTemplate]"],
@@ -4474,7 +4479,7 @@ module.exports = {
       DOUBLE_POSITIVE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
       INTEGER_NEGATIVE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
       DECIMAL_NEGATIVE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
-      DOUBLE_NEGATIVE: ["triplesSameSubject", "?[.,?triplesTemplate]"]
+      DOUBLE_NEGATIVE: ["triplesSameSubject", "?[.,?triplesTemplate]"],
     },
     unaryExpression: {
       "!": ["!", "primaryExpression"],
@@ -4561,7 +4566,7 @@ module.exports = {
       DECIMAL_NEGATIVE: ["primaryExpression"],
       DOUBLE_NEGATIVE: ["primaryExpression"],
       PNAME_LN: ["primaryExpression"],
-      PNAME_NS: ["primaryExpression"]
+      PNAME_NS: ["primaryExpression"],
     },
     update: {
       INSERT: ["prologue", "?[update1,?[;,update]]"],
@@ -4576,7 +4581,7 @@ module.exports = {
       WITH: ["prologue", "?[update1,?[;,update]]"],
       BASE: ["prologue", "?[update1,?[;,update]]"],
       PREFIX: ["prologue", "?[update1,?[;,update]]"],
-      $: ["prologue", "?[update1,?[;,update]]"]
+      $: ["prologue", "?[update1,?[;,update]]"],
     },
     update1: {
       LOAD: ["load"],
@@ -4588,7 +4593,7 @@ module.exports = {
       CREATE: ["create"],
       INSERT: ["INSERT", "insert1"],
       DELETE: ["DELETE", "delete1"],
-      WITH: ["modify"]
+      WITH: ["modify"],
     },
     updateAll: {
       INSERT: ["?[update1,?[;,update]]"],
@@ -4601,10 +4606,10 @@ module.exports = {
       COPY: ["?[update1,?[;,update]]"],
       CREATE: ["?[update1,?[;,update]]"],
       WITH: ["?[update1,?[;,update]]"],
-      $: ["?[update1,?[;,update]]"]
+      $: ["?[update1,?[;,update]]"],
     },
     usingClause: {
-      USING: ["USING", "or([iriRef,[NAMED,iriRef]])"]
+      USING: ["USING", "or([iriRef,[NAMED,iriRef]])"],
     },
     valueLogical: {
       "!": ["relationalExpression"],
@@ -4691,23 +4696,23 @@ module.exports = {
       DECIMAL_NEGATIVE: ["relationalExpression"],
       DOUBLE_NEGATIVE: ["relationalExpression"],
       PNAME_LN: ["relationalExpression"],
-      PNAME_NS: ["relationalExpression"]
+      PNAME_NS: ["relationalExpression"],
     },
     valuesClause: {
       VALUES: ["VALUES", "dataBlock"],
       $: [],
-      "}": []
+      "}": [],
     },
     var: {
       VAR1: ["VAR1"],
-      VAR2: ["VAR2"]
+      VAR2: ["VAR2"],
     },
     varOrIRIref: {
       VAR1: ["var"],
       VAR2: ["var"],
       IRI_REF: ["iriRef"],
       PNAME_LN: ["iriRef"],
-      PNAME_NS: ["iriRef"]
+      PNAME_NS: ["iriRef"],
     },
     varOrTerm: {
       VAR1: ["var"],
@@ -4732,7 +4737,7 @@ module.exports = {
       DOUBLE_POSITIVE: ["graphTerm"],
       INTEGER_NEGATIVE: ["graphTerm"],
       DECIMAL_NEGATIVE: ["graphTerm"],
-      DOUBLE_NEGATIVE: ["graphTerm"]
+      DOUBLE_NEGATIVE: ["graphTerm"],
     },
     verb: {
       VAR1: ["storeProperty", "varOrIRIref"],
@@ -4740,7 +4745,7 @@ module.exports = {
       IRI_REF: ["storeProperty", "varOrIRIref"],
       PNAME_LN: ["storeProperty", "varOrIRIref"],
       PNAME_NS: ["storeProperty", "varOrIRIref"],
-      a: ["storeProperty", "a"]
+      a: ["storeProperty", "a"],
     },
     verbPath: {
       "^": ["path"],
@@ -4749,22 +4754,23 @@ module.exports = {
       "(": ["path"],
       IRI_REF: ["path"],
       PNAME_LN: ["path"],
-      PNAME_NS: ["path"]
+      PNAME_NS: ["path"],
     },
     verbSimple: {
       VAR1: ["var"],
-      VAR2: ["var"]
+      VAR2: ["var"],
     },
     whereClause: {
       "{": ["?WHERE", "groupGraphPattern"],
-      WHERE: ["?WHERE", "groupGraphPattern"]
-    }
+      WHERE: ["?WHERE", "groupGraphPattern"],
+    },
   },
 
-  keywords: /^(GROUP_CONCAT|DATATYPE|BASE|PREFIX|SELECT|CONSTRUCT|DESCRIBE|ASK|FROM|NAMED|ORDER|BY|LIMIT|ASC|DESC|OFFSET|DISTINCT|REDUCED|WHERE|GRAPH|OPTIONAL|UNION|FILTER|GROUP|HAVING|AS|VALUES|LOAD|CLEAR|DROP|CREATE|MOVE|COPY|SILENT|INSERT|DELETE|DATA|WITH|TO|USING|NAMED|MINUS|BIND|LANGMATCHES|LANG|BOUND|SAMETERM|ISIRI|ISURI|ISBLANK|ISLITERAL|REGEX|TRUE|FALSE|UNDEF|ADD|DEFAULT|ALL|SERVICE|INTO|IN|NOT|IRI|URI|BNODE|RAND|ABS|CEIL|FLOOR|ROUND|CONCAT|STRLEN|UCASE|LCASE|ENCODE_FOR_URI|CONTAINS|STRSTARTS|STRENDS|STRBEFORE|STRAFTER|YEAR|MONTH|DAY|HOURS|MINUTES|SECONDS|TIMEZONE|TZ|NOW|UUID|STRUUID|MD5|SHA1|SHA256|SHA384|SHA512|COALESCE|IF|STRLANG|STRDT|ISNUMERIC|SUBSTR|REPLACE|EXISTS|COUNT|SUM|MIN|MAX|AVG|SAMPLE|SEPARATOR|STR)/i,
+  keywords:
+    /^(GROUP_CONCAT|DATATYPE|BASE|PREFIX|SELECT|CONSTRUCT|DESCRIBE|ASK|FROM|NAMED|ORDER|BY|LIMIT|ASC|DESC|OFFSET|DISTINCT|REDUCED|WHERE|GRAPH|OPTIONAL|UNION|FILTER|GROUP|HAVING|AS|VALUES|LOAD|CLEAR|DROP|CREATE|MOVE|COPY|SILENT|INSERT|DELETE|DATA|WITH|TO|USING|NAMED|MINUS|BIND|LANGMATCHES|LANG|BOUND|SAMETERM|ISIRI|ISURI|ISBLANK|ISLITERAL|REGEX|TRUE|FALSE|UNDEF|ADD|DEFAULT|ALL|SERVICE|INTO|IN|NOT|IRI|URI|BNODE|RAND|ABS|CEIL|FLOOR|ROUND|CONCAT|STRLEN|UCASE|LCASE|ENCODE_FOR_URI|CONTAINS|STRSTARTS|STRENDS|STRBEFORE|STRAFTER|YEAR|MONTH|DAY|HOURS|MINUTES|SECONDS|TIMEZONE|TZ|NOW|UUID|STRUUID|MD5|SHA1|SHA256|SHA384|SHA512|COALESCE|IF|STRLANG|STRDT|ISNUMERIC|SUBSTR|REPLACE|EXISTS|COUNT|SUM|MIN|MAX|AVG|SAMPLE|SEPARATOR|STR)/i,
 
   punct: /^(\*|a|\.|\{|\}|,|\(|\)|;|\[|\]|\|\||&&|=|!=|!|<=|>=|<|>|\+|-|\/|\^\^|\?|\||\^)/,
 
   startSymbol: "sparql11",
-  acceptEmpty: true
+  acceptEmpty: true,
 };

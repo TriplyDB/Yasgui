@@ -638,21 +638,19 @@ export class Yasqe extends CodeMirror {
     var newQuery = "";
     var injected = false;
     var gotSelect = false;
-    (<any>Yasqe).runMode(this.getValue(), "sparql11", function (
-      stringVal: string,
-      className: string,
-      _row: number,
-      _col: number,
-      _state: TokenizerState
-    ) {
-      if (className === "keyword" && stringVal.toLowerCase() === "select") gotSelect = true;
-      newQuery += stringVal;
-      if (gotSelect && !injected && className === "punc" && stringVal === "{") {
-        injected = true;
-        //start injecting
-        newQuery += "\n" + injectString;
+    (<any>Yasqe).runMode(
+      this.getValue(),
+      "sparql11",
+      function (stringVal: string, className: string, _row: number, _col: number, _state: TokenizerState) {
+        if (className === "keyword" && stringVal.toLowerCase() === "select") gotSelect = true;
+        newQuery += stringVal;
+        if (gotSelect && !injected && className === "punc" && stringVal === "{") {
+          injected = true;
+          //start injecting
+          newQuery += "\n" + injectString;
+        }
       }
-    });
+    );
     return newQuery;
   }
 

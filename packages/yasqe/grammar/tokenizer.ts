@@ -44,7 +44,7 @@ export interface Token {
   string: string;
   start: number;
 }
-export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode<State> {
+export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mode<State> {
   const grammar = require("./_tokenizer-table.js");
   const ll1_table = grammar.table;
 
@@ -106,13 +106,13 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
     SINGLE: {
       CAT: "STRING_LITERAL_LONG1",
       QUOTES: "'''",
-      CONTENTS: "(('|'')?([^'\\\\]|" + ECHAR + "|" + unicode + "))*"
+      CONTENTS: "(('|'')?([^'\\\\]|" + ECHAR + "|" + unicode + "))*",
     },
     DOUBLE: {
       CAT: "STRING_LITERAL_LONG2",
       QUOTES: '"""',
-      CONTENTS: '(("|"")?([^"\\\\]|' + ECHAR + "|" + unicode + "))*"
-    }
+      CONTENTS: '(("|"")?([^"\\\\]|' + ECHAR + "|" + unicode + "))*",
+    },
   };
   for (const key in STRING_LITERAL_LONG) {
     STRING_LITERAL_LONG[key].COMPLETE =
@@ -137,23 +137,23 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
       complete: {
         name: "STRING_LITERAL_LONG_" + key,
         regex: new RegExp("^" + STRING_LITERAL_LONG[key].COMPLETE),
-        style: "string"
+        style: "string",
       },
       contents: {
         name: "STRING_LITERAL_LONG_" + key,
         regex: new RegExp("^" + STRING_LITERAL_LONG[key].CONTENTS),
-        style: "string"
+        style: "string",
       },
       closing: {
         name: "STRING_LITERAL_LONG_" + key,
         regex: new RegExp("^" + STRING_LITERAL_LONG[key].CONTENTS + STRING_LITERAL_LONG[key].QUOTES),
-        style: "string"
+        style: "string",
       },
       quotes: {
         name: "STRING_LITERAL_LONG_QUOTES_" + key,
         regex: new RegExp("^" + STRING_LITERAL_LONG[key].QUOTES),
-        style: "string"
-      }
+        style: "string",
+      },
     };
   }
 
@@ -168,91 +168,91 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
     {
       name: "WS",
       regex: new RegExp("^" + WS + "+"),
-      style: "ws"
+      style: "ws",
     },
 
     {
       name: "COMMENT",
       regex: new RegExp("^" + COMMENT),
-      style: "comment"
+      style: "comment",
     },
 
     {
       name: "IRI_REF",
       regex: new RegExp("^" + IRI_REF),
-      style: "variable-3"
+      style: "variable-3",
     },
 
     {
       name: "VAR1",
       regex: new RegExp("^" + VAR1),
-      style: "atom"
+      style: "atom",
     },
 
     {
       name: "VAR2",
       regex: new RegExp("^" + VAR2),
-      style: "atom"
+      style: "atom",
     },
 
     {
       name: "LANGTAG",
       regex: new RegExp("^" + LANGTAG),
-      style: "meta"
+      style: "meta",
     },
 
     {
       name: "DOUBLE",
       regex: new RegExp("^" + DOUBLE),
-      style: "number"
+      style: "number",
     },
 
     {
       name: "DECIMAL",
       regex: new RegExp("^" + DECIMAL),
-      style: "number"
+      style: "number",
     },
 
     {
       name: "INTEGER",
       regex: new RegExp("^" + INTEGER),
-      style: "number"
+      style: "number",
     },
 
     {
       name: "DOUBLE_POSITIVE",
       regex: new RegExp("^" + DOUBLE_POSITIVE),
-      style: "number"
+      style: "number",
     },
 
     {
       name: "DECIMAL_POSITIVE",
       regex: new RegExp("^" + DECIMAL_POSITIVE),
-      style: "number"
+      style: "number",
     },
 
     {
       name: "INTEGER_POSITIVE",
       regex: new RegExp("^" + INTEGER_POSITIVE),
-      style: "number"
+      style: "number",
     },
 
     {
       name: "DOUBLE_NEGATIVE",
       regex: new RegExp("^" + DOUBLE_NEGATIVE),
-      style: "number"
+      style: "number",
     },
 
     {
       name: "DECIMAL_NEGATIVE",
       regex: new RegExp("^" + DECIMAL_NEGATIVE),
-      style: "number"
+      style: "number",
     },
 
     {
       name: "INTEGER_NEGATIVE",
       regex: new RegExp("^" + INTEGER_NEGATIVE),
-      style: "number"
+      style: "number",
     },
     //		stringLiteralLongRegex.SINGLE.complete,
     //		stringLiteralLongRegex.DOUBLE.complete,
@@ -262,46 +262,46 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
     {
       name: "STRING_LITERAL1",
       regex: new RegExp("^" + STRING_LITERAL1),
-      style: "string"
+      style: "string",
     },
 
     {
       name: "STRING_LITERAL2",
       regex: new RegExp("^" + STRING_LITERAL2),
-      style: "string"
+      style: "string",
     },
 
     // Enclosed comments won't be highlighted
     {
       name: "NIL",
       regex: new RegExp("^" + NIL),
-      style: "punc"
+      style: "punc",
     },
 
     // Enclosed comments won't be highlighted
     {
       name: "ANON",
       regex: new RegExp("^" + ANON),
-      style: "punc"
+      style: "punc",
     },
 
     {
       name: "PNAME_LN",
       regex: new RegExp("^" + PNAME_LN),
-      style: "string-2"
+      style: "string-2",
     },
 
     {
       name: "PNAME_NS",
       regex: new RegExp("^" + PNAME_NS),
-      style: "string-2"
+      style: "string-2",
     },
 
     {
       name: "BLANK_NODE_LABEL",
       regex: new RegExp("^" + BLANK_NODE_LABEL),
-      style: "string-2"
-    }
+      style: "string-2",
+    },
   ];
 
   function getPossibles(symbol: string) {
@@ -337,7 +337,7 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
             cat: STRING_LITERAL_LONG[state.inLiteral].CAT,
             style: stringLiteralLongRegex[state.inLiteral].complete.style,
             string: consumed[0],
-            start: stream.start
+            start: stream.start,
           };
           if (closingQuotes) state.inLiteral = undefined;
           return returnObj;
@@ -362,7 +362,7 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
             style: stringLiteralLongRegex[quoteType].quotes.style,
             string: consumed[0],
             quotePos: quotePos,
-            start: stream.start
+            start: stream.start,
           };
         }
       }
@@ -376,7 +376,7 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
             style: terminals[i].style,
             string: consumed[0],
             start: stream.start,
-            quotePos: undefined
+            quotePos: undefined,
           };
         }
       }
@@ -389,7 +389,7 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
           style: "keyword",
           string: consumed[0],
           start: stream.start,
-          quotePos: undefined
+          quotePos: undefined,
         };
 
       // Punctuation
@@ -400,7 +400,7 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
           style: "punc",
           string: consumed[0],
           start: stream.start,
-          quotePos: undefined
+          quotePos: undefined,
         };
 
       // Token is invalid
@@ -411,7 +411,7 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
         style: "error",
         string: consumed[0],
         start: stream.start,
-        quotePos: undefined
+        quotePos: undefined,
       };
     }
 
@@ -641,7 +641,7 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
     propertyList: 1,
     propertyListPath: 1,
     propertyListPathNotEmpty: 1,
-    "?[verb,objectList]": 1
+    "?[verb,objectList]": 1,
     //		"?[or([verbPath, verbSimple]),objectList]": 1,
   };
 
@@ -651,7 +651,7 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
     ")": 1,
     "{": -1,
     "(": -1,
-    "[": -1
+    "[": -1,
     //		"*[;,?[or([verbPath,verbSimple]),objectList]]": 1,
   };
 
@@ -697,7 +697,7 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
 
   return {
     token: tokenBase,
-    startState: function(): State {
+    startState: function (): State {
       return {
         tokenize: tokenBase,
         OK: true,
@@ -720,10 +720,10 @@ export default function(config: CodeMirror.EditorConfiguration): CodeMirror.Mode
         currentPnameNs: undefined,
         errorMsg: undefined,
         inPrefixDecl: false,
-        possibleFullIri: false
+        possibleFullIri: false,
       };
     },
     indent: indent,
-    electricChars: "}])"
+    electricChars: "}])",
   };
 }
