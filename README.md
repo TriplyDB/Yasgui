@@ -2,9 +2,9 @@
 
 Useful links:
 
-- User documentation: <https://docs.triply.cc/yasgui>
-- Developer documentation: <https://docs.triply.cc/yasgui-api>
-- Documentation Github repository (feel free to add a PR for improvements): https://github.com/TriplyDB/Documentation
+- [User documentation](./docs/yasgui/index.md)
+- [Developer documentation](./docs/yasgui-api/index.md)
+
 
 ## Installation
 
