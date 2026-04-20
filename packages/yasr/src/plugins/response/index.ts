@@ -1,5 +1,5 @@
 /**
- * Make sure not to include any deps from our main index file. That way, we can easily publish the publin as standalone build
+ * Make sure not to include any deps from our main index file. That way, we can easily publish the plugin as standalone build
  */
 import { Plugin } from "../";
 import Yasr from "../../";
