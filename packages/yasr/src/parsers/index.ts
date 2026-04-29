@@ -14,9 +14,18 @@ namespace Parser {
     text: string;
     statusText?: string;
   }
+  /**
+   * https://www.w3.org/2021/12/rdf-star.html#sparql-star-query-results-json-format.
+   */
+  export interface QuotedTriple {
+    subject: QuotedTriple | string;
+    predicate: QuotedTriple | string;
+    object: QuotedTriple | string;
+  }
+  export type BindingValueValue = string | QuotedTriple;
   export interface BindingValue {
-    value: string;
-    type: "uri" | "literal" | "typed-literal" | "bnode";
+    value: BindingValueValue;
+    type: "uri" | "literal" | "typed-literal" | "bnode" | "triple";
     datatype?: string;
     "xml:lang"?: string;
   }
@@ -45,10 +54,11 @@ namespace Parser {
 const applyMustacheToLiterals: Parser.PostProcessBinding = (binding: Parser.Binding) => {
   for (const lit in binding) {
     if (binding[lit].type === "uri") continue;
-    binding[lit].value = binding[lit].value.replace(/{{(.*?)}}/g, (variable) => {
+    const bindingValue: string = Parser.getBindingValueValueAsString(binding[lit].value);
+    binding[lit].value = bindingValue.replace(/{{(.*?)}}/g, (variable): string => {
       variable = variable.substring(2, variable.length - 2).trim();
       if (binding[variable]) {
-        return binding[variable].value;
+        return binding[variable].value as string;
       } else {
         return variable;
       }
@@ -61,9 +71,9 @@ class Parser {
   private summary: Parser.ResponseSummary | undefined;
   private errorSummary: Parser.ErrorSummary | undefined;
   // Contrary to the typings, statusText is part of responseError
-  private error: Error | (SuperAgent.ResponseError & { response: { statusText: string } }) | undefined;
+  private readonly error: Error | (SuperAgent.ResponseError & { response: { statusText: string } }) | undefined;
   private type: "json" | "xml" | "csv" | "tsv" | "ttl" | undefined;
-  private executionTime: number | undefined;
+  private readonly executionTime: number | undefined;
   constructor(responseOrObject: Parser.ResponseSummary | SuperAgent.Response | Error | any, executionTime?: number) {
     if (responseOrObject.executionTime) this.executionTime = responseOrObject.executionTime;
     if (executionTime) this.executionTime = executionTime; // Parameter has priority
@@ -80,7 +90,7 @@ class Parser {
   }
   public setSummary(summary: Parser.ResponseSummary | any) {
     if (!summary.data && !summary.error) {
-      //This isnt a summary object, just try to recreate a summary object ourselves (assuming we're just passed a sparql-result object directly)
+      //This is not a summary object, just try to recreate a summary object ourselves (assuming we're just passed a sparql-result object directly)
       this.summary = {
         data: summary,
       };
@@ -93,8 +103,7 @@ class Parser {
     if (this.res && this.res.status >= 400) return true;
     if (this.errorSummary) return true;
     if (this.error) return true;
-    if (this.summary && this.summary.error) return true;
-    return false;
+    return !!(this.summary && this.summary.error);
   }
   public getError() {
     if (!this.errorSummary) {
@@ -301,6 +310,29 @@ class Parser {
     if (json && json.results) {
       return bindingsToCsv(json);
     }
+  }
+
+  static getQuotedTripleTokens(quotedTriple: Parser.QuotedTriple, values: string[] = []): string[] {
+    values.push("<<");
+    // for property in subject, predicate, object
+    for (const property of Object.getOwnPropertyNames(quotedTriple)) {
+      const quotedTripleOrString = quotedTriple[property as keyof typeof quotedTriple];
+      if (typeof quotedTripleOrString === "string") {
+        values.push(quotedTripleOrString);
+      } else {
+        Parser.getQuotedTripleTokens(quotedTripleOrString, values);
+      }
+    }
+    values.push(">>");
+    return values;
+  }
+  public static getBindingValueValueAsString(bindingValueValue: Parser.BindingValueValue): string {
+    if (typeof bindingValueValue === "string") {
+      return bindingValueValue;
+    }
+    // SPARQL-star.
+    const tripleTokens: string[] = Parser.getQuotedTripleTokens(<Parser.QuotedTriple>bindingValueValue);
+    return tripleTokens.join(" ");
   }
 }
 export default Parser;
